@@ -747,6 +747,7 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
         [buttonsToShow addObjectsFromArray:[self directionButtons]];
         [buttonsToShow addObject:self.attackButton];
         [buttonsToShow addObject:self.castButton];
+        [buttonsToShow addObject:self.useItemButton];
 
         [buttonsToHide addObject:self.currentPosButton];
         [buttonsToHide addObject:self.lightTorchButton];
@@ -800,6 +801,7 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
         [buttonsToShow addObject:self.yellButton];
         [buttonsToShow addObject:self.searchButton];
         [buttonsToShow addObject:self.mixSpellButton];
+        [buttonsToShow addObject:self.useItemButton];
         if ([self.playerTableController orderButton])           
             [buttonsToShow addObject:[self.playerTableController orderButton]];
         break;
@@ -816,6 +818,7 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
         [buttonsToHide addObject:self.searchButton];
         [buttonsToHide addObject:self.mixSpellButton];
         [buttonsToHide addObject:self.openDoorButton];
+        [buttonsToShow addObject:self.useItemButton];
         if ([self.playerTableController orderButton])
             [buttonsToHide addObject:[self.playerTableController orderButton]];
         break;
