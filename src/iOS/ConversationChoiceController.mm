@@ -163,15 +163,33 @@
 }
 
 - (NSArray *)allArmor {
-    return [NSArray arrayWithObjects:@"None", @"Cloth", @"Leather", @"Chain Mail", @"Plate Mail",
-                                     @"Magic Chain", @"Magic Plate", @"Mystic Robe", nil];
-    
+    return [NSArray arrayWithObjects:NSLocalizedString(@"None", @"No armor"),
+                                     NSLocalizedString(@"Cloth", @"Cloth armor"),
+                                     NSLocalizedString(@"Leather", @"Leather armor"), 
+                                     NSLocalizedString(@"Chain Mail", @"Chain mail"),
+                                     NSLocalizedString(@"Plate Mail", @"Plate mail"),
+                                     NSLocalizedString(@"Magic Chain", @"Magic chain mail"),
+                                     NSLocalizedString(@"Magic Plate", @"Magic plate mail"),
+                                     NSLocalizedString(@"Mystic Robe", @"Mystic robe"), nil];
 }
 
 - (NSArray *)allWeapons {
- return [NSArray arrayWithObjects:@"Hands", @"Staff", @"Dagger", @"Sling", @"Mace", @"Axe",
-                                  @"Sword", @"Bow", @"Crossbow", @"Oil", @"Halberd", @"Magic Axe",
-                                  @"Magic Sword", @"Magic Bow", @"Magic Wand", @"Mystic Sword", nil];
+ return [NSArray arrayWithObjects:NSLocalizedString(@"Hands", @"Bare hands"),
+                                  NSLocalizedString(@"Staff", "Staff"),
+                                  NSLocalizedString(@"Dagger", @"Dagger"),
+                                  NSLocalizedString(@"Sling", @"Sling"),
+                                  NSLocalizedString(@"Mace", @"Mace"),
+                                  NSLocalizedString(@"Axe", @"Axe"),
+                                  NSLocalizedString(@"Sword", @"Sword"),
+                                  NSLocalizedString(@"Bow", @"Bow"),
+                                  NSLocalizedString(@"Crossbow",@"Crossbow"),
+                                  NSLocalizedString(@"Oil", @"Oil"),
+                                  NSLocalizedString(@"Halberd", @"Halberd"),
+                                  NSLocalizedString(@"Magic Axe", @"Magic Axe"),
+                                  NSLocalizedString(@"Magic Sword", @"Magic Sword"),
+                                  NSLocalizedString(@"Magic Bow", @"Magic Bow"),
+                                  NSLocalizedString(@"Magic Wand", @"Magic Wand"),
+                                  NSLocalizedString(@"Mystic Sword", @"Mystic Sword"), nil];
 }
 
 - (void)buildChoicesFromInventory {
@@ -213,30 +231,67 @@
         [self buildButtonsFromArray:[self allArmor] calculateIndex:YES];
         break;
     case NPC_VENDOR_REAGENTS:
-        [self buildButtonsFromArray:[NSArray arrayWithObjects:@"Sulfurous Ash", @"Ginseng",
-                                                              @"Garlic", @"Spider Silk",
-                                                              @"Blood Moss", @"Black Pearl", nil]
-         calculateIndex:NO];
+        [self buildButtonsFromArray:[NSArray arrayWithObjects:NSLocalizedString(@"Sulfurous Ash", @"Sulfurous Ash"),
+                                                              NSLocalizedString(@"Ginseng", @"Ginseng"),
+                                                              NSLocalizedString(@"Garlic", @"Garlic"),
+                                                              NSLocalizedString(@"Spider Silk", @"Spider Silk"),
+                                                              NSLocalizedString(@"Blood Moss", @"Blood Moss"),
+                                                              NSLocalizedString(@"Black Pearl", @"Black Pearl"), nil]
+                     calculateIndex:NO];
         break;
     case NPC_VENDOR_HEALER:
-        [self buildButtonsFromArray:[NSArray arrayWithObjects:@"Curing", @"Healing",
-                                                              @"Resurrect", nil] 
+        [self buildButtonsFromArray:[NSArray arrayWithObjects:NSLocalizedString(@"Curing", @"Curing"),
+                                                              NSLocalizedString(@"Healing", @"Healing"),
+                                                              NSLocalizedString(@"Resurrect", @"Resurrect"), nil] 
                      calculateIndex:NO];
         break;
     case NPC_VENDOR_TAVERN:
-        [self buildButtonsFromArray:[NSArray arrayWithObjects:@"Food", @"Ale", nil]
+        [self buildButtonsFromArray:[NSArray arrayWithObjects:NSLocalizedString(@"Food", @"Food"),
+                                                              NSLocalizedString(@"Ale", @"Ale"), nil]
                   calculateIndex:NO];
         break;
     case NPC_VENDOR_GUILD:
         // ### *Sigh* This exposes sextants! But on the other hand, I would rather make the game beatable NOW then
         // not make it possible as an alternate interface is devised.
-        [self buildButtonsFromArray:[NSArray arrayWithObjects:@"Torches", @"Magic Gems",
-                                                              @"Magic Keys", @"Sextant", nil]
+        [self buildButtonsFromArray:[NSArray arrayWithObjects:NSLocalizedString(@"Torches", @"Torches"),
+                                                              NSLocalizedString(@"Magic Gems", @"Magic Gems"),
+                                                              NSLocalizedString(@"Magic Keys", @"Magic Keys"),
+                                                              NSLocalizedString(@"Sextant", @"Sextant"), nil]
                   calculateIndex:NO];
         break;
+    case NPC_VENDOR_INN:
+        if ([choices hasPrefix:@"0123"]) {
+            NSString *tmp = [[choices substringFromIndex:1] retain];
+            [choices release];
+            choices = tmp;
+            [self buildButtonsFromArray:[NSArray arrayWithObjects:NSLocalizedString(@"1 Bed", @"1 Bed"),
+                                                                  NSLocalizedString(@"2 Beds", @"2 Beds"),
+                                                                  NSLocalizedString(@"3 Beds", @"3 Beds"), nil]
+                         calculateIndex:NO];
+        } else {
+            [self buildButtonsFromChoices];
+        }
+        break;
     default:
+        NSLog(@"Missing choices for NPC type %d", npcType);
+        [self buildButtonsFromChoices];
         break;
     }
+}
+
+-(void) buildButtonsFromChoices {
+    NSArray *buttonArray = [self allChoiceButtons];
+    NSRange totalChoices = [choices rangeOfString:@" " options:NSBackwardsSearch];
+    NSUInteger maxWalk = std::min((totalChoices.location == NSNotFound) ? NSUInteger(0)
+                                  : totalChoices.location,
+                                  [buttonArray count]);
+    for (NSUInteger i = 0; i < maxWalk; ++i) {
+        unichar charArray[1];
+        charArray[0] = [choices characterAtIndex:i];
+        NSString *onlyOneCharacter = [NSString stringWithCharacters:charArray length:1];
+        [self joinButton:[buttonArray objectAtIndex:i] withString:onlyOneCharacter
+              buttonText:[NSString stringWithFormat:@"Choice %@", onlyOneCharacter]];
+    }    
 }
 
 -(void)updateChoiceButtons {
@@ -250,35 +305,25 @@
     
     // Reset the No Thanks button (just in case)
     self.noThanksButton.hidden = NO;
-    [self.noThanksButton setTitle:@"No Thanks" forState:UIControlStateNormal];
+    [self.noThanksButton setTitle:NSLocalizedString(@"No Thanks", @"No Thanks") forState:UIControlStateNormal];
 
     // Walk through the list of choices and put one on each of the buttons
     if (choices == nil || [choices hasPrefix:@" "]) {
         // Special case, just make the middle button a continue button
-        [self.noThanksButton setTitle:@"Continue" forState:UIControlStateNormal];
+        [self.noThanksButton setTitle:NSLocalizedString(@"Continue", @"Continue") forState:UIControlStateNormal];
     } else if ([choices hasPrefix:@"yn"]) {
-        [self joinButton:self.choice1Button withString:@"y" buttonText:@"Yes"];
-        [self joinButton:self.choice2Button withString:@"n" buttonText:@"No"];
+        [self joinButton:self.choice1Button withString:@"y" buttonText:NSLocalizedString(@"Yes", @"Yes")];
+        [self joinButton:self.choice2Button withString:@"n" buttonText:NSLocalizedString(@"No", @"No")];
         self.noThanksButton.hidden = YES;
     } else if ([choices hasPrefix:@"bs"]) {
-        [self joinButton:self.choice1Button withString:@"b" buttonText:@"Buy"];
-        [self joinButton:self.choice2Button withString:@"s" buttonText:@"Sell"];
+        [self joinButton:self.choice1Button withString:@"b" buttonText:NSLocalizedString(@"Buy", @"Buy")];
+        [self joinButton:self.choice2Button withString:@"s" buttonText:NSLocalizedString(@"Sell", @"Sell")];
     } else if ([target hasPrefix:@"sell_"]) {
         [self buildChoicesFromInventory];
     } else if (npcType != -1) {
         [self buildChoicesFromNPCType];
     } else {
-        NSRange totalChoices = [choices rangeOfString:@" " options:NSBackwardsSearch];
-        NSUInteger maxWalk = std::min((totalChoices.location == NSNotFound) ? NSUInteger(0)
-                                                                            : totalChoices.location,
-                                      [buttonArray count]);
-        for (NSUInteger i = 0; i < maxWalk; ++i) {
-            unichar charArray[1];
-            charArray[0] = [choices characterAtIndex:i];
-            NSString *onlyOneCharacter = [NSString stringWithCharacters:charArray length:1];
-            [self joinButton:[buttonArray objectAtIndex:i] withString:onlyOneCharacter
-                  buttonText:[NSString stringWithFormat:@"Choice %@", onlyOneCharacter]];
-        }
+        [self buildButtonsFromChoices];
     }
 }
 
