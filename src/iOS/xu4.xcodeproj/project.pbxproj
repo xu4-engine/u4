@@ -3734,6 +3734,7 @@
 					"$(inherited)",
 					"\"$(SRCROOT)/TestFlightSDK0.7.2\"",
 					"\"$(SRCROOT)/TestFlightSDK\"",
+					"\"$(SRCROOT)/../../../../Downloads/TestFlightSDK1.0\"",
 				);
 				OTHER_CFLAGS = (
 					"-DIOS",
@@ -3785,6 +3786,7 @@
 					"$(inherited)",
 					"\"$(SRCROOT)/TestFlightSDK0.7.2\"",
 					"\"$(SRCROOT)/TestFlightSDK\"",
+					"\"$(SRCROOT)/../../../../Downloads/TestFlightSDK1.0\"",
 				);
 				OTHER_CFLAGS = (
 					"-DIOS",
@@ -3833,6 +3835,7 @@
 					"$(inherited)",
 					"\"$(SRCROOT)/TestFlightSDK0.7.2\"",
 					"\"$(SRCROOT)/TestFlightSDK\"",
+					"\"$(SRCROOT)/../../../../Downloads/TestFlightSDK1.0\"",
 				);
 				OTHER_CFLAGS = (
 					"-DIOS",
