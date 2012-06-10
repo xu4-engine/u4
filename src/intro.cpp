@@ -2138,3 +2138,12 @@ void IntroController::skipTitles()
     bSkipTitles = true;
     soundStop();
 }
+
+#ifdef IOS
+// Try to put the intro music back at just the correct moment on iOS;
+// don't play it at the very beginning.
+void IntroController::tryTriggerIntroMusic() {
+    if (mode == INTRO_MAP)
+        musicMgr->intro();
+}
+#endif

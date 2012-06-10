@@ -89,6 +89,16 @@ string profileName = "";
     return NO;
 }
 
+- (void)applicationDidEnterBackground:(UIApplication *)application {
+    musicMgr->toggle();
+}
+
+- (void)applicationWillEnterForeground:(UIApplication *)application {
+    if (c)
+        musicMgr->toggle();
+    else
+        intro->tryTriggerIntroMusic();
+}
 
 
 - (void)dealloc {

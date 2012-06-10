@@ -120,6 +120,7 @@ private:
     std::string getQuestion(int v1, int v2);
 #ifdef IOS
 public:
+    void tryTriggerIntroMusic();
 #endif
     void initiateNewGame();
     void finishInitiateGame(const string &nameBuffer, SexType sex);

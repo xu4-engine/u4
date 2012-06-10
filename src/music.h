@@ -71,7 +71,13 @@ public:
     void hawkwind()     {playMid(SHOPPING); } /**< Music when you talk to Hawkwind */
     void camp()         {fadeOut(1000);     } /**< Music that plays while camping */
     void shopping()     {playMid(SHOPPING); } /**< Music when talking to a vendor */
-    void intro()        {playMid(introMid); } /**< Play the introduction music on title loadup */
+    void intro()        
+    {
+#ifdef IOS
+        on = true; // Force iOS to turn this back on from going in the background.
+#endif
+        playMid(introMid);
+    } /**< Play the introduction music on title loadup */
     void introSwitch(int n);
     bool toggle();
 
