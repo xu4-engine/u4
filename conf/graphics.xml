@@ -1696,6 +1696,8 @@
         <image name="rune8" filename="vga2/rune_8.png" prescale="2" xu4Graphic="true"/>
         <image name="key" filename="vga2/key7.png" prescale="2" xu4Graphic="true"/>
 
+        <!-- gem tiles -->
+        <image name="gemtiles" filename="vga/gem.png"  tiles="128" xu4Graphic="true"/>
 
 	</imageset>
 
