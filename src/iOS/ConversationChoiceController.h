@@ -83,4 +83,6 @@
 - (void)setChoices:(NSString *)choices withTarget:(NSString *)target npcType:(int)npcType;
 - (void)joinButton:(UIButton *)button withString:(NSString *)string buttonText:(NSString *)buttonText;
 - (void)buildChoicesFromInventory;
+- (void)buildGateSpellChoices;
+- (void)buildEnergyFieldSpellChoices;
 @end

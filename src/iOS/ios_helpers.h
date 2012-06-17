@@ -99,6 +99,8 @@ namespace U4IOS {
     void maximizeChoicePanel();
     void restoreChoicePanel();
     void updateChoicesInDialog(const std::string &choices, const std::string &target, int npcType);
+    void buildGateSpellChoices();
+    void buildEnergyFieldSpellChoices();
     void endChoiceConversation();
     
     void beginCharacterChoiceDialog();
@@ -211,6 +213,12 @@ namespace U4IOS {
         }
         void updateChoices(const std::string &choices, const std::string &target = "", int npcType = -1) {
             updateChoicesInDialog(choices, target, npcType);
+        }
+        void updateGateSpellChoices() {
+            buildGateSpellChoices();
+        }
+        void updateEnergyFieldSpellChoices() {
+            buildEnergyFieldSpellChoices();
         }
         void fullSizeChoicePanel() {
             maximizeChoicePanel();

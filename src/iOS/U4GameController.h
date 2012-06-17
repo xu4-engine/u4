@@ -161,6 +161,8 @@ class GameController;
 - (void)updateGameControllerLocationContext:(LocationContext)locationContext;
 - (void)incrementConversationCount;
 - (void)decrementConversationCount;
+- (void)buildGateSpellChoices;
+- (void)buildEnergyFieldSpellChoices;
 - (NSArray *)allButtons;
 - (NSArray *)allButtonsButDirectionButtons;
 @end

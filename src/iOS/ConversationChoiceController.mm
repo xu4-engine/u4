@@ -269,17 +269,17 @@
                                                                   NSLocalizedString(@"3 Beds", @"3 Beds"), nil]
                          calculateIndex:NO];
         } else {
-            [self buildButtonsFromChoices];
+            [self buildButtonsFromChoicesWithPrefix:NSLocalizedString(@"Choice", @"Choice")];
         }
         break;
     default:
         NSLog(@"Missing choices for NPC type %d", npcType);
-        [self buildButtonsFromChoices];
+        [self buildButtonsFromChoicesWithPrefix:NSLocalizedString(@"Choice", @"Choice")];
         break;
     }
 }
 
--(void) buildButtonsFromChoices {
+-(void) buildButtonsFromChoicesWithPrefix:(NSString *)prefixString {
     NSArray *buttonArray = [self allChoiceButtons];
     NSRange totalChoices = [choices rangeOfString:@" " options:NSBackwardsSearch];
     NSUInteger maxWalk = std::min((totalChoices.location == NSNotFound) ? NSUInteger(0)
@@ -290,13 +290,11 @@
         charArray[0] = [choices characterAtIndex:i];
         NSString *onlyOneCharacter = [NSString stringWithCharacters:charArray length:1];
         [self joinButton:[buttonArray objectAtIndex:i] withString:onlyOneCharacter
-              buttonText:[NSString stringWithFormat:@"Choice %@", onlyOneCharacter]];
+              buttonText:[NSString stringWithFormat:@"%@ %@", prefixString, onlyOneCharacter]];
     }    
 }
 
--(void)updateChoiceButtons {
-    if (choices == nil)
-        return;
+- (void)resetChoiceButtons {
     [choiceButtonToStringDict release];
     choiceButtonToStringDict = [[NSMutableDictionary alloc] initWithCapacity:17];
     NSArray *buttonArray = [self allChoiceButtons];
@@ -305,8 +303,14 @@
     
     // Reset the No Thanks button (just in case)
     self.noThanksButton.hidden = NO;
-    [self.noThanksButton setTitle:NSLocalizedString(@"No Thanks", @"No Thanks") forState:UIControlStateNormal];
+    [self.noThanksButton setTitle:NSLocalizedString(@"No Thanks", @"No Thanks") forState:UIControlStateNormal];    
+}
 
+-(void)updateChoiceButtons {
+    if (choices == nil)
+        return;
+
+    [self resetChoiceButtons];
     // Walk through the list of choices and put one on each of the buttons
     if (choices == nil || [choices hasPrefix:@" "]) {
         // Special case, just make the middle button a continue button
@@ -323,7 +327,7 @@
     } else if (npcType != -1) {
         [self buildChoicesFromNPCType];
     } else {
-        [self buildButtonsFromChoices];
+        [self buildButtonsFromChoicesWithPrefix:NSLocalizedString(@"Choice", @"Choice")];
     }
 }
 
@@ -349,6 +353,21 @@
     if (choice1Button != nil) {
         [self updateChoiceButtons];
     }
+}
+
+- (void)buildGateSpellChoices {
+    [choices release];
+    choices = @"12345678 ";
+    [self resetChoiceButtons];
+    [self buildButtonsFromChoicesWithPrefix:NSLocalizedString(@"Phase", @"Phase")];  
+}
+
+- (void)buildEnergyFieldSpellChoices {
+    [self resetChoiceButtons];
+    [self joinButton:self.choice1Button withString:@"f" buttonText:NSLocalizedString(@"Fire Field", @"Fire Field")];
+    [self joinButton:self.choice2Button withString:@"l" buttonText:NSLocalizedString(@"Lightning Field", @"Lightning Field")];
+    [self joinButton:self.choice3Button withString:@"s" buttonText:NSLocalizedString(@"Sleep Field", @"Sleep Field")];
+    [self joinButton:self.choice4Button withString:@"p" buttonText:NSLocalizedString(@"Poison Field", @"Poison Field")];
 }
 
 @end

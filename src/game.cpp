@@ -1811,7 +1811,7 @@ void castSpell(int player) {
 #ifdef IOS
         U4IOS::IOSConversationChoiceHelper choiceController;
         choiceController.fullSizeChoicePanel();
-        choiceController.updateChoices("12345678 \033\n");
+        choiceController.updateGateSpellChoices();
 #endif
         int choice = ReadChoiceController::get("12345678 \033\n");
         if (choice < '1' || choice > '8')
@@ -1844,7 +1844,7 @@ void castSpell(int player) {
 #ifdef IOS
         U4IOS::IOSConversationChoiceHelper choiceController;
         choiceController.fullSizeChoicePanel();
-        choiceController.updateChoices("flps \033\n\r");
+        choiceController.updateEnergyFieldSpellChoices();
 #endif
         EnergyFieldType fieldType = ENERGYFIELD_NONE;
         char key = ReadChoiceController::get("flps \033\n\r");

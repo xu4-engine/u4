@@ -215,7 +215,14 @@ void updateChoicesInDialog(const std::string &choices, const std::string &target
                          withTarget:[NSString stringWithUTF8String:target.c_str()]
                         npcType:npcType];
 }
+
+void buildGateSpellChoices() {
+    [gameController() buildGateSpellChoices];
+}
     
+void buildEnergyFieldSpellChoices() {
+    [gameController() buildEnergyFieldSpellChoices];
+}
     
 void beginChoiceConversation() {
     [gameController() bringUpChoicePanel];

@@ -598,6 +598,17 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
     self.choiceController.view.hidden = NO;
 }
 
+- (void)buildGateSpellChoices {
+    [self.choiceController buildGateSpellChoices];
+    self.choiceController.view.hidden = NO;
+}
+
+- (void)buildEnergyFieldSpellChoices {
+    [self.choiceController buildEnergyFieldSpellChoices];
+    self.choiceController.view.hidden = NO;
+}
+
+
 - (void)endChoiceConversation {
     if (inMidConversation == YES) {
         conversationEdit.hidden = NO;
