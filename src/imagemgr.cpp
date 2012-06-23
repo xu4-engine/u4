@@ -130,6 +130,11 @@ ImageSet *ImageMgr::loadImageSetFromConf(const ConfigElement &conf) {
     for (std::vector<ConfigElement>::iterator i = children.begin(); i != children.end(); i++) {
         if (i->getName() == "image") {
             ImageInfo *info = loadImageInfoFromConf(*i);
+            std::map<string, ImageInfo *>::iterator dup = set->info.find(info->name);
+            if (dup != set->info.end()) {
+                delete dup->second;
+                set->info.erase(dup);
+            }
             set->info[info->name] = info;
         }
     }

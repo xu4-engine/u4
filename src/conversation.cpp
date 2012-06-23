@@ -217,7 +217,7 @@ string Dialogue::dump(const string &arg) {
  * Conversation class 
  */ 
 
-Conversation::Conversation() : state(INTRO), script(new Script()) {
+Conversation::Conversation() : logger(0), state(INTRO), script(new Script()) {
     logger = new Debug("debug/conversation.txt", "Conversation"); 
 #ifdef IOS
     U4IOS::incrementConversationCount();
@@ -229,6 +229,7 @@ Conversation::~Conversation() {
 #ifdef IOS
     U4IOS::decrementConversationCount();
 #endif
+    delete logger;
     delete script;
 }
 

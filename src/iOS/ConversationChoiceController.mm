@@ -88,7 +88,6 @@
 
 - (void)viewDidUnload {
     [super viewDidUnload];
-    [choiceButtonToStringDict release];
     self.choice1Button = nil;
     self.choice2Button = nil;
     self.choice3Button = nil;
@@ -113,6 +112,8 @@
     [choices release];
     [target release];
     [gameController release];
+    [choiceButtonToStringDict removeAllObjects];
+    [choiceButtonToStringDict release];
     // The other items were freed when the view unloaded.
     [super dealloc];
 }
@@ -295,8 +296,10 @@
 }
 
 - (void)resetChoiceButtons {
+    [choiceButtonToStringDict removeAllObjects];
     [choiceButtonToStringDict release];
     choiceButtonToStringDict = [[NSMutableDictionary alloc] initWithCapacity:17];
+
     NSArray *buttonArray = [self allChoiceButtons];
     for (UIButton *button in buttonArray)
         button.hidden = YES;

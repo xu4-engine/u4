@@ -102,6 +102,27 @@ Script::Script() : vendorScriptDoc(NULL), scriptNode(NULL), debug(NULL), state(S
 
 Script::~Script() {
     unload();
+    
+    // We have many Variables that are allocated but need to have delete called on them.
+    // We do not need to clear the containers (that will happen automatically), but we do need to delete
+    // these things. Do NOT clean up the providers though, it seems the providers map doesn't own its pointers.
+    // Smart pointers anyone?
+   
+    // Clean variables
+    std::map<string, Script::Variable *>::iterator variableItem = variables.begin();
+    std::map<string, Script::Variable *>::iterator variablesEnd = variables.end();
+    while (variableItem != variablesEnd) {
+        delete variableItem->second;
+        ++variableItem;
+    }
+}
+
+void Script::removeCurrentVariable(const string &name) {
+    std::map<string, Script::Variable *>::iterator dup = variables.find(name);
+    if (dup != variables.end()) {
+        delete dup->second;
+        variables.erase(dup); // not strictly necessary, but correct.
+    }
 }
 
 /**
@@ -114,7 +135,7 @@ void Script::addProvider(const string &name, Provider *p) {
 /**
  * Loads the vendor script
  */ 
-bool Script::load(string filename, string baseId, string subNodeName, string subNodeId) {
+bool Script::load(const string &filename, const string &baseId, const string &subNodeName, const string &subNodeId) {
     xmlNodePtr root, node, child;
     this->state = STATE_NORMAL;
 
@@ -227,7 +248,7 @@ bool Script::load(string filename, string baseId, string subNodeName, string sub
  */ 
 void Script::unload() {
     if (vendorScriptDoc) {
-        xmlFree(vendorScriptDoc);
+        xmlFreeDoc(vendorScriptDoc);
         vendorScriptDoc = NULL;
     }
 
@@ -240,7 +261,7 @@ void Script::unload() {
 /**
  * Runs a script after it's been loaded
  */ 
- void Script::run(string script) {
+ void Script::run(const string &script) {
     xmlNodePtr scriptNode;
     string search_id;
     
@@ -387,11 +408,11 @@ void Script::_continue() {
  */ 
 void Script::resetState()               { state = STATE_NORMAL; }
 void Script::setState(Script::State s)  { state = s; }
-void Script::setTarget(string val)      { target = val; }
-void Script::setChoices(string val)     { choices = val; }
-void Script::setVar(string name, string val)    { variables[name] = new Variable(val); }
-void Script::setVar(string name, int val)       { variables[name] = new Variable(val); }
-void Script::unsetVar(string name) {
+void Script::setTarget(const string &val)      { target = val; }
+void Script::setChoices(const string &val)     { choices = val; }
+void Script::setVar(const string &name, const string &val)    { removeCurrentVariable(name); variables[name] = new Variable(val); }
+void Script::setVar(const string &name, int val)       { removeCurrentVariable(name); variables[name] = new Variable(val); }
+void Script::unsetVar(const string &name) {
     // Ensure that the variable at least exists, but has no value
     if (variables.find(name) != variables.end())
         variables[name]->unset();
@@ -655,7 +676,7 @@ void Script::translate(string *text) {
 /**
  * Finds a subscript of script 'node'
  */ 
- xmlNodePtr Script::find(xmlNodePtr node, string script_to_find, string id, bool _default) {
+ xmlNodePtr Script::find(xmlNodePtr node, const string &script_to_find, const string &id, bool _default) {
     xmlNodePtr current;
     if (node) {
         for (current = node->children; current; current = current->next) {
@@ -685,7 +706,7 @@ void Script::translate(string *text) {
  * Gets a property as string from the script, and
  * translates it using scriptTranslate.
  */ 
-string Script::getPropAsStr(std::list<xmlNodePtr>& nodes, string prop, bool recursive) {
+string Script::getPropAsStr(std::list<xmlNodePtr>& nodes, const string &prop, bool recursive) {
     string propvalue;
     std::list<xmlNodePtr>::reverse_iterator i;
     
@@ -710,7 +731,7 @@ string Script::getPropAsStr(std::list<xmlNodePtr>& nodes, string prop, bool recu
     translate(&propvalue);
     return propvalue;
 }
-string Script::getPropAsStr(xmlNodePtr node, string prop, bool recursive) {
+string Script::getPropAsStr(xmlNodePtr node, const string &prop, bool recursive) {
     std::list<xmlNodePtr> list;
     list.push_back(node);
     return getPropAsStr(list, prop, recursive);    
@@ -719,11 +740,11 @@ string Script::getPropAsStr(xmlNodePtr node, string prop, bool recursive) {
 /**
  * Gets a property as int from the script
  */ 
-int Script::getPropAsInt(std::list<xmlNodePtr>& nodes, string prop, bool recursive) {
+int Script::getPropAsInt(std::list<xmlNodePtr>& nodes, const string &prop, bool recursive) {
     string propvalue = getPropAsStr(nodes, prop, recursive);
     return mathValue(propvalue);
 }
-int Script::getPropAsInt(xmlNodePtr node, string prop, bool recursive) {
+int Script::getPropAsInt(xmlNodePtr node, const string &prop, bool recursive) {
     string propvalue = getPropAsStr(node, prop, recursive);
     return mathValue(propvalue);
 }
@@ -732,7 +753,9 @@ int Script::getPropAsInt(xmlNodePtr node, string prop, bool recursive) {
  * Gets the content of a script node
  */ 
 string Script::getContent(xmlNodePtr node) {
-    string content = (char *)xmlNodeGetContent(node);
+    xmlChar *nodeContent = xmlNodeGetContent(node);
+    string content = reinterpret_cast<char *>(nodeContent);
+    xmlFree(nodeContent);
     translate(&content);
     return content;
 }
@@ -1295,6 +1318,7 @@ Script::ReturnCode Script::setVar(xmlNodePtr script, xmlNodePtr current) {
         return RET_STOP;
     }
     
+    removeCurrentVariable(name);
     variables[name] = new Variable(value);
 
     if (debug)
@@ -1377,7 +1401,7 @@ void Script::mathParseChildren(xmlNodePtr math, string *result) {
  * and operator. Returns false if the string is not a valid
  * math equation
  */ 
-bool Script::mathParse(string str, int *lval, int *rval, string *op) {
+bool Script::mathParse(const string &str, int *lval, int *rval, string *op) {
     string left, right;
     parseOperation(str, &left, &right, op);
 
@@ -1400,7 +1424,7 @@ bool Script::mathParse(string str, int *lval, int *rval, string *op) {
  * Parses a string containing an operator (+, -, *, /, etc.) into 3 parts,
  * left, right, and operator.
  */
-void Script::parseOperation(string str, string *left, string *right, string *op) {
+void Script::parseOperation(const string &str, string *left, string *right, string *op) {
     /* list the longest operators first, so they're detected correctly */
     static const string ops[] = {"==", ">=", "<=", "+", "-", "*", "/", "%", "=", ">", "<", ""};
     int pos = 0,
@@ -1425,7 +1449,7 @@ void Script::parseOperation(string str, string *left, string *right, string *op)
 /**
  * Takes a simple equation string and returns the value
  */ 
-int Script::mathValue(string str) {
+int Script::mathValue(const string &str) {
     int lval, rval;
     string op;
     
@@ -1469,7 +1493,8 @@ int Script::math(int lval, int rval, string &op) {
  * Does a boolean comparison on a string (math or string),
  * fails if the string doesn't contain a valid comparison
  */ 
-bool Script::compare(string str) {
+bool Script::compare(const string &statement) {
+    string str = statement;
     int lval, rval;
     string left, right, op;
     int and_pos, or_pos;
@@ -1532,7 +1557,7 @@ bool Script::compare(string str) {
 /**
  * Parses a function into its name and contents
  */ 
-void Script::funcParse(string str, string *funcName, string *contents) {
+void Script::funcParse(const string & str, string *funcName, string *contents) {
     unsigned int pos;
     *funcName = str;
 

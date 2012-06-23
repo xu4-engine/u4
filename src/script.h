@@ -137,9 +137,9 @@ public:
     ~Script();
 
     void addProvider(const string &name, Provider *p);
-    bool load(string filename, string baseId, string subNodeName = "", string subNodeId = "");
+    bool load(const string &filename, const string &baseId, const string &subNodeName = "", const string &subNodeId = "");
     void unload();
-    void run(string script);
+    void run(const string &script);
     ReturnCode execute(xmlNodePtr script, xmlNodePtr currentItem = NULL, string *output = NULL);    
     void _continue();
     
@@ -147,11 +147,11 @@ public:
     void setState(State state);
     State getState();    
     
-    void setTarget(string val);    
-    void setChoices(string val); 
-    void setVar(string name, string val);
-    void setVar(string name, int val);    
-    void unsetVar(string name);
+    void setTarget(const string &val);
+    void setChoices(const string &val);
+    void setVar(const string &name, const string &val);
+    void setVar(const string &name, int val);
+    void unsetVar(const string &name);
     
     string getTarget();
     InputType getInputType();
@@ -161,11 +161,11 @@ public:
     
 private:
     void        translate(string *script);
-    xmlNodePtr  find(xmlNodePtr node, string script, string choice = "", bool _default = false);    
-    string      getPropAsStr(std::list<xmlNodePtr>& nodes, string prop, bool recursive);
-    string      getPropAsStr(xmlNodePtr node, string prop, bool recursive = false);
-    int         getPropAsInt(std::list<xmlNodePtr>& nodes, string prop, bool recursive);
-    int         getPropAsInt(xmlNodePtr node, string prop, bool recursive = false);
+    xmlNodePtr  find(xmlNodePtr node, const string &script, const string &choice = "", bool _default = false);    
+    string      getPropAsStr(std::list<xmlNodePtr>& nodes, const string &prop, bool recursive);
+    string      getPropAsStr(xmlNodePtr node, const string &prop, bool recursive = false);
+    int         getPropAsInt(std::list<xmlNodePtr>& nodes, const string &prop, bool recursive);
+    int         getPropAsInt(xmlNodePtr node, const string &prop, bool recursive = false);
     string      getContent(xmlNodePtr node);   
 
     /*
@@ -201,12 +201,12 @@ private:
      * Math and comparison functions
      */
     void mathParseChildren(xmlNodePtr math, string *result);
-    int mathValue(string str);
+    int mathValue(const string &str);
     int math(int lval, int rval, string &op);
-    bool mathParse(string str, int *lval, int *rval, string *op);
-    void parseOperation(string str, string *lval, string *rval, string *op);
-    bool compare(string str);
-    void funcParse(string str, string *funcName, string *contents);
+    bool mathParse(const string &str, int *lval, int *rval, string *op);
+    void parseOperation(const string &str, string *lval, string *rval, string *op);
+    bool compare(const string &str);
+    void funcParse(const string &str, string *funcName, string *contents);
 
     /*
      * Static variables
@@ -216,6 +216,7 @@ private:
     static ActionMap action_map;
 
 private:
+    void removeCurrentVariable(const string &name);
     xmlDocPtr vendorScriptDoc;
     xmlNodePtr scriptNode;
     FILE *debug;
