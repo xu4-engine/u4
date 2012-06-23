@@ -49,6 +49,72 @@
 using std::string;
 using std::vector;
 
+
+@interface SoundStopper : NSObject {
+    NSTimer *m_timer;
+    U4AudioController *m_controller;
+    NSTimeInterval m_interval;
+}
+- (id)init;
+- (void)setAudioController:(U4AudioController *)controller;
+- (void)timerFired:(NSTimer *)timer;
+- (void)setInterval:(int)baseInterval;
+- (void)startTimer;
+- (void)stopTimer;
+- (BOOL)isValid;
+@end
+
+@implementation SoundStopper
+
+- (id)init
+{
+    self = [super init];
+    if (self) {
+        ;
+    }
+    return self;
+}
+
+- (void)dealloc {
+    [m_timer release];
+    [m_controller release];
+    [super dealloc];
+}
+
+- (void)timerFired:(NSTimer *)timer {
+    [m_controller stop];
+    [self autorelease];
+}
+
+- (void)setAudioController:(U4AudioController *)controller {
+    U4AudioController *old = m_controller;
+    m_controller = controller;
+    [m_controller retain];
+    [old release];
+}
+
+- (void)setInterval:(int)baseInterval {
+    m_interval = baseInterval / 1000.0;
+}
+
+- (void)startTimer {
+    m_timer = [NSTimer scheduledTimerWithTimeInterval:m_interval target:self
+                                             selector:@selector(timerFired:) userInfo:nil repeats:NO];
+    [m_timer retain];
+}
+
+- (void)stopTimer {
+    [m_timer invalidate];
+    [m_timer release];
+    m_timer = nil;
+}
+
+- (BOOL)isValid {
+    return [m_timer isValid];
+}
+@end
+
+
 static void initAudioSession() {
     UInt32 otherAudioIsPlaying;
     UInt32 propertySize = sizeof(otherAudioIsPlaying);
@@ -100,10 +166,20 @@ bool SoundManager::load_sys(Sound sound, const std::string &soundPathName) {
     return true;
 }
 
-void SoundManager::play_sys(Sound sound, bool onlyOnce, int /*specificDurationInTicks*/) {
+
+
+
+void SoundManager::play_sys(Sound sound, bool onlyOnce, int specificDurationInTicks) {
     U4AudioController *player = soundChunk.at(sound);
     if (!onlyOnce || ![player isPlaying]) {
         [player play];
+    }
+    if (specificDurationInTicks > 0) {
+        SoundStopper *stopper = [[SoundStopper alloc] init];
+        [stopper setAudioController:player];
+        [stopper setInterval:specificDurationInTicks];
+        [stopper startTimer];
+        // Autoreleased in the stop timer.
     }
 }
 

@@ -79,6 +79,7 @@ static const int FadeSteps = 30;
 }
 
 - (void)play {
+    player.currentTime = 0;
     [player prepareToPlay];
     [player play];
 }
