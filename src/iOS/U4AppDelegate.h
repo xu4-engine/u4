@@ -33,15 +33,19 @@
 
 @class U4IntroController;
 @class U4GameController;
+@class DownloadController;
 @class U4View;
 @interface U4AppDelegate : NSObject <UIApplicationDelegate> {
     UIWindow *window;
     U4IntroController *introController;
     U4GameController *gameController;
+    DownloadController *downloadController;
     NSMutableArray *u4viewStack;
 }
 -(void)pushU4View:(U4View *)view;
 -(void)popU4View;
+-(void)startGameController;
+-(void)startIntroController;
 -(U4View *)frontU4View;
 @property (nonatomic, retain) IBOutlet UIWindow *window;
 @property (nonatomic, retain) IBOutlet U4IntroController *introController;

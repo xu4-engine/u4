@@ -112,7 +112,18 @@ std::string getFileLocation(const std::string &dir, const std::string &filename,
     NSString *path = [bundle pathForResource:[NSString stringWithUTF8String:filename.c_str()] 
                                       ofType:[NSString stringWithUTF8String:ext.c_str()]
                                  inDirectory:[NSString stringWithUTF8String:dir.c_str()]];
-    return path == nil ? "" :  [path UTF8String];
+    if (path != nil)
+        return [path UTF8String];
+    
+    // Try the app support directory.
+    boost::intrusive_ptr<CFURL> appSupportLocation = cftypeFromCreateOrCopy(copyAppSupportDirectoryLocation());
+    boost::intrusive_ptr<CFString> fullName = cftypeFromCreateOrCopy(CFStringCreateWithFormat(kCFAllocatorDefault, 0, CFSTR("%s.%s"), filename.c_str(), ext.c_str()));
+    boost::intrusive_ptr<CFURL> url = cftypeFromCreateOrCopy(CFURLCreateCopyAppendingPathComponent(kCFAllocatorDefault, appSupportLocation.get(), fullName.get(), false));
+    path = [(NSURL *)url.get() path];
+    if ([[NSFileManager defaultManager] fileExistsAtPath:path]) {
+        return [path UTF8String];
+    }
+    return "";
 }
 
 CFURLRef copyAppSupportDirectoryLocation()

@@ -33,6 +33,7 @@
 #import "U4IntroController.h"
 #import "U4GameController.h"
 #import "U4PlayerTableController.h"
+#import "DownloadController.h"
 
 
 #include "u4.h"
@@ -83,7 +84,19 @@ string profileName = "";
     xu4_srandom();
     u4viewStack = [[NSMutableArray alloc] initWithCapacity:8];
     [[UIApplication sharedApplication] setStatusBarHidden:YES];
-    [window addSubview:introController.view];
+    
+    // Find out which controller we need to run first
+    std::string zipFile = u4find_path("ultima4.zip", std::list<std::string>());
+    UIView *view;
+    if (zipFile.empty()) {
+        downloadController = [[DownloadController alloc] initWithNibName:@"DownloadController" bundle:nil];
+        view = downloadController.view;
+    } else {
+        introController = [[U4IntroController alloc] initWithNibName:@"U4IntroController" bundle:nil];
+        view = introController.view;
+    }
+
+    [window addSubview:view];
     [window makeKeyAndVisible];
 
     return NO;
@@ -102,6 +115,7 @@ string profileName = "";
 
 
 - (void)dealloc {
+    [downloadController release];
     [introController release];
     [gameController release];
     [window release];
@@ -134,6 +148,15 @@ string profileName = "";
 
 - (U4View *)frontU4View {
     return [u4viewStack lastObject];
+}
+
+- (void)startIntroController {
+    introController = [[U4IntroController alloc] initWithNibName:@"U4IntroController" bundle:nil];
+    UIView *downloadView = downloadController.view;
+    [downloadView removeFromSuperview];
+    [downloadController release];
+    downloadController = nil;
+    [window addSubview:introController.view];
 }
 
 - (void)startGameController {
