@@ -30,6 +30,7 @@ install::
 	$(INSTALL) -D ../icons/u4.png $(datadir)/pixmaps/u4.png
 	mkdir -p $(libdir)/u4/music
 	$(INSTALL) ../mid/*.mid $(libdir)/u4/music
+	$(INSTALL) ../mid/*.it $(libdir)/u4/music
 	mkdir -p $(libdir)/u4/sound
 	$(INSTALL) ../sound/*.ogg $(libdir)/u4/sound
 	$(INSTALL) -D coord $(libdir)/u4/coord
