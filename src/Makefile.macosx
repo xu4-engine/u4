@@ -2,6 +2,9 @@
 # $Id$
 #
 
+# system info
+OSX_VERSION=$(shell sw_vers -productVersion | cut -f 1,2 -d . -)
+
 # name and path to ultima4.zip and u4upgrad.zip
 ULTIMA4=ultima4*.zip
 U4UPGRADE=u4upgrad.zip
@@ -35,12 +38,17 @@ DEBUGCXXFLAGS=-ggdb
 # Optimising
 #DEBUGCXXFLAGS=-O2 -mdynamic-no-pic
 
-# for crosscompiling arch ppc or i386 from OS X 10.6 use 
-# SYSROOT='/Developer/SDKs/MacOSX10.4u.sdk -mmacosx-version-min=10.4'
-# for compiling on OS X 10.5 use
-# SYSROOT=/Developer/SDKs/MacOSX10.5.sdk
-# for compiling on OS X 10.6 use
-SYSROOT=/Developer/SDKs/MacOSX10.6.sdk
+ifeq ($(OSX_VERSION), 10.5)
+SYSROOT='-isysroot /Developer/SDKs/MacOSX10.5.sdk'
+endif
+ifeq ($(OSX_VERSION), 10.6)
+SYSROOT='-isysroot /Developer/SDKs/MacOSX10.6.sdk'
+endif
+# in 10.7 and higher, sysroot isn't needed
+SYSROOT=
+
+# for crosscompiling arch ppc or i386 from OS X 10.6 uncomment this line
+# SYSROOT='-isysroot /Developer/SDKs/MacOSX10.4u.sdk -mmacosx-version-min=10.4'
 
 # for crosscompiling from OS X 10.6 set the arch
 # SPECIFIC_ARCH=-arch i386 
@@ -48,7 +56,7 @@ SYSROOT=/Developer/SDKs/MacOSX10.6.sdk
 SPECIFIC_ARCH=
 
 
-CXXFLAGS=$(FEATURES) -Wall -I. $(UIFLAGS) $(shell xml2-config --cflags) -DVERSION=\"$(VERSION)\" $(DEBUGCXXFLAGS) -DNPERF -DMACOSX -DMACOSX_USER_FILES_PATH=\"/Library/Application\ Support/xu4\" -no-cpp-precomp -L$(PREFIX)/lib -isysroot $(SYSROOT) $(SPECIFIC_ARCH)
+CXXFLAGS=$(FEATURES) -Wall -I. $(UIFLAGS) $(shell xml2-config --cflags) -DVERSION=\"$(VERSION)\" $(DEBUGCXXFLAGS) -DNPERF -DMACOSX -DMACOSX_USER_FILES_PATH=\"/Library/Application\ Support/xu4\" -no-cpp-precomp -L$(PREFIX)/lib $(SYSROOT) $(SPECIFIC_ARCH)
 CFLAGS=$(CXXFLAGS)
 LIBS=-lxml2 -lz -lpthread -licucore -lm $(UILIBS) -lobjc $(SPECIFIC_ARCH)
 
