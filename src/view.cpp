@@ -41,9 +41,7 @@ void View::clear() {
 void View::update() {
     if (highlighted)
         drawHighlighted();
-#ifndef IOS
-    SDL_UpdateRect(SDL_GetVideoSurface(), SCALED(x), SCALED(y), SCALED(width), SCALED(height));
-#else
+#ifdef IOS
     U4IOS::updateView();
 #endif
 }
@@ -54,9 +52,7 @@ void View::update() {
 void View::update(int x, int y, int width, int height) {
     if (highlighted)
         drawHighlighted();
-#ifndef IOS
-    SDL_UpdateRect(SDL_GetVideoSurface(), SCALED(this->x + x), SCALED(this->y + y), SCALED(width), SCALED(height));
-#else
+#ifdef IOS
     U4IOS::updateRectInView(x, y, width, height);
 #endif
 }
