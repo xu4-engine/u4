@@ -48,13 +48,16 @@ install::
 	mkdir -p $(libdir)/u4/graphics/png
 	mkdir -p $(libdir)/u4/graphics/vga
 	mkdir -p $(libdir)/u4/graphics/vga2
+	mkdir -p $(libdir)/u4/graphics/new
 	$(INSTALL) ../graphics/ega/*.png $(libdir)/u4/graphics/ega
 	$(INSTALL) ../graphics/hires/*.png $(libdir)/u4/graphics/hires
 	$(INSTALL) ../graphics/hires/*.vga $(libdir)/u4/graphics/hires
 	$(INSTALL) ../graphics/png/*.png $(libdir)/u4/graphics/png
 	$(INSTALL) ../graphics/vga/*.png $(libdir)/u4/graphics/vga
 	$(INSTALL) ../graphics/vga2/*.png $(libdir)/u4/graphics/vga2
+	$(INSTALL) ../graphics/new/* $(libdir)/u4/graphics/new
 	$(INSTALL) -D ../u4.desktop $(datadir)/applications/u4.desktop
+
 
 # use GCC's automatic dependency generation
 .depends::
