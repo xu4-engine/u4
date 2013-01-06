@@ -421,9 +421,9 @@ bool screenTileUpdate(TileView *view, const Coords &coords, bool redraw)
 
 		if (redraw)
 		{
-			screenRedrawMapArea();
-			return true;
+			//screenRedrawMapArea();
 		}
+		return true;
 	}
 	return false;
 }
@@ -1331,4 +1331,5 @@ void screenGemUpdate() {
 //Unsure if implementation required in iOS.
 void inline screenLock(){};
 void inline screenUnlock(){};
+void inline screenWait(int numberOfAnimationFrames){};
 #endif

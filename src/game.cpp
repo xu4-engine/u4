@@ -623,6 +623,7 @@ void GameController::finishTurn() {
     Creature *attacker = NULL;    
 
     while (1) {
+
         /* adjust food and moves */
         c->party->endTurn();
 
@@ -632,9 +633,10 @@ void GameController::finishTurn() {
         gameCheckHullIntegrity();
 
         /* update party stats */
-        c->stats->setView(STATS_PARTY_OVERVIEW);
+        //c->stats->setView(STATS_PARTY_OVERVIEW);
 
         screenUpdate(&this->mapArea, true, false);
+        screenWait(1);
 
         /* Creatures cannot spawn, move or attack while the avatar is on the balloon */        
         if (!c->party->isFlying()) {
@@ -668,6 +670,7 @@ void GameController::finishTurn() {
             return;
         } else {            
             screenMessage("Zzzzzz\n");
+            screenWait(4);
         }
     }
 
@@ -694,7 +697,7 @@ void GameController::finishTurn() {
 
     /* draw a prompt */
     screenPrompt();
-    screenRedrawTextArea(TEXT_AREA_X, TEXT_AREA_Y, TEXT_AREA_W, TEXT_AREA_H);
+    //screenRedrawTextArea(TEXT_AREA_X, TEXT_AREA_Y, TEXT_AREA_W, TEXT_AREA_H);
 }
 
 /**
@@ -705,11 +708,9 @@ void GameController::finishTurn() {
 void GameController::flashTile(const Coords &coords, MapTile tile, int frames) {
     c->location->map->annotations->add(coords, tile, true);
 
-    int frameDuration = 1000 / settings.screenAnimationFramesPerSecond + 1; //Screen refresh period.
-    //TODO reduce repetitive recalculation to whenever settings.gameCyclesPerSecond is changed
-
     screenTileUpdate(&game->mapArea, coords);
-   	EventHandler::wait_msecs(frameDuration * frames);
+
+    screenWait(frames);
     c->location->map->annotations->remove(coords, tile);
 
     screenTileUpdate(&game->mapArea, coords, false);

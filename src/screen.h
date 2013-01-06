@@ -86,6 +86,7 @@ void screenDelete(void);
 void screenReInit(void);
 void screenLock();
 void screenUnlock();
+void screenWait(int numberOfAnimationFrames);
 
 void screenIconify(void);
 

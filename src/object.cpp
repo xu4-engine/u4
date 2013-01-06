@@ -43,6 +43,6 @@ void Object::animateMovement()
 {
 	//TODO abstract movement - also make screen.h and game.h not required
     screenTileUpdate(&game->mapArea, prevCoords, false);
-    if (screenTileUpdate(&game->mapArea, coords, true))
-    	EventHandler::wait_msecs(11);
+    if (screenTileUpdate(&game->mapArea, coords, false))
+    	screenWait(1);
 }

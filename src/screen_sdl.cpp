@@ -206,6 +206,7 @@ int screenLoadImageCga(Image **image, int width, int height, U4FILE *file, Compr
  */
 
 SDL_mutex *screenLockMutex = NULL;
+int frameDuration = 0;
 
 void screenLock() {
 	SDL_mutexP(screenLockMutex);
@@ -227,13 +228,14 @@ void screenRedrawTextArea(int x, int y, int width, int height) {
 	screenUnlock();
 }
 
+void screenWait(int numberOfAnimationFrames) {
+	SDL_Delay(numberOfAnimationFrames * frameDuration);
+}
 
 bool continueScreenRefresh = true;
 SDL_Thread *screenRefreshThread = NULL;
 
 int screenRefreshThreadFunction(void *unused) {
-
-	int frameDuration = 1000 / settings.screenAnimationFramesPerSecond;
 
 	while (continueScreenRefresh) {
 		SDL_Delay(frameDuration);
@@ -243,6 +245,8 @@ int screenRefreshThreadFunction(void *unused) {
 
 void screenRefreshThreadInit() {
 	screenLockMutex = SDL_CreateMutex();;
+
+	frameDuration = 1000 / settings.screenAnimationFramesPerSecond;
 
 	continueScreenRefresh = true;
 	if (screenRefreshThread) {
