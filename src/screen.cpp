@@ -434,10 +434,9 @@ bool screenTileUpdate(TileView *view, const Coords &coords, bool redraw)
  * neither is set, the map area is left untouched.
  */
 void screenUpdate(TileView *view, bool showmap, bool blackout) {
-
-
-
     ASSERT(c != NULL, "context has not yet been initialized");
+
+    screenLock();
 
     if (blackout)
     {
@@ -480,6 +479,8 @@ void screenUpdate(TileView *view, bool showmap, bool blackout) {
     screenUpdateCursor();
     screenUpdateMoons();
     screenUpdateWind();
+
+    screenUnlock();
 }
 
 /**
@@ -1325,3 +1326,9 @@ void screenGemUpdate() {
     screenUpdateMoons();
     screenUpdateWind();
 }
+
+#ifdef IOS
+//Unsure if implementation required in iOS.
+void inline screenLock(){};
+void inline screenUnlock(){};
+#endif

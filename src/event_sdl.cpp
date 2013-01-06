@@ -401,6 +401,7 @@ void EventHandler::run() {
             break;
         }
     }
+
 }
 
 void EventHandler::setScreenUpdate(void (*updateScreen)(void)) {

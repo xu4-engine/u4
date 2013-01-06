@@ -48,6 +48,7 @@ using std::string;
 #define DEFAULT_BATTLE_SPEED            5
 #define DEFAULT_ENHANCEMENTS            1
 #define DEFAULT_CYCLES_PER_SECOND       4
+#define DEFAULT_ANIMATION_FRAMES_PER_SECOND 24
 #define DEFAULT_DEBUG                   0
 #define DEFAULT_VALIDATE_XML            1
 #define DEFAULT_SPELL_EFFECT_SPEED      10
@@ -104,7 +105,8 @@ public:
     SettingsEnhancementOptions enhancementsOptions;    
     bool                filterMoveMessages;
     bool                fullscreen;
-    int                 gameCyclesPerSecond;    
+    int                 gameCyclesPerSecond;
+    int					screenAnimationFramesPerSecond;
     bool                innAlwaysCombat;
     int                 innTime;
     int                 keydelay;

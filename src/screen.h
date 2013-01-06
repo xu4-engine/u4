@@ -81,8 +81,11 @@ typedef struct _MouseArea {
 #define SCR_CYCLE_PER_SECOND 4
 
 void screenInit(void);
+void screenRefreshTimerInit(void);
 void screenDelete(void);
 void screenReInit(void);
+void screenLock();
+void screenUnlock();
 
 void screenIconify(void);
 

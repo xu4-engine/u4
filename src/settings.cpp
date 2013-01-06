@@ -200,6 +200,7 @@ bool Settings::read() {
     battleSpeed           = DEFAULT_BATTLE_SPEED;
     enhancements          = DEFAULT_ENHANCEMENTS;    
     gameCyclesPerSecond   = DEFAULT_CYCLES_PER_SECOND;
+    screenAnimationFramesPerSecond = DEFAULT_ANIMATION_FRAMES_PER_SECOND;
     debug                 = DEFAULT_DEBUG;
     battleDiff            = DEFAULT_BATTLE_DIFFICULTY;
     validateXml           = DEFAULT_VALIDATE_XML;

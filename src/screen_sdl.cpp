@@ -46,6 +46,10 @@ SDL_Cursor *screenInitCursor(const char * const xpm[]);
 
 extern bool verbose;
 
+
+void screenRefreshThreadInit();
+void screenRefreshThreadEnd();
+
 void screenInit_sys() {
     /* start SDL */
     if (u4_SDL_InitSubSystem(SDL_INIT_VIDEO) < 0)
@@ -82,9 +86,12 @@ void screenInit_sys() {
     filterScaler = scalerGet(settings.filter);
     if (!filterScaler)
         errorFatal("%s is not a valid filter", settings.filter.c_str());
+
+    screenRefreshThreadInit();
 }
 
 void screenDelete_sys() {
+	screenRefreshThreadEnd();
     SDL_FreeCursor(cursors[1]);
     SDL_FreeCursor(cursors[2]);
     SDL_FreeCursor(cursors[3]);
@@ -197,13 +204,65 @@ int screenLoadImageCga(Image **image, int width, int height, U4FILE *file, Compr
 /**
  * Force a redraw.
  */
+
+SDL_mutex *screenLockMutex = NULL;
+
+void screenLock() {
+	SDL_mutexP(screenLockMutex);
+}
+
+void screenUnlock() {
+	SDL_mutexV(screenLockMutex);
+}
+
 void screenRedrawScreen() {
+	screenLock();
     SDL_UpdateRect(SDL_GetVideoSurface(), 0, 0, 0, 0);
+    screenUnlock();
 }
 
 void screenRedrawTextArea(int x, int y, int width, int height) {
-    SDL_UpdateRect(SDL_GetVideoSurface(), x * CHAR_WIDTH * settings.scale, y * CHAR_HEIGHT * settings.scale, width * CHAR_WIDTH * settings.scale, height * CHAR_HEIGHT * settings.scale);
+	screenLock();
+	SDL_UpdateRect(SDL_GetVideoSurface(), x * CHAR_WIDTH * settings.scale, y * CHAR_HEIGHT * settings.scale, width * CHAR_WIDTH * settings.scale, height * CHAR_HEIGHT * settings.scale);
+	screenUnlock();
 }
+
+
+bool continueScreenRefresh = true;
+SDL_Thread *screenRefreshThread = NULL;
+
+int screenRefreshThreadFunction(void *unused) {
+
+	int frameDuration = 1000 / settings.screenAnimationFramesPerSecond;
+
+	while (continueScreenRefresh) {
+		SDL_Delay(frameDuration);
+		screenRedrawScreen();
+	}
+}
+
+void screenRefreshThreadInit() {
+	screenLockMutex = SDL_CreateMutex();;
+
+	continueScreenRefresh = true;
+	if (screenRefreshThread) {
+		errorWarning("Screen refresh thread already exists.");
+		return;
+	}
+
+	screenRefreshThread = SDL_CreateThread(screenRefreshThreadFunction, NULL);
+	if (!screenRefreshThread) {
+		errorWarning(SDL_GetError());
+		return;
+	}
+}
+
+void screenRefreshThreadEnd() {
+	continueScreenRefresh = false;
+	SDL_WaitThread(screenRefreshThread, NULL);
+	screenRefreshThread = NULL;
+}
+
 
 /**
  * Scale an image up.  The resulting image will be scale * the

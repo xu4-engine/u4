@@ -704,12 +704,12 @@ void GameController::finishTurn() {
  */
 void GameController::flashTile(const Coords &coords, MapTile tile, int frames) {
     c->location->map->annotations->add(coords, tile, true);
-    //doScreenAnimationsWhilePausing(timeFactor);
 
-    int msecPerFrame = frames * 33;
+    int frameDuration = 1000 / settings.screenAnimationFramesPerSecond + 1; //Screen refresh period.
+    //TODO reduce repetitive recalculation to whenever settings.gameCyclesPerSecond is changed
 
     screenTileUpdate(&game->mapArea, coords);
-   	EventHandler::wait_msecs(msecPerFrame);//settings.gameCyclesPerSecond);
+   	EventHandler::wait_msecs(frameDuration * frames);
     c->location->map->annotations->remove(coords, tile);
 
     screenTileUpdate(&game->mapArea, coords, false);
