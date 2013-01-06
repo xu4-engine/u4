@@ -595,6 +595,7 @@ void screenScrollMessageArea() {
 void screenCycle() {
     if (++screenCurrentCycle >= SCR_CYCLE_MAX)
         screenCurrentCycle = 0;
+    screenRedrawScreen();
 }
 
 void screenUpdateCursor() {
