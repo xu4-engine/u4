@@ -125,8 +125,8 @@ osxdmg: bundle
 	cp ../COPYING ./xu4-MacOSXdmg/COPYING
 	cp ../README ./xu4-MacOSXdmg/ReadMe
 	cp ../doc/README.MacOSX ./xu4-MacOSXdmg/ReadMe.MacOSX
-	/Developer/Tools/SetFile -t ttro -c ttxt ./xu4-MacOSXdmg/*
-	/Developer/Tools/CpMac -r $(bundle_name) ./xu4-MacOSXdmg/
+	SetFile -t ttro -c ttxt ./xu4-MacOSXdmg/*
+	CpMac -r $(bundle_name) ./xu4-MacOSXdmg/
 	hdiutil create -ov -format UDZO -imagekey zlib-level=9 -fs HFS+ \
 					-srcfolder xu4-MacOSXdmg \
 					-volname "xu4-MacOSX" \
