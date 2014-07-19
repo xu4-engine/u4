@@ -38,7 +38,7 @@ int xu4_random(int upperval);
 string& trim(string &val, const string &chars_to_trim = "\t\013\014 \n\r");
 string& lowercase(string &val);
 string& uppercase(string &val);
-string  to_string(int val);
+string  xu4_to_string(int val);
 std::vector<string> split(const string &s, const string &separators);
 
 class Performance {
