@@ -19,16 +19,22 @@ target_link_libraries (
 	xu4
 	${SDL_LIBRARY}
 	${SDLMIXER_LIBRARY}
+	${SDL_MIXER_LIBRARY} #Latest verified CMake 3.0
 	${LIBXML2_LIBRARIES}
 	${PNG_LIBRARY}
+	${PNG_LIBRARY_RELEASE} #Latest verified CMake 3.0
+	${ZLIB_LIBRARY}
 )
 
 include_directories (
 	${UXU4_SOURCE_DIR}/src
 	${SDL_INCLUDE_DIR}
 	${SDLMIXER_INCLUDE_DIR}
+	${SDL_MIXER_INCLUDE_DIR} #Latest verified CMake 3.0
 	${LIBXML2_INCLUDE_DIR}
 	${PNG_INCLUDE_DIR}
+	${PNG_PNG_INCLUDE_DIR}
+	${ZLIB_INCLUDE_DIR}
 )
 add_definitions(-DVERSION="svn1.1.1.1")
 #CMAKE_CXX__FLAGS=-DVERSION="0.1"
