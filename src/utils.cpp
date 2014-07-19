@@ -82,7 +82,7 @@ string& uppercase(string &val) {
 /**
  * Converts an integer value to a string
  */ 
-string to_string(int val) {
+string xu4_to_string(int val) {
     char buffer[16];    
     sprintf(buffer, "%d", val);
     return buffer;

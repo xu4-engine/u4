@@ -221,7 +221,7 @@ list<string> Person::getConversationText(Conversation *cnv, const char *inquiry)
                         eventHandler->pushController(&getPlayerCtrl);
                         int player = getPlayerCtrl.waitFor();
                         if (player != -1) {                            
-                            string player_str = to_string(player+1);
+                            string player_str = xu4_to_string(player+1);
                             script->setVar(script->getInputName(), player_str);
                         }
                         else script->unsetVar(script->getInputName());

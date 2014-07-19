@@ -44,7 +44,7 @@ Script::Variable::Variable(const string &v) : set(true) {
 
 Script::Variable::Variable(const int &v) : set(true) {
     i_val = v;
-    s_val = to_string(v);
+    s_val = xu4_to_string(v);
 }
 
 int&    Script::Variable::getInt()      { return i_val; }
@@ -503,7 +503,7 @@ void Script::translate(string *text) {
         }        
         // Get the current iterator for our loop
         else if (item == "iterator")
-            prop = to_string(this->iterator);        
+            prop = xu4_to_string(this->iterator);
         else if ((pos = item.find("show_inventory:")) < item.length()) {
             pos = item.find(":");
             string itemScript = item.substr(pos+1);
@@ -611,7 +611,7 @@ void Script::translate(string *text) {
                     if (content.empty())
                         errorWarning("Error: empty math() function");
 
-                    prop = to_string(mathValue(content));
+                    prop = xu4_to_string(mathValue(content));
                 }
 
                 /**
@@ -643,7 +643,7 @@ void Script::translate(string *text) {
                 
                 /* generate a random number */
                 else if (funcName == "random")
-                    prop = to_string(xu4_random((int)strtol(content.c_str(), NULL, 10)));
+                    prop = xu4_to_string(xu4_random((int)strtol(content.c_str(), NULL, 10)));
                 
                 /* replaced with "true" if content is empty, or "false" if not */
                 else if (funcName == "isempty") {                    
@@ -1391,7 +1391,7 @@ void Script::mathParseChildren(xmlNodePtr math, string *result) {
             string children_results;            
             
             mathParseChildren(current, &children_results);
-            *result = to_string(mathValue(children_results));            
+            *result = xu4_to_string(mathValue(children_results));            
         }
     }    
 }

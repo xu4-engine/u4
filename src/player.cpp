@@ -67,21 +67,21 @@ string PartyMember::translate(std::vector<string>& parts) {
         return "";
     else if (parts.size() == 1) {
         if (parts[0] == "hp")
-            return to_string(getHp());
+            return xu4_to_string(getHp());
         else if (parts[0] == "max_hp")
-            return to_string(getMaxHp());
+            return xu4_to_string(getMaxHp());
         else if (parts[0] == "mp")
-            return to_string(getMp());
+            return xu4_to_string(getMp());
         else if (parts[0] == "max_mp")
-            return to_string(getMaxMp());
+            return xu4_to_string(getMaxMp());
         else if (parts[0] == "str")
-            return to_string(getStr());
+            return xu4_to_string(getStr());
         else if (parts[0] == "dex")
-            return to_string(getDex());
+            return xu4_to_string(getDex());
         else if (parts[0] == "int")
-            return to_string(getInt());
+            return xu4_to_string(getInt());
         else if (parts[0] == "exp")
-            return to_string(getExp());
+            return xu4_to_string(getExp());
         else if (parts[0] == "name")
             return getName();
         else if (parts[0] == "weapon")
@@ -96,7 +96,7 @@ string PartyMember::translate(std::vector<string>& parts) {
         else if (parts[0] == "class")
             return getClassName(getClass());
         else if (parts[0] == "level")
-            return to_string(getRealLevel());
+            return xu4_to_string(getRealLevel());
     }
     else if (parts.size() == 2) {
         if (parts[0] == "needs") {
@@ -636,27 +636,27 @@ string Party::translate(std::vector<string>& parts) {
                 return "balloon";
         }
         else if (parts[0] == "gold")
-            return to_string(saveGame->gold);
+            return xu4_to_string(saveGame->gold);
         else if (parts[0] == "food")
-            return to_string(saveGame->food);
+            return xu4_to_string(saveGame->food);
         else if (parts[0] == "members")
-            return to_string(size());
+            return xu4_to_string(size());
         else if (parts[0] == "keys")        
-            return to_string(saveGame->keys);
+            return xu4_to_string(saveGame->keys);
         else if (parts[0] == "torches")
-            return to_string(saveGame->torches);
+            return xu4_to_string(saveGame->torches);
         else if (parts[0] == "gems")
-            return to_string(saveGame->gems);
+            return xu4_to_string(saveGame->gems);
         else if (parts[0] == "sextants")
-            return to_string(saveGame->sextants);
+            return xu4_to_string(saveGame->sextants);
         else if (parts[0] == "food")
-            return to_string((saveGame->food / 100));
+            return xu4_to_string((saveGame->food / 100));
         else if (parts[0] == "gold")
-            return to_string(saveGame->gold);
+            return xu4_to_string(saveGame->gold);
         else if (parts[0] == "party_members")
-            return to_string(saveGame->members);
+            return xu4_to_string(saveGame->members);
         else if (parts[0] == "moves")
-            return to_string(saveGame->moves);
+            return xu4_to_string(saveGame->moves);
     }
     else if (parts.size() >= 2) {
         if (parts[0].find_first_of("member") == 0) {
@@ -681,12 +681,12 @@ string Party::translate(std::vector<string>& parts) {
             if (parts[0] == "weapon") {
                 const Weapon *w = Weapon::get(parts[1]);
                 if (w)
-                    return to_string(saveGame->weapons[w->getType()]);                
+                    return xu4_to_string(saveGame->weapons[w->getType()]);
             }
             else if (parts[0] == "armor") {
                 const Armor *a = Armor::get(parts[1]);
                 if (a)
-                    return to_string(saveGame->armor[a->getType()]);                
+                    return xu4_to_string(saveGame->armor[a->getType()]);
             }
         }
     }    
