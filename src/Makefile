@@ -15,7 +15,7 @@ FEATURES=-DHAVE_BACKTRACE=1 -DHAVE_VARIADIC_MACROS=1
 DEBUGCXXFLAGS=-ggdb1 -rdynamic -g -O0 -fno-inline -fno-eliminate-unused-debug-types -gstabs -g3
 CXXFLAGS=$(FEATURES) -Wall -I. $(UIFLAGS) $(shell xml2-config --cflags) -DICON_FILE=\"$(datadir)/pixmaps/u4.bmp\" -DVERSION=\"$(VERSION)\" $(DEBUGCXXFLAGS)
 CFLAGS=$(CXXFLAGS)
-LIBS=$(UILIBS) $(shell xml2-config --libs) -lpng
+LIBS=$(UILIBS) $(shell xml2-config --libs) -lpng -lz
 INSTALL=install
 
 ifeq ($(STATIC_GCC_LIBS),true)
