@@ -123,14 +123,14 @@ int MapCoords::getRelativeDirection(const MapCoords &c, const Map *map) const {
     if (map && map->border_behavior == Map::BORDER_WRAP) {
         MapCoords me = *this;            
         
-        if (abs(me.x - c.x) > abs(me.x + map->width - c.x))
+        if (abs(int(me.x - c.x)) > abs(int(me.x + map->width - c.x)))
             me.x += map->width;
-        else if (abs(me.x - c.x) > abs(me.x - map->width - c.x))
+        else if (abs(int(me.x - c.x)) > abs(int(me.x - map->width - c.x)))
             me.x -= map->width;
 
-        if (abs(me.y - c.y) > abs(me.y + map->width - c.y))
+        if (abs(int(me.y - c.y)) > abs(int(me.y + map->width - c.y)))
             me.y += map->height;
-        else if (abs(me.y - c.y) > abs(me.y - map->width - c.y))
+        else if (abs(int(me.y - c.y)) > abs(int(me.y - map->width - c.y)))
             me.y -= map->height;
 
         dx = me.x - c.x;

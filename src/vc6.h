@@ -9,6 +9,13 @@
 
 // VC8:
 #   pragma warning(disable:4996) // Disable "'stricmp' was declared deprecated" compiler warning
+
+#if _MSC_VER > 1600
+#define strcasecmp _stricmp
+#define strncasecmp _strnicmp
+#define snprintf _snprintf_s
+#endif
+
 #endif
 
 #endif

@@ -349,7 +349,7 @@ void Image::performTransparencyHack(unsigned int colorValue, unsigned int numFra
     		unsigned int y_finish = std::min(int(bottom), oy + span + 1);
         	for (y = y_start; y < y_finish; ++y) {
 
-        		int divisor = 1 + span * 2 - abs(ox - x) - abs(oy - y);
+        		int divisor = 1 + span * 2 - abs(int(ox - x)) - abs(int(oy - y));
 
                 unsigned int r, g, b, a;
                 getPixel(x, y, r, g, b, a);

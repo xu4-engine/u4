@@ -241,6 +241,7 @@ int screenRefreshThreadFunction(void *unused) {
 		SDL_Delay(frameDuration);
 		screenRedrawScreen();
 	}
+	return 0;
 }
 
 void screenRefreshThreadInit() {
