@@ -79,6 +79,9 @@ void U4PATH::initDefaultPaths() {
 	rootResourcePaths.push_back("./ultima4/");
 	rootResourcePaths.push_back("/usr/lib/u4/");
 	rootResourcePaths.push_back("/usr/local/lib/u4/");
+	rootResourcePaths.push_back("C:\\");
+	rootResourcePaths.push_back("C:\\DOS\\");
+	rootResourcePaths.push_back("C:\\GAMES\\");
 
 	//The second (specific) part of the path searched will be these various subdirectories
 
