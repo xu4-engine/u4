@@ -1,9 +1,7 @@
 cmake_minimum_required(VERSION 2.6)
-project(UXU4)
+project(xu4_-_Ultima_IV_Recreated)
 
 add_subdirectory (src) 
-
-include_directories (${UXU4_SOURCE_DIR}/src) 
 
 # REQUIRED does not work in CMake <=2.4.6 for SDL
 find_package (SDL REQUIRED)
@@ -19,3 +17,4 @@ endif (NOT SDL_FOUND)
 if (NOT SDLMIXER_FOUND)
    message (FATAL_ERROR "SDL_mixer not found!")
 endif (NOT SDLMIXER_FOUND)
+
