@@ -495,9 +495,11 @@ void screenDrawImage(const string &name, int x, int y) {
     }
     
     SubImage *subimage = imageMgr->getSubImage(name);
-    if (subimage) {
+    if (subimage) 
         info = imageMgr->get(subimage->srcImageName);
-    	info->image->alphaOn();
+    
+	if (info) {
+		info->image->alphaOn();
         
         if (info) {
             info->image->drawSubRect(x, y,

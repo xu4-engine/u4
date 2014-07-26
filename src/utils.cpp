@@ -20,7 +20,7 @@ void xu4_srandom() {
 #if (defined(BSD) && (BSD >= 199103)) || (defined (MACOSX) || defined (IOS)) 
     srandom(time(NULL));
 #else
-    srand(time(NULL));
+    srand((unsigned int)time(NULL));
 #endif
 }
 

@@ -10,8 +10,10 @@ extern "C" {
 #endif
 
 /* Microsoft VC port */
-#if defined(_MSC_VER)
-    #define VERSION "1.1svn"
+#if defined(_MSC_VER) 
+#ifndef VERSION
+	#define VERSION "1.1svn"
+#endif
 #endif
 
 /* info for loading city data from *.ult and *.tlk */

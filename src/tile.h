@@ -67,36 +67,36 @@ public:
     bool isLandForeground() const       {return foreground;}
     bool isWaterForeground() const      {return waterForeground;}
 
-    bool canWalkOn(Direction d) const   {return DIR_IN_MASK(d, rule->walkonDirs);}
-    bool canWalkOff(Direction d) const  {return DIR_IN_MASK(d, rule->walkoffDirs);}
+    int canWalkOn(Direction d) const   {return DIR_IN_MASK(d, rule->walkonDirs);}
+	int canWalkOff(Direction d) const  { return DIR_IN_MASK(d, rule->walkoffDirs); }
 
     /**
      * All tiles that you can walk, swim, or sail on, can be attacked over. All others must declare
      * themselves
      */
-    bool canAttackOver() const      {return isWalkable() || isSwimable() || isSailable() || (rule->mask & MASK_ATTACKOVER);}
-    bool canLandBalloon() const     {return rule->mask & MASK_CANLANDBALLOON;}
-    bool isLivingObject() const     {return rule->mask & MASK_LIVING_THING;}
-    bool isReplacement() const      {return rule->mask & MASK_REPLACEMENT;}
-    bool isWaterReplacement() const {return rule->mask & MASK_WATER_REPLACEMENT;}
+	int  canAttackOver() const      {return isWalkable() || isSwimable() || isSailable() || (rule->mask & MASK_ATTACKOVER); }
+	int  canLandBalloon() const     {return rule->mask & MASK_CANLANDBALLOON; }
+	int  isLivingObject() const     {return rule->mask & MASK_LIVING_THING; }
+	int  isReplacement() const      {return rule->mask & MASK_REPLACEMENT; }
+	int  isWaterReplacement() const {return rule->mask & MASK_WATER_REPLACEMENT; }
 
-    bool isWalkable() const         {return rule->walkonDirs > 0;}
+	int  isWalkable() const         {return rule->walkonDirs > 0; }
     bool isCreatureWalkable() const {return canWalkOn(DIR_ADVANCE) && !(rule->movementMask & MASK_CREATURE_UNWALKABLE);}
     bool isDungeonWalkable() const;
     bool isDungeonFloor() const;
-    bool isSwimable() const         {return rule->movementMask & MASK_SWIMABLE;}
-    bool isSailable() const         {return rule->movementMask & MASK_SAILABLE;}
+    int  isSwimable() const         {return rule->movementMask & MASK_SWIMABLE;}
+    int  isSailable() const         {return rule->movementMask & MASK_SAILABLE;}
     bool isWater() const            {return (isSwimable() || isSailable());}
-    bool isFlyable() const          {return !(rule->movementMask & MASK_UNFLYABLE);}
-    bool isDoor() const             {return rule->mask & MASK_DOOR;}
-    bool isLockedDoor() const       {return rule->mask & MASK_LOCKEDDOOR;}
-    bool isChest() const            {return rule->mask & MASK_CHEST;}
-    bool isShip() const             {return rule->mask & MASK_SHIP;}
+    int  isFlyable() const          {return !(rule->movementMask & MASK_UNFLYABLE);}
+    int  isDoor() const             {return rule->mask & MASK_DOOR;}
+    int  isLockedDoor() const       {return rule->mask & MASK_LOCKEDDOOR;}
+    int  isChest() const            {return rule->mask & MASK_CHEST;}
+    int  isShip() const             {return rule->mask & MASK_SHIP;}
     bool isPirateShip() const       {return name == "pirate_ship";}
-    bool isHorse() const            {return rule->mask & MASK_HORSE;}
-    bool isBalloon() const          {return rule->mask & MASK_BALLOON;}
-    bool canDispel() const          {return rule->mask & MASK_DISPEL;}
-    bool canTalkOver() const        {return rule->mask & MASK_TALKOVER;}
+    int  isHorse() const            {return rule->mask & MASK_HORSE;}
+    int  isBalloon() const          {return rule->mask & MASK_BALLOON;}
+    int  canDispel() const          {return rule->mask & MASK_DISPEL;}
+    int  canTalkOver() const        {return rule->mask & MASK_TALKOVER;}
     TileSpeed getSpeed() const      {return rule->speed;}
     TileEffect getEffect() const    {return rule->effect;}
 
@@ -106,8 +106,8 @@ public:
     int frameForDirection(Direction d) const;
 
     static void resetNextId()                       {nextId = 0;}
-    static bool canTalkOverTile(const Tile *tile)   {return tile->canTalkOver();}
-    static bool canAttackOverTile(const Tile *tile) {return tile->canAttackOver();}
+    static bool canTalkOverTile(const Tile *tile)   {return tile->canTalkOver() != 0;}
+    static bool canAttackOverTile(const Tile *tile) {return tile->canAttackOver() != 0;}
     void deleteImage();
 
 private:

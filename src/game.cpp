@@ -72,7 +72,7 @@ void gameAdvanceLevel(PartyMember *player);
 void gameInnHandler(void);
 void gameLostEighth(Virtue virtue);
 void gamePartyStarving(void);
-long gameTimeSinceLastCommand(void);
+time_t gameTimeSinceLastCommand(void);
 int gameSave(void);
 
 /* spell functions */
@@ -3207,7 +3207,7 @@ void gameFixupObjects(Map *map) {
     }    
 }
 
-long gameTimeSinceLastCommand() {
+time_t gameTimeSinceLastCommand() {
     return time(NULL) - c->lastCommandTime;
 }
 

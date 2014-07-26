@@ -51,7 +51,7 @@ public:
     int horseSpeed;
     int opacity;
     TransportContext transportContext;
-    long lastCommandTime;
+    time_t lastCommandTime;
     class Object *lastShip;
 
     /**
