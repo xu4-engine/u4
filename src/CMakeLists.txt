@@ -61,7 +61,7 @@ ENDIF(WIN32)
 FOREACH(DIR ${DIRECTORIES_TO_COPY_TO_RUNTIME})
 	add_custom_command(TARGET Copy_xu4_required_files_to_runtime 
 		COMMAND ${CMAKE_COMMAND} -E
-		copy_directory "${CMAKE_SOURCE_DIR}/${DIR}" "$<TARGET_FILE_DIR:xu4>/${DIR}"
+		copy_directory "${CMAKE_SOURCE_DIR}/${DIR}" "$<TARGET_FILE_DIR:xu4>/../${DIR}"
 	)
 ENDFOREACH()
 
