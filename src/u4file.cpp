@@ -653,9 +653,7 @@ string u4find_path(const string &fname, std::list<string> specificSubPaths) {
             snprintf(path, sizeof(path), "%s/%s/%s", rootItr->c_str(), subItr->c_str(), fname.c_str());
 
 			if (verbose) {
-				char fullpath[2048];
-				_fullpath(fullpath, path, 2048);
-				printf("trying to open %s\n", fullpath);
+				printf("trying to open %s\n", path);
 			}
             if ((f = fopen(path, "rb")) != NULL)
                 break;
