@@ -75,46 +75,47 @@ void U4PATH::initDefaultPaths() {
 	//The first part of the path searched will be one of these root directories
 
 	/*Try to cover all root possibilities. These can be added to by separate modules*/
-	rootResourcePaths.push_back("./");
-	rootResourcePaths.push_back("./ultima4/");
-	rootResourcePaths.push_back("/usr/lib/u4/");
-	rootResourcePaths.push_back("/usr/local/lib/u4/");
-	rootResourcePaths.push_back("C:\\");
-	rootResourcePaths.push_back("C:\\DOS\\");
-	rootResourcePaths.push_back("C:\\GAMES\\");
+	rootResourcePaths.push_back("");
+	rootResourcePaths.push_back(".");
+	rootResourcePaths.push_back("./ultima4");
+	rootResourcePaths.push_back("/usr/lib/u4");
+	rootResourcePaths.push_back("/usr/local/lib/u4");
+	rootResourcePaths.push_back("C:");
+	rootResourcePaths.push_back("C:/DOS");
+	rootResourcePaths.push_back("C:/GAMES");
 
 	//The second (specific) part of the path searched will be these various subdirectories
 
 	/* the possible paths where u4 for DOS can be installed */
-	u4ForDOSPaths.push_back("");
-	u4ForDOSPaths.push_back("u4/");
-	u4ForDOSPaths.push_back("ultima4/");
+	u4ForDOSPaths.push_back(".");
+	u4ForDOSPaths.push_back("u4");
+	u4ForDOSPaths.push_back("ultima4");
 
 	/* the possible paths where the u4 zipfiles can be installed */
-	u4ZipPaths.push_back("");
-	u4ZipPaths.push_back("u4/");
+	u4ZipPaths.push_back(".");
+	u4ZipPaths.push_back("u4");
 
 	/* the possible paths where the u4 music files can be installed */
-	musicPaths.push_back("");
-	musicPaths.push_back("mid/");
-	musicPaths.push_back("../mid/");
-	musicPaths.push_back("music/");
-	musicPaths.push_back("../music/");
+	musicPaths.push_back(".");
+	musicPaths.push_back("mid");
+	musicPaths.push_back("../mid");
+	musicPaths.push_back("music");
+	musicPaths.push_back("../music");
 
 	/* the possible paths where the u4 sound files can be installed */
-    soundPaths.push_back("");
-    soundPaths.push_back("./sound/");
-    soundPaths.push_back("../sound/");
+    soundPaths.push_back(".");
+    soundPaths.push_back("./sound");
+    soundPaths.push_back("../sound");
 
     /* the possible paths where the u4 config files can be installed */
-    configPaths.push_back("");
-    configPaths.push_back("conf/");
-    configPaths.push_back("../conf/");
+    configPaths.push_back(".");
+    configPaths.push_back("conf");
+    configPaths.push_back("../conf");
 
     /* the possible paths where the u4 graphics files can be installed */
-    graphicsPaths.push_back("");
-    graphicsPaths.push_back("./graphics/");
-    graphicsPaths.push_back("../graphics/");
+    graphicsPaths.push_back(".");
+	graphicsPaths.push_back("graphics");
+	graphicsPaths.push_back("../graphics");
 }
 
 /**
@@ -651,9 +652,11 @@ string u4find_path(const string &fname, std::list<string> specificSubPaths) {
 
             snprintf(path, sizeof(path), "%s/%s/%s", rootItr->c_str(), subItr->c_str(), fname.c_str());
 
-            if (verbose)
-                printf("trying to open %s\n", path);
-
+			if (verbose) {
+				char fullpath[2048];
+				_fullpath(fullpath, path, 2048);
+				printf("trying to open %s\n", fullpath);
+			}
             if ((f = fopen(path, "rb")) != NULL)
                 break;
     	}
