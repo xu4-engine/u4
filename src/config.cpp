@@ -84,8 +84,9 @@ Config::Config() {
         cvp.userData = &errorMessage;
         cvp.error = &accumError;
 
+        // Error changed to not fatal due to regression in libxml2
         if (!xmlValidateDocument(&cvp, doc))
-            errorFatal("xml parse error:\n%s", errorMessage.c_str());        
+            errorWarning("xml validation error:\n%s", errorMessage.c_str());
     }
 }
 
