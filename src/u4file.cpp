@@ -3,6 +3,7 @@
  */
 
 #include <cctype>
+#include <cstring>
 #include <cstdlib>
 
 #include "u4file.h"
@@ -641,23 +642,44 @@ vector<string> u4read_stringtable(U4FILE *f, long offset, int nstrings) {
 string u4find_path(const string &fname, std::list<string> specificSubPaths) {
     FILE *f = NULL;
 
-    char path[2048]; //Sometimes paths get big.
+    // Try absolute first
+    char path[2048]; // Sometimes paths get big.
 
-    for (std::list<string>::iterator rootItr = u4Path.rootResourcePaths.begin();
-    		rootItr!=u4Path.rootResourcePaths.end() && !f;
-    		++rootItr) {
-    	for (std::list<string>::iterator subItr = specificSubPaths.begin();
-    			subItr!=specificSubPaths.end() && !f;
-    			++subItr) {
+    f = fopen(fname.c_str(), "rb");
+    if (f)
+        strcpy(path, fname.c_str());
 
-            snprintf(path, sizeof(path), "%s/%s/%s", rootItr->c_str(), subItr->c_str(), fname.c_str());
+    // Try 'file://' protocol if specified
+    if (f == NULL) {
+        const string file_url_prefix("file://");
 
-			if (verbose) {
-				printf("trying to open %s\n", path);
-			}
-            if ((f = fopen(path, "rb")) != NULL)
-                break;
-    	}
+        if (fname.compare(0, file_url_prefix.length(), file_url_prefix) == 0) {
+            strcpy(path, fname.substr(file_url_prefix.length()).c_str());
+            if (verbose) {
+                printf("trying to open %s\n", path);
+            }
+            f = fopen(path, "rb");
+        }
+    }
+
+    // Try paths
+    if (f == NULL) {
+        for (std::list<string>::iterator rootItr = u4Path.rootResourcePaths.begin();
+                rootItr!=u4Path.rootResourcePaths.end() && !f;
+                ++rootItr) {
+            for (std::list<string>::iterator subItr = specificSubPaths.begin();
+                    subItr!=specificSubPaths.end() && !f;
+                    ++subItr) {
+
+                snprintf(path, sizeof(path), "%s/%s/%s", rootItr->c_str(), subItr->c_str(), fname.c_str());
+
+                if (verbose) {
+                    printf("trying to open %s\n", path);
+                }
+                if ((f = fopen(path, "rb")) != NULL)
+                    break;
+            }
+        }
     }
 #if defined(IOS)
     if (f == NULL) {
