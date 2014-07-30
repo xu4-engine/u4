@@ -937,6 +937,7 @@ void IntroController::journeyOnward() {
         if (saveGame->members > 0)
             validSave = true;
         delete saveGame;
+        fclose(saveGameFile);
     }
     
     if (!validSave) {
@@ -946,7 +947,6 @@ void IntroController::journeyOnward() {
         return;
     }
 
-    fclose(saveGameFile);
     EventHandler::setControllerDone();
 }
 
