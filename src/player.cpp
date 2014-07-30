@@ -1247,6 +1247,7 @@ void Party::swapPlayers(int p1, int p2) {
     saveGame->players[p1] = c->saveGame->players[p2];
     c->saveGame->players[p2] = tmp;
 
+    syncMembers();
 
     if (p1 == activePlayer)
         activePlayer = p2;
