@@ -1007,40 +1007,17 @@ Creature *CreatureMgr::randomForTile(const Tile *tile) {
     randTile += era & xu4_random(0x10) & xu4_random(0x10);
     return getByTile(randTile);
 }
-#if 0
-/**
- * Creates a random creature based on the dungeon level given
- */ 
-Creature *CreatureMgr::randomForDungeon(int dngLevel) {
-    static std::vector<CreatureId> id_list;
-    if (id_list.size() == 0) {
-        id_list.push_back(RAT_ID);
-        id_list.push_back(BAT_ID);
-        id_list.push_back(GIANT_SPIDER_ID);
-        id_list.push_back(GHOST_ID);
-        id_list.push_back(SLIME_ID);
-        id_list.push_back(TROLL_ID);
-        id_list.push_back(GREMLIN_ID);
-        id_list.push_back(REAPER_ID);
-        id_list.push_back(INSECT_SWARM_ID);
-        id_list.push_back(GAZER_ID);
-        id_list.push_back(PHANTOM_ID);
-        id_list.push_back(ORC_ID);
-        id_list.push_back(SKELETON_ID);
-        id_list.push_back(ROGUE_ID);
-    }
-    
-    /* FIXME: how does u4dos do it? */
-    return getById(id_list[xu4_random(id_list.size())]);
-}
-#endif
+
+
 /**
  * Creates a random creature based on the dungeon level given
  */
 Creature *CreatureMgr::randomForDungeon(int dngLevel) {
-	size_t range = dngLevel < 5 ? 3 : 4;
-	CreatureId monster = STORM_ID + dngLevel + xu4_random(range);
-
+    // Based on u4dos observations, see:
+    //  https://sourceforge.net/p/xu4/patches/37/
+    int adjustedDngLevel = dngLevel + 1;
+    size_t range = adjustedDngLevel < 5 ? 3 : 4;
+    CreatureId monster = STORM_ID + adjustedDngLevel + xu4_random(range);
 	if(monster >= MIMIC_ID)
 		++monster;
 
