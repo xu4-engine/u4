@@ -70,7 +70,9 @@ int main(int argc, char *argv[]) {
      * they need to be identified before the settings are initialized.
      */
     for (i = 1; i < (unsigned int)argc; i++) {
-        if (((strcmp(argv[i], "-p") == 0) || (strcmp(argv[i], "-profile") == 0))
+        if (((strcmp(argv[i], "-p") == 0)
+          || (strcmp(argv[i], "-profile") == 0)
+          || (strcmp(argv[i], "--profile") == 0))
                 && (unsigned int)argc > i + 1) {
             // when grabbing the profile name:
             // 1. trim leading whitespace
@@ -95,30 +97,95 @@ int main(int argc, char *argv[]) {
 
     /* update the settings based upon command-line arguments */
     for (i = 1; i < (unsigned int)argc; i++) {
-        if (strcmp(argv[i], "-filter") == 0 && (unsigned int)argc > i + 1) {
-            settings.filter = argv[i+1];
-            i++;
+        if (strcmp(argv[i], "-filter") == 0
+          || strcmp(argv[i], "--filter") == 0)
+        {
+            if ((unsigned int)argc > i + 1)
+            {
+                settings.filter = argv[i+1];
+                i++;
+            }
+            else
+                errorFatal("%s is invalid alone: Requires a string for input. See --help for more detail.\n", argv[i]);
+
         }
-        else if (strcmp(argv[i], "-scale") == 0 && (unsigned int)argc > i + 1) {
-            settings.scale = strtoul(argv[i+1], NULL, 0);
-            i++;
+        else if (strcmp(argv[i], "-s") == 0
+               || strcmp(argv[i], "-scale") == 0
+               || strcmp(argv[i], "--scale") == 0)
+        {
+            if ((unsigned int)argc > i + 1)
+            {
+                settings.scale = strtoul(argv[i+1], NULL, 0);
+                i++;
+            }
+            else
+                errorFatal("%s is invalid alone: Requires a number for input. See --help for more detail.\n", argv[i]);
+
+
         }
-        else if (((strcmp(argv[i], "-p") == 0)
-                    || (strcmp(argv[i], "-profile") == 0))
-                && (unsigned int)argc > i + 1) {
+        else if ( strcmp(argv[i], "-p") == 0
+                || strcmp(argv[i], "-profile") == 0
+                || strcmp(argv[i], "--profile") == 0)
+        {
             // do nothing
-            i++;
+            if ((unsigned int)argc > i + 1)
+                i++;
+            else
+                errorFatal("%s is invalid alone: Requires a string as input. See --help for more detail.\n", argv[i]);
+
         }
-        else if (strcmp(argv[i], "-i") == 0 || strcmp(argv[i], "-skipintro") == 0)
-            skipIntro = 1;
-        else if (strcmp(argv[i], "-v") == 0 || strcmp(argv[i], "-verbose") == 0)
+        else if (strcmp(argv[i], "-i") == 0
+              || strcmp(argv[i], "-skipintro") == 0
+              || strcmp(argv[i], "--skip-intro") == 0)
+        {
+                skipIntro = 1;
+        }
+        else if (strcmp(argv[i], "-v") == 0
+              || strcmp(argv[i], "-verbose") == 0
+              || strcmp(argv[i], "--verbose") == 0)
+        {
             verbose = true;
-        else if (strcmp(argv[i], "-f") == 0 || strcmp(argv[i], "-fullscreen") == 0)
+        }
+        else if (strcmp(argv[i], "-f") == 0
+              || strcmp(argv[i], "-fullscreen") == 0
+              || strcmp(argv[i], "--fullscreen") == 0)
+        {
             settings.fullscreen = 1;
-        else if (strcmp(argv[i], "-q") == 0 || strcmp(argv[i], "-quiet") == 0) {
+        }
+        else if (strcmp(argv[i], "-q") == 0
+              || strcmp(argv[i], "-quiet") == 0
+              || strcmp(argv[i], "--quiet") == 0)
+        {
             settings.musicVol = 0;
             settings.soundVol = 0;
         }
+        else if (strcmp(argv[i], "-h") == 0
+              || strcmp(argv[i], "-help") == 0
+              || strcmp(argv[i], "--help") == 0)
+        {
+            printf("xu4: Ultima IV Recreated\n");
+            printf("v%s\n\n", VERSION);
+
+            printf("-v, --verbose		Runs xu4 in verbose mode. Increased console output.\n");
+            printf("-q, --quiet		Sets all audio volume to zero.\n");
+            printf("-f, --fullscreen	Runs xu4 in fullscreen mode.\n");
+            printf("-i, --skip-intro	Skips the intro and loads the last savegame.\n");
+
+            printf("\n-s <int>,\n");
+            printf("--scale <int>		Used to specify scaling options.\n");
+            printf("-p <string>,\n");
+            printf("--profile <string>	Used to pass extra arguements to the program.\n");
+            printf("--filter <string>	Used to specify filtering options.\n");
+
+            printf("\n-h, --help		Prints this message.\n");
+
+            printf("\nHomepage: http://xu4.sourceforge.com\n");
+
+            return 0;
+        }
+        else
+            errorFatal("Unrecognized argument: %s\n\nUse --help for a list of supported arguments.", argv[i]);
+
     }
 
     xu4_srandom();
