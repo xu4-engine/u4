@@ -1630,6 +1630,7 @@ bool ZtatsController::keyPressed(int key) {
     case U4_ESC:
     case U4_SPACE:
     case U4_ENTER:
+        c->stats->setView(StatsView(STATS_PARTY_OVERVIEW));
         doneWaiting();
         return true;
     default:
