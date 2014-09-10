@@ -221,8 +221,8 @@ TileId Location::getReplacementTile(MapCoords atCoords, const Tile * forTile) {
 		/* loop_count is an ugly hack to temporarily fix infinite loop */
 	} while (++loop_count < 128 && searchQueue.size() > 0 && searchQueue.size() < 64);
 
-    /* couldn't find a tile, give it the sad default */
-    return map->tileset->getByName("grass")->getId();
+    /* couldn't find a tile, give it the classic default */
+    return map->tileset->getByName("brick_floor")->getId();
 }
 
 /**
