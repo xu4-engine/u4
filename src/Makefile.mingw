@@ -55,7 +55,9 @@ install: u4.exe
 	cp ../graphics/png/*.png $(U4PATH)/graphics/png/
 	cp ../graphics/vga/*.png $(U4PATH)/graphics/vga/
 	cp ../graphics/vga2/*.png $(U4PATH)/graphics/vga2/
-	cp ../mid/* $(U4PATH)/mid
+	cp ../mid/*.it $(U4PATH)/mid
+	cp ../mid/*.mid $(U4PATH)/mid
+	cp ../mid/*.mp3 $(U4PATH)/mid
 	cp ../sound/*.ogg $(U4PATH)/sound
 	
 	cp SDL/lib/SDL.dll $(U4PATH)
