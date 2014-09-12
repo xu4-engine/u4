@@ -1,19 +1,63 @@
 To make xu4 modular, it must be possible to add new tiles,
 and have visual representations of tiles be decoupled from tile rules.
 
-- Explicitly map ULTIMA4 tileset indices to tile types
-  Remove requirement that tilemap-base.xml needs to specify 'frames'
-  in order to have tiles obtain the correct index.
+- Explicitly map ULTIMA4 tileset indices to tile types.
 
-- Remove visualization details from tile properties
+- Currently tilemap-base.xml maps tile indices to tile names. 
+	- A facility translates between these indices and names.
+	- U4 uses tile indices for:
+		Monster table (Save game)
+		NPC types in townes
+		Towne maps
+		Overworld map
+	- xu4 uses tile names for:
+		xml files:
+			- graphics
+			- tileset-base:
+				maps tile name to tile rule, specifies visuals
+			- creatures
+			- (more)
 
-- tileset-base.xml
-	- Remove attributes:
-		- 'animation'
-		- 'frames'
-		- 'usesReplacementTileAsBackground'
-		- 'usesWaterReplacementTileAsBackground'
+- GOAL Change tilemap-base
+	Instead of 'base', call it 'ULTIMA4'
+	Instead of 'tilemap', call it 'indexmap'
+	The purpose of this file will be to associate indices in 'ULTIMA4' 
+	dataset files to xu4 objects.
 	
+	1) Remove 'tile' attribute
+	2) Add 'basetile' attribute to indicate a basetile name
+			ie: terrain type
+			eg: sea, water, shallows, swamp, etc.
+	3) Add 'creature' attribute to indicate a creature name
+			eg: mage, bard, lord_british, ettin
+	4) Add 'object' attribute to indiate an object name
+			eg: chest, door, bridge
+	5) Add 'object_basetiles' attribute to indicate which 
+		basetiles (comma-separated) should appear below an object.
+		Default is 'brick_floor'.
+		When multiple options are specified, the nearest match
+		will be chosen.
+		During map creation, a basetile is placed and the object
+		is placed on top. If the object has tranparency, the
+		basetile will show underneath. If the object is taken
+		or opened, the basetile will also be visible.
+		Note that this inference need only take place for ULTIMA4
+		maps -- custom maps may use a unique format which may
+		represent basetiles and objects differently.
+					
+- tileset-base.xml
+	- Purpose is to map tile names to tile rules.
+	- Animation and graphics details were bolted on 
+	Goal:
+	1)	Remove animation-based attributes:
+		- 'animation' (move to graphics)
+		- 'frames' (move to graphics)
+		- 'usesReplacementTileAsBackground' (destroy!)
+		- 'usesWaterReplacementTileAsBackground' (destroy!)
+		- 'directions' (move to tile rules?)
+	
+-----------
+In flux	
 	- Change attributes:
 		Flags
 		- 'sailable'
@@ -21,7 +65,10 @@ and have visual representations of tiles be decoupled from tile rules.
 		- 'walkable'
 		
 		- 'rule' (work with tilerules.xml!)
+			- obstacle
+				any decorative tile that cannot be traversed
 			- water
+				sea, water
 			- shallows
 			- swamp
 			- grass
@@ -42,8 +89,13 @@ and have visual representations of tiles be decoupled from tile rules.
 
 U4 Map Tile Categories
 ======================
+Base tiles:
+	Basic tiles i.e., terrain, floors, etc.
+
+Object tiles:
+	Tiles which must infer a base tile and place an object on top.
 			
-Terrain
+Terrain base tiles (outdoors)
 	- sea
 	- water
 	- shallows
@@ -54,25 +106,29 @@ Terrain
 	- hills
 	- mountains
 	- lava
-	- volcano summit (also, Abyss)
+	- volcano
 
-Locations (can be entered)
+Land objects (outdoors)
 	- dungeon 
-		- attach to mountain
-		- can be walked onto
-	- towne, castle, village, shrine
-		- flat grass terrain
-		- can be walked onto
+		- attached to mountain
+		- fully walkable
+	- towne, castle, village, ruin, shrine
+		- flat grass terrain with overlay
+		- fully walkable
 	- capital (LB castle, takes up 3 tiles)
-		- flat grass terrain
-		- center of capital can be walked onto northwardly
-		- other capital tiles are unwalkable
-
-Structures
-	- landbridge
-	- statue (e.g., ankh)
-	- circle of stones (inferred by moongate destinations)
-
+		- flat grass terrain with overlay
+		- left and right sections are not walkable
+		- center is only north-enterable and south-exitable
+	- left-right bridge of n length joins two walkable tiles
+		- shallow water terrain with overlay
+		- walkable on top (west, east)
+		- swimmable underneath (north, south)
+	- Special object
+		- (e.g., ankh)
+	
+Additional base tiles (indoors)	
+	
+	
 Restricted to indoors & battle:
 -------------------------------
 
