@@ -1,4 +1,97 @@
-add_executable (xu4 annotation.cpp armor.cpp aura.cpp camp.cpp cheat.cpp city.cpp codex.cpp
+
+set(XU4_INC
+	annotation.h
+	area.h
+	armor.h
+	aura.h
+	camp.h
+	cheat.h
+	city.h
+	codex.h
+	combat.h
+	config.h
+	context.h
+	controller.h
+	conversation.h
+	coords.h
+	creature.h
+	cursors.h
+	death.h
+	debug.h
+	dialogueloader.h
+	dialogueloader_hw.h
+	dialogueloader_lb.h
+	dialogueloader_tlk.h
+	direction.h
+	dungeon.h
+	dungeonview.h
+	error.h
+	event.h
+	filesystem.h
+	game.h
+	image.h
+	imageloader.h
+	imageloader_fmtowns.h
+	imageloader_png.h
+	imageloader_u4.h
+	imageloader_u5.h
+	imagemgr.h
+	imageview.h
+	intro.h
+	io.h
+	item.h
+	location.h
+	map.h
+	maploader.h
+	mapmgr.h
+	menu.h
+	menuitem.h
+	moongate.h
+	movement.h
+	music.h
+	music_sdl.h
+	names.h
+	object.h
+	observable.h
+	observer.h
+	person.h
+	player.h
+	portal.h
+	progress_bar.h
+	rle.h
+	savegame.h
+	scale.h
+	screen.h
+	script.h
+	settings.h
+	shrine.h
+	sound.h
+	sound_p.h
+	sound_sdl.h
+	spell.h
+	stats.h
+	textcolor.h
+	textview.h
+	tile.h
+	tileanim.h
+	tilemap.h
+	tileset.h
+	tileview.h
+	types.h
+	u4.h
+	u4file.h
+	u4_pch.h
+	u4_sdl.h
+	unzip.h
+	utils.h
+	vc6.h
+	view.h
+	weapon.h
+	xml.h
+)
+
+set(XU4_SRC
+	annotation.cpp armor.cpp aura.cpp camp.cpp cheat.cpp city.cpp codex.cpp
 	combat.cpp config.cpp controller.cpp context.cpp conversation.cpp creature.cpp death.cpp
 	debug.cpp dialogueloader.cpp dialogueloader_hw.cpp dialogueloader_lb.cpp dialogueloader_tlk.cpp
 	direction.cpp dungeon.cpp dungeonview.cpp error.cpp event.cpp event_sdl.cpp filesystem.cpp
@@ -10,8 +103,11 @@ add_executable (xu4 annotation.cpp armor.cpp aura.cpp camp.cpp cheat.cpp city.cp
 	sound.cpp sound_sdl.cpp spell.cpp stats.cpp textview.cpp tileanim.cpp tile.cpp tilemap.cpp
 	tileset.cpp tileview.cpp u4.cpp u4file.cpp u4_sdl.cpp utils.cpp unzip.c view.cpp weapon.cpp
 	xml.cpp lzw/hash.c lzw/lzw.c lzw/u6decode.cpp lzw/u4decode.cpp
-	#   WIN32 # Only if you don't want the DOS prompt to appear in the background in Windows
-   #MACOSX_BUNDLE
+)
+
+add_executable (xu4 
+	${XU4_SRC}
+	${XU4_INC}
 )
 
 set(xu4_required_libraries
