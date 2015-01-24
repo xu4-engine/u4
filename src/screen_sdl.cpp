@@ -63,7 +63,7 @@ void screenInit_sys() {
     SDL_WM_SetIcon(SDL_LoadBMP(ICON_FILE), NULL);
 #endif   
 
-    if (!SDL_SetVideoMode(320 * settings.scale, 200 * settings.scale, 16, SDL_SWSURFACE | SDL_ANYFORMAT | (settings.fullscreen ? SDL_FULLSCREEN : 0)))
+    if (!SDL_SetVideoMode(320 * settings.scale, 200 * settings.scale, 0, SDL_HWSURFACE | SDL_ANYFORMAT | (settings.fullscreen ? SDL_FULLSCREEN : 0)))
         errorFatal("unable to set video: %s", SDL_GetError());
 
     if (verbose) {
