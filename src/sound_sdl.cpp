@@ -18,7 +18,6 @@
 #include "music.h"
 #include "settings.h"
 #include "u4file.h"
-#include "music_sdl.h"
 
 
 bool SoundManager::load_sys(Sound sound, const string &pathname) {
