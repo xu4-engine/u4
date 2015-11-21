@@ -187,6 +187,17 @@ set(XU4_SDL2
 	u4_sdl2.cpp
 )
 
+
+include_directories (
+	# ${UXU4_SOURCE_DIR}/src
+	${SDL_INCLUDE_DIR}
+	${SDLMIXER_INCLUDE_DIR}
+	${SDL_MIXER_INCLUDE_DIR} #Latest verified CMake 3.0
+	${LIBXML2_INCLUDE_DIR}
+	${PNG_INCLUDE_DIR}
+	${PNG_PNG_INCLUDE_DIR}
+	${ZLIB_INCLUDE_DIR}
+)
 add_executable (xu4 
 	${XU4_SRC}
 	${XU4_INC}
@@ -208,16 +219,6 @@ target_link_libraries (
 	${xu4_required_libraries}
 )
 
-include_directories (
-	# ${UXU4_SOURCE_DIR}/src
-	${SDL_INCLUDE_DIR}
-	${SDLMIXER_INCLUDE_DIR}
-	${SDL_MIXER_INCLUDE_DIR} #Latest verified CMake 3.0
-	${LIBXML2_INCLUDE_DIR}
-	${PNG_INCLUDE_DIR}
-	${PNG_PNG_INCLUDE_DIR}
-	${ZLIB_INCLUDE_DIR}
-)
 add_definitions(-DVERSION="svn1.1.1.1")
 
 # Copy_xu4_required_files_to_runtime 
