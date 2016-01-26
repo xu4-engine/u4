@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.6)
-project(xu4_-_Ultima_IV_Recreated)
+project(xu4)
 
 add_subdirectory (src) 
 
@@ -8,6 +8,7 @@ find_package (SDL REQUIRED)
 find_package (SDL_mixer REQUIRED)
 find_package (LibXml2 REQUIRED)
 find_package (PNG REQUIRED)
+find_package (zlib REQUIRED)
 
 # Workaround for the non-working REQUIRED flag
 if (NOT SDL_FOUND)

@@ -6,6 +6,7 @@
 
 #include <cctype>
 #include <cstring>
+#include <stdint.h>
 
 #include "settings.h"
 
@@ -40,7 +41,7 @@ Settings *Settings::instance = NULL;
 #endif
 
 bool SettingsData::operator==(const SettingsData &s) const {    
-    long offset = (long)&end_of_bitwise_comparators - (long)this;
+    intptr_t offset = (intptr_t)&end_of_bitwise_comparators - (intptr_t)this;
     if (memcmp(this, &s, offset) != 0)
         return false;
 

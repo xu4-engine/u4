@@ -198,7 +198,7 @@ include_directories (
 	${PNG_PNG_INCLUDE_DIR}
 	${ZLIB_INCLUDE_DIR}
 )
-add_executable (xu4 
+add_executable (u4 
 	${XU4_SRC}
 	${XU4_INC}
 	${XU4_SDL}
@@ -211,11 +211,12 @@ set(xu4_required_libraries
 	${LIBXML2_LIBRARIES}
 	${PNG_LIBRARY}
 	${PNG_LIBRARY_RELEASE} #Latest verified CMake 3.0
-	${ZLIB_LIBRARY}
+	${ZLIB_LIBRARY_RELEASE}
 )
 
+
 target_link_libraries (
-	xu4
+	u4
 	${xu4_required_libraries}
 )
 
@@ -227,21 +228,27 @@ add_definitions(-DVERSION="svn1.1.1.1")
 #	This is completely optional and is included because
 #	it makes IDE-based debugging and testing easier.
 SET(DIRECTORIES_TO_COPY_TO_RUNTIME conf mid sound graphics) 	
-add_custom_target(Copy_xu4_required_files_to_runtime)
+add_custom_target(copy_files)
 IF(WIN32)
 	FOREACH(LIB ${xu4_required_libraries})
 		FILE(GLOB DLLS ${LIB}/../*.dll)
 		FOREACH(DLL ${DLLS})
-			add_custom_command(TARGET Copy_xu4_required_files_to_runtime
+			add_custom_command(TARGET copy_files
 				COMMAND ${CMAKE_COMMAND} -E
-				copy "${DLL}" "$<TARGET_FILE_DIR:xu4>")
+				copy "${DLL}" "$<TARGET_FILE_DIR:u4>")
 		ENDFOREACH()
 	ENDFOREACH()
 ENDIF(WIN32)
 FOREACH(DIR ${DIRECTORIES_TO_COPY_TO_RUNTIME})
-	add_custom_command(TARGET Copy_xu4_required_files_to_runtime 
+	add_custom_command(TARGET copy_files 
 		COMMAND ${CMAKE_COMMAND} -E
-		copy_directory "${CMAKE_SOURCE_DIR}/${DIR}" "$<TARGET_FILE_DIR:xu4>/../${DIR}"
+		copy_directory "${CMAKE_SOURCE_DIR}/${DIR}" "$<TARGET_FILE_DIR:u4>/../${DIR}"
 	)
 ENDFOREACH()
+
+file(DOWNLOAD
+http://www.thatfleminggent.com/ultima/ultima4.zip
+${CMAKE_CURRENT_BINARY_DIR}/ultima4.zip
+)
+
 
