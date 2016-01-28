@@ -251,4 +251,7 @@ http://www.thatfleminggent.com/ultima/ultima4.zip
 ${CMAKE_CURRENT_BINARY_DIR}/ultima4.zip
 )
 
-
+file(DOWNLOAD
+http://sourceforge.net/projects/xu4/files/Ultima%204%20VGA%20Upgrade/1.3/u4upgrad.zip
+${CMAKE_CURRENT_BINARY_DIR}/u4upgrad.zip
+)
