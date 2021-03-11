@@ -60,6 +60,12 @@ private:
 
 extern bool verbose;
 
+enum UpgradeFlags {
+    UPG_PRESENT = 1,
+    UPG_INST    = 2
+};
+static int upgradeFlags = 0;
+
 U4PATH * U4PATH::instance = NULL;
 U4PATH * U4PATH::getInstance() {
 	if (!instance) {
@@ -117,19 +123,32 @@ void U4PATH::initDefaultPaths() {
     graphicsPaths.push_back(".");
 	graphicsPaths.push_back("graphics");
 	graphicsPaths.push_back("../graphics");
+
+
+    // Check if upgrade is present & installed.
+
+    U4FILE* uf;
+    upgradeFlags = 0;
+    if ((uf = u4fopen("u4vga.pal"))) {
+        upgradeFlags |= UPG_PRESENT;
+        u4fclose(uf);
+    }
+    /* See if (ega.drv > 5k).  If so, the upgrade is installed */
+    /* FIXME: Is there a better way to determine this? */
+    if ((uf = u4fopen("ega.drv"))) {
+        if (uf->length() > (5 * 1024))
+            upgradeFlags |= UPG_INST;
+        u4fclose(uf);
+    }
+    if (verbose)
+        printf("u4isUpgradeInstalled %d\n", (upgradeFlags & UPG_INST) ? 1 : 0);
 }
 
 /**
  * Returns true if the upgrade is present.
  */
 bool u4isUpgradeAvailable() {
-    bool avail = false;
-    U4FILE *pal;
-    if ((pal = u4fopen("u4vga.pal")) != NULL) {
-        avail = true;
-        u4fclose(pal);
-    }
-    return avail;
+    return upgradeFlags & UPG_PRESENT;
 }
 
 /**
@@ -137,26 +156,7 @@ bool u4isUpgradeAvailable() {
  * (switch.bat or setup.bat has been run)
  */
 bool u4isUpgradeInstalled() {
-    U4FILE *u4f = NULL;
-    long int filelength;
-    bool result = false;
-
-    /* FIXME: Is there a better way to determine this? */
-    u4f = u4fopen("ega.drv");
-    if (u4f) {
-
-        filelength = u4f->length();
-        u4fclose(u4f);
-
-        /* see if (ega.drv > 5k).  If so, the upgrade is installed */
-        if (filelength > (5 * 1024))
-            result = true;
-    }
-
-    if (verbose)
-        printf("u4isUpgradeInstalled %d\n", (int) result);
-
-    return result;
+    return upgradeFlags & UPG_INST;
 }
 
 /**
