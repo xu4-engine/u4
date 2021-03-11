@@ -102,8 +102,8 @@ public:
  */
 class ImageMgr : Observer<Settings *> {
 public:
-    static ImageMgr *getInstance();
-    static void destroy();
+    ImageMgr();
+    ~ImageMgr();
 
     ImageInfo *get(const std::string &name, bool returnUnscaled=false);
     SubImage *getSubImage(const std::string &name);
@@ -112,11 +112,7 @@ public:
     U4FILE * getImageFile(ImageInfo *info);
     bool imageExists(ImageInfo * info);
 
-
-
 private:
-    ImageMgr();
-    ~ImageMgr();
     void init();
 
     ImageSet *loadImageSetFromConf(const ConfigElement &conf);
@@ -137,7 +133,6 @@ private:
 
     void update(Settings *newSettings);
 
-    static ImageMgr *instance;
     std::map<std::string, ImageSet *> imageSets;
     std::vector<std::string> imageSetNames;
     ImageSet *baseSet;
@@ -145,6 +140,6 @@ private:
     Debug *logger;
 };
 
-#define imageMgr (ImageMgr::getInstance())
+extern ImageMgr* imageMgr;
 
 #endif /* IMAGEMGR_H */

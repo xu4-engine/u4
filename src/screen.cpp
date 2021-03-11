@@ -87,6 +87,8 @@ int screenLos[VIEWPORT_W][VIEWPORT_H];
 
 static const int BufferSize = 1024;
 
+ImageMgr* imageMgr = NULL;
+
 extern bool verbose;
 
 // Just extern the system functions here. That way people aren't tempted to call them as part of the public API.
@@ -103,8 +105,15 @@ void screenInit() {
     lineOfSightStyles.clear();
     lineOfSightStyles.push_back("DOS");
     lineOfSightStyles.push_back("Enhanced");
+
+    screenInit_sys();
+
+    imageMgr = new ImageMgr;
+
+    charsetInfo = imageMgr->get(BKGD_CHARSET);
+    if (!charsetInfo)
+        errorFatal("ERROR 1001: Unable to load the \"%s\" data file.\t\n\nIs %s installed?\n\nVisit the XU4 website for additional information.\n\thttp://xu4.sourceforge.net/", BKGD_CHARSET, settings.game.c_str());
     
-    charsetInfo = NULL;    
     gemTilesInfo = NULL;
     
     screenLoadGraphicsFromConf();
@@ -112,8 +121,6 @@ void screenInit() {
     if (verbose)
         printf("using %s scaler\n", settings.filter.c_str());
       
-    screenInit_sys();
-    
     /* if we can't use vga, reset to default:ega */
     if (!u4isUpgradeAvailable() && settings.videoType == "VGA")
         settings.videoType = "EGA";
@@ -162,7 +169,8 @@ void screenDelete() {
     layouts.clear();
     screenDelete_sys();
     
-    ImageMgr::destroy();
+    delete imageMgr;
+    imageMgr = NULL;
 }
 
 
@@ -172,7 +180,6 @@ void screenDelete() {
 void screenReInit() {        
     intro->deleteIntro();       /* delete intro stuff */
     Tileset::unloadAllImages(); /* unload tilesets, which will be reloaded lazily as needed */
-    ImageMgr::destroy();
     tileanims = NULL;
     screenDelete(); /* delete screen stuff */
     screenInit();   /* re-init screen stuff (loading new backgrounds, etc.) */
@@ -531,12 +538,6 @@ void screenDrawImageInMapArea(const string &name) {
  * Change the current text color
  */
 void screenTextColor(int color) {
-    if (charsetInfo == NULL) {
-        charsetInfo = imageMgr->get(BKGD_CHARSET);
-        if (!charsetInfo)
-            errorFatal("ERROR 1003: Unable to load the \"%s\" data file.\t\n\nIs %s installed?\n\nVisit the XU4 website for additional information.\n\thttp://xu4.sourceforge.net/", BKGD_CHARSET, settings.game.c_str());
-    }
-    
 	if (!settings.enhancements || !settings.enhancementsOptions.textColorization) {
 		return;
 	}
@@ -558,12 +559,6 @@ void screenTextColor(int color) {
  * Draw a character from the charset onto the screen.
  */
 void screenShowChar(int chr, int x, int y) {
-    if (charsetInfo == NULL) {
-        charsetInfo = imageMgr->get(BKGD_CHARSET);
-        if (!charsetInfo)
-            errorFatal("ERROR 1001: Unable to load the \"%s\" data file.\t\n\nIs %s installed?\n\nVisit the XU4 website for additional information.\n\thttp://xu4.sourceforge.net/", BKGD_CHARSET, settings.game.c_str());
-    }
-    
     charsetInfo->image->drawSubRect(x * charsetInfo->image->width(), y * (CHAR_HEIGHT * settings.scale),
                                     0, chr * (CHAR_HEIGHT * settings.scale),
                                     charsetInfo->image->width(), CHAR_HEIGHT * settings.scale);

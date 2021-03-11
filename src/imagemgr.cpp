@@ -38,28 +38,12 @@ public:
     map<string, ImageInfo *> info;
 };
 
-ImageMgr *ImageMgr::instance = NULL;
-
-ImageMgr *ImageMgr::getInstance() {
-    if (instance == NULL) {
-        instance = new ImageMgr();
-        instance->init();
-    }
-    return instance;
-}
-
-void ImageMgr::destroy() {
-    if (instance != NULL) {
-        delete instance;
-        instance = NULL;
-    }
-}
-
 ImageMgr::ImageMgr() {
     logger = new Debug("debug/imagemgr.txt", "ImageMgr");
     TRACE(*logger, "creating ImageMgr");
 
     settings.addObserver(this);
+    init();
 }
 
 ImageMgr::~ImageMgr() {
@@ -326,14 +310,14 @@ void ImageMgr::fixupIntro(Image *im, int prescale) {
      * ------------------------- */
     if (settings.videoType == "VGA")
     {
-        ImageInfo *borderInfo = imageMgr->get(BKGD_BORDERS, true);
-//        ImageInfo *charsetInfo = imageMgr->get(BKGD_CHARSET);
+        ImageInfo *borderInfo = ImageMgr::get(BKGD_BORDERS, true);
+//        ImageInfo *charsetInfo = ImageMgr::get(BKGD_CHARSET);
         if (!borderInfo)
             errorFatal("ERROR 1001: Unable to load the \"%s\" data file.\t\n\nIs %s installed?\n\nVisit the XU4 website for additional information.\n\thttp://xu4.sourceforge.net/", BKGD_BORDERS, settings.game.c_str());
 
         delete borderInfo->image;
         borderInfo->image = NULL;
-        borderInfo = imageMgr->get(BKGD_BORDERS, true);
+        borderInfo = ImageMgr::get(BKGD_BORDERS, true);
 
         im->setPaletteFromImage(borderInfo->image);
 
