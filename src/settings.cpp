@@ -124,8 +124,11 @@ void Settings::init(const bool useProfile, const string profileName) {
         char *home = getenv("HOME");
         if (home && home[0]) {
             userPath += home;
-            userPath += "/.xu4";
-            userPath += "/";
+#ifdef __linux__
+            userPath += "/.config/xu4/";
+#else
+            userPath += "/.xu4/";
+#endif
         } else
             userPath = "./";
 #elif defined(_WIN32) || defined(__CYGWIN__)
