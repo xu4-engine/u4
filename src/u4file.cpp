@@ -58,6 +58,20 @@ private:
     unzFile zfile;
 };
 
+/**
+ * Keeps track of available zip packages.
+ */
+struct U4ZipPackageMgr {
+    U4ZipPackageMgr();
+    ~U4ZipPackageMgr();
+
+    void add(U4ZipPackage *package) {
+        packages.push_back(package);
+    }
+
+    std::vector<U4ZipPackage *> packages;
+};
+
 extern bool verbose;
 
 enum UpgradeFlags {
@@ -66,13 +80,55 @@ enum UpgradeFlags {
 };
 static int upgradeFlags = 0;
 
-U4PATH * U4PATH::instance = NULL;
+static U4PATH * u4path_instance = NULL;
+static U4ZipPackageMgr * u4zip_instance = NULL;
+
 U4PATH * U4PATH::getInstance() {
-	if (!instance) {
-		instance = new U4PATH();
-		instance->initDefaultPaths();
-	}
-	return instance;
+	return u4path_instance;
+}
+
+/**
+ * Program initialization for u4 file functions.
+ * Returns true if the required data files are present.
+ */
+bool u4fsetup()
+{
+    if (u4path_instance)
+        return true;
+    u4path_instance = new U4PATH();
+    u4path_instance->initDefaultPaths();
+
+    u4zip_instance = new U4ZipPackageMgr();
+
+    U4FILE* uf;
+    if ((uf = u4fopen("AVATAR.EXE")))
+        u4fclose(uf);
+    else
+        return false;
+
+    // Check if upgrade is present & installed.
+    upgradeFlags = 0;
+    if ((uf = u4fopen("u4vga.pal"))) {
+        upgradeFlags |= UPG_PRESENT;
+        u4fclose(uf);
+    }
+    /* See if (ega.drv > 5k).  If so, the upgrade is installed */
+    /* FIXME: Is there a better way to determine this? */
+    if ((uf = u4fopen("ega.drv"))) {
+        if (uf->length() > (5 * 1024))
+            upgradeFlags |= UPG_INST;
+        u4fclose(uf);
+    }
+    return true;
+}
+
+void u4fcleanup()
+{
+    delete u4path_instance;
+    u4path_instance = NULL;
+
+    delete u4zip_instance;
+    u4zip_instance = NULL;
 }
 
 void U4PATH::initDefaultPaths() {
@@ -123,25 +179,6 @@ void U4PATH::initDefaultPaths() {
     graphicsPaths.push_back(".");
 	graphicsPaths.push_back("graphics");
 	graphicsPaths.push_back("../graphics");
-
-
-    // Check if upgrade is present & installed.
-
-    U4FILE* uf;
-    upgradeFlags = 0;
-    if ((uf = u4fopen("u4vga.pal"))) {
-        upgradeFlags |= UPG_PRESENT;
-        u4fclose(uf);
-    }
-    /* See if (ega.drv > 5k).  If so, the upgrade is installed */
-    /* FIXME: Is there a better way to determine this? */
-    if ((uf = u4fopen("ega.drv"))) {
-        if (uf->length() > (5 * 1024))
-            upgradeFlags |= UPG_INST;
-        u4fclose(uf);
-    }
-    if (verbose)
-        printf("u4isUpgradeInstalled %d\n", (upgradeFlags & UPG_INST) ? 1 : 0);
 }
 
 /**
@@ -156,6 +193,8 @@ bool u4isUpgradeAvailable() {
  * (switch.bat or setup.bat has been run)
  */
 bool u4isUpgradeInstalled() {
+    if (verbose)
+        printf("u4isUpgradeInstalled %d\n", (upgradeFlags & UPG_INST) ? 1 : 0);
     return upgradeFlags & UPG_INST;
 }
 
@@ -178,26 +217,6 @@ const string &U4ZipPackage::translate(const string &name) const {
         return i->second;
     else
         return name;
-}
-
-U4ZipPackageMgr *U4ZipPackageMgr::instance = NULL;
-
-U4ZipPackageMgr *U4ZipPackageMgr::getInstance() {
-    if (instance == NULL) {
-        instance = new U4ZipPackageMgr();
-    }
-    return instance;
-}
-
-void U4ZipPackageMgr::destroy() {
-    if (instance != NULL) {
-        delete instance;
-        instance = NULL;
-    }
-}
-    
-void U4ZipPackageMgr::add(U4ZipPackage *package) {
-    packages.push_back(package);
 }
 
 U4ZipPackageMgr::U4ZipPackageMgr() {
@@ -520,7 +539,7 @@ U4FILE *u4fopen(const string &fname) {
     /**
      * search for file within zipfiles (ultima4.zip, u4upgrad.zip, etc.)
      */
-    const vector<U4ZipPackage *> &packages = U4ZipPackageMgr::getInstance()->getPackages(); 
+    const vector<U4ZipPackage *> &packages = u4zip_instance->packages;
     for (std::vector<U4ZipPackage *>::const_reverse_iterator j = packages.rbegin(); j != packages.rend(); j++) {
         u4f = U4FILE_zip::open(fname, *j);
         if (u4f)

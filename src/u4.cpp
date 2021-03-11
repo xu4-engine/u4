@@ -50,7 +50,7 @@ int main(int argc, char *argv[]) {
     osxInit(argv[0]);
 #endif
 
-    if (!u4fopen("AVATAR.EXE"))
+    if (!u4fsetup())
 	{
         errorFatal(	"xu4 requires the PC version of Ultima IV to be present. "
         			"It must either be in the same directory as the xu4 executable, "
@@ -181,7 +181,7 @@ int main(int argc, char *argv[]) {
 
             printf("\nHomepage: http://xu4.sourceforge.com\n");
 
-            return 0;
+            goto cleanup;
         }
         else
             errorFatal("Unrecognized argument: %s\n\nUse --help for a list of supported arguments.", argv[i]);
@@ -192,6 +192,7 @@ int main(int argc, char *argv[]) {
 
     perf.start();
     screenInit();
+    {
     ProgressBar pb((320/2) - (200/2), (200/2), 200, 10, 0, (skipIntro ? 4 : 7));
     pb.setBorderColor(240, 240, 240);
     pb.setColor(0, 0, 128);
@@ -245,10 +246,11 @@ int main(int argc, char *argv[]) {
         eventHandler->popController();
         intro->deleteIntro();
     }
+    }
 
     eventHandler->setControllerDone(false);
     if (quit)
-        return 0;
+        goto cleanup;
 
     perf.reset();
 
@@ -272,7 +274,7 @@ int main(int argc, char *argv[]) {
     soundDelete();
     screenDelete();
 
+cleanup:
+    u4fcleanup();
     return 0;
 }
-
-

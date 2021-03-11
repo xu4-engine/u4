@@ -34,25 +34,6 @@ private:
     std::map<string, string> translations; /**< mapping from standard resource names to internal names */
 };
 
-/**
- * Keeps track of available zip packages.
- */
-class U4ZipPackageMgr {
-public:
-    static U4ZipPackageMgr *getInstance();
-    static void destroy();
-    
-    void add(U4ZipPackage *package);
-    const std::vector<U4ZipPackage *> &getPackages() const { return packages; }
-
-private:
-    U4ZipPackageMgr();
-    ~U4ZipPackageMgr();
-
-    static U4ZipPackageMgr *instance;
-    std::vector<U4ZipPackage *> packages;
-};
-
 #ifdef putc
 #undef putc
 #endif
@@ -79,15 +60,12 @@ public:
 #define u4Path (*U4PATH::getInstance())
 class U4PATH {
 public:
-	U4PATH() : defaultsHaveBeenInitd(false){}
+    U4PATH() : defaultsHaveBeenInitd(false){}
     void initDefaultPaths();
 
-    static U4PATH * instance;
     static U4PATH * getInstance();
 
-
-	std::list<std::string> rootResourcePaths;
-
+    std::list<std::string> rootResourcePaths;
     std::list<std::string> u4ForDOSPaths;
     std::list<std::string> u4ZipPaths;
     std::list<std::string> musicPaths;
@@ -97,9 +75,10 @@ public:
 
 private:
     bool defaultsHaveBeenInitd;
-
 };
 
+bool u4fsetup();
+void u4fcleanup();
 bool u4isUpgradeAvailable();
 bool u4isUpgradeInstalled();
 U4FILE *u4fopen(const std::string &fname);
