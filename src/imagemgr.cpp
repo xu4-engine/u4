@@ -488,11 +488,10 @@ ImageInfo *ImageMgr::getInfoFromSet(const string &name, ImageSet *imageset) {
     if (!imageset)
         return NULL;
 
-    /* if the image set contains the image we want, AND IT EXISTS we are done */
+    /* if the image set contains the image we want, we are done */
     std::map<string, ImageInfo *>::iterator i = imageset->info.find(name);
     if (i != imageset->info.end())
-    	if (imageExists(i->second))
-    		return i->second;
+        return i->second;
 
     /* otherwise if this image set extends another, check the base image set */
     while (imageset->extends != "") {
@@ -500,7 +499,6 @@ ImageInfo *ImageMgr::getInfoFromSet(const string &name, ImageSet *imageset) {
         return getInfoFromSet(name, imageset);
     }
 
-    //errorWarning("Searched recursively from imageset %s through to %s and couldn't find %s", baseSet->name.c_str(), imageset->name.c_str(), name.c_str());
     return NULL;
 }
 
@@ -512,23 +510,9 @@ std::string ImageMgr::guessFileType(const string &filename) {
     }
 }
 
-bool ImageMgr::imageExists(ImageInfo * info)
-{
-	if (info->filename == "") //If it is an abstract image like "screen"
-		return true;
-	U4FILE * file = getImageFile(info);
-	if (file)
-	{
-		u4fclose(file);
-		return true;
-	}
-	return false;
-}
-
-
 U4FILE * ImageMgr::getImageFile(ImageInfo *info)
 {
-	string filename = info->filename;
+    string filename = info->filename;
 
     /*
      * If the u4 VGA upgrade is installed (i.e. setup has been run and
@@ -537,7 +521,7 @@ U4FILE * ImageMgr::getImageFile(ImageInfo *info)
      * .old extention.  The charset and tiles have a .vga extention
      * and are not renamed in the upgrade installation process
      */
-	if (u4isUpgradeInstalled() && getInfoFromSet(info->name, getSet("VGA"))->filename.find(".old") != string::npos) {
+    if (u4isUpgradeInstalled() && getInfoFromSet(info->name, getSet("VGA"))->filename.find(".old") != string::npos) {
         if (settings.videoType == "EGA")
             filename = getInfoFromSet(info->name, getSet("VGA"))->filename;
         else
@@ -545,7 +529,7 @@ U4FILE * ImageMgr::getImageFile(ImageInfo *info)
     }
 
     if (filename == "")
-    	return NULL;
+        return NULL;
 
     U4FILE *file = NULL;
     if (info->xu4Graphic) {

@@ -110,7 +110,6 @@ public:
     void freeIntroBackgrounds();
     const std::vector<std::string> &getSetNames();
     U4FILE * getImageFile(ImageInfo *info);
-    bool imageExists(ImageInfo * info);
 
 private:
     void init();
