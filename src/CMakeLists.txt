@@ -208,7 +208,7 @@ set(xu4_required_libraries
 	${SDL_LIBRARY}
 	${SDLMIXER_LIBRARY}
 	${SDL_MIXER_LIBRARY} #Latest verified CMake 3.0
-	${LIBXML2_LIBRARIES}
+	${LIBXML2_LIBRARY}
 	${PNG_LIBRARY}
 	${PNG_LIBRARY_RELEASE} #Latest verified CMake 3.0
 	${ZLIB_LIBRARY_RELEASE}

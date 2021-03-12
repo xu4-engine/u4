@@ -8,7 +8,7 @@ find_package (SDL REQUIRED)
 find_package (SDL_mixer REQUIRED)
 find_package (LibXml2 REQUIRED)
 find_package (PNG REQUIRED)
-find_package (zlib REQUIRED)
+find_package (ZLIB REQUIRED)
 
 # Workaround for the non-working REQUIRED flag
 if (NOT SDL_FOUND)
