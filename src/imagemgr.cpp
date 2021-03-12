@@ -327,7 +327,8 @@ void ImageMgr::fixupIntro(Image *im, int prescale) {
         // update the color of "Origin Systems, Inc."
         im->setPaletteIndex(9, im->setColor(129, 129, 255));
 
-        borderInfo->image->save("border.png");
+        //borderInfo->image->save("border.png");
+
         // update the border appearance
         borderInfo->image->alphaOff();
         borderInfo->image->drawSubRectOn(im, 0, 96, 0, 0, 16, 56);
