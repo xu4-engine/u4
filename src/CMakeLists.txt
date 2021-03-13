@@ -173,7 +173,6 @@ set(XU4_SDL
 	screen_sdl.cpp
 	sound_sdl.cpp 
 	image_sdl.cpp 
-	music_sdl.cpp 
 	u4_sdl.cpp 
 )
 
@@ -183,7 +182,6 @@ set(XU4_SDL2
 	screen_sdl2.cpp
 	sound_sdl2.cpp 
 	image_sdl2.cpp 
-	music_sdl2.cpp 
 	u4_sdl2.cpp
 )
 

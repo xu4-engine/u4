@@ -95,7 +95,6 @@ exe %u4 [
 		%screen_sdl.cpp
 		%sound_sdl.cpp
 		%image_sdl.cpp
-		%music_sdl.cpp
 		%u4_sdl.cpp
 	]
 ]
