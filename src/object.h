@@ -44,8 +44,8 @@ public:
     MapTile& getPrevTile()                  { return prevTile; }
     const Coords& getCoords() const         { return coords; }
     const Coords& getPrevCoords() const     { return prevCoords; }    
-    const ObjectMovementBehavior getMovementBehavior() const    { return movement_behavior; }
-    const Type getType() const              { return objType; }
+    ObjectMovementBehavior getMovementBehavior() const    { return movement_behavior; }
+    Type getType() const                    { return objType; }
     bool hasFocus() const                   { return focused; }
     bool isVisible() const                  { return visible; }
     bool isAnimated() const                 { return animated; }    

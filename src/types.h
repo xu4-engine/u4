@@ -54,6 +54,13 @@ public:
     unsigned char getFrame() const	{return frame;}
     bool getFreezeAnimation() const {return freezeAnimation;}
 
+    MapTile& operator=(const MapTile &m) {
+        id = m.id;
+        frame = m.frame;
+        freezeAnimation = m.freezeAnimation;
+        return *this;
+    }
+
     bool operator==(const MapTile &m) const  { return id == m.id; }
     bool operator==(const TileId &i) const   { return id == i; }
     bool operator!=(const MapTile &m) const  { return id != m.id; }
