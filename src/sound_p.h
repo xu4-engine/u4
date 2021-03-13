@@ -63,7 +63,6 @@ private:
 	void del_sys();
     void play_sys(Sound sound, bool onlyOnce, int specificDurationInTicks);
     bool load_sys(Sound sound, const std::string &soundPathName);
-    void stop_sys(int channel);
     std::vector<std::string> soundFilenames;
     std::vector<OSSoundChunk *> soundChunk;
     static SoundManager *instance;

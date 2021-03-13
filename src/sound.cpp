@@ -105,7 +105,3 @@ void SoundManager::play(Sound sound, bool onlyOnce, int specificDurationInTicks)
     
     play_sys(sound, onlyOnce, specificDurationInTicks);
 }
-
-void SoundManager::stop(int channel) {
-    stop_sys(channel);
-}

@@ -116,7 +116,7 @@ bool Music::load_sys(const string &pathname) {
 /**
  * Returns true if the mixer is playing any audio
  */
-bool Music::isPlaying_sys() {
+bool Music::isPlaying() {
     return playing != nil ? [playing isPlaying] : false;
 }
 
@@ -131,14 +131,14 @@ void Music::stopMid() {
 /**
  * Set, increase, and decrease music volume
  */
-void Music::setMusicVolume_sys(int volume) {
+void Music::setMusicVolume(int volume) {
     [playing setVolume:(float)volume / MAX_VOLUME];
 }
 
 /**
  * Set, increase, and decrease sound volume
  */
-void Music::setSoundVolume_sys(int volume) {
+void Music::setSoundVolume(int volume) {
     /**
      * Use Channel 1 for sound effects
      */ 

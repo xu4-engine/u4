@@ -116,18 +116,11 @@ void Music::callback(void *data) {
     eventHandler->getTimer()->remove(&Music::callback);
 
     if (musicMgr->on && !musicMgr->isPlaying())
-        musicMgr->play();
+        musicMgr->playMid(c->location->map->music);
     else if (!musicMgr->on && musicMgr->isPlaying())
         musicMgr->stop();
 }
     
-/**
- * Main music loop
- */
-void Music::play() {
-    playMid(c->location->map->music);
-}
-
 /**
  * Toggle the music on/off (usually by pressing 'v')
  */
@@ -155,9 +148,8 @@ void Music::fadeOut(int msecs) {
 	if (isPlaying()) {
 		if (!settings.volumeFades)
 			stop();
-		else {
+		else
 			fadeOut_sys(msecs);
-		}
 	}
 }
 
@@ -174,45 +166,12 @@ void Music::fadeIn(int msecs, bool loadFromMap) {
 			load(c->location->map->music);
 
 		if (!settings.volumeFades)
-			play();
+			playMid(c->location->map->music);
 		else {
 			fadeIn_sys(msecs, loadFromMap);
 		}
 	}
 }
-
-int Music::increaseMusicVolume() {
-    if (++settings.musicVol > MAX_VOLUME)
-        settings.musicVol = MAX_VOLUME;
-    else
-        setMusicVolume(settings.musicVol);
-    return (settings.musicVol * 100 / MAX_VOLUME);  // percentage
-}
-
-int Music::decreaseMusicVolume() {
-    if (--settings.musicVol < 0)
-        settings.musicVol = 0;
-    else
-        setMusicVolume(settings.musicVol);
-    return (settings.musicVol * 100 / MAX_VOLUME);  // percentage
-}
-
-int Music::increaseSoundVolume() {
-    if (++settings.soundVol > MAX_VOLUME)
-        settings.soundVol = MAX_VOLUME;
-    else
-        setSoundVolume(settings.soundVol);
-    return (settings.soundVol * 100 / MAX_VOLUME);  // percentage
-}
-
-int Music::decreaseSoundVolume() {
-    if (--settings.soundVol < 0)
-        settings.soundVol = 0;
-    else
-        setSoundVolume(settings.soundVol);
-    return (settings.soundVol * 100 / MAX_VOLUME);  // percentage
-}
-
 
 // Game Interface
 
@@ -253,12 +212,16 @@ void musicSetVolume(int vol)
 
 int musicVolumeDec()
 {
-    return musicMgr->decreaseMusicVolume();
+    if (settings.musicVol > 0)
+        musicMgr->setMusicVolume(--settings.musicVol);
+    return (settings.musicVol * 100 / MAX_VOLUME);  // percentage
 }
 
 int musicVolumeInc()
 {
-    return musicMgr->increaseMusicVolume();
+    if (settings.musicVol < MAX_VOLUME)
+        musicMgr->setMusicVolume(++settings.musicVol);
+    return (settings.musicVol * 100 / MAX_VOLUME);  // percentage
 }
 
 bool musicToggle()
@@ -272,10 +235,14 @@ void soundSetVolume(int vol) {
 
 int soundVolumeDec()
 {
-    return musicMgr->decreaseSoundVolume();
+    if (settings.soundVol > 0)
+        musicMgr->setSoundVolume(--settings.soundVol);
+    return (settings.soundVol * 100 / MAX_VOLUME);  // percentage
 }
 
 int soundVolumeInc()
 {
-    return musicMgr->increaseSoundVolume();
+    if (settings.soundVol < MAX_VOLUME)
+        musicMgr->setSoundVolume(++settings.soundVol);
+    return (settings.soundVol * 100 / MAX_VOLUME);  // percentage
 }

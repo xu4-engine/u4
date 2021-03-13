@@ -1,17 +1,12 @@
 /*
- * SoundMgr_SDL.cpp
- *
- *  Created on: 2011-01-27
- *      Author: Darren Janeczek
+ * sound_sdl.cpp
  */
-
-#include "sound_p.h"
 
 #include <SDL.h>
 #include <SDL_mixer.h>
 
+#include "sound_p.h"
 #include "sound.h"
-
 #include "u4_sdl.h"
 #include "config.h"
 #include "debug.h"
@@ -41,7 +36,7 @@ void SoundManager::play_sys(Sound sound, bool onlyOnce, int specificDurationInTi
     }
 }
 
-void SoundManager::stop_sys(int channel)
+void SoundManager::stop(int channel)
 {
     // If music didn't initialize correctly, then we shouldn't try to stop it
     if (!musicMgr->functional || !settings.soundVol)
@@ -138,7 +133,6 @@ void Music::playMid(int music) {
     }
 }
 
-
 /**
  * Stop playing a MIDI file.
  */
@@ -146,29 +140,27 @@ void Music::stopMid()
 {
     Mix_HaltMusic();
 }
+
 /**
  * Set, increase, and decrease sound volume
  */
-void Music::setSoundVolume_sys(int volume) {
-    /**
-     * Use Channel 1 for sound effects
-     */
+void Music::setSoundVolume(int volume) {
+    // Use Channel 1 for sound effects
     Mix_Volume(1, int((float)MIX_MAX_VOLUME / MAX_VOLUME * volume));
 }
 
 /**
- * System specific version to check if the version is still playing.
+ * Returns true if music is playing.
  */
-bool Music::isPlaying_sys()
+bool Music::isPlaying()
 {
     return Mix_PlayingMusic();
-} /**< Returns true if the mixer is playing any audio */
-
+}
 
 /**
  * Set, increase, and decrease music volume
  */
-void Music::setMusicVolume_sys(int volume) {
+void Music::setMusicVolume(int volume) {
     Mix_VolumeMusic(int((float)MIX_MAX_VOLUME / MAX_VOLUME * volume));
 }
 

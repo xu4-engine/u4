@@ -183,7 +183,7 @@ void SoundManager::play_sys(Sound sound, bool onlyOnce, int specificDurationInTi
     }
 }
 
-void SoundManager::stop_sys(int /*channel*/)
+void SoundManager::stop(int /*channel*/)
 {
     // This is not excatly what this function wants to do.
     // It wants to stop all sound on one channel, I suspect one channel
