@@ -151,7 +151,7 @@ IntMenuItem::IntMenuItem(string text, short x, short y, int shortcutKey, int *va
 string IntMenuItem::getText() const {
     // do custom formatting for some menu entries,
     // and generate a string of the results
-    char outputBuffer[10];
+    char outputBuffer[18];
 
     switch (output){
         case MENU_OUTPUT_REAGENT:

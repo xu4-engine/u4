@@ -471,9 +471,11 @@ void Image::getPixelIndex(int x, int y, unsigned int &index) const {
 
     case 4:
         index = *reinterpret_cast<Uint32 *>(p);
+        break;
 
     default:
-        return;
+        index = 0;
+        break;
     }
 }
 

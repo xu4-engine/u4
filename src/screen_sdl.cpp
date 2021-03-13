@@ -336,9 +336,6 @@ Image *screenScaleDown(Image *src, int scale) {
     if (!dest)
         return NULL;
 
-	if (!dest)
-		dest = Image::duplicate(src);
-
     if (dest->isIndexed())
         dest->setPaletteFromImage(src);
 

@@ -118,7 +118,7 @@ MouseArea mouseAreas[] = {
     { 3, { { 8, 8 }, { 184, 8 }, { 96, 96 } }, MC_NORTH, { U4_ENTER, 0, U4_UP }  },
     { 3, { { 184, 8 }, { 184, 184 }, { 96, 96 } }, MC_EAST, { U4_ENTER, 0, U4_RIGHT } },
     { 3, { { 8, 184 }, { 184, 184 }, { 96, 96 } }, MC_SOUTH, { U4_ENTER, 0, U4_DOWN } },
-    { 0 }
+    { 0, {{0,0}, {0,0}, {0,0}}, MC_DEFAULT, {0,0} }
 };
 
 ReadPlayerController::ReadPlayerController() : ReadChoiceController("12345678 \033\n") {
@@ -3475,7 +3475,7 @@ void gameLordBritishCheckLevels() {
     for (int i = 0; i < c->party->size(); i++) {
         PartyMember *player = c->party->member(i);
         if (player->getRealLevel() <
-            player->getMaxLevel())
+            player->getMaxLevel()) {
 
             // add an extra space to separate messages
             if (!advanced) {
@@ -3484,6 +3484,7 @@ void gameLordBritishCheckLevels() {
             }
 
             player->advanceLevel();
+        }
     }
  
     screenMessage("\nWhat would thou\nask of me?\n");
@@ -3655,7 +3656,7 @@ showMixturesSuper(int page = 0) {
     int line = i + 8;
     screenTextAt(2, line, "%s", s->name);
 
-    snprintf(buf, 4, "%3d", c->saveGame->mixtures[i + 13 * page]);
+    snprintf(buf, 4, "%3u", c->saveGame->mixtures[i + 13 * page]);
     screenTextAt(6, line, "%s", buf);
     
     screenShowChar(32, 9, line);

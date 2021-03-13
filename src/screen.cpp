@@ -456,7 +456,7 @@ void screenUpdate(TileView *view, bool showmap, bool blackout) {
 
     else if (showmap) {
         static MapTile black = c->location->map->tileset->getByName("black")->getId();
-        static MapTile avatar = c->location->map->tileset->getByName("avatar")->getId();
+        //static MapTile avatar = c->location->map->tileset->getByName("avatar")->getId();
 
         int x, y;
 
@@ -496,7 +496,7 @@ void screenUpdate(TileView *view, bool showmap, bool blackout) {
 void screenDrawImage(const string &name, int x, int y) {
     ImageInfo *info = imageMgr->get(name);
     if (info) {
-    	info->image->alphaOn();
+        info->image->alphaOn();
         info->image->draw(x, y);
         return;
     }
@@ -505,8 +505,8 @@ void screenDrawImage(const string &name, int x, int y) {
     if (subimage) 
         info = imageMgr->get(subimage->srcImageName);
     
-	if (info) {
-		info->image->alphaOn();
+    if (info) {
+        info->image->alphaOn();
         
         if (info) {
             info->image->drawSubRect(x, y,

@@ -1665,11 +1665,11 @@ void IntroController::getTitleSourceData()
                         color = info->image->setColor(255, (y == 2 ? 250 : 255), blue[y-1]);
                     }
                     AnimPlot plot = {
-                        x,
-                        y,
-                        color.r,
-                        color.g,
-                        color.b,
+                        uint8_t(x),
+                        uint8_t(y),
+                        uint8_t(color.r),
+                        uint8_t(color.g),
+                        uint8_t(color.b),
                         255};
                     titles[i].plotData.push_back(plot);
                     titles[i].animStepMax += 2;
@@ -1693,7 +1693,10 @@ void IntroController::getTitleSourceData()
                         titles[i].srcImage->getPixel(x*info->prescale, y*info->prescale, r, g, b, a);
                         if (r || g || b)
                         {
-                            AnimPlot plot = {x+1, y+1, r, g, b, a};
+                            AnimPlot plot = {
+                                uint8_t(x+1), uint8_t(y+1),
+                                uint8_t(r), uint8_t(g), uint8_t(b), uint8_t(a)
+                            };
                             titles[i].plotData.push_back(plot);
                         }
                     }

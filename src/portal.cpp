@@ -47,7 +47,7 @@ void createDngLadder(Location *location, PortalTriggerAction action, Portal *p) 
  */
 int usePortalAt(Location *location, MapCoords coords, PortalTriggerAction action) {
     Map *destination;
-    char msg[32] = {0};
+    char msg[35] = {0};
     
     const Portal *portal = location->map->portalAt(coords, action);
     Portal dngLadder;
