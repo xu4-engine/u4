@@ -731,7 +731,7 @@ static int spellXit(int unused) {
     if (!c->location->map->isWorldMap()) {
         screenMessage("Leaving...\n");
         game->exitToParentMap();
-        musicMgr->play();
+        musicPlayLocale();
         return 1;
     }
     return 0;
@@ -757,7 +757,7 @@ static int spellYup(int unused) {
     } else {
         screenMessage("Leaving...\n");
         game->exitToParentMap();
-        musicMgr->play();
+        musicPlayLocale();
         return 1;
     }
     

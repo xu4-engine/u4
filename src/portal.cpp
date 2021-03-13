@@ -128,7 +128,7 @@ int usePortalAt(Location *location, MapCoords coords, PortalTriggerAction action
     /* portal just exits to parent map */
     if (portal->exitPortal) {        
         game->exitToParentMap();
-        musicMgr->play();
+        musicPlayLocale();
         return 1;
     }
     else if (portal->destid == location->map->id)
@@ -136,7 +136,7 @@ int usePortalAt(Location *location, MapCoords coords, PortalTriggerAction action
     
     else {
         game->setMap(destination, portal->saveLocation, portal);
-        musicMgr->play();
+        musicPlayLocale();
     }
 
     /* if the portal changes the map retroactively, do it here */

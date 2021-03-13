@@ -82,7 +82,7 @@ bool Music::load_sys(const string &pathname) {
 /**
  * Play a midi file
  */
-void Music::playMid(Type music) {
+void Music::playMid(int music) {
     if (!functional || !on)
         return;
 

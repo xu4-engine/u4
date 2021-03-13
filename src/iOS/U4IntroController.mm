@@ -115,9 +115,6 @@
     intro->preloadMap();
     ++pb;
     
-    musicMgr->init();
-    ++pb;
-    
     eventHandler->pushController(intro);
 }
 

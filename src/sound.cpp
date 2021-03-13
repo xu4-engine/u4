@@ -17,29 +17,39 @@
 using std::string;
 using std::vector;
 
-int soundInit(void) { return SoundManager::getInstance()->init(); }
-void soundDelete(void) { delete SoundManager::getInstance(); }
-void soundPlay(Sound sound, bool onlyOnce, int specificDurationInTicks) {
-    SoundManager::getInstance()->play(sound, onlyOnce, specificDurationInTicks);
-}
-void soundStop(int channel) {
-    SoundManager::getInstance()->stop(channel);
+Music* musicMgr = NULL;
+static SoundManager* soundMgr = NULL;
+
+int soundInit(void)
+{
+    // Music sets up the platform audio system while SoundManager only holds
+    // the sample data for sound effects.
+
+    ASSERT(! musicMgr, "soundInit called more than once");
+    musicMgr = new Music;
+    soundMgr = new SoundManager;
+    return soundMgr->init();
 }
 
-SoundManager *SoundManager::instance = 0;
+void soundDelete(void)
+{
+    delete soundMgr;
+    delete musicMgr;
+}
+
+void soundPlay(Sound sound, bool onlyOnce, int specificDurationInTicks) {
+    soundMgr->play(sound, onlyOnce, specificDurationInTicks);
+}
+
+void soundStop(int channel) {
+    soundMgr->stop(channel);
+}
 
 SoundManager::SoundManager() {
 }
 
 SoundManager::~SoundManager() {
-    del();
-    instance = 0;
-}
-
-SoundManager *SoundManager::getInstance() {
-    if (!instance)
-        instance = new SoundManager();
-    return instance;
+    del_sys();
 }
 
 int SoundManager::init() {

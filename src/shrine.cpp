@@ -19,7 +19,6 @@
 #include "location.h"
 #include "mapmgr.h"
 #include "creature.h"
-#include "music.h"
 #include "names.h"
 #include "player.h"
 #include "portal.h"
@@ -262,6 +261,6 @@ void Shrine::showVision(bool elevated) {
 
 void Shrine::eject() {
     game->exitToParentMap();
-    musicMgr->play();
+    musicPlayLocale();
     c->location->turnCompleter->finishTurn();
 }

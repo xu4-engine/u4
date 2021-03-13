@@ -19,16 +19,23 @@
 #include "map.h"
 #include "mapmgr.h"
 #include "creature.h"
-#include "music.h"
 #include "names.h"
 #include "object.h"
 #include "person.h"
 #include "player.h"
 #include "screen.h"
 #include "settings.h"
+#include "sound.h"
 #include "stats.h"
 #include "tileset.h"
 #include "utils.h"
+
+
+#define CAMP_FADE_OUT_TIME  1000
+#define CAMP_FADE_IN_TIME   0
+#define INN_FADE_OUT_TIME   1000
+#define INN_FADE_IN_TIME    5000
+
 
 void campTimer(void *data);
 void campEnd(void);
@@ -60,7 +67,7 @@ void CampController::begin() {
 
     CombatController::begin();
 
-    musicMgr->camp();
+    musicFadeOut(1000);
 
     screenMessage("Resting...\n");
     screenDisableCursor();
@@ -73,7 +80,7 @@ void CampController::begin() {
     if (settings.campingAlwaysCombat || (xu4_random(8) == 0)) {        
         const Creature *m = creatureMgr->randomAmbushing();
                 
-        musicMgr->play();        
+        musicPlayLocale();
         screenMessage("Ambushed!\n");
         
         /* create an ambushing creature (so it leaves a chest) */
@@ -101,7 +108,7 @@ void CampController::begin() {
     
         eventHandler->popController();
         game->exitToParentMap();
-        musicMgr->fadeIn(CAMP_FADE_IN_TIME, true);
+        musicFadeIn(CAMP_FADE_IN_TIME, true);
         delete this;
     }
 }
@@ -141,7 +148,7 @@ void InnController::begin() {
 
     /* in the original, the vendor music plays straight through sleeping */
     if (settings.enhancements)
-        musicMgr->fadeOut(INN_FADE_OUT_TIME); /* Fade volume out to ease into rest */
+        musicFadeOut(INN_FADE_OUT_TIME); /* Fade volume out to ease into rest */
     
     EventHandler::wait_msecs(INN_FADE_OUT_TIME);
 
@@ -179,7 +186,7 @@ void InnController::begin() {
     screenMessage("\nMorning!\n");
     screenPrompt();
 
-    musicMgr->fadeIn(INN_FADE_IN_TIME, true);
+    musicFadeIn(INN_FADE_IN_TIME, true);
 }
 
 bool InnController::heal() {

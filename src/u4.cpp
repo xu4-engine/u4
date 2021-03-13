@@ -18,7 +18,6 @@
 #include "event.h"
 #include "game.h"
 #include "intro.h"
-#include "music.h"
 #include "person.h"
 #include "progress_bar.h"
 #include "screen.h"
@@ -193,7 +192,7 @@ int main(int argc, char *argv[]) {
     perf.start();
     screenInit();
     {
-    ProgressBar pb((320/2) - (200/2), (200/2), 200, 10, 0, (skipIntro ? 4 : 7));
+    ProgressBar pb((320/2) - (200/2), (200/2), 200, 10, 0, (skipIntro ? 4 : 6));
     pb.setBorderColor(240, 240, 240);
     pb.setColor(0, 0, 128);
     pb.setBorderWidth(1);
@@ -232,11 +231,6 @@ int main(int argc, char *argv[]) {
         perf.end("intro->preloadMap()");
         ++pb;
 
-        perf.start();
-        musicMgr->init();
-        perf.end("musicMgr->init()");
-        ++pb;
-
         /* give a performance report */
         if (settings.debug)
             perf.report();
@@ -270,7 +264,6 @@ int main(int argc, char *argv[]) {
 
     Tileset::unloadAll();
 
-    delete musicMgr;
     soundDelete();
     screenDelete();
 

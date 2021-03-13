@@ -40,11 +40,39 @@
      SOUND_MAX
  };
 
+enum MusicTrack {
+    MUSIC_NONE,
+    MUSIC_OUTSIDE,
+    MUSIC_TOWNS,
+    MUSIC_SHRINES,
+    MUSIC_SHOPPING,
+    MUSIC_RULEBRIT,
+    MUSIC_FANFARE,
+    MUSIC_DUNGEON,
+    MUSIC_COMBAT,
+    MUSIC_CASTLES,
+
+    MUSIC_MAX
+};
+
 int soundInit(void);
 void soundDelete(void);
 
 void soundPlay(Sound sound, bool onlyOnce = true, int specificDurationInTicks = -1);
 
 void soundStop(int channel = 1);
+void soundSetVolume(int);
+int  soundVolumeDec();
+int  soundVolumeInc();
+
+void musicPlay(int);
+void musicPlayLocale();
+void musicStop();
+void musicFadeOut(int);
+void musicFadeIn(int, bool);
+void musicSetVolume(int);
+int  musicVolumeDec();
+int  musicVolumeInc();
+bool musicToggle();
 
 #endif /* SOUND_H */

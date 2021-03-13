@@ -326,7 +326,6 @@ extern bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients); /
     game = 0;
     Tileset::unloadAll();
     
-    delete musicMgr;
     soundDelete();
     screenDelete();    
 }

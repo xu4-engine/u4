@@ -21,7 +21,6 @@
 #include "game.h"   // Included for ReadPlayerController
 #include "io.h"
 #include "location.h"
-#include "music.h"
 #include "names.h"
 #include "player.h"
 #include "savegame.h"
@@ -388,13 +387,13 @@ void Person::runCommand(Conversation *cnv, const ResponsePart &command) {
         cnv->state = Conversation::CONFIRMATION;
     }
     else if (command == ResponsePart::STARTMUSIC_LB) {
-        musicMgr->lordBritish();
+        musicPlay(MUSIC_RULEBRIT);
     }
     else if (command == ResponsePart::STARTMUSIC_HW) {
-        musicMgr->hawkwind();
+        musicPlay(MUSIC_SHOPPING);
     }
     else if (command == ResponsePart::STOPMUSIC) {
-        musicMgr->play();
+        musicPlayLocale();
     }
     else if (command == ResponsePart::HAWKWIND) {
         c->party->adjustKarma(KA_HAWKWIND);

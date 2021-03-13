@@ -230,7 +230,7 @@ void CombatController::begin() {
     
     /* FIXME: there should be a better way to accomplish this */
     if (!camping) {
-        musicMgr->play();
+        musicPlayLocale();
     }
 
     /* Set focus to the first active party member, if there is one */ 
@@ -265,7 +265,7 @@ void CombatController::end(bool adjustKarma) {
         bool won = isWon();    
     
         game->exitToParentMap();
-        musicMgr->play();
+        musicPlayLocale();
     
         if (winOrLose) {
             if (won) {
@@ -885,25 +885,25 @@ bool CombatController::keyPressed(int key) {
     /* handle music volume adjustments */
     case ',':
         // decrease the volume if possible
-        screenMessage("Music: %d%s\n", musicMgr->decreaseMusicVolume(), "%");
+        screenMessage("Music: %d%s\n", musicVolumeDec(), "%");
         endTurn = false;
         break;
     case '.':
         // increase the volume if possible
-        screenMessage("Music: %d%s\n", musicMgr->increaseMusicVolume(), "%");
+        screenMessage("Music: %d%s\n", musicVolumeInc(), "%");
         endTurn = false;
         break;
 
     /* handle sound volume adjustments */
     case '<':
         // decrease the volume if possible
-        screenMessage("Sound: %d%s\n", musicMgr->decreaseSoundVolume(), "%");
+        screenMessage("Sound: %d%s\n", soundVolumeDec(), "%");
         soundPlay(SOUND_FLEE);
         endTurn = false;
         break;
     case '>':
         // increase the volume if possible
-        screenMessage("Sound: %d%s\n", musicMgr->increaseSoundVolume(), "%");
+        screenMessage("Sound: %d%s\n", soundVolumeInc(), "%");
         soundPlay(SOUND_FLEE);
         endTurn = false;
         break;
@@ -974,7 +974,7 @@ bool CombatController::keyPressed(int key) {
         break;
 
     case 'v':
-        if (musicMgr->toggle())
+        if (musicToggle())
             screenMessage("Volume On!\n");
         else
             screenMessage("Volume Off!\n");

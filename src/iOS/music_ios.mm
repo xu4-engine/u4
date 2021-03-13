@@ -88,7 +88,7 @@ void Music::destroy_sys() {
 /**
  * Play a midi file
  */
-void Music::playMid(Type music) {
+void Music::playMid(int music) {
     if (!functional || !on)
         return;
     

@@ -22,7 +22,6 @@
 #include "event.h"
 #include "imagemgr.h"
 #include "menu.h"
-#include "music.h"
 #include "sound.h"
 #include "player.h"
 #include "savegame.h"
@@ -295,6 +294,7 @@ IntroController::IntroController() :
 bool IntroController::init() {
 
 	justInitiatedNewGame = false;
+    introMusic = MUSIC_TOWNS;
 
     // sigData is referenced during Titles initialization
     binData = new IntroBinData();
@@ -312,7 +312,8 @@ bool IntroController::init() {
 #endif
         beastiesVisible = true;
         beastieOffset = 0;
-        musicMgr->intro();
+
+        musicPlay(introMusic);
     }
     else
     {
@@ -425,7 +426,11 @@ bool IntroController::keyPressed(int key) {
         case '7':
         case '8':
         case '9':
-            musicMgr->introSwitch(key - '0');
+        {
+            int n = key - '0';
+            if (n > MUSIC_NONE && n < MUSIC_MAX)
+                musicPlay(introMusic = n);
+        }
             break;
         default:
             valid = false;
@@ -1031,7 +1036,7 @@ void IntroController::timerFired() {
             // setup the map screen
             mode = INTRO_MAP;
             beastiesVisible = true;
-            musicMgr->intro();
+            musicPlay(introMusic);
             updateScreen();
         }
 
@@ -1191,21 +1196,21 @@ void IntroController::updateSoundMenu(MenuEvent &event) {
 
         switch(event.getMenuItem()->getId()) {
             case MI_SOUND_01:
-                musicMgr->setMusicVolume(settingsChanged.musicVol);
+                musicSetVolume(settingsChanged.musicVol);
                 break;
             case MI_SOUND_02:
-                musicMgr->setSoundVolume(settingsChanged.soundVol);
+                soundSetVolume(settingsChanged.soundVol);
                 soundPlay(SOUND_FLEE);
                 break;
             case USE_SETTINGS:
                 // save settings
                 settings.setData(settingsChanged);
                 settings.write();
-                musicMgr->intro();
+                musicPlay(introMusic);
                 break;
             case CANCEL:
-                musicMgr->setMusicVolume(settings.musicVol);
-                musicMgr->setSoundVolume(settings.soundVol);
+                musicSetVolume(settings.musicVol);
+                soundSetVolume(settings.soundVol);
                 // discard settings
                 settingsChanged = settings;
                 break;
@@ -2144,6 +2149,6 @@ void IntroController::skipTitles()
 // don't play it at the very beginning.
 void IntroController::tryTriggerIntroMusic() {
     if (mode == INTRO_MAP)
-        musicMgr->intro();
+        musicPlay(introMusic);
 }
 #endif

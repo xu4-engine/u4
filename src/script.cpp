@@ -18,7 +18,6 @@
 #include "event.h"
 #include "filesystem.h"
 #include "game.h"
-#include "music.h"
 #include "player.h"
 #include "savegame.h"
 #include "screen.h"
@@ -1288,18 +1287,18 @@ Script::ReturnCode Script::karma(xmlNodePtr script, xmlNodePtr current) {
  */ 
 Script::ReturnCode Script::music(xmlNodePtr script, xmlNodePtr current) {
     if (xmlGetPropAsBool(current, "reset"))        
-        musicMgr->play();
+        musicPlayLocale();
     else {
         string type = getPropAsStr(current, "type");
 
         if (xmlGetPropAsBool(current, "play"))
-            musicMgr->play();
+            musicPlayLocale();
         if (xmlGetPropAsBool(current, "stop"))
-            musicMgr->stop();
+            musicStop();
         else if (type == "shopping")
-            musicMgr->shopping();
+            musicPlay(MUSIC_SHOPPING);
         else if (type == "camp")
-            musicMgr->camp();
+            musicFadeOut(1000);
     }
 
     return RET_OK;

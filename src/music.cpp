@@ -25,13 +25,9 @@
 #include "u4.h"
 #include "u4file.h"
 
-using std::string;
-using std::vector;
-
 /*
  * Static variables
  */
-Music *Music::instance = NULL;
 bool Music::fading = false;
 bool Music::on = false;
 bool Music::functional = true;
@@ -43,8 +39,8 @@ bool Music::functional = true;
 /**
  * Initiliaze the music
  */
-Music::Music() : introMid(TOWNS), current(NONE), playing(NULL), logger(new Debug("debug/music.txt", "Music")) {
-    filenames.reserve(MAX);
+Music::Music() : current(MUSIC_NONE), playing(NULL), logger(new Debug("debug/music.txt", "Music")) {
+    filenames.reserve(MUSIC_MAX);
     filenames.push_back("");    // filename for MUSIC_NONE;
 
     TRACE(*logger, "Initializing music");
@@ -57,8 +53,8 @@ Music::Music() : introMid(TOWNS), current(NONE), playing(NULL), logger(new Debug
     TRACE_LOCAL(*logger, "Loading music tracks");
 
     vector<ConfigElement> musicConfs = config->getElement("music").getChildren();
-    std::vector<ConfigElement>::const_iterator i = musicConfs.begin();
-    std::vector<ConfigElement>::const_iterator theEnd = musicConfs.end();
+    vector<ConfigElement>::const_iterator i = musicConfs.begin();
+    vector<ConfigElement>::const_iterator theEnd = musicConfs.end();
     for (; i != theEnd; ++i) {
         if (i->getName() != "track")
             continue;
@@ -89,8 +85,8 @@ Music::~Music() {
 }
 
 
-bool Music::load(Type music) {
-    ASSERT(music < MAX, "Attempted to load an invalid piece of music in Music::load()");
+bool Music::load(int music) {
+    ASSERT(music < MUSIC_MAX, "Attempted to load an invalid piece of music in Music::load()");
 
     /* music already loaded */
     if (music == current) {
@@ -119,9 +115,9 @@ bool Music::load(Type music) {
 void Music::callback(void *data) {    
     eventHandler->getTimer()->remove(&Music::callback);
 
-    if (musicMgr->on && !isPlaying())
+    if (musicMgr->on && !musicMgr->isPlaying())
         musicMgr->play();
-    else if (!musicMgr->on && isPlaying())
+    else if (!musicMgr->on && musicMgr->isPlaying())
         musicMgr->stop();
 }
     
@@ -130,16 +126,6 @@ void Music::callback(void *data) {
  */
 void Music::play() {
     playMid(c->location->map->music);
-}
-
-/**
- * Cycle through the introduction music
- */
-void Music::introSwitch(int n) {
-    if (n > NONE && n < MAX) {
-        introMid = static_cast<Type>(n);
-        intro();
-    }
 }
 
 /**
@@ -211,8 +197,6 @@ int Music::decreaseMusicVolume() {
     return (settings.musicVol * 100 / MAX_VOLUME);  // percentage
 }
 
-
-
 int Music::increaseSoundVolume() {
     if (++settings.soundVol > MAX_VOLUME)
         settings.soundVol = MAX_VOLUME;
@@ -227,4 +211,71 @@ int Music::decreaseSoundVolume() {
     else
         setSoundVolume(settings.soundVol);
     return (settings.soundVol * 100 / MAX_VOLUME);  // percentage
+}
+
+
+// Game Interface
+
+void musicPlay(int track)
+{
+/*  Was done in Music::intro (Now musicPlay(introMusic)).
+#ifdef IOS
+    on = true; // Force iOS to turn this back on from going in the background.
+#endif
+*/
+    musicMgr->playMid(track);
+}
+
+void musicPlayLocale()
+{
+    musicMgr->playMid( c->location->map->music );
+}
+
+void musicStop()
+{
+    musicMgr->stop();
+}
+
+void musicFadeOut(int msec)
+{
+    musicMgr->fadeOut(msec);
+}
+
+void musicFadeIn(int msec, bool loadFromMap)
+{
+    musicMgr->fadeIn(msec, loadFromMap);
+}
+
+void musicSetVolume(int vol)
+{
+    musicMgr->setMusicVolume(vol);
+}
+
+int musicVolumeDec()
+{
+    return musicMgr->decreaseMusicVolume();
+}
+
+int musicVolumeInc()
+{
+    return musicMgr->increaseMusicVolume();
+}
+
+bool musicToggle()
+{
+    return musicMgr->toggle();
+}
+
+void soundSetVolume(int vol) {
+    musicMgr->setSoundVolume(vol);
+}
+
+int soundVolumeDec()
+{
+    return musicMgr->decreaseSoundVolume();
+}
+
+int soundVolumeInc()
+{
+    return musicMgr->increaseSoundVolume();
 }

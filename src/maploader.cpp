@@ -453,7 +453,7 @@ void DngMapLoader::initDungeonRoom(Dungeon *dng, int room) {
     dng->roomMaps[room]->border_behavior = Map::BORDER_FIXED;
     dng->roomMaps[room]->width = dng->roomMaps[room]->height = 11;
     dng->roomMaps[room]->data = dng->rooms[room].map_data; // Load map data
-    dng->roomMaps[room]->music = Music::COMBAT;
+    dng->roomMaps[room]->music = MUSIC_COMBAT;
     dng->roomMaps[room]->type = Map::COMBAT;
     dng->roomMaps[room]->flags |= NO_LINE_OF_SIGHT;
     dng->roomMaps[room]->tileset = Tileset::get("base");

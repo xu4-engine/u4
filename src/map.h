@@ -153,7 +153,7 @@ public:
     PortalList      portals;
     AnnotationMgr  *annotations;
     int             flags;
-    Music::Type     music;
+    int             music;
     MapData         data;
     ObjectDeque     objects;
     std::map<string, MapCoords> labels;

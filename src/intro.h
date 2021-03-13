@@ -280,6 +280,7 @@ private:
     int transparentIndex;           // palette index for transparency
     RGBA transparentColor;     // palette color for transparency
 
+    int  introMusic;
     bool bSkipTitles;
 };
 

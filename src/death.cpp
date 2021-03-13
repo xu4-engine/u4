@@ -17,7 +17,6 @@
 #include "game.h"
 #include "location.h"
 #include "mapmgr.h"
-#include "music.h"
 #include "player.h"
 #include "portal.h"
 #include "screen.h"
@@ -57,7 +56,7 @@ void deathStart(int delay) {
         return;
     
     // stop playing music
-    musicMgr->fadeOut(1000);
+    musicFadeOut(1000);
 
     deathSequenceRunning = 1;
     timerCount = 0;
@@ -116,7 +115,7 @@ void deathRevive() {
     c->aura->set();
     c->horseSpeed = 0;
     c->lastCommandTime = time(NULL);    
-    musicMgr->play();
+    musicPlayLocale();
 
     c->party->reviveParty();
 
