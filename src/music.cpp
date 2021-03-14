@@ -28,8 +28,7 @@
 /*
  * Static variables
  */
-bool Music::fading = false;
-bool Music::on = false;
+bool Music::musicEnabled = false;
 bool Music::functional = true;
 
 /*
@@ -66,10 +65,10 @@ Music::Music() : current(MUSIC_NONE), playing(NULL), logger(new Debug("debug/mus
 	create_sys(); // Call the Sound System specific creation file.
 
 	// Set up the volume.
-    on = settings.musicVol;
+    musicEnabled = settings.musicVol;
     setMusicVolume(settings.musicVol);
     setSoundVolume(settings.soundVol);
-    TRACE(*logger, string("Music initialized: volume is ") + (on ? "on" : "off"));
+    TRACE(*logger, string("Music initialized: volume is ") + (musicEnabled ? "on" : "off"));
 }
 
 /**
@@ -115,10 +114,14 @@ bool Music::load(int music) {
 void Music::callback(void *data) {    
     eventHandler->getTimer()->remove(&Music::callback);
 
-    if (musicMgr->on && !musicMgr->isPlaying())
-        musicMgr->playMid(c->location->map->music);
-    else if (!musicMgr->on && musicMgr->isPlaying())
-        musicMgr->stop();
+    bool mplaying = musicMgr->isPlaying();
+    if (musicMgr->musicEnabled) {
+        if (!mplaying)
+            musicMgr->playMid(c->location->map->music);
+    } else {
+        if (mplaying)
+            musicMgr->stopMid();
+    }
 }
     
 /**
@@ -127,29 +130,29 @@ void Music::callback(void *data) {
 bool Music::toggle() {
     eventHandler->getTimer()->remove(&Music::callback);
 
-    on = !on;
-    if (!on)
-        fadeOut(1000);
-    else
+    musicEnabled = !musicEnabled;
+    if (musicEnabled)
         fadeIn(1000, true);
+    else
+        fadeOut(1000);
 
     eventHandler->getTimer()->add(&Music::callback, settings.gameCyclesPerSecond);
-    return on;    
+    return musicEnabled;
 }
 
 /**
  * Fade out the music
  */
 void Music::fadeOut(int msecs) {
-	// fade the music out even if 'on' is false
+	// fade the music out even if 'musicEnabled' is false
 	if (!functional)
 		return;
 
 	if (isPlaying()) {
-		if (!settings.volumeFades)
-			stop();
-		else
+		if (settings.volumeFades)
 			fadeOut_sys(msecs);
+		else
+			stopMid();
 	}
 }
 
@@ -157,7 +160,7 @@ void Music::fadeOut(int msecs) {
  * Fade in the music
  */
 void Music::fadeIn(int msecs, bool loadFromMap) {
-	if (!functional || !on)
+	if (!functional || !musicEnabled)
 		return;
 
 	if (!isPlaying()) {
@@ -165,11 +168,10 @@ void Music::fadeIn(int msecs, bool loadFromMap) {
 		if (loadFromMap || !playing)
 			load(c->location->map->music);
 
-		if (!settings.volumeFades)
-			playMid(c->location->map->music);
-		else {
+		if (settings.volumeFades)
 			fadeIn_sys(msecs, loadFromMap);
-		}
+		else
+			playMid(c->location->map->music);
 	}
 }
 
@@ -179,7 +181,7 @@ void musicPlay(int track)
 {
 /*  Was done in Music::intro (Now musicPlay(introMusic)).
 #ifdef IOS
-    on = true; // Force iOS to turn this back on from going in the background.
+    musicEnabled = true; // Force iOS to turn this back on from going in the background.
 #endif
 */
     musicMgr->playMid(track);
@@ -192,7 +194,7 @@ void musicPlayLocale()
 
 void musicStop()
 {
-    musicMgr->stop();
+    musicMgr->stopMid();
 }
 
 void musicFadeOut(int msec)

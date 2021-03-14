@@ -89,7 +89,7 @@ void Music::destroy_sys() {
  * Play a midi file
  */
 void Music::playMid(int music) {
-    if (!functional || !on)
+    if (!functional || !musicEnabled)
         return;
     
     /* loaded a new piece of music */

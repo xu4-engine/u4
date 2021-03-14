@@ -123,7 +123,7 @@ bool Music::load_sys(const string &pathname) {
  * Play a midi file
  */
 void Music::playMid(int music) {
-    if (!functional || !on)
+    if (!functional || !musicEnabled)
         return;
 
     /* loaded a new piece of music */

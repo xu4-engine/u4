@@ -33,7 +33,6 @@ public:
 
     static void callback(void *);    
 
-    void stop()         {on = false; stopMid();} /**< Stop playing music */
     void fadeOut(int msecs);
     void fadeIn(int msecs, bool loadFromMap);
     bool toggle();
@@ -51,8 +50,7 @@ private:
     bool load_sys(const string &pathname);
     bool load(int music);
 
-    static bool fading;
-    static bool on;
+    static bool musicEnabled;
 
 public:
     static bool functional;
