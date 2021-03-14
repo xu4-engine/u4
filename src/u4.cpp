@@ -162,23 +162,23 @@ int main(int argc, char *argv[]) {
               || strcmp(argv[i], "-help") == 0
               || strcmp(argv[i], "--help") == 0)
         {
-            printf("xu4: Ultima IV Recreated\n");
-            printf("v%s\n\n", VERSION);
+            printf("xu4: Ultima IV Recreated\n"
+                   "v%s (%s)\n\n", VERSION, __DATE__ );
+            printf(
+            "Options:\n"
+            "      --filter <string>   Specify display filtering options.\n"
+            "  -f, --fullscreen        Run in fullscreen mode.\n"
+            "  -h, --help              Print this message and quit.\n"
+            "  -i, --skip-intro        Skip the intro. and load the last saved game.\n"
+            "  -p <string>,\n"
+            "      --profile <string>  Pass extra arguments to the program.\n"
+            "  -q, --quiet             Set audio volume to zero.\n"
+            "  -s <int>,\n"
+            "      --scale <int>       Specify scaling options.\n"
+            "  -v, --verbose           Enable verbose mode with increased console output.\n"
 
-            printf("-v, --verbose       Runs xu4 in verbose mode. Increased console output.\n");
-            printf("-q, --quiet         Sets all audio volume to zero.\n");
-            printf("-f, --fullscreen    Runs xu4 in fullscreen mode.\n");
-            printf("-i, --skip-intro    Skips the intro and loads the last savegame.\n");
-
-            printf("\n-s <int>,\n");
-            printf("--scale <int>       Used to specify scaling options.\n");
-            printf("-p <string>,\n");
-            printf("--profile <string>  Used to pass extra arguements to the program.\n");
-            printf("--filter <string>   Used to specify filtering options.\n");
-
-            printf("\n-h, --help        Prints this message.\n");
-
-            printf("\nHomepage: http://xu4.sourceforge.com\n");
+            "\nFilters: point, 2xBi, 2xSaI, Scale2x\n"
+            "\nHomepage: http://xu4.sourceforge.com\n");
 
             goto cleanup;
         }
