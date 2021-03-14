@@ -189,15 +189,12 @@ string IntMenuItem::getText() const {
             snprintf(outputBuffer, sizeof(outputBuffer), "%3g sec", static_cast<double>(*val) / 5);
             break;
         case MENU_OUTPUT_VOLUME:
-            if (*val == 0) {
+            if (*val == 0)
                 snprintf(outputBuffer, sizeof(outputBuffer), "Disabled");
-            }
-            else if (*val == MAX_VOLUME) {
+            else if (*val == MAX_VOLUME)
                 snprintf(outputBuffer, sizeof(outputBuffer), "Full");
-            }
-            else {
-                snprintf(outputBuffer, sizeof(outputBuffer), "%d%s%s", *val * 10, "%", "%");
-            }
+            else
+                snprintf(outputBuffer, sizeof(outputBuffer), "%d%%", *val * 10);
             break;
         default:
             break;
