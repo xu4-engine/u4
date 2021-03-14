@@ -170,7 +170,7 @@ int U6Decode::lzw_decompress(unsigned char *source, long source_length, unsigned
     long bytes_written = 0;
 
     int cW;
-    int pW;
+    int pW = 0;
     unsigned char C;
 
     while (! end_marker_reached) {

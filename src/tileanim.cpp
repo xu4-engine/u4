@@ -73,6 +73,10 @@ TileAnimTransform *TileAnimTransform::create(const ConfigElement &conf) {
                 }
             }
         }
+        break;
+
+    default:
+        return NULL;
     }
 
     /**

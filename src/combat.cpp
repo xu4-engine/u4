@@ -181,6 +181,7 @@ void CombatController::initDungeonRoom(int room, Direction from) {
         case DIR_RETREAT:
         default:
             ASSERT(0, "Invalid 'from' direction passed to initDungeonRoom()");
+            return;
         }
 
         for (i = 0; i < AREA_PLAYERS; i++) {

@@ -39,7 +39,7 @@ Image *FMTOWNSImageLoader::load(U4FILE *file, int width, int height, int bpp) {
     if (rawLen < requiredLength) {
         if (raw)
             free(raw);
-        errorWarning("FMTOWNS Image of size %d does not fit anticipated size %d", rawLen, requiredLength);
+        errorWarning("FMTOWNS Image of size %ld does not fit anticipated size %ld", rawLen, requiredLength);
         return NULL;
     }
 

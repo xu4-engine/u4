@@ -112,7 +112,7 @@ Map *MapMgr::initMap(Map::Type type) {
 
     default:
         errorFatal("Error: invalid map type used");
-        break;
+        return NULL;
     }
 
     return map;
