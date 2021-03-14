@@ -213,10 +213,10 @@ take effect.  These settings are stored in the file $HOME/.xu4rc.
 
 xu4 also accepts the following command line options:
 
-   -fullscreen      Fullscreen mode.
+   --fullscreen     Fullscreen mode.
    -f
 
-   -filter <str>    Apply a filter on the scaled images. The <str>
+   --filter <str>   Apply a filter on the scaled images. The <str>
                     parameter must be set to one of the following
                     case-sensitive options:
                         point
@@ -224,11 +224,11 @@ xu4 also accepts the following command line options:
                         2xSaI
                         Scale2x
 
-   -skipintro       Skip the intro, and go directly into the game.
+   --skip-intro     Skip the intro, and go directly into the game.
    -i               This option requires the existance of a valid saved
                     game.
 
-   -profile <str>   Activate a specific save game profile.  Using this
+   --profile <str>  Activate a specific save game profile.  Using this
    -p <str>         option, you may have multiple saved games at the
                     same time.
                       * Use quotation marks around profile names that
@@ -238,13 +238,13 @@ xu4 also accepts the following command line options:
                       * The active profile name is shown on the
                         introduction map view off the main menu.
 
-   -quiet           Quiet mode - no music.
+   --quiet          Quiet mode - no music.
    -q
 
-   -scale <n>       Scale the original graphics by a factor of <n>.
-                    Factor <n> must be 1, 2, 3, 4, or 5.
+   --scale <n>      Scale the original graphics by a factor of <n>.
+   -s <n>           Factor <n> must be 1, 2, 3, 4, or 5.
 
-   -verbose         Verbose output; prints out information useful for
+   --verbose        Verbose output; prints out information useful for
    -v               trouble-shooting.
 
 

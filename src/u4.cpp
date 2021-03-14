@@ -70,7 +70,6 @@ int main(int argc, char *argv[]) {
      */
     for (i = 1; i < (unsigned int)argc; i++) {
         if (((strcmp(argv[i], "-p") == 0)
-          || (strcmp(argv[i], "-profile") == 0)
           || (strcmp(argv[i], "--profile") == 0))
                 && (unsigned int)argc > i + 1) {
             // when grabbing the profile name:
@@ -96,8 +95,7 @@ int main(int argc, char *argv[]) {
 
     /* update the settings based upon command-line arguments */
     for (i = 1; i < (unsigned int)argc; i++) {
-        if (strcmp(argv[i], "-filter") == 0
-          || strcmp(argv[i], "--filter") == 0)
+        if (strcmp(argv[i], "--filter") == 0)
         {
             if ((unsigned int)argc > i + 1)
             {
@@ -106,11 +104,9 @@ int main(int argc, char *argv[]) {
             }
             else
                 errorFatal("%s is invalid alone: Requires a string for input. See --help for more detail.\n", argv[i]);
-
         }
         else if (strcmp(argv[i], "-s") == 0
-               || strcmp(argv[i], "-scale") == 0
-               || strcmp(argv[i], "--scale") == 0)
+              || strcmp(argv[i], "--scale") == 0)
         {
             if ((unsigned int)argc > i + 1)
             {
@@ -119,12 +115,9 @@ int main(int argc, char *argv[]) {
             }
             else
                 errorFatal("%s is invalid alone: Requires a number for input. See --help for more detail.\n", argv[i]);
-
-
         }
         else if ( strcmp(argv[i], "-p") == 0
-                || strcmp(argv[i], "-profile") == 0
-                || strcmp(argv[i], "--profile") == 0)
+               || strcmp(argv[i], "--profile") == 0)
         {
             // do nothing
             if ((unsigned int)argc > i + 1)
@@ -134,32 +127,27 @@ int main(int argc, char *argv[]) {
 
         }
         else if (strcmp(argv[i], "-i") == 0
-              || strcmp(argv[i], "-skipintro") == 0
               || strcmp(argv[i], "--skip-intro") == 0)
         {
-                skipIntro = 1;
+            skipIntro = 1;
         }
         else if (strcmp(argv[i], "-v") == 0
-              || strcmp(argv[i], "-verbose") == 0
               || strcmp(argv[i], "--verbose") == 0)
         {
             verbose = true;
         }
         else if (strcmp(argv[i], "-f") == 0
-              || strcmp(argv[i], "-fullscreen") == 0
               || strcmp(argv[i], "--fullscreen") == 0)
         {
             settings.fullscreen = 1;
         }
         else if (strcmp(argv[i], "-q") == 0
-              || strcmp(argv[i], "-quiet") == 0
               || strcmp(argv[i], "--quiet") == 0)
         {
             settings.musicVol = 0;
             settings.soundVol = 0;
         }
         else if (strcmp(argv[i], "-h") == 0
-              || strcmp(argv[i], "-help") == 0
               || strcmp(argv[i], "--help") == 0)
         {
             printf("xu4: Ultima IV Recreated\n"
@@ -174,8 +162,8 @@ int main(int argc, char *argv[]) {
             "      --profile <string>  Pass extra arguments to the program.\n"
             "  -q, --quiet             Set audio volume to zero.\n"
             "  -s <int>,\n"
-            "      --scale <int>       Specify scaling options.\n"
-            "  -v, --verbose           Enable verbose mode with increased console output.\n"
+            "      --scale <int>       Specify scaling factor (1-5).\n"
+            "  -v, --verbose           Enable verbose console output.\n"
 
             "\nFilters: point, 2xBi, 2xSaI, Scale2x\n"
             "\nHomepage: http://xu4.sourceforge.com\n");
