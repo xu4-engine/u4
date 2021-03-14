@@ -7,13 +7,15 @@
 
 #include "sound_p.h"
 #include "sound.h"
-#include "u4_sdl.h"
 #include "config.h"
 #include "debug.h"
 #include "error.h"
 #include "music.h"
 #include "settings.h"
 #include "u4file.h"
+
+extern int u4_SDL_InitSubSystem(Uint32 flags);
+extern void u4_SDL_QuitSubSystem(Uint32 flags);
 
 
 bool SoundManager::load_sys(Sound sound, const string &pathname) {

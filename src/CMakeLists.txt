@@ -168,21 +168,17 @@ set(XU4_SRC
 )
 
 set(XU4_SDL
-	u4_sdl.h	
 	event_sdl.cpp 
 	screen_sdl.cpp
 	sound_sdl.cpp 
 	image_sdl.cpp 
-	u4_sdl.cpp 
 )
 
 set(XU4_SDL2
-	u4_sdl2.h	
 	event_sdl2.cpp 
 	screen_sdl2.cpp
 	sound_sdl2.cpp 
 	image_sdl2.cpp 
-	u4_sdl2.cpp
 )
 
 

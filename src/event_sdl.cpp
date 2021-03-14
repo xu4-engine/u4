@@ -14,10 +14,12 @@
 #include "error.h"
 #include "screen.h"
 #include "settings.h"
-#include "u4_sdl.h"
 
 extern bool verbose, quit;
 extern int eventTimerGranularity;
+
+extern int u4_SDL_InitSubSystem(Uint32 flags);
+extern void u4_SDL_QuitSubSystem(Uint32 flags);
 
 KeyHandler::KeyHandler(Callback func, void *d, bool asyncronous) :
     handler(func),

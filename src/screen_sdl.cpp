@@ -33,7 +33,6 @@
 #include "tileanim.h"
 #include "tileset.h"
 #include "u4.h"
-#include "u4_sdl.h"
 #include "u4file.h"
 #include "utils.h"
 
@@ -46,6 +45,24 @@ SDL_Cursor *screenInitCursor(const char * const xpm[]);
 
 extern bool verbose;
 
+
+int u4_SDL_InitSubSystem(Uint32 flags) {
+    int f = SDL_WasInit(SDL_INIT_EVERYTHING);
+    if (f == 0) {
+        SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_AUDIO);
+    }
+    if (!SDL_WasInit(flags))
+        return SDL_InitSubSystem(flags);
+    else
+        return 0;
+}
+
+void u4_SDL_QuitSubSystem(Uint32 flags) {
+    if (SDL_WasInit(SDL_INIT_EVERYTHING) == flags)
+        SDL_Quit();
+    else
+        SDL_QuitSubSystem(flags);
+}
 
 void screenRefreshThreadInit();
 void screenRefreshThreadEnd();
