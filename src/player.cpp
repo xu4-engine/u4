@@ -852,15 +852,18 @@ void Party::applyEffect(TileEffect effect) {
         case EFFECT_NONE:
         case EFFECT_ELECTRICITY:
             members[i]->applyEffect(effect);
+            break;
         case EFFECT_LAVA:
         case EFFECT_FIRE:
         case EFFECT_SLEEP:
             if (xu4_random(2) == 0)
                 members[i]->applyEffect(effect);
+            break;
         case EFFECT_POISONFIELD:
         case EFFECT_POISON:
             if (xu4_random(5) == 0)
                 members[i]->applyEffect(effect);
+            break;
         }
     }
 }
