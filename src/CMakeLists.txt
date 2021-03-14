@@ -241,7 +241,7 @@ FOREACH(DIR ${DIRECTORIES_TO_COPY_TO_RUNTIME})
 ENDFOREACH()
 
 file(DOWNLOAD
-http://www.thatfleminggent.com/ultima/ultima4.zip
+http://ultima.thatfleminggent.com/ultima4.zip
 ${CMAKE_CURRENT_BINARY_DIR}/ultima4.zip
 )
 
