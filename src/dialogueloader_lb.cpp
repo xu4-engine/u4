@@ -32,7 +32,7 @@ Dialogue* U4LBDialogueLoader::load(void *source) {
     U4FILE *avatar = u4fopen("avatar.exe");
     if (!avatar)
         return NULL;
-    
+
     vector<string> lbKeywords = u4read_stringtable(avatar, 87581, 24);
     /* There's a \0 in the 19th string so we get a
        spurious 20th entry */
@@ -108,30 +108,30 @@ Response *lordBritishGetHelp(const DynamicResponse *resp) {
     if (c->saveGame->moves <= 1000) {
         text = "To survive in this hostile land thou must first know thyself! Seek ye to master thy weapons and thy magical ability!\n"
                "\nTake great care in these thy first travels in Britannia.\n"
-               "\nUntil thou dost well know thyself, travel not far from the safety of the townes!\n";        
+               "\nUntil thou dost well know thyself, travel not far from the safety of the townes!\n";
     }
 
     else if (c->saveGame->members == 1) {
         text = "Travel not the open lands alone. There are many worthy people in the diverse townes whom it would be wise to ask to Join thee!\n"
-               "\nBuild thy party unto eight travellers, for only a true leader can win the Quest!\n";        
+               "\nBuild thy party unto eight travellers, for only a true leader can win the Quest!\n";
     }
 
     else if (c->saveGame->runes == 0) {
         text = "Learn ye the paths of virtue. Seek to gain entry unto the eight shrines!\n"
                "\nFind ye the Runes, needed for entry into each shrine, and learn each chant or \"Mantra\" used to focus thy meditations.\n"
                "\nWithin the Shrines thou shalt learn of the deeds which show thy inner virtue or vice!\n"
-               "\nChoose thy path wisely for all thy deeds of good and evil are remembered and can return to hinder thee!\n";        
+               "\nChoose thy path wisely for all thy deeds of good and evil are remembered and can return to hinder thee!\n";
     }
 
     else if (!partialAvatar) {
         text = "Visit the Seer Hawkwind often and use his wisdom to help thee prove thy virtue.\n"
                "\nWhen thou art ready, Hawkwind will advise thee to seek the Elevation unto partial Avatarhood in a virtue.\n"
-               "\nSeek ye to become a partial Avatar in all eight virtues, for only then shalt thou be ready to seek the codex!\n";        
+               "\nSeek ye to become a partial Avatar in all eight virtues, for only then shalt thou be ready to seek the codex!\n";
     }
 
     else if (c->saveGame->stones == 0) {
         text = "Go ye now into the depths of the dungeons. Therein recover the 8 colored stones from the altar pedestals in the halls of the dungeons.\n"
-               "\nFind the uses of these stones for they can help thee in the Abyss!\n";        
+               "\nFind the uses of these stones for they can help thee in the Abyss!\n";
     }
 
     else if (!fullAvatar) {
@@ -166,15 +166,15 @@ Response *lordBritishGetIntro(const DynamicResponse *resp) {
 
     if (c->saveGame->lbintro) {
         if (c->saveGame->members == 1) {
-            intro->add(string("\n\n\nLord British\nsays:  Welcome\n") + 
+            intro->add(string("\n\n\nLord British\nsays:  Welcome\n") +
                        c->party->member(0)->getName() + "!\n\n");
         }
         else if (c->saveGame->members == 2) {
             intro->add(string("\n\nLord British\nsays:  Welcome\n") +
-                       c->party->member(0)->getName() + 
-                       " and thee also " + 
-                       c->party->member(1)->getName() + 
-                       "!\n\n"); 
+                       c->party->member(0)->getName() +
+                       " and thee also " +
+                       c->party->member(1)->getName() +
+                       "!\n\n");
         }
         else {
             intro->add(string("\n\n\nLord British\nsays:  Welcome\n") +

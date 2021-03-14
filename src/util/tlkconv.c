@@ -23,7 +23,7 @@ xmlNodePtr addAsText(xmlDocPtr doc, xmlNodePtr node, const char *in) {
         if (buffer[0]) {
             xmlAddChild(node, xmlNewText((const xmlChar *)buffer));
         }
-            
+
         begin = end;
 
         while (*begin == '\n') {
@@ -44,7 +44,7 @@ void xmlToTlk(xmlDocPtr doc, FILE *tlk) {
            QUESTION, YESRESP, NORESP, KEYWORD1, KEYWORD2, MAX };
     char *str[MAX];
     int i;
-    
+
     root = xmlDocGetRootElement(doc);
     for (person = root->children; person; person = person->next) {
         int kw = KEYWORD1;
@@ -53,26 +53,26 @@ void xmlToTlk(xmlDocPtr doc, FILE *tlk) {
             continue;
 
         memset(tlk_buffer, 0, sizeof(tlk_buffer));
-        memset(&str[0], 0, sizeof(char *) * MAX);        
-                
+        memset(&str[0], 0, sizeof(char *) * MAX);
+
         str[NAME] = (char *) xmlGetProp(person, (xmlChar *) "name");
         str[PRONOUN] = (char *) xmlGetProp(person, (xmlChar *) "pronoun");
-        
+
         val = (const char *) xmlGetProp(person, (xmlChar *) "turnAwayProb");
-        tlk_buffer[2] = (unsigned char) strtoul(val, NULL, 10);        
+        tlk_buffer[2] = (unsigned char) strtoul(val, NULL, 10);
 
         for (node = person->children; node; node = node->next) {
             xmlNodePtr child;
 
             if (!node->children)
                 continue;
-                
+
             if (strcmp((char *) node->name, "description") == 0)
                 str[DESC] = (char *)xmlNodeListGetString(doc, node->children, 1);
             else if (strcmp((char *) node->name, "topic") == 0) {
                 char *query = (char *) xmlGetProp(node, (xmlChar *) "query");
                 char trigger = 0;
-                
+
                 if (strcasecmp(query, "job") == 0) {
                     str[JOB] = (char *)xmlNodeListGetString(doc, node->children, 1);
                     trigger = 3;
@@ -117,7 +117,7 @@ void xmlToTlk(xmlDocPtr doc, FILE *tlk) {
             else {
                 fprintf(stderr, "An unknown node %s was found in the .xml file", (char *)node->name);
                 exit(1);
-            }            
+            }
         }
 
         // Fill these with dummy info so it doesn't break anything.
@@ -142,7 +142,7 @@ void xmlToTlk(xmlDocPtr doc, FILE *tlk) {
                 free(str[i]);
             else xmlFree(str[i]);
         }
-        fwrite(tlk_buffer, sizeof(tlk_buffer), 1, tlk);        
+        fwrite(tlk_buffer, sizeof(tlk_buffer), 1, tlk);
     }
 }
 
@@ -175,48 +175,48 @@ xmlDocPtr tlkToXml(FILE *tlk) {
 
         sprintf(buf, "%d", i);
         xmlSetProp(node, (const xmlChar *)"id", (const xmlChar *)buf);
-        
+
         xmlSetProp(node, (const xmlChar *)"name", (const xmlChar *)ptr);
         ptr += strlen(ptr) + 1;
 
         xmlSetProp(node, (const xmlChar *)"pronoun", (const xmlChar *)ptr);
-        ptr += strlen(ptr) + 1;        
+        ptr += strlen(ptr) + 1;
 
         sprintf(buf, "%d", (unsigned char) tlk_buffer[2]);
-        xmlSetProp(node, (const xmlChar *)"turnAwayProb", (const xmlChar *)buf);        
-        
+        xmlSetProp(node, (const xmlChar *)"turnAwayProb", (const xmlChar *)buf);
+
         addAsText(doc, xmlNewTextChild(node, NULL, (const xmlChar *)"description", NULL), ptr);
         ptr += strlen(ptr) + 1;
-        
+
         job = addAsText(doc, xmlNewTextChild(node, NULL, (const xmlChar *)"topic", NULL), ptr);
         xmlSetProp(job, (const xmlChar *)"query", (const xmlChar *)"job");
         ptr += strlen(ptr) + 1;
-        
+
         health = addAsText(doc, xmlNewTextChild(node, NULL, (const xmlChar *)"topic", NULL), ptr);
         xmlSetProp(health, (const xmlChar *)"query", (const xmlChar *)"health");
         ptr += strlen(ptr) + 1;
-        
+
         response1 = strdup(ptr);
         ptr += strlen(ptr) + 1;
-        
+
         response2 = strdup(ptr);
         ptr += strlen(ptr) + 1;
-        
+
         question = strdup(ptr);
-        ptr += strlen(ptr) + 1;        
-        
+        ptr += strlen(ptr) + 1;
+
         yes = strdup(ptr);
         ptr += strlen(ptr) + 1;
 
         no = strdup(ptr);
-        ptr += strlen(ptr) + 1; 
-        
-        kw1 = addAsText(doc, xmlNewTextChild(node, NULL, (const xmlChar *)"topic", NULL), response1);
-        xmlSetProp(kw1, (const xmlChar *)"query", (const xmlChar *)ptr);        
         ptr += strlen(ptr) + 1;
-        
+
+        kw1 = addAsText(doc, xmlNewTextChild(node, NULL, (const xmlChar *)"topic", NULL), response1);
+        xmlSetProp(kw1, (const xmlChar *)"query", (const xmlChar *)ptr);
+        ptr += strlen(ptr) + 1;
+
         kw2 = addAsText(doc, xmlNewTextChild(node, NULL, (const xmlChar *)"topic", NULL), response2);
-        xmlSetProp(kw2, (const xmlChar *)"query", (const xmlChar *)ptr);        
+        xmlSetProp(kw2, (const xmlChar *)"query", (const xmlChar *)ptr);
         ptr += strlen(ptr) + 1;
 
         switch(tlk_buffer[0]) {
@@ -233,7 +233,7 @@ xmlDocPtr tlkToXml(FILE *tlk) {
         if (target) {
             xmlNodePtr q;
             q = addAsText(doc, xmlNewTextChild(target, NULL, (const xmlChar *)"question", NULL), question);
-            
+
             // Get the question type
             sprintf(buf, "%d", tlk_buffer[1]);
             xmlSetProp(q, (const xmlChar *)"type", (const xmlChar *)buf);
@@ -293,7 +293,7 @@ int main(int argc, char *argv[1]) {
     } else {
         fprintf(stderr, "%s: invalid option\n", argv[1]);
         exit(1);
-    }    
+    }
 
     fclose(in);
     fclose(out);

@@ -70,7 +70,7 @@ void screenRefreshThreadEnd();
 void screenInit_sys() {
     /* start SDL */
     if (u4_SDL_InitSubSystem(SDL_INIT_VIDEO) < 0)
-        errorFatal("unable to init SDL: %s", SDL_GetError());    
+        errorFatal("unable to init SDL: %s", SDL_GetError());
     SDL_EnableUNICODE(1);
     SDL_SetGamma(settings.gamma / 100.0f, settings.gamma / 100.0f, settings.gamma / 100.0f);
     atexit(SDL_Quit);
@@ -78,7 +78,7 @@ void screenInit_sys() {
     SDL_WM_SetCaption("Ultima IV", NULL);
 #ifdef ICON_FILE
     SDL_WM_SetIcon(SDL_LoadBMP(ICON_FILE), NULL);
-#endif   
+#endif
 
     if (!SDL_SetVideoMode(320 * settings.scale, 200 * settings.scale, 0, SDL_HWSURFACE | SDL_ANYFORMAT | (settings.fullscreen ? SDL_FULLSCREEN : 0)))
         errorFatal("unable to set video: %s", SDL_GetError());
@@ -108,7 +108,7 @@ void screenInit_sys() {
 }
 
 void screenDelete_sys() {
-	screenRefreshThreadEnd();
+    screenRefreshThreadEnd();
     SDL_FreeCursor(cursors[1]);
     SDL_FreeCursor(cursors[2]);
     SDL_FreeCursor(cursors[3]);
@@ -134,7 +134,7 @@ void screenDeinterlaceCga(unsigned char *data, int width, int height, int tiles,
     for (t = 0; t < tiles; t++) {
         unsigned char *base;
         base = &(data[t * (width * tileheight / 4)]);
-        
+
         for (y = 0; y < (tileheight / 2); y++) {
             for (x = 0; x < width; x+=4) {
                 tmp[((y * 2) * width + x) / 4] = base[(y * width + x) / 4];
@@ -226,27 +226,27 @@ SDL_mutex *screenLockMutex = NULL;
 int frameDuration = 0;
 
 void screenLock() {
-	SDL_mutexP(screenLockMutex);
+    SDL_mutexP(screenLockMutex);
 }
 
 void screenUnlock() {
-	SDL_mutexV(screenLockMutex);
+    SDL_mutexV(screenLockMutex);
 }
 
 void screenRedrawScreen() {
-	screenLock();
+    screenLock();
     SDL_UpdateRect(SDL_GetVideoSurface(), 0, 0, 0, 0);
     screenUnlock();
 }
 
 void screenRedrawTextArea(int x, int y, int width, int height) {
-	screenLock();
-	SDL_UpdateRect(SDL_GetVideoSurface(), x * CHAR_WIDTH * settings.scale, y * CHAR_HEIGHT * settings.scale, width * CHAR_WIDTH * settings.scale, height * CHAR_HEIGHT * settings.scale);
-	screenUnlock();
+    screenLock();
+    SDL_UpdateRect(SDL_GetVideoSurface(), x * CHAR_WIDTH * settings.scale, y * CHAR_HEIGHT * settings.scale, width * CHAR_WIDTH * settings.scale, height * CHAR_HEIGHT * settings.scale);
+    screenUnlock();
 }
 
 void screenWait(int numberOfAnimationFrames) {
-	SDL_Delay(numberOfAnimationFrames * frameDuration);
+    SDL_Delay(numberOfAnimationFrames * frameDuration);
 }
 
 bool continueScreenRefresh = true;
@@ -254,79 +254,79 @@ SDL_Thread *screenRefreshThread = NULL;
 
 int screenRefreshThreadFunction(void *unused) {
 
-	while (continueScreenRefresh) {
-		SDL_Delay(frameDuration);
-		screenRedrawScreen();
-	}
-	return 0;
+    while (continueScreenRefresh) {
+        SDL_Delay(frameDuration);
+        screenRedrawScreen();
+    }
+    return 0;
 }
 
 void screenRefreshThreadInit() {
-	screenLockMutex = SDL_CreateMutex();;
+    screenLockMutex = SDL_CreateMutex();;
 
-	frameDuration = 1000 / settings.screenAnimationFramesPerSecond;
+    frameDuration = 1000 / settings.screenAnimationFramesPerSecond;
 
-	continueScreenRefresh = true;
-	if (screenRefreshThread) {
-		errorWarning("Screen refresh thread already exists.");
-		return;
-	}
+    continueScreenRefresh = true;
+    if (screenRefreshThread) {
+        errorWarning("Screen refresh thread already exists.");
+        return;
+    }
 
-	screenRefreshThread = SDL_CreateThread(screenRefreshThreadFunction, NULL);
-	if (!screenRefreshThread) {
-		errorWarning(SDL_GetError());
-		return;
-	}
+    screenRefreshThread = SDL_CreateThread(screenRefreshThreadFunction, NULL);
+    if (!screenRefreshThread) {
+        errorWarning(SDL_GetError());
+        return;
+    }
 }
 
 void screenRefreshThreadEnd() {
-	continueScreenRefresh = false;
-	SDL_WaitThread(screenRefreshThread, NULL);
-	screenRefreshThread = NULL;
+    continueScreenRefresh = false;
+    SDL_WaitThread(screenRefreshThread, NULL);
+    screenRefreshThread = NULL;
 }
 
 
 /**
  * Scale an image up.  The resulting image will be scale * the
  * original dimensions.  The original image is no longer deleted.
- * n is the number of tiles in the image; each tile is filtered 
- * seperately. filter determines whether or not to filter the 
+ * n is the number of tiles in the image; each tile is filtered
+ * seperately. filter determines whether or not to filter the
  * resulting image.
  */
 Image *screenScale(Image *src, int scale, int n, int filter) {
     Image *dest = NULL;
-	bool isTransparent;
-	unsigned int transparentIndex;
-	bool alpha = src->isAlphaOn();
+    bool isTransparent;
+    unsigned int transparentIndex;
+    bool alpha = src->isAlphaOn();
 
-	if (n == 0)
-		n = 1;
+    if (n == 0)
+        n = 1;
 
-	isTransparent = src->getTransparentIndex(transparentIndex);
-	src->alphaOff();
+    isTransparent = src->getTransparentIndex(transparentIndex);
+    src->alphaOff();
 
-	while (filter && filterScaler && (scale % 2 == 0)) {
-		dest = (*filterScaler)(src, 2, n);
-		src = dest;
-		scale /= 2;
-	}
-	if (scale == 3 && scaler3x(settings.filter)) {
-		dest = (*filterScaler)(src, 3, n);
-		src = dest;
-		scale /= 3;
-	}
+    while (filter && filterScaler && (scale % 2 == 0)) {
+        dest = (*filterScaler)(src, 2, n);
+        src = dest;
+        scale /= 2;
+    }
+    if (scale == 3 && scaler3x(settings.filter)) {
+        dest = (*filterScaler)(src, 3, n);
+        src = dest;
+        scale /= 3;
+    }
 
-	if (scale != 1)
-		dest = (*scalerGet("point"))(src, scale, n);
+    if (scale != 1)
+        dest = (*scalerGet("point"))(src, scale, n);
 
-	if (!dest)
-		dest = Image::duplicate(src);
+    if (!dest)
+        dest = Image::duplicate(src);
 
-	if (isTransparent)
-		dest->setTransparentIndex(transparentIndex);
+    if (isTransparent)
+        dest->setTransparentIndex(transparentIndex);
 
-	if (alpha)
-		src->alphaOn();
+    if (alpha)
+        src->alphaOn();
 
 
 
@@ -359,10 +359,10 @@ Image *screenScaleDown(Image *src, int scale) {
     for (y = 0; y < src->height(); y+=scale) {
         for (x = 0; x < src->width(); x+=scale) {
             unsigned int index;
-            src->getPixelIndex(x, y, index);                
+            src->getPixelIndex(x, y, index);
             dest->putPixelIndex(x / scale, y / scale, index);
         }
-    }    
+    }
 
     if (isTransparent)
         dest->setTransparentIndex(transparentIndex);

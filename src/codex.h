@@ -21,7 +21,7 @@ enum CodexEjectCode {
     CODEX_EJECT_TRUTH,
     CODEX_EJECT_LOVE,
     CODEX_EJECT_COURAGE,
-    CODEX_EJECT_BAD_INFINITY 
+    CODEX_EJECT_BAD_INFINITY
 };
 
 void codexStart();

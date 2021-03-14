@@ -21,20 +21,20 @@ class Tileset;
 class TileAnim;
 
 /* attr masks */
-#define MASK_SHIP               	0x0001
-#define MASK_HORSE              	0x0002
-#define MASK_BALLOON            	0x0004
-#define MASK_DISPEL             	0x0008
-#define MASK_TALKOVER           	0x0010
-#define MASK_DOOR               	0x0020
-#define MASK_LOCKEDDOOR         	0x0040
-#define MASK_CHEST              	0x0080
-#define MASK_ATTACKOVER         	0x0100
-#define MASK_CANLANDBALLOON     	0x0200
-#define MASK_REPLACEMENT        	0x0400
-#define MASK_WATER_REPLACEMENT		0x0800
-#define MASK_FOREGROUND         	0x1000
-#define MASK_LIVING_THING			0x2000
+#define MASK_SHIP                   0x0001
+#define MASK_HORSE                  0x0002
+#define MASK_BALLOON                0x0004
+#define MASK_DISPEL                 0x0008
+#define MASK_TALKOVER               0x0010
+#define MASK_DOOR                   0x0020
+#define MASK_LOCKEDDOOR             0x0040
+#define MASK_CHEST                  0x0080
+#define MASK_ATTACKOVER             0x0100
+#define MASK_CANLANDBALLOON         0x0200
+#define MASK_REPLACEMENT            0x0400
+#define MASK_WATER_REPLACEMENT      0x0800
+#define MASK_FOREGROUND             0x1000
+#define MASK_LIVING_THING           0x2000
 
 
 /* movement masks */
@@ -45,7 +45,7 @@ class TileAnim;
 
 /**
  * A Tile object represents a specific tile type.  Every tile is a
- * member of a Tileset.  
+ * member of a Tileset.
  */
 class Tile : private Uncopyable {
 public:
@@ -68,19 +68,19 @@ public:
     bool isWaterForeground() const      {return waterForeground;}
 
     int canWalkOn(Direction d) const   {return DIR_IN_MASK(d, rule->walkonDirs);}
-	int canWalkOff(Direction d) const  { return DIR_IN_MASK(d, rule->walkoffDirs); }
+    int canWalkOff(Direction d) const  { return DIR_IN_MASK(d, rule->walkoffDirs); }
 
     /**
      * All tiles that you can walk, swim, or sail on, can be attacked over. All others must declare
      * themselves
      */
-	int  canAttackOver() const      {return isWalkable() || isSwimable() || isSailable() || (rule->mask & MASK_ATTACKOVER); }
-	int  canLandBalloon() const     {return rule->mask & MASK_CANLANDBALLOON; }
-	int  isLivingObject() const     {return rule->mask & MASK_LIVING_THING; }
-	int  isReplacement() const      {return rule->mask & MASK_REPLACEMENT; }
-	int  isWaterReplacement() const {return rule->mask & MASK_WATER_REPLACEMENT; }
+    int  canAttackOver() const      {return isWalkable() || isSwimable() || isSailable() || (rule->mask & MASK_ATTACKOVER); }
+    int  canLandBalloon() const     {return rule->mask & MASK_CANLANDBALLOON; }
+    int  isLivingObject() const     {return rule->mask & MASK_LIVING_THING; }
+    int  isReplacement() const      {return rule->mask & MASK_REPLACEMENT; }
+    int  isWaterReplacement() const {return rule->mask & MASK_WATER_REPLACEMENT; }
 
-	int  isWalkable() const         {return rule->walkonDirs > 0; }
+    int  isWalkable() const         {return rule->walkonDirs > 0; }
     bool isCreatureWalkable() const {return canWalkOn(DIR_ADVANCE) && !(rule->movementMask & MASK_CREATURE_UNWALKABLE);}
     bool isDungeonWalkable() const;
     bool isDungeonFloor() const;
@@ -120,7 +120,7 @@ private:
     int w, h;           /**< width and height of the tile */
     int frames;         /**< The number of frames this tile has */
     int scale;          /**< The scale of the tile */
-    TileAnim *anim;     /**< The tile animation for this tile */    
+    TileAnim *anim;     /**< The tile animation for this tile */
     bool opaque;        /**< Is this tile opaque? */
 
     bool foreground;    /**< As a maptile, is a foreground that will search neighbour maptiles for a land-based background replacement. ex: chests */
@@ -128,7 +128,7 @@ private:
 
     TileRule *rule;     /**< The rules that govern the behavior of this tile */
     string imageName;   /**< The name of the image that belongs to this tile */
-    string looks_like;  /**< The name of the tile that this tile looks exactly like (if any) */    
+    string looks_like;  /**< The name of the tile that this tile looks exactly like (if any) */
 
     Image *image;       /**< The original image for this tile (with all of its frames) */
     bool tiledInDungeon;

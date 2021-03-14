@@ -203,7 +203,7 @@ int main(int argc, char *argv[]) {
     else if (strcmp(alg, "rle") == 0) {
         int count, threshold, val, i;
 
-        /* 
+        /*
          * The original, 4-bit graphics only start a run if the count is 5
          * or more; but the upgrade uses a run whereever it doesn't expand
          * the file (i.e. at a count of 3).  This value is adjusted to

@@ -97,14 +97,14 @@ private:
 /**
  * The dialogue class, which holds conversation information for
  * townspeople and others who may talk to you.  It includes information
- * like pronouns, keywords, actual conversation text (of course), 
+ * like pronouns, keywords, actual conversation text (of course),
  * questions, and what happens when you answer these questions.
  */
 class Dialogue {
 public:
     /**
      * A question-response to a keyword.
-     */ 
+     */
     class Question {
     public:
         Question(const string &txt, Response *yes, Response *no);
@@ -121,21 +121,21 @@ public:
      * A dialogue keyword.
      * It contains all the keywords that the talker will respond to, as
      * well as the responses to those keywords.
-     */ 
+     */
     class Keyword {
-    public:        
+    public:
         Keyword(const string &kw, Response *resp);
         Keyword(const string &kw, const string &resp);
         ~Keyword();
-        
+
         bool operator==(const string &kw) const;
 
         /*
          * Accessor methods
          */
-		const string &getKeyword()	{return keyword;}
-		Response *getResponse()		{return response;}
-        
+        const string &getKeyword()  {return keyword;}
+        Response *getResponse()     {return response;}
+
     private:
         string keyword;
         Response *response;
@@ -154,7 +154,7 @@ public:
 
     /*
      * Accessor methods
-     */ 
+     */
     const string &getName() const                   {return name;}
     const string &getPronoun() const                {return pronoun;}
     const string &getPrompt() const                 {return prompt;}
@@ -165,7 +165,7 @@ public:
 
     /*
      * Getters
-     */ 
+     */
     void setName(const string &n)       {name           = n;}
     void setPronoun(const string &pn)   {pronoun        = pn;}
     void setPrompt(const string &prompt){this->prompt   = prompt;}
@@ -180,10 +180,10 @@ public:
     string dump(const string &arg);
 
     /*
-     * Operators 
+     * Operators
      */
     Keyword *operator[](const string &kw);
-    
+
 private:
     string name;
     string pronoun;
@@ -194,7 +194,7 @@ private:
     KeywordMap keywords;
     union {
         int turnAwayProb;
-        int attackProb;    
+        int attackProb;
     };
     Question *question;
 };
@@ -203,7 +203,7 @@ private:
  * The conversation class, which handles the flow of text from the
  * player to the talker and vice-versa.  It is responsible for beginning
  * and termination conversations and handing state changes during.
- */ 
+ */
 class Conversation {
 public:
     /** Different states the conversation may be in */
@@ -230,11 +230,11 @@ public:
     };
 
     /** Different types of conversation input required */
-    enum InputType {      
+    enum InputType {
         INPUT_STRING,
         INPUT_CHARACTER,
         INPUT_NONE
-    };      
+    };
 
     /* Constructor/Destructors */
     Conversation();
@@ -245,10 +245,10 @@ public:
 
     /* Static variables */
     static const unsigned int BUFFERLEN;    /**< The default maxixum length of input */
-    
+
 private:
     Debug *logger;
-public:    
+public:
     State state;                /**< The state of the conversation */
     string playerInput;         /**< A string holding the text the player inputs */
     list<string> reply;         /**< What the talker says */

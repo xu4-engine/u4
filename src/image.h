@@ -26,8 +26,8 @@ using std::string;
 #define DARK_GRAY_HALO RGBA(14,15,16,255)
 
 struct RGBA {
-	RGBA(int r, int g, int b, int a) : r(r), g(g), b(b), a(a){}
-	RGBA() : r(0), g(0), b(0), a(255){}
+    RGBA(int r, int g, int b, int a) : r(r), g(g), b(b), a(a){}
+    RGBA() : r(0), g(0), b(0), a(255){}
     unsigned int r, g, b, a;
 };
 bool operator==(const RGBA &lhs, const RGBA &rhs);

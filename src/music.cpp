@@ -62,9 +62,9 @@ Music::Music() : current(MUSIC_NONE), playing(NULL), logger(new Debug("debug/mus
         TRACE_LOCAL(*logger, string("\tTrack file: ") + filenames.back());
     }
 
-	create_sys(); // Call the Sound System specific creation file.
+    create_sys(); // Call the Sound System specific creation file.
 
-	// Set up the volume.
+    // Set up the volume.
     musicEnabled = settings.musicVol;
     setMusicVolume(settings.musicVol);
     setSoundVolume(settings.soundVol);
@@ -77,7 +77,7 @@ Music::Music() : current(MUSIC_NONE), playing(NULL), logger(new Debug("debug/mus
 Music::~Music() {
     TRACE(*logger, "Uninitializing music");
     eventHandler->getTimer()->remove(&Music::callback);
-	destroy_sys(); // Call the Sound System specific destruction file.
+    destroy_sys(); // Call the Sound System specific destruction file.
 
     TRACE(*logger, "Music uninitialized");
     delete logger;
@@ -93,16 +93,16 @@ bool Music::load(int music) {
         if (isPlaying())
             return false;
         /* it loaded correctly */
-        else 
+        else
             return true;
     }
 
     string pathname(u4find_music(filenames[music]));
     if (!pathname.empty()) {
-		bool status = load_sys(pathname);
-		if (status)
-			current = music;
-		return status;
+        bool status = load_sys(pathname);
+        if (status)
+            current = music;
+        return status;
     }
     return false;
 }
@@ -111,7 +111,7 @@ bool Music::load(int music) {
  * Ensures that the music is playing if it is supposed to be, or off
  * if it is supposed to be turned off.
  */
-void Music::callback(void *data) {    
+void Music::callback(void *data) {
     eventHandler->getTimer()->remove(&Music::callback);
 
     bool mplaying = musicMgr->isPlaying();
@@ -123,7 +123,7 @@ void Music::callback(void *data) {
             musicMgr->stopMid();
     }
 }
-    
+
 /**
  * Toggle the music on/off (usually by pressing 'v')
  */
@@ -144,35 +144,35 @@ bool Music::toggle() {
  * Fade out the music
  */
 void Music::fadeOut(int msecs) {
-	// fade the music out even if 'musicEnabled' is false
-	if (!functional)
-		return;
+    // fade the music out even if 'musicEnabled' is false
+    if (!functional)
+        return;
 
-	if (isPlaying()) {
-		if (settings.volumeFades)
-			fadeOut_sys(msecs);
-		else
-			stopMid();
-	}
+    if (isPlaying()) {
+        if (settings.volumeFades)
+            fadeOut_sys(msecs);
+        else
+            stopMid();
+    }
 }
 
 /**
  * Fade in the music
  */
 void Music::fadeIn(int msecs, bool loadFromMap) {
-	if (!functional || !musicEnabled)
-		return;
+    if (!functional || !musicEnabled)
+        return;
 
-	if (!isPlaying()) {
-		/* make sure we've got something loaded to play */
-		if (loadFromMap || !playing)
-			load(c->location->map->music);
+    if (!isPlaying()) {
+        /* make sure we've got something loaded to play */
+        if (loadFromMap || !playing)
+            load(c->location->map->music);
 
-		if (settings.volumeFades)
-			fadeIn_sys(msecs, loadFromMap);
-		else
-			playMid(c->location->map->music);
-	}
+        if (settings.volumeFades)
+            fadeIn_sys(msecs, loadFromMap);
+        else
+            playMid(c->location->map->music);
+    }
 }
 
 // Game Interface

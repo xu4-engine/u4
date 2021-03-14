@@ -32,7 +32,7 @@ typedef std::vector<class PartyMember *> PartyMemberVector;
 
 enum KarmaAction {
     KA_FOUND_ITEM,
-    KA_STOLE_CHEST,    
+    KA_STOLE_CHEST,
     KA_GAVE_TO_BEGGAR,
     KA_GAVE_ALL_TO_BEGGAR,
     KA_BRAGGED,
@@ -45,7 +45,7 @@ enum KarmaAction {
     KA_FLED_GOOD,
     KA_HEALTHY_FLED_EVIL,
     KA_KILLED_EVIL,
-    KA_SPARED_GOOD,    
+    KA_SPARED_GOOD,
     KA_DONATED_BLOOD,
     KA_DIDNT_DONATE_BLOOD,
     KA_CHEAT_REAGENTS,
@@ -74,7 +74,7 @@ enum InventoryItem {
     INV_HORSE
 };
 
-enum CannotJoinError {    
+enum CannotJoinError {
     JOIN_SUCCEEDED,
     JOIN_NOT_EXPERIENCED,
     JOIN_NOT_VIRTUOUS
@@ -88,7 +88,7 @@ enum EquipError {
 
 /**
  * PartyMember class
- */ 
+ */
 class PartyMember : public Creature, public Script::Provider {
 public:
     PartyMember(Party *p, SaveGamePlayerRecord *pr);
@@ -98,7 +98,7 @@ public:
 
     // Used to translate script values into something useful
     virtual string translate(std::vector<string>& parts);
-    
+
     // Accessor methods
     virtual int getHp() const;
     int getMaxHp() const   { return player->hpMax; }
@@ -110,7 +110,7 @@ public:
     int getMaxMp() const;
     const Weapon *getWeapon() const;
     const Armor *getArmor() const;
-    virtual string getName() const;    
+    virtual string getName() const;
     SexType getSex() const;
     ClassType getClass() const;
     virtual CreatureStatus getState() const;
@@ -119,23 +119,23 @@ public:
 
     virtual void addStatus(StatusType status);
     void adjustMp(int pts);
-    void advanceLevel();    
+    void advanceLevel();
     void applyEffect(TileEffect effect);
     void awardXp(int xp);
-    bool heal(HealType type);    
+    bool heal(HealType type);
     virtual void removeStatus(StatusType status);
     virtual void setHp(int hp);
-    void setMp(int mp);    
+    void setMp(int mp);
     EquipError setArmor(const Armor *a);
-    EquipError setWeapon(const Weapon *w);    
-    
-    virtual bool applyDamage(int damage, bool byplayer = false);    
+    EquipError setWeapon(const Weapon *w);
+
+    virtual bool applyDamage(int damage, bool byplayer = false);
     virtual int getAttackBonus() const;
     virtual int getDefense() const;
     virtual bool dealDamage(Creature *m, int damage);
-    int getDamage();   
+    int getDamage();
     virtual const string &getHitTile() const;
-    virtual const string &getMissTile() const;    
+    virtual const string &getMissTile() const;
     bool isDead();
     bool isDisabled();
     int  loseWeapon();
@@ -146,12 +146,12 @@ protected:
     static MapTile tileForClass(int klass);
 
     SaveGamePlayerRecord *player;
-    class Party *party;    
+    class Party *party;
 };
 
 /**
  * Party class
- */ 
+ */
 class PartyEvent {
 public:
     enum Type {
@@ -166,9 +166,9 @@ public:
         PARTY_REVIVED,
         INVENTORY_ADDED,
     };
-    
+
     PartyEvent(Type type, PartyMember *partyMember) : type(type), player(partyMember) { }
-    
+
     Type type;
     PartyMember *player;
 };
@@ -182,23 +182,23 @@ public:
     virtual ~Party();
 
     void notifyOfChange(PartyMember *partyMember = 0, PartyEvent::Type = PartyEvent::GENERIC);
-    
+
     // Used to translate script values into something useful
     virtual string translate(std::vector<string>& parts);
-    
+
     void adjustFood(int food);
     void adjustGold(int gold);
     void adjustKarma(KarmaAction action);
     void applyEffect(TileEffect effect);
-    bool attemptElevation(Virtue virtue);        
+    bool attemptElevation(Virtue virtue);
     void burnTorch(int turns = 1);
-    bool canEnterShrine(Virtue virtue);    
-    bool canPersonJoin(string name, Virtue *v);    
+    bool canEnterShrine(Virtue virtue);
+    bool canPersonJoin(string name, Virtue *v);
     void damageShip(unsigned int pts);
     bool donate(int quantity);
     void endTurn();
     int  getChest();
-    int  getTorchDuration() const;    
+    int  getTorchDuration() const;
     void healShip(unsigned int pts);
     bool isFlying() const;
     bool isImmobilized();
@@ -225,8 +225,8 @@ public:
     void swapPlayers(int p1, int p2);
 
     int size() const;
-    PartyMember *member(int index) const;    
-    
+    PartyMember *member(int index) const;
+
 private:
     void syncMembers();
     PartyMemberVector members;

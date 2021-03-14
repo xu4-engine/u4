@@ -123,7 +123,7 @@ Debug::Debug(const string &fn, const string &nm, bool append) : disabled(false),
 
     }
 #else
-    
+
 #endif
 
     if (append)
@@ -141,10 +141,10 @@ Debug::Debug(const string &fn, const string &nm, bool append) : disabled(false),
  * macro used, whereas TRACE_LOCAL() only captures
  * the debug info in its own debug file.
  */
-void Debug::initGlobal(const string &filename) {    
+void Debug::initGlobal(const string &filename) {
     if (settings.logging.empty())
         return;
-    
+
     if (global)
         fclose(global);
 
@@ -183,17 +183,17 @@ void Debug::trace(const string &msg, const string &fn, const string &func, const
     string message, filename;
 
     Path path(fn);
-    filename = path.getFilename();    
-    
+    filename = path.getFilename();
+
     if (!file)
         return;
-    
+
     if (!msg.empty())
-        message += msg;        
-    
+        message += msg;
+
     if (!filename.empty() || line > 0) {
         brackets = true;
-        message += " [";        
+        message += " [";
     }
 
     if ((l_filename == filename) && (l_func == func) && (l_line == line))
@@ -216,7 +216,7 @@ void Debug::trace(const string &msg, const string &fn, const string &func, const
             char ln[8];
             sprintf(ln, "%d", line);
             message += "line ";
-            message += ln;        
+            message += ln;
         }
         else l_line = -1;
     }
@@ -224,7 +224,7 @@ void Debug::trace(const string &msg, const string &fn, const string &func, const
     if (brackets)
         message += "]";
     message += "\n";
-    
+
     fprintf(file, "%s", message.c_str());
     if (global && glbl)
         fprintf(global, "%12s: %s", name.c_str(), message.c_str());
@@ -249,13 +249,13 @@ bool Debug::loggingEnabled(const string &name) {
 
 class ExceptionHandler
 {
-	public:
-	
-	ExceptionHandler()
-	{
-		LoadLibrary("exchndl.dll");
-	}
+    public:
+
+    ExceptionHandler()
+    {
+        LoadLibrary("exchndl.dll");
+    }
 };
 
-static ExceptionHandler gExceptionHandler;	//  global instance of class
+static ExceptionHandler gExceptionHandler;  //  global instance of class
 #endif

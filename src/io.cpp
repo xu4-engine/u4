@@ -35,7 +35,7 @@ int readInt(unsigned int *i, FILE *f) {
     *i |= (fgetc(f) << 8);
     *i |= (fgetc(f) << 16);
     *i |= (fgetc(f) << 24);
-    
+
     return 1;
 }
 

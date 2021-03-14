@@ -190,7 +190,7 @@ RGBA *U4PaletteLoader::loadEgaPalette() {
     if (egaPalette == NULL) {
         int index = 0;
         const Config *config = Config::getInstance();
-        
+
         egaPalette = new RGBA[16];
 
         vector<ConfigElement> paletteConf = config->getElement("egaPalette").getChildren();
@@ -198,7 +198,7 @@ RGBA *U4PaletteLoader::loadEgaPalette() {
 
             if (i->getName() != "color")
                 continue;
-        
+
             egaPalette[index].r = i->getInt("red");
             egaPalette[index].g = i->getInt("green");
             egaPalette[index].b = i->getInt("blue");

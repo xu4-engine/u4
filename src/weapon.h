@@ -15,15 +15,15 @@ class Weapon {
 public:
     /**< Flags affecting weapon's behavior. @see Weapon::flags */
     enum Flags {
-        WEAP_LOSE					= 0x0001,	/**< lost when used */
-        WEAP_LOSEWHENRANGED			= 0x0002,	/**< lost when used for ranged attack */
-        WEAP_CHOOSEDISTANCE			= 0x0004,	/**< allows player to choose attack distance */
-        WEAP_ALWAYSHITS				= 0x0008,	/**< always hits it's target */
-        WEAP_MAGIC					= 0x0010,	/**< is magical */
-        WEAP_ATTACKTHROUGHOBJECTS	= 0x0040,	/**< can attack through solid objects */
-        WEAP_ABSOLUTERANGE			= 0x0080,	/**< range is absolute (only works at specific distance) */
-        WEAP_RETURNS				= 0x0100,	/**< returns to user after used/thrown */
-        WEAP_DONTSHOWTRAVEL			= 0x0200	/**< do not show animations when attacking */
+        WEAP_LOSE                   = 0x0001,   /**< lost when used */
+        WEAP_LOSEWHENRANGED         = 0x0002,   /**< lost when used for ranged attack */
+        WEAP_CHOOSEDISTANCE         = 0x0004,   /**< allows player to choose attack distance */
+        WEAP_ALWAYSHITS             = 0x0008,   /**< always hits it's target */
+        WEAP_MAGIC                  = 0x0010,   /**< is magical */
+        WEAP_ATTACKTHROUGHOBJECTS   = 0x0040,   /**< can attack through solid objects */
+        WEAP_ABSOLUTERANGE          = 0x0080,   /**< range is absolute (only works at specific distance) */
+        WEAP_RETURNS                = 0x0100,   /**< returns to user after used/thrown */
+        WEAP_DONTSHOWTRAVEL         = 0x0200    /**< do not show animations when attacking */
     };
 
 public:

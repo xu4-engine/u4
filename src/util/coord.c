@@ -13,7 +13,7 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "example: coord BE EF (converts to numeric coordinates)\n");
         exit(1);
     }
-        
+
     x = argv[1];
     y = argv[2];
 

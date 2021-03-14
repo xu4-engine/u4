@@ -27,7 +27,7 @@ public:
     bool isExtension() const { return extension; }
     const string &translate(const string &name) const;
 
-private:    
+private:
     string name;                /**< filename */
     string path;                /**< the path within the zipfile where resources are located */
     bool extension;             /**< whether this zipfile is an extension with config information */

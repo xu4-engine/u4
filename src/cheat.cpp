@@ -41,7 +41,7 @@ bool CheatMenuController::keyPressed(int key) {
         if (c->location->map->isWorldMap()) {
             const Coords *moongate = moongateGetGateCoordsForPhase(key - '1');
             if (moongate)
-                c->location->coords = *moongate;                
+                c->location->coords = *moongate;
         }
         else
             screenMessage("Not here!\n");
@@ -195,8 +195,8 @@ bool CheatMenuController::keyPressed(int key) {
             screenMessage("%s:", getVirtueName(static_cast<Virtue>(i)));
             for (j = 13; j > strlen(getVirtueName(static_cast<Virtue>(i))); j--)
                 screenMessage(" ");
-            if (c->saveGame->karma[i] > 0)                
-                screenMessage("%.2d\n", c->saveGame->karma[i]);            
+            if (c->saveGame->karma[i] > 0)
+                screenMessage("%.2d\n", c->saveGame->karma[i]);
             else screenMessage("--\n");
         }
         break;
@@ -219,14 +219,14 @@ bool CheatMenuController::keyPressed(int key) {
         screenMessage("Opacity %s!\n", c->opacity ? "on" : "off");
         break;
 
-    case 'p':        
+    case 'p':
         if ((c->location->viewMode == VIEW_NORMAL) || (c->location->viewMode == VIEW_DUNGEON))
             c->location->viewMode = VIEW_GEM;
         else if (c->location->context == CTX_DUNGEON)
             c->location->viewMode = VIEW_DUNGEON;
-        else 
+        else
             c->location->viewMode = VIEW_NORMAL;
-        
+
         screenMessage("\nToggle View!\n");
         break;
 
@@ -248,10 +248,10 @@ bool CheatMenuController::keyPressed(int key) {
             static MapTile horse = c->location->map->tileset->getByName("horse")->getId(),
                 ship = c->location->map->tileset->getByName("ship")->getId(),
                 balloon = c->location->map->tileset->getByName("balloon")->getId();
-            MapTile *choice; 
+            MapTile *choice;
             Tile *tile;
-            
-            screenMessage("Create transport!\nWhich? ");            
+
+            screenMessage("Create transport!\nWhich? ");
 
             // Get the transport of choice
             char transport = ReadChoiceController::get("shb \033\015");
@@ -271,11 +271,11 @@ bool CheatMenuController::keyPressed(int key) {
                 screenMessage("%s\n", tile->getName().c_str());
 
                 // Get the direction in which to create the transport
-                eventHandler->pushController(&readDir);                
+                eventHandler->pushController(&readDir);
 
                 screenMessage("Dir: ");
                 coords.move(readDir.waitFor(), c->location->map);
-                if (coords != c->location->coords) {            
+                if (coords != c->location->coords) {
                     bool ok = false;
                     MapTile *ground = c->location->map->tileAt(coords, WITHOUT_OBJECTS);
 
@@ -285,7 +285,7 @@ bool CheatMenuController::keyPressed(int key) {
                     case 's': ok = ground->getTileType()->isSailable(); break;
                     case 'h': ok = ground->getTileType()->isWalkable(); break;
                     case 'b': ok = ground->getTileType()->isWalkable(); break;
-                    default: break;                      
+                    default: break;
                     }
 
                     if (choice && ok) {
@@ -304,7 +304,7 @@ bool CheatMenuController::keyPressed(int key) {
     case 'v':
         screenMessage("\nFull Virtues!\n");
         for (i = 0; i < 8; i++)
-            c->saveGame->karma[i] = 0;        
+            c->saveGame->karma[i] = 0;
         c->stats->update();
         break;
 
@@ -317,7 +317,7 @@ bool CheatMenuController::keyPressed(int key) {
     }
 
     case 'x':
-        screenMessage("\nX-it!\n");        
+        screenMessage("\nX-it!\n");
         if (!game->exitToParentMap())
             screenMessage("Not Here!\n");
         musicPlayLocale();
@@ -392,7 +392,7 @@ void CheatMenuController::summonCreature(const string &name) {
         screenMessage("\n");
         return;
     }
-    
+
     /* find the creature by its id and spawn it */
     unsigned int id = atoi(creatureName.c_str());
     if (id > 0)
@@ -405,10 +405,10 @@ void CheatMenuController::summonCreature(const string &name) {
         if (gameSpawnCreature(m))
             screenMessage("\n%s summoned!\n", m->getName().c_str());
         else screenMessage("\n\nNo place to put %s!\n\n", m->getName().c_str());
-        
+
         return;
     }
-    
+
     screenMessage("\n%s not found\n", creatureName.c_str());
 }
 

@@ -63,7 +63,7 @@ class IntroObjectState {
 public:
     IntroObjectState() : x(0), y(0), tile(0) {}
     int x, y;
-    MapTile tile; /* base tile + tile frame */    
+    MapTile tile; /* base tile + tile frame */
 };
 
 /* temporary place-holder for settings changes */
@@ -82,9 +82,9 @@ const int IntroBinData::BEASTIE_FRAME_TABLE_OFFSET = 0x7380;
 const int IntroBinData::BEASTIE1_FRAMES_OFFSET = 0;
 const int IntroBinData::BEASTIE2_FRAMES_OFFSET = 0x78;
 
-IntroBinData::IntroBinData() : 
-    sigData(NULL), 
-    scriptTable(NULL), 
+IntroBinData::IntroBinData() :
+    sigData(NULL),
+    scriptTable(NULL),
     baseTileTable(NULL),
     beastie1FrameTable(NULL),
     beastie2FrameTable(NULL) {
@@ -130,9 +130,9 @@ bool IntroBinData::load() {
 
     u4fseek(title, INTRO_MAP_OFFSET, SEEK_SET);
     introMap.resize(INTRO_MAP_WIDTH * INTRO_MAP_HEIGHT, MapTile(0));
-    for (i = 0; i < INTRO_MAP_HEIGHT * INTRO_MAP_WIDTH; i++)        
+    for (i = 0; i < INTRO_MAP_HEIGHT * INTRO_MAP_WIDTH; i++)
         introMap[i] = TileMap::get("base")->translate(u4fgetc(title));
-        
+
     u4fseek(title, INTRO_SCRIPT_TABLE_OFFSET, SEEK_SET);
     scriptTable = new unsigned char[INTRO_SCRIPT_TABLE_SIZE];
     for (i = 0; i < INTRO_SCRIPT_TABLE_SIZE; i++)
@@ -168,8 +168,8 @@ bool IntroBinData::load() {
     return true;
 }
 
-IntroController::IntroController() : 
-    Controller(1), 
+IntroController::IntroController() :
+    Controller(1),
     backgroundArea(),
     menuArea(1 * CHAR_WIDTH, 13 * CHAR_HEIGHT, 38, 11),
     extendedMenuArea(2 * CHAR_WIDTH, 10 * CHAR_HEIGHT, 36, 13),
@@ -200,25 +200,25 @@ IntroController::IntroController() :
     confMenu.getItemById(MI_CONF_INTERFACE)->setVisible(settings.enhancements);
 
     videoMenu.setTitle("Video Options:", 0, 0);
-    videoMenu.add(MI_VIDEO_CONF_GFX, 						 "\010 Game Graphics Options",  2,  2,/*'g'*/  2);
-    videoMenu.add(MI_VIDEO_04,    		new IntMenuItem		("Scale                x%d", 2,  4,/*'s'*/  0, reinterpret_cast<int *>(&settingsChanged.scale), 1, 5, 1));
-    videoMenu.add(MI_VIDEO_05,  (		new BoolMenuItem	("Mode                 %s",  2,  5,/*'m'*/  0, &settingsChanged.fullscreen))->setValueStrings("Fullscreen", "Window"));
-    videoMenu.add(MI_VIDEO_06, 			new StringMenuItem	("Filter               %s",  2,  6,/*'f'*/  0, &settingsChanged.filter, screenGetFilterNames()));
-    videoMenu.add(MI_VIDEO_08,    		new IntMenuItem		("Gamma                %s",  2,  7,/*'a'*/  1, &settingsChanged.gamma, 50, 150, 10, MENU_OUTPUT_GAMMA));
+    videoMenu.add(MI_VIDEO_CONF_GFX,              "\010 Game Graphics Options",  2,  2,/*'g'*/  2);
+    videoMenu.add(MI_VIDEO_04,    new IntMenuItem("Scale                x%d", 2,  4,/*'s'*/  0, reinterpret_cast<int *>(&settingsChanged.scale), 1, 5, 1));
+    videoMenu.add(MI_VIDEO_05,  (new BoolMenuItem("Mode                 %s",  2,  5,/*'m'*/  0, &settingsChanged.fullscreen))->setValueStrings("Fullscreen", "Window"));
+    videoMenu.add(MI_VIDEO_06, new StringMenuItem("Filter               %s",  2,  6,/*'f'*/  0, &settingsChanged.filter, screenGetFilterNames()));
+    videoMenu.add(MI_VIDEO_08,    new IntMenuItem("Gamma                %s",  2,  7,/*'a'*/  1, &settingsChanged.gamma, 50, 150, 10, MENU_OUTPUT_GAMMA));
     videoMenu.add(USE_SETTINGS,                   "\010 Use These Settings",  2, 11,/*'u'*/  2);
     videoMenu.add(CANCEL,                         "\010 Cancel",              2, 12,/*'c'*/  2);
     videoMenu.addShortcutKey(CANCEL, ' ');
     videoMenu.setClosesMenu(USE_SETTINGS);
     videoMenu.setClosesMenu(CANCEL);
-    
+
     gfxMenu.setTitle("Game Graphics Options", 0,0);
-    gfxMenu.add(MI_GFX_SCHEME, new StringMenuItem		 	 			("Graphics Scheme    %s", 2, 2, /*'G'*/ 0, &settingsChanged.videoType, imageMgr->getSetNames()));
-    gfxMenu.add(MI_GFX_TILE_TRANSPARENCY, new BoolMenuItem              ("Transparency Hack  %s", 2, 4, /*'t'*/ 0, &settingsChanged.enhancementsOptions.u4TileTransparencyHack));
-    gfxMenu.add(MI_GFX_TILE_TRANSPARENCY_SHADOW_SIZE, new IntMenuItem   ("  Shadow Size:     %d", 2, 5, /*'s'*/ 9, &settingsChanged.enhancementsOptions.u4TrileTransparencyHackShadowBreadth, 0, 16, 1));
-    gfxMenu.add(MI_GFX_TILE_TRANSPARENCY_SHADOW_OPACITY, new IntMenuItem("  Shadow Opacity:  %d", 2, 6, /*'o'*/ 9, &settingsChanged.enhancementsOptions.u4TileTransparencyHackPixelShadowOpacity, 8, 256, 8));
-    gfxMenu.add(MI_VIDEO_02, 				new StringMenuItem			("Gem Layout         %s",  2,  8,/*'e'*/  1, &settingsChanged.gemLayout, screenGetGemLayoutNames()));
-    gfxMenu.add(MI_VIDEO_03, 			new StringMenuItem				("Line Of Sight      %s",  2,  9,/*'l'*/  0, &settingsChanged.lineOfSight, screenGetLineOfSightStyles()));
-    gfxMenu.add(MI_VIDEO_07,   		new BoolMenuItem					("Screen Shaking     %s",  2, 10,/*'k'*/ 8, &settingsChanged.screenShakes));
+    gfxMenu.add(MI_GFX_SCHEME,                        new StringMenuItem("Graphics Scheme    %s", 2,  2,/*'G'*/ 0, &settingsChanged.videoType, imageMgr->getSetNames()));
+    gfxMenu.add(MI_GFX_TILE_TRANSPARENCY,               new BoolMenuItem("Transparency Hack  %s", 2,  4,/*'t'*/ 0, &settingsChanged.enhancementsOptions.u4TileTransparencyHack));
+    gfxMenu.add(MI_GFX_TILE_TRANSPARENCY_SHADOW_SIZE,    new IntMenuItem("  Shadow Size:     %d", 2,  5,/*'s'*/ 9, &settingsChanged.enhancementsOptions.u4TrileTransparencyHackShadowBreadth, 0, 16, 1));
+    gfxMenu.add(MI_GFX_TILE_TRANSPARENCY_SHADOW_OPACITY, new IntMenuItem("  Shadow Opacity:  %d", 2,  6,/*'o'*/ 9, &settingsChanged.enhancementsOptions.u4TileTransparencyHackPixelShadowOpacity, 8, 256, 8));
+    gfxMenu.add(MI_VIDEO_02,                          new StringMenuItem("Gem Layout         %s", 2,  8,/*'e'*/ 1, &settingsChanged.gemLayout, screenGetGemLayoutNames()));
+    gfxMenu.add(MI_VIDEO_03,                          new StringMenuItem("Line Of Sight      %s", 2,  9,/*'l'*/ 0, &settingsChanged.lineOfSight, screenGetLineOfSightStyles()));
+    gfxMenu.add(MI_VIDEO_07,                            new BoolMenuItem("Screen Shaking     %s", 2, 10,/*'k'*/ 8, &settingsChanged.screenShakes));
     gfxMenu.add(MI_GFX_RETURN,               "\010 Return to Video Options",              2,  12,/*'r'*/  2);
     gfxMenu.setClosesMenu(MI_GFX_RETURN);
 
@@ -243,7 +243,7 @@ IntroController::IntroController() :
     inputMenu.addShortcutKey(CANCEL, ' ');
     inputMenu.setClosesMenu(USE_SETTINGS);
     inputMenu.setClosesMenu(CANCEL);
-    
+
     speedMenu.setTitle("Speed Options:", 0, 0);
     speedMenu.add(MI_SPEED_01, new IntMenuItem("Game Cycles per Second    %3d",      2,  2,/*'g'*/  0, &settingsChanged.gameCyclesPerSecond, 1, MAX_CYCLES_PER_SECOND, 1));
     speedMenu.add(MI_SPEED_02, new IntMenuItem("Battle Speed              %3d",      2,  3,/*'b'*/  0, &settingsChanged.battleSpeed, 1, MAX_BATTLE_SPEED, 1));
@@ -259,13 +259,13 @@ IntroController::IntroController() :
     speedMenu.setClosesMenu(CANCEL);
 
     /* move the BATTLE DIFFICULTY, DEBUG, and AUTOMATIC ACTIONS settings to "enhancementsOptions" */
-    gameplayMenu.setTitle							   ("Enhanced Gameplay Options:", 0, 0);
+    gameplayMenu.setTitle                              ("Enhanced Gameplay Options:", 0, 0);
     gameplayMenu.add(MI_GAMEPLAY_01, new StringMenuItem("Battle Difficulty          %s", 2,  2,/*'b'*/  0, &settingsChanged.battleDiff, settings.getBattleDiffs()));
     gameplayMenu.add(MI_GAMEPLAY_02,   new BoolMenuItem("Fixed Chest Traps          %s", 2,  3,/*'t'*/ 12, &settingsChanged.enhancementsOptions.c64chestTraps));
     gameplayMenu.add(MI_GAMEPLAY_03,   new BoolMenuItem("Gazer Spawns Insects       %s", 2,  4,/*'g'*/  0, &settingsChanged.enhancementsOptions.gazerSpawnsInsects));
     gameplayMenu.add(MI_GAMEPLAY_04,   new BoolMenuItem("Gem View Shows Objects     %s", 2,  5,/*'e'*/  1, &settingsChanged.enhancementsOptions.peerShowsObjects));
     gameplayMenu.add(MI_GAMEPLAY_05,   new BoolMenuItem("Slime Divides              %s", 2,  6,/*'s'*/  0, &settingsChanged.enhancementsOptions.slimeDivides));
-    gameplayMenu.add(MI_GAMEPLAY_06,   new BoolMenuItem("Debug Mode (Cheats)        %s", 2,  8,/*'d'*/  0, &settingsChanged.debug)); 
+    gameplayMenu.add(MI_GAMEPLAY_06,   new BoolMenuItem("Debug Mode (Cheats)        %s", 2,  8,/*'d'*/  0, &settingsChanged.debug));
     gameplayMenu.add(USE_SETTINGS,                      "\010 Use These Settings",       2, 11,/*'u'*/  2);
     gameplayMenu.add(CANCEL,                            "\010 Cancel",                   2, 12,/*'c'*/  2);
     gameplayMenu.addShortcutKey(CANCEL, ' ');
@@ -293,7 +293,7 @@ IntroController::IntroController() :
  */
 bool IntroController::init() {
 
-	justInitiatedNewGame = false;
+    justInitiatedNewGame = false;
     introMusic = MUSIC_TOWNS;
 
     // sigData is referenced during Titles initialization
@@ -346,7 +346,7 @@ bool IntroController::init() {
 
 bool IntroController::hasInitiatedNewGame()
 {
-	return this->justInitiatedNewGame;
+    return this->justInitiatedNewGame;
 }
 
 /**
@@ -480,8 +480,8 @@ void IntroController::drawMap() {
                 dataNibble = binData->scriptTable[scrPos] & 0xf;
                 objectStateTable[dataNibble].x = binData->scriptTable[scrPos+1] & 0x1f;
                 objectStateTable[dataNibble].y = commandNibble;
-                
-                // See if the tile id needs to be recalculated 
+
+                // See if the tile id needs to be recalculated
                 if ((binData->scriptTable[scrPos+1] >> 5) >= binData->baseTileTable[dataNibble]->getFrames()) {
                     int frame = (binData->scriptTable[scrPos+1] >> 5) - binData->baseTileTable[dataNibble]->getFrames();
                     objectStateTable[dataNibble].tile = MapTile(binData->baseTileTable[dataNibble]->getId() + 1);
@@ -491,7 +491,7 @@ void IntroController::drawMap() {
                     objectStateTable[dataNibble].tile = MapTile(binData->baseTileTable[dataNibble]->getId());
                     objectStateTable[dataNibble].tile.frame = (binData->scriptTable[scrPos+1] >> 5);
                 }
-                
+
                 scrPos += 2;
                 break;
             case 7:
@@ -545,15 +545,15 @@ void IntroController::drawMapStatic() {
 }
 
 void IntroController::drawMapAnimated() {
-    int i;    
+    int i;
 
     // draw animated objects
     for (i = 0; i < IntroBinData::INTRO_BASETILE_TABLE_SIZE; i++)
         if (objectStateTable[i].tile != 0)
         {
-        	std::vector<MapTile> tiles;
-        	tiles.push_back(objectStateTable[i].tile);
-        	tiles.push_back(binData->introMap[objectStateTable[i].x + (objectStateTable[i].y * INTRO_MAP_WIDTH)]);
+            std::vector<MapTile> tiles;
+            tiles.push_back(objectStateTable[i].tile);
+            tiles.push_back(binData->introMap[objectStateTable[i].x + (objectStateTable[i].y * INTRO_MAP_WIDTH)]);
             mapArea.drawTile(tiles, false, objectStateTable[i].x, objectStateTable[i].y);
         }
 }
@@ -603,9 +603,9 @@ void IntroController::animateTree(const string &frame) {
  * Draws the cards in the character creation sequence with the gypsy.
  */
 void IntroController::drawCard(int pos, int card) {
-    static const char *cardNames[] = { 
+    static const char *cardNames[] = {
         "honestycard", "compassioncard", "valorcard", "justicecard",
-        "sacrificecard", "honorcard", "spiritualitycard", "humilitycard" 
+        "sacrificecard", "honorcard", "spiritualitycard", "humilitycard"
     };
 
     ASSERT(pos == 0 || pos == 1, "invalid pos: %d", pos);
@@ -621,7 +621,7 @@ void IntroController::drawAbacusBeads(int row, int selectedVirtue, int rejectedV
     ASSERT(row >= 0 && row < 7, "invalid row: %d", row);
     ASSERT(selectedVirtue < 8 && selectedVirtue >= 0, "invalid virtue: %d", selectedVirtue);
     ASSERT(rejectedVirtue < 8 && rejectedVirtue >= 0, "invalid virtue: %d", rejectedVirtue);
-    
+
     backgroundArea.draw("whitebead", 128 + (selectedVirtue * 9), 24 + (row * 15));
     backgroundArea.draw("blackbead", 128 + (rejectedVirtue * 9), 24 + (row * 15));
 }
@@ -637,9 +637,9 @@ void IntroController::updateScreen() {
         backgroundArea.draw(BKGD_INTRO);
         drawMap();
         drawBeasties();
-		// display the profile name if a local profile is being used
-		if (useProfile)
-			screenTextAt(40-profileName.length(), 24, "%s", profileName.c_str());
+        // display the profile name if a local profile is being used
+        if (useProfile)
+            screenTextAt(40-profileName.length(), 24, "%s", profileName.c_str());
         break;
 
     case INTRO_MENU:
@@ -868,8 +868,8 @@ void IntroController::startQuestions() {
         questionArea.clear();
         questionArea.textAt(0, 0, "%s", binData->introGypsy[questionRound == 0 ? GYP_PLACES_FIRST : (questionRound == 6 ? GYP_PLACES_LAST : GYP_PLACES_TWOMORE)].c_str());
         questionArea.textAt(0, 1, "%s", binData->introGypsy[GYP_UPON_TABLE].c_str());
-        questionArea.textAt(0, 2, "%s and %s.  She says", 
-                            binData->introGypsy[questionTree[questionRound * 2] + 4].c_str(), 
+        questionArea.textAt(0, 2, "%s and %s.  She says",
+                            binData->introGypsy[questionTree[questionRound * 2] + 4].c_str(),
                             binData->introGypsy[questionTree[questionRound * 2 + 1] + 4].c_str());
         questionArea.textAt(0, 3, "\"Consider this:\"");
 
@@ -924,7 +924,7 @@ string IntroController::getQuestion(int v1, int v2) {
  * Starts the game.
  */
 void IntroController::journeyOnward() {
-    FILE *saveGameFile;    
+    FILE *saveGameFile;
     bool validSave = false;
 
     /*
@@ -937,14 +937,14 @@ void IntroController::journeyOnward() {
 
         // Make sure there are players in party.sav --
         // In the Ultima Collection CD, party.sav exists, but does
-        // not contain valid info to journey onward        
-        saveGame->read(saveGameFile);        
+        // not contain valid info to journey onward
+        saveGame->read(saveGameFile);
         if (saveGame->members > 0)
             validSave = true;
         delete saveGame;
         fclose(saveGameFile);
     }
-    
+
     if (!validSave) {
         errorMessage = "Initiate a new game first!";
         updateScreen();
@@ -987,14 +987,14 @@ void IntroController::showText(const string &text) {
     int lineNo = 0;
 
     questionArea.clear();
-    
+
     unsigned long pos = current.find("\n");
     while (pos < current.length()) {
         questionArea.textAt(0, lineNo++, "%s", current.substr(0, pos).c_str());
         current = current.substr(pos+1);
         pos = current.find("\n");
     }
-    
+
     /* write the last line (possibly only line) */
     questionArea.textAt(0, lineNo++, "%s", current.substr(0, pos).c_str());
 }
@@ -1046,7 +1046,7 @@ void IntroController::timerFired() {
     if (beastiesVisible)
         drawBeasties();
 
-    /* 
+    /*
      * refresh the screen only if the timer queue is empty --
      * i.e. drop a frame if another timer event is about to be fired
      */
@@ -1070,7 +1070,7 @@ void IntroController::update(Menu *menu, MenuEvent &event) {
     else if (menu == &videoMenu)
         updateVideoMenu(event);
     else if (menu == &gfxMenu)
-    	updateGfxMenu(event);
+        updateGfxMenu(event);
     else if (menu == &soundMenu)
         updateSoundMenu(event);
     else if (menu == &inputMenu)
@@ -1104,8 +1104,8 @@ void IntroController::updateConfMenu(MenuEvent &event) {
             runMenu(&videoMenu, &extendedMenuArea, true);
             break;
         case MI_VIDEO_CONF_GFX:
-        	runMenu(&gfxMenu, &extendedMenuArea, true);
-        	break;
+            runMenu(&gfxMenu, &extendedMenuArea, true);
+            break;
         case MI_CONF_SOUND:
             runMenu(&soundMenu, &extendedMenuArea, true);
             break;
@@ -1151,11 +1151,11 @@ void IntroController::updateVideoMenu(MenuEvent &event) {
 
                 // go back to menu mode
                 mode = INTRO_MENU;
-            }        
+            }
             break;
         case MI_VIDEO_CONF_GFX:
-        	runMenu(&gfxMenu, &extendedMenuArea, true);
-        	break;
+            runMenu(&gfxMenu, &extendedMenuArea, true);
+            break;
         case CANCEL:
             // discard settings
             settingsChanged = settings;
@@ -1176,12 +1176,12 @@ void IntroController::updateGfxMenu(MenuEvent &event)
         event.getType() == MenuEvent::DECREMENT) {
 
 
-		switch(event.getMenuItem()->getId()) {
-		case MI_GFX_RETURN:
-			runMenu(&videoMenu, &extendedMenuArea, true);
-			break;
-		default: break;
-		}
+        switch(event.getMenuItem()->getId()) {
+        case MI_GFX_RETURN:
+            runMenu(&videoMenu, &extendedMenuArea, true);
+            break;
+        default: break;
+        }
     }
 
     // draw the extended background for all option screens
@@ -1245,14 +1245,14 @@ void IntroController::updateInputMenu(MenuEvent &event) {
                 SDL_ShowCursor(SDL_DISABLE);
             }
 #endif
-    
+
             break;
         case CANCEL:
             // discard settings
             settingsChanged = settings;
             break;
         default: break;
-        }    
+        }
     }
 
     // draw the extended background for all option screens
@@ -1273,11 +1273,11 @@ void IntroController::updateSpeedMenu(MenuEvent &event) {
             // save settings
             settings.setData(settingsChanged);
             settings.write();
-    
+
             // re-initialize events
             eventTimerGranularity = (1000 / settings.gameCyclesPerSecond);
-            eventHandler->getTimer()->reset(eventTimerGranularity);            
-        
+            eventHandler->getTimer()->reset(eventTimerGranularity);
+
             break;
         case CANCEL:
             // discard settings
@@ -1366,7 +1366,7 @@ void IntroController::initQuestionTree() {
         questionTree[0] = questionTree[1];
         questionTree[1] = tmp;
     }
-        
+
 }
 
 /**
@@ -1379,7 +1379,7 @@ bool IntroController::doQuestion(int answer) {
         questionTree[answerInd] = questionTree[questionRound * 2];
     else
         questionTree[answerInd] = questionTree[questionRound * 2 + 1];
-    
+
     drawAbacusBeads(questionRound, questionTree[answerInd],
         questionTree[questionRound * 2 + ((answer) ? 0 : 1)]);
 
@@ -1517,7 +1517,7 @@ void IntroController::initPlayers(SaveGame *saveGame) {
  */
 void IntroController::preloadMap()
 {
-    int x, y, i;    
+    int x, y, i;
 
     // draw unmodified map
     for (y = 0; y < INTRO_MAP_HEIGHT; y++)
@@ -1604,7 +1604,7 @@ void IntroController::getTitleSourceData()
     if (info->width / info->prescale != 320 || info->height / info->prescale != 200)
     {
         // the image appears to have been scaled already
-    	errorWarning("ERROR 1008: The title image (\"%s\") has been scaled too early!\t\n\nVisit the XU4 website for additional information.\n\thttp://xu4.sourceforge.net/", BKGD_INTRO);
+        errorWarning("ERROR 1008: The title image (\"%s\") has been scaled too early!\t\n\nVisit the XU4 website for additional information.\n\thttp://xu4.sourceforge.net/", BKGD_INTRO);
     }
 
     // get the transparent color
@@ -1627,7 +1627,7 @@ void IntroController::getTitleSourceData()
                 false,
                 Image::HARDWARE );
             if (titles[i].srcImage->isIndexed())
-            	titles[i].srcImage->setPaletteFromImage(info->image);
+                titles[i].srcImage->setPaletteFromImage(info->image);
 
             // get the source image
             info->image->drawSubRectOn(
@@ -1717,7 +1717,7 @@ void IntroController::getTitleSourceData()
                 Image *scaled;      // the scaled and filtered image
                 scaled = screenScale(titles[i].srcImage, settings.scale / info->prescale, 1, 1);
                 if (transparentIndex >= 0)
-                	scaled->setTransparentIndex(transparentIndex);
+                    scaled->setTransparentIndex(transparentIndex);
 
                 titles[i].prescaled = true;
                 delete titles[i].srcImage;
@@ -1769,14 +1769,14 @@ void IntroController::getTitleSourceData()
 #ifdef SLACK_ON_SDL_AGNOSTICISM
 int getTicks()
 {
-	return SDL_GetTicks();
+    return SDL_GetTicks();
 }
 #elif !defined(IOS)
 static int ticks = 0;
 int getTicks()
 {
-	ticks += 1000;
-	return ticks;
+    ticks += 1000;
+    return ticks;
 }
 #endif
 
@@ -1859,7 +1859,7 @@ bool IntroController::updateTitle()
 
         case BAR:
         {
-        	RGBA color;
+            RGBA color;
             while (animStepTarget > title->animStep)
             {
                 title->animStep++;

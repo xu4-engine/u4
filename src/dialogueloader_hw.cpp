@@ -46,7 +46,7 @@ Dialogue* U4HWDialogueLoader::load(void *source) {
     U4FILE *avatar = u4fopen("avatar.exe");
     if (!avatar)
         return NULL;
-    
+
     hawkwindText = u4read_stringtable(avatar, 74729, 53);
 
     Dialogue *dlg = new Dialogue();
@@ -96,9 +96,9 @@ Response *hawkwindGetAdvice(const DynamicResponse *dynResp) {
     }
     if (virtue != -1) {
         text = "\n\n";
-        if (virtueLevel == 0)            
-            text += hawkwindText[HW_ALREADYAVATAR] + "\n";        
-        else if (virtueLevel < 80)            
+        if (virtueLevel == 0)
+            text += hawkwindText[HW_ALREADYAVATAR] + "\n";
+        else if (virtueLevel < 80)
             text += hawkwindText[(virtueLevel/20) * 8 + virtue];
         else if (virtueLevel < 99)
             text += hawkwindText[3 * 8 + virtue];
@@ -108,7 +108,7 @@ Response *hawkwindGetAdvice(const DynamicResponse *dynResp) {
     else {
         text = string("\n") + hawkwindText[HW_DEFAULT];
     }
-        
+
     return new Response(text);
 }
 

@@ -55,12 +55,12 @@ std::vector<MapTile> Location::tilesAt(MapCoords coords, bool &focus) {
     bool avatar = this->coords == coords;
 
     /* Do not return objects for VIEW_GEM mode, show only the avatar and tiles */
-    if (viewMode == VIEW_GEM && (!settings.enhancements || !settings.enhancementsOptions.peerShowsObjects)) {        
+    if (viewMode == VIEW_GEM && (!settings.enhancements || !settings.enhancementsOptions.peerShowsObjects)) {
         // When viewing a gem, always show the avatar regardless of whether or not
         // it is shown in our normal view
         if (avatar)
             tiles.push_back(c->party->getTransport());
-        else             
+        else
             tiles.push_back(*map->getTileFromData(coords));
 
         return tiles;
@@ -69,19 +69,19 @@ std::vector<MapTile> Location::tilesAt(MapCoords coords, bool &focus) {
     /* Add the avatar to gem view */
     if (avatar && viewMode == VIEW_GEM)
         tiles.push_back(c->party->getTransport());
-    
+
     /* Add visual-only annotations to the list */
     for (i = a.begin(); i != a.end(); i++) {
-        if ((*i)->isVisualOnly())        
+        if ((*i)->isVisualOnly())
         {
             tiles.push_back((*i)->getTile());
 
             /* If this is the first cover-up annotation,
-			 * everything underneath it will be invisible,
-			 * so stop here
-			 */
-			if ((*i)->isCoverUp())
-				return tiles;
+             * everything underneath it will be invisible,
+             * so stop here
+             */
+            if ((*i)->isCoverUp())
+                return tiles;
         }
     }
 
@@ -99,9 +99,9 @@ std::vector<MapTile> Location::tilesAt(MapCoords coords, bool &focus) {
     else if (obj && obj->isVisible()) {
         focus = focus || obj->hasFocus();
         MapTile visibleCreatureAndObjectTile = obj->getTile();
-		//Sleeping creatures and persons have their animation frozen
-		if (m && m->isAsleep())
-			visibleCreatureAndObjectTile.freezeAnimation = true;
+        //Sleeping creatures and persons have their animation frozen
+        if (m && m->isAsleep())
+            visibleCreatureAndObjectTile.freezeAnimation = true;
         tiles.push_back(visibleCreatureAndObjectTile);
     }
 
@@ -119,7 +119,7 @@ std::vector<MapTile> Location::tilesAt(MapCoords coords, bool &focus) {
              * so stop here
              */
             if ((*i)->isCoverUp())
-            	return tiles;
+                return tiles;
         }
     }
 
@@ -128,18 +128,18 @@ std::vector<MapTile> Location::tilesAt(MapCoords coords, bool &focus) {
     const Tile * tileType = map->getTileFromData(coords)->getTileType();
     if (tileType->isLivingObject())
     {
-    	//This animation should be frozen because a living object represented on the map data is usually a statue of a monster or something
-    	tileFromMapData.freezeAnimation = true;
+        //This animation should be frozen because a living object represented on the map data is usually a statue of a monster or something
+        tileFromMapData.freezeAnimation = true;
     }
-	tiles.push_back(tileFromMapData);
+    tiles.push_back(tileFromMapData);
 
-	/* But if the base tile requires a background, we must find it */
-    if (tileType->isLandForeground()	||
-    	tileType->isWaterForeground()	||
-    	tileType->isLivingObject())
+    /* But if the base tile requires a background, we must find it */
+    if (tileType->isLandForeground()    ||
+        tileType->isWaterForeground()   ||
+        tileType->isLivingObject())
     {
 
-    	tiles.push_back(getReplacementTile(coords, tileType));
+        tiles.push_back(getReplacementTile(coords, tileType));
     }
 
     return tiles;
@@ -170,56 +170,56 @@ TileId Location::getReplacementTile(MapCoords atCoords, const Tile * forTile) {
         MapCoords currentStep = searchQueue.front();
         searchQueue.pop_front();
 
-		searched.insert(currentStep);
+        searched.insert(currentStep);
 
-    	for (int i = 0; i < dirs_per_step; i++)
-		{
-			MapCoords newStep(currentStep);
-			newStep.move(dirs[i][0], dirs[i][1], map);
+        for (int i = 0; i < dirs_per_step; i++)
+        {
+            MapCoords newStep(currentStep);
+            newStep.move(dirs[i][0], dirs[i][1], map);
 
-			Tile const * tileType = map->tileTypeAt(newStep,WITHOUT_OBJECTS);
+            Tile const * tileType = map->tileTypeAt(newStep,WITHOUT_OBJECTS);
 
-			if (!tileType->isOpaque()) {
-				//if (searched.find(newStep) == searched.end()) -- the find mechanism doesn't work.
-				searchQueue.push_back(newStep);
-			}
+            if (!tileType->isOpaque()) {
+                //if (searched.find(newStep) == searched.end()) -- the find mechanism doesn't work.
+                searchQueue.push_back(newStep);
+            }
 
-			if ((tileType->isReplacement() && (forTile->isLandForeground() || forTile->isLivingObject())) ||
-				(tileType->isWaterReplacement() && forTile->isWaterForeground()))
-			{
-				std::map<TileId, int>::iterator validCount = validMapTileCount.find(tileType->getId());
+            if ((tileType->isReplacement() && (forTile->isLandForeground() || forTile->isLivingObject())) ||
+                (tileType->isWaterReplacement() && forTile->isWaterForeground()))
+            {
+                std::map<TileId, int>::iterator validCount = validMapTileCount.find(tileType->getId());
 
-				if (validCount == validMapTileCount.end())
-				{
-					validMapTileCount[tileType->getId()] = 1;
-				}
-				else
-				{
-					validMapTileCount[tileType->getId()]++;
-				}
-			}
-		}
+                if (validCount == validMapTileCount.end())
+                {
+                    validMapTileCount[tileType->getId()] = 1;
+                }
+                else
+                {
+                    validMapTileCount[tileType->getId()]++;
+                }
+            }
+        }
 
-		if (validMapTileCount.size() > 0)
-		{
-			std::map<TileId, int>::iterator itr = validMapTileCount.begin();
+        if (validMapTileCount.size() > 0)
+        {
+            std::map<TileId, int>::iterator itr = validMapTileCount.begin();
 
-			TileId winner = itr->first;
-			int score = itr->second;
+            TileId winner = itr->first;
+            int score = itr->second;
 
-			while (++itr != validMapTileCount.end())
-			{
-				if (score < itr->second)
-				{
-					score = itr->second;
-					winner = itr->first;
-				}
-			}
+            while (++itr != validMapTileCount.end())
+            {
+                if (score < itr->second)
+                {
+                    score = itr->second;
+                    winner = itr->first;
+                }
+            }
 
-			return winner;
-		}
-		/* loop_count is an ugly hack to temporarily fix infinite loop */
-	} while (++loop_count < 128 && searchQueue.size() > 0 && searchQueue.size() < 64);
+            return winner;
+        }
+        /* loop_count is an ugly hack to temporarily fix infinite loop */
+    } while (++loop_count < 128 && searchQueue.size() > 0 && searchQueue.size() < 64);
 
     /* couldn't find a tile, give it the classic default */
     return map->tileset->getByName("brick_floor")->getId();
@@ -234,7 +234,7 @@ int Location::getCurrentPosition(MapCoords *coords) {
     if (context & CTX_COMBAT) {
         CombatController *cc = dynamic_cast<CombatController *>(eventHandler->getController());
         PartyMemberVector *party = cc->getParty();
-        *coords = (*party)[cc->getFocus()]->getCoords();    
+        *coords = (*party)[cc->getFocus()]->getCoords();
     }
     else
         *coords = this->coords;

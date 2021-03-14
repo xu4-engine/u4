@@ -48,21 +48,21 @@ typedef std::vector<MapTile> MapData;
 
 /**
  * MapCoords class
- */ 
-class MapCoords : public Coords {    
+ */
+class MapCoords : public Coords {
 public:
     MapCoords(int initx = 0, int inity = 0, int initz = 0) : Coords(initx, inity, initz) {}
     MapCoords(const Coords &a) : Coords(a.x, a.y, a.z) {}
-    
+
     MapCoords &operator=(const Coords &a) { x = a.x; y = a.y; z = a.z; return *this; }
     bool operator==(const MapCoords &a) const;
     bool operator!=(const MapCoords &a) const;
     bool operator<(const MapCoords &a)  const;
-    
+
     MapCoords &wrap(const class Map *map);
     MapCoords &putInBounds(const class Map *map);
     MapCoords &move(Direction d, const class Map *map = NULL);
-    MapCoords &move(int dx, int dy, const class Map *map = NULL);    
+    MapCoords &move(int dx, int dy, const class Map *map = NULL);
     int getRelativeDirection(const MapCoords &c, const class Map *map = NULL) const;
     Direction pathTo(const MapCoords &c, int valid_dirs = MASK_DIR_ALL, bool towards = true, const class Map *map = NULL) const;
     Direction pathAway(const MapCoords &c, int valid_dirs = MASK_DIR_ALL) const;
@@ -74,12 +74,12 @@ public:
 
 /**
  * Map class
- */ 
-class Map {    
+ */
+class Map {
 public:
     enum Type {
         WORLD,
-        CITY,    
+        CITY,
         SHRINE,
         COMBAT,
         DUNGEON
@@ -106,8 +106,8 @@ public:
 
     // Member functions
     virtual string getName();
-    
-    class Object *objectAt(const Coords &coords);    
+
+    class Object *objectAt(const Coords &coords);
     const Portal *portalAt(const Coords &coords, int actionFlags);
     MapTile* getTileFromData(const Coords &coords);
     MapTile* tileAt(const Coords &coords, int withObjects);
@@ -118,7 +118,7 @@ public:
     class Object *addObject(MapTile tile, MapTile prevTile, Coords coords);
     class Object *addObject(Object *obj, Coords coords);
     void removeObject(const class Object *rem, bool deleteObject = true);
-    ObjectDeque::iterator removeObject(ObjectDeque::iterator rem, bool deleteObject = true);    
+    ObjectDeque::iterator removeObject(ObjectDeque::iterator rem, bool deleteObject = true);
     void clearObjects();
     class Creature *moveObjects(MapCoords avatar);
     void resetObjectAnimations();
@@ -129,12 +129,12 @@ public:
     const MapCoords &getLabel(const string &name) const;
 
     // u4dos compatibility
-    bool fillMonsterTable();    
+    bool fillMonsterTable();
     MapTile translateFromRawTileIndex(int c) const;
     unsigned int translateToRawTileIndex(MapTile &tile) const;
 
 public:
-    MapId           id;    
+    MapId           id;
     string          fname;
     Type            type;
     unsigned int    width,
@@ -146,7 +146,7 @@ public:
 
     Source          baseSource;
     std::list<Source> extraSources;
-    
+
     CompressedChunkList     compressed_chunks;
     BorderBehavior          border_behavior;
 

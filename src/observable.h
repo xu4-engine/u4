@@ -13,7 +13,7 @@
 /**
  * Classes can report updates to a list of decoupled Observers by
  * extending this class.
- * 
+ *
  * The O class parameter should be a pointer to the class of the
  * observable itself, so it can be passed in a typesafe manner to the
  * observers update method.
@@ -35,7 +35,7 @@ public:
             observers.push_back(o);
     }
 
-    int countObservers() const { 
+    int countObservers() const {
         return observers.size();
     }
 
@@ -46,12 +46,12 @@ public:
             observers.erase(i);
     }
 
-    void deleteObservers() { 
-        observers.clear(); 
+    void deleteObservers() {
+        observers.clear();
     }
 
-    bool hasChanged() const { 
-        return changed; 
+    bool hasChanged() const {
+        return changed;
     }
 
     void notifyObservers(A arg) {

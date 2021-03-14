@@ -37,21 +37,21 @@ Path::Path(const string &p) : path(p) {
     if (delim == '\\')
         src_char = '/';
     else src_char = '\\';
-    
+
     /* make the path work well with our OS */
     while ((pos = path.find(src_char)) < path.size())
         path[pos] = dest_char;
 
     /* determine if the path really exists */
     _exists = (stat(path.c_str(), &path_stat) == 0);
-    
+
     /* if so, let's glean more information */
-    if (_exists) 
+    if (_exists)
         isDir = (path_stat.st_mode & S_IFDIR);
 
     /* find the elements of the path that involve directory structure */
     string dir_path = isDir ? path : path.substr(0, path.find_last_of(dest_char));
-            
+
     /* Add the trailing / or \ to the end, if it doesn't exist */
     if (dir_path[dir_path.size()-1] != dest_char)
         dir_path += dest_char;
@@ -69,9 +69,9 @@ Path::Path(const string &p) : path(p) {
             ext = file.substr(pos + 1);
             file = file.substr(0, pos);
         }
-    }    
+    }
 }
-    
+
 /**
  * Returns true if the path exists in the filesystem
  */
@@ -146,7 +146,7 @@ void FileSystem::createDirectory(Path &path) {
 
     for (i = dirs->begin(); i != dirs->end(); i++) {
         dir += *i;
-        
+
         /* create each directory leading up to our path */
         if (!Path::exists(dir)) {
 #           ifdef FS_WINDOWS

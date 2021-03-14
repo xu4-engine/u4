@@ -41,8 +41,8 @@ void Object::remove() {
 #include "game.h"
 void Object::animateMovement()
 {
-	//TODO abstract movement - also make screen.h and game.h not required
+    //TODO abstract movement - also make screen.h and game.h not required
     screenTileUpdate(&game->mapArea, prevCoords, false);
     if (screenTileUpdate(&game->mapArea, coords, false))
-    	screenWait(1);
+        screenWait(1);
 }

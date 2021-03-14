@@ -25,9 +25,9 @@ typedef enum {
     TRANSPORT_FOOT      = 0x1,
     TRANSPORT_HORSE     = 0x2,
     TRANSPORT_SHIP      = 0x4,
-    TRANSPORT_BALLOON		= 0x8,
-    TRANSPORT_FOOT_OR_HORSE	= TRANSPORT_FOOT | TRANSPORT_HORSE,
-    TRANSPORT_ANY			= 0xffff
+    TRANSPORT_BALLOON       = 0x8,
+    TRANSPORT_FOOT_OR_HORSE = TRANSPORT_FOOT | TRANSPORT_HORSE,
+    TRANSPORT_ANY           = 0xffff
 } TransportContext;
 
 /**
@@ -47,7 +47,7 @@ public:
     int windDirection;
     int windCounter;
     bool windLock;
-    Aura *aura;    
+    Aura *aura;
     int horseSpeed;
     int opacity;
     TransportContext transportContext;

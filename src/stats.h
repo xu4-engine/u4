@@ -80,7 +80,7 @@ private:
     TextView title;
     TextView mainArea;
     TextView summary;
-    
+
     StatsView view;
 
     Menu reagentsMixMenu;

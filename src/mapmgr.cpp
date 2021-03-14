@@ -49,7 +49,7 @@ void MapMgr::destroy() {
 }
 
 MapMgr::MapMgr() {
-    logger = new Debug("debug/mapmgr.txt", "MapMgr"); 
+    logger = new Debug("debug/mapmgr.txt", "MapMgr");
     TRACE(*logger, "creating MapMgr");
 
     const Config *config = Config::getInstance();
@@ -59,7 +59,7 @@ MapMgr::MapMgr() {
     for (std::vector<ConfigElement>::iterator i = maps.begin(); i != maps.end(); i++) {
         map = initMapFromConf(*i);
 
-        /* map actually gets loaded later, when it's needed */        
+        /* map actually gets loaded later, when it's needed */
         registerMap(map);
     }
 }
@@ -89,7 +89,7 @@ void MapMgr::unloadMap(MapId id) {
 Map *MapMgr::initMap(Map::Type type) {
     Map *map;
 
-    switch(type) {    
+    switch(type) {
     case Map::WORLD:
         map = new Map;
         break;
@@ -109,16 +109,16 @@ Map *MapMgr::initMap(Map::Type type) {
     case Map::CITY:
         map = new City;
         break;
-        
+
     default:
         errorFatal("Error: invalid map type used");
         break;
     }
-    
+
     return map;
 }
 
-Map *MapMgr::get(MapId id) {    
+Map *MapMgr::get(MapId id) {
     /* if the map hasn't been loaded yet, load it! */
     if (!mapList[id]->data.size()) {
         MapLoader *loader = MapLoader::getLoader(mapList[id]->type);
@@ -160,7 +160,7 @@ Map *MapMgr::initMapFromConf(const ConfigElement &mapConf) {
     map->chunk_width = mapConf.getInt("chunkwidth");
     map->chunk_height = mapConf.getInt("chunkheight");
     map->offset = mapConf.getInt("offset");
-    map->border_behavior = static_cast<Map::BorderBehavior>(mapConf.getEnum("borderbehavior", borderBehaviorEnumStrings));    
+    map->border_behavior = static_cast<Map::BorderBehavior>(mapConf.getEnum("borderbehavior", borderBehaviorEnumStrings));
 
     if (isCombatMap(map)) {
         CombatMap *cm = dynamic_cast<CombatMap*>(map);
@@ -174,7 +174,7 @@ Map *MapMgr::initMapFromConf(const ConfigElement &mapConf) {
 
     if (mapConf.getBool("nolineofsight"))
         map->flags |= NO_LINE_OF_SIGHT;
-    
+
     if (mapConf.getBool("firstperson"))
         map->flags |= FIRST_PERSON;
 
@@ -186,12 +186,12 @@ Map *MapMgr::initMapFromConf(const ConfigElement &mapConf) {
     for (std::vector<ConfigElement>::iterator i = children.begin(); i != children.end(); i++) {
         if (i->getName() == "city") {
             City *city = dynamic_cast<City*>(map);
-            initCityFromConf(*i, city);            
+            initCityFromConf(*i, city);
         }
         else if (i->getName() == "shrine") {
             Shrine *shrine = dynamic_cast<Shrine*>(map);
             initShrineFromConf(*i, shrine);
-        }            
+        }
         else if (i->getName() == "dungeon") {
             Dungeon *dungeon = dynamic_cast<Dungeon*>(map);
             initDungeonFromConf(*i, dungeon);
@@ -205,7 +205,7 @@ Map *MapMgr::initMapFromConf(const ConfigElement &mapConf) {
         else if (i->getName() == "label")
             map->labels.insert(initLabelFromConf(*i));
     }
-    
+
     return map;
 }
 
@@ -218,7 +218,7 @@ void MapMgr::initCityFromConf(const ConfigElement &cityConf, City *city) {
     for (std::vector<ConfigElement>::iterator i = children.begin(); i != children.end(); i++) {
         if (i->getName() == "personrole")
             city->personroles.push_back(initPersonRoleFromConf(*i));
-    }    
+    }
 }
 
 PersonRole *MapMgr::initPersonRoleFromConf(const ConfigElement &personRoleConf) {
@@ -242,13 +242,13 @@ Portal *MapMgr::initPortalFromConf(const ConfigElement &portalConf) {
 
     portal->portalConditionsMet = NULL;
     portal->retroActiveDest = NULL;
- 
+
     portal->coords = MapCoords(
         portalConf.getInt("x"),
         portalConf.getInt("y"),
         portalConf.getInt("z", 0));
     portal->destid = static_cast<MapId>(portalConf.getInt("destmapid"));
-    
+
     portal->start.x = static_cast<unsigned short>(portalConf.getInt("startx"));
     portal->start.y = static_cast<unsigned short>(portalConf.getInt("starty"));
     portal->start.z = static_cast<unsigned short>(portalConf.getInt("startlevel", 0));
@@ -272,7 +272,7 @@ Portal *MapMgr::initPortalFromConf(const ConfigElement &portalConf) {
         portal->trigger_action = ACTION_EXIT_WEST;
     else
         errorFatal("unknown trigger_action: %s", prop.c_str());
-    
+
     prop = portalConf.getString("condition");
     if (!prop.empty()) {
         if (prop == "shrine")
@@ -301,7 +301,7 @@ Portal *MapMgr::initPortalFromConf(const ConfigElement &portalConf) {
     for (std::vector<ConfigElement>::iterator i = children.begin(); i != children.end(); i++) {
         if (i->getName() == "retroActiveDest") {
             portal->retroActiveDest = new PortalDestination;
-            
+
             portal->retroActiveDest->coords = MapCoords(
                 i->getInt("x"),
                 i->getInt("y"),
@@ -312,7 +312,7 @@ Portal *MapMgr::initPortalFromConf(const ConfigElement &portalConf) {
     return portal;
 }
 
-void MapMgr::initShrineFromConf(const ConfigElement &shrineConf, Shrine *shrine) {    
+void MapMgr::initShrineFromConf(const ConfigElement &shrineConf, Shrine *shrine) {
     static const char *virtues[] = {"Honesty", "Compassion", "Valor", "Justice", "Sacrifice", "Honor", "Spirituality", "Humility", NULL};
 
     shrine->setVirtue(static_cast<Virtue>(shrineConf.getEnum("virtue", virtues)));
@@ -339,6 +339,6 @@ int MapMgr::initCompressedChunkFromConf(const ConfigElement &compressedChunkConf
 
 pair<string, MapCoords> MapMgr::initLabelFromConf(const ConfigElement &labelConf) {
     return pair<string, MapCoords>
-        (labelConf.getString("name"), 
+        (labelConf.getString("name"),
          MapCoords(labelConf.getInt("x"), labelConf.getInt("y"), labelConf.getInt("z", 0)));
 }

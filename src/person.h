@@ -68,7 +68,7 @@ public:
 
 private:
     Dialogue* dialogue;
-    MapCoords start;    
+    MapCoords start;
     PersonNpcType npcType;
 };
 

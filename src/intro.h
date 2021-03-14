@@ -244,8 +244,8 @@ private:
     };
 
     struct AnimPlot {
-    	uint8_t x, y;
-    	uint8_t r, g, b, a;
+        uint8_t x, y;
+        uint8_t r, g, b, a;
     };
 
     struct AnimElement {

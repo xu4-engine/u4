@@ -95,14 +95,14 @@ Direction dirRandomDir(int valid_directions_mask) {
 /**
  * Normalizes the direction based on the orientation given
  * (if facing west, and 'up' is pressed, the 'up' is translated
- *  into DIR_NORTH -- this function tranlates that direction 
+ *  into DIR_NORTH -- this function tranlates that direction
  *  to DIR_WEST, the correct direction in this case).
  */
 Direction dirNormalize(Direction orientation, Direction dir) {
     Direction temp = orientation,
               realDir = dir;
 
-    while (temp != DIR_NORTH) {        
+    while (temp != DIR_NORTH) {
         temp = dirRotateCW(temp);
         realDir = dirRotateCCW(realDir);
     }
@@ -113,31 +113,31 @@ Direction dirNormalize(Direction orientation, Direction dir) {
 /**
  * Translates a keyboard code into a direction
  */
-Direction keyToDirection(int key) {        
+Direction keyToDirection(int key) {
     switch (key) {
-    case U4_UP: return DIR_NORTH;        
+    case U4_UP: return DIR_NORTH;
     case U4_DOWN: return DIR_SOUTH;
-    case U4_LEFT: return DIR_WEST;        
-    case U4_RIGHT: return DIR_EAST;    
+    case U4_LEFT: return DIR_WEST;
+    case U4_RIGHT: return DIR_EAST;
     default: return DIR_NONE;
-    }    
+    }
 }
 
 /**
  * Translates a direction into a keyboard code
  */
 int directionToKey(Direction dir) {
-    switch(dir) {    
+    switch(dir) {
     case DIR_WEST: return U4_LEFT;
     case DIR_NORTH: return U4_UP;
     case DIR_EAST: return U4_RIGHT;
     case DIR_SOUTH: return U4_DOWN;
-    
+
     case DIR_NONE:
     case DIR_ADVANCE:
     case DIR_RETREAT:
-    default: break;        
-    }    
+    default: break;
+    }
 
     ASSERT(0, "Invalid diration passed to directionToKey()");
     return 0;

@@ -28,7 +28,6 @@ bool SoundManager::load_sys(Sound sound, const string &pathname) {
 }
 
 void SoundManager::play_sys(Sound sound, bool onlyOnce, int specificDurationInTicks) {
-
     /**
      * Use Channel 1 for sound effects
      */
@@ -59,35 +58,35 @@ void SoundManager::del_sys()
 
 
 void Music::create_sys() {
-	/*
-	 * initialize sound subsystem
-	 */
-	TRACE_LOCAL(*logger, "Initializing SDL sound subsystem");
+    /*
+     * initialize sound subsystem
+     */
+    TRACE_LOCAL(*logger, "Initializing SDL sound subsystem");
 
-	int audio_rate = 22050;
-	Uint16 audio_format = AUDIO_S16LSB; /* 16-bit stereo */
-	int audio_channels = 2;
-	int audio_buffers = 1024;
+    int audio_rate = 22050;
+    Uint16 audio_format = AUDIO_S16LSB; /* 16-bit stereo */
+    int audio_channels = 2;
+    int audio_buffers = 1024;
 
-	if (u4_SDL_InitSubSystem(SDL_INIT_AUDIO) == -1) {
-		errorWarning("unable to init SDL audio subsystem: %s",
-				SDL_GetError());
-		this->functional = false;
-		return;
-	}
+    if (u4_SDL_InitSubSystem(SDL_INIT_AUDIO) == -1) {
+        errorWarning("unable to init SDL audio subsystem: %s",
+                SDL_GetError());
+        this->functional = false;
+        return;
+    }
 
-	TRACE_LOCAL(*logger, "Opening audio");
+    TRACE_LOCAL(*logger, "Opening audio");
 
-	if (Mix_OpenAudio(audio_rate, audio_format, audio_channels,
-			audio_buffers)) {
-		fprintf(stderr, "Unable to open audio!\n");
-		this->functional = false;
-		return;
-	}
-	this->functional = true;
-	TRACE_LOCAL(*logger, "Allocating channels");
+    if (Mix_OpenAudio(audio_rate, audio_format, audio_channels,
+            audio_buffers)) {
+        fprintf(stderr, "Unable to open audio!\n");
+        this->functional = false;
+        return;
+    }
+    this->functional = true;
+    TRACE_LOCAL(*logger, "Allocating channels");
 
-	Mix_AllocateChannels(16);
+    Mix_AllocateChannels(16);
 }
 
 void Music::destroy_sys() {
@@ -107,18 +106,18 @@ void Music::destroy_sys() {
 
 bool Music::load_sys(const string &pathname) {
 
-	if (playing) {
-		Mix_FreeMusic(playing);
-		playing = NULL;
-	}
+    if (playing) {
+        Mix_FreeMusic(playing);
+        playing = NULL;
+    }
 
-	playing = Mix_LoadMUS(pathname.c_str());
-	if (!playing) {
-		errorWarning("unable to load music file %s: %s", pathname.c_str(),
-				Mix_GetError());
-		return false;
-	}
-	return true;
+    playing = Mix_LoadMUS(pathname.c_str());
+    if (!playing) {
+        errorWarning("unable to load music file %s: %s", pathname.c_str(),
+                Mix_GetError());
+        return false;
+    }
+    return true;
 }
 
 /**
@@ -167,11 +166,11 @@ void Music::setMusicVolume(int volume) {
 }
 
 void Music::fadeIn_sys(int msecs, bool loadFromMap) {
-	if (Mix_FadeInMusic(playing, NLOOPS, msecs) == -1)
-		errorWarning("Mix_FadeInMusic: %s\n", Mix_GetError());
+    if (Mix_FadeInMusic(playing, NLOOPS, msecs) == -1)
+        errorWarning("Mix_FadeInMusic: %s\n", Mix_GetError());
 }
 
 void Music::fadeOut_sys(int msecs) {
-	if (Mix_FadeOutMusic(msecs) == -1)
-		errorWarning("Mix_FadeOutMusic: %s\n", Mix_GetError());
+    if (Mix_FadeOutMusic(msecs) == -1)
+        errorWarning("Mix_FadeOutMusic: %s\n", Mix_GetError());
 }

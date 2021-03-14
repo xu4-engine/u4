@@ -24,7 +24,7 @@ Image *screenScale(Image *src, int scale, int n, int filter);
 
 bool ImageInfo::hasBlackBackground()
 {
-	return this->filetype == "image/x-u4raw";
+    return this->filetype == "image/x-u4raw";
 }
 
 
@@ -162,10 +162,10 @@ SubImage *ImageMgr::loadSubImageFromConf(const ImageInfo *info, const ConfigElem
     static int x = 0,
                y = 0,
                last_width = 0,
-               last_height = 0;    
+               last_height = 0;
 
     subimage = new SubImage;
-    subimage->name = conf.getString("name");    
+    subimage->name = conf.getString("name");
     subimage->width = conf.getInt("width");
     subimage->height = conf.getInt("height");
     subimage->srcImageName = info->name;
@@ -417,7 +417,7 @@ void ImageMgr::fixupAbyssVision(Image *im, int prescale) {
 
 void ImageMgr::fixupAbacus(Image *im, int prescale) {
 
-    /* 
+    /*
      * surround each bead with a row green pixels to avoid artifacts
      * when scaling
      */
@@ -459,7 +459,7 @@ void ImageMgr::fixupFMTowns(Image *im, int prescale) {
         for (int x = 0; x < im->width(); x++) {
             unsigned int index;
             im->getPixelIndex(x, y, index);
-			im->putPixelIndex(x, y-20, index);
+            im->putPixelIndex(x, y-20, index);
         }
     }
 }
@@ -570,13 +570,13 @@ ImageInfo *ImageMgr::get(const string &name, bool returnUnscaled) {
             errorWarning("can't find loader to load image \"%s\" with type \"%s\"", info->filename.c_str(), filetype.c_str());
         else
         {
-			unscaled = loader->load(file, info->width, info->height, info->depth);
-			if (info->width == -1) {
-				// Write in the values for later use.
-				info->width = unscaled->width();
-				info->height = unscaled->height();
-	// ###            info->depth = ???
-			}
+            unscaled = loader->load(file, info->width, info->height, info->depth);
+            if (info->width == -1) {
+                // Write in the values for later use.
+                info->width = unscaled->width();
+                info->height = unscaled->height();
+    // ###            info->depth = ???
+            }
         }
         u4fclose(file);
     }
@@ -614,23 +614,23 @@ ImageInfo *ImageMgr::get(const string &name, bool returnUnscaled) {
         fixupDungNS(unscaled, info->prescale);
         break;
     case FIXUP_FMTOWNSSCREEN:
-    	fixupFMTowns(unscaled, info->prescale);
-    	break;
+        fixupFMTowns(unscaled, info->prescale);
+        break;
     case FIXUP_BLACKTRANSPARENCYHACK:
         //Apply transparency shadow hack to ultima4 ega and vga upgrade classic graphics.
-    	Image *unscaled_original = unscaled;
-    	unscaled = Image::duplicate(unscaled);
-    	delete unscaled_original;
-    	if (Settings::getInstance().enhancements && Settings::getInstance().enhancementsOptions.u4TileTransparencyHack)
-    	{
-    		int transparency_shadow_size =Settings::getInstance().enhancementsOptions.u4TrileTransparencyHackShadowBreadth;
-    		int black_index = 0;
-    		int opacity = Settings::getInstance().enhancementsOptions.u4TileTransparencyHackPixelShadowOpacity;
+        Image *unscaled_original = unscaled;
+        unscaled = Image::duplicate(unscaled);
+        delete unscaled_original;
+        if (Settings::getInstance().enhancements && Settings::getInstance().enhancementsOptions.u4TileTransparencyHack)
+        {
+            int transparency_shadow_size =Settings::getInstance().enhancementsOptions.u4TrileTransparencyHackShadowBreadth;
+            int black_index = 0;
+            int opacity = Settings::getInstance().enhancementsOptions.u4TileTransparencyHackPixelShadowOpacity;
 
-    		int frames = info->tiles;
-    		for (int f = 0; f < frames; ++f)
-    			unscaled->performTransparencyHack(black_index, frames, f, transparency_shadow_size, opacity);
-    	}
+            int frames = info->tiles;
+            for (int f = 0; f < frames; ++f)
+                unscaled->performTransparencyHack(black_index, frames, f, transparency_shadow_size, opacity);
+        }
         break;
     }
 
@@ -645,7 +645,7 @@ ImageInfo *ImageMgr::get(const string &name, bool returnUnscaled) {
         int orig_scale = settings.scale;
         settings.scale = info->prescale;
         settings.write();
-    	errorFatal("image %s is prescaled to an incompatible size: %d\nResetting the scale to %d. Sorry about the inconvenience, please restart.", info->filename.c_str(), orig_scale, settings.scale);
+        errorFatal("image %s is prescaled to an incompatible size: %d\nResetting the scale to %d. Sorry about the inconvenience, please restart.", info->filename.c_str(), orig_scale, settings.scale);
     }
     imageScale /= info->prescale;
 
@@ -673,7 +673,7 @@ SubImage *ImageMgr::getSubImage(const string &name) {
 
         set = getSet(set->extends);
     }
-        
+
     return NULL;
 }
 

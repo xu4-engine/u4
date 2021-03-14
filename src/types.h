@@ -36,7 +36,7 @@ typedef enum {
     ANIM_CAMPFIRE,
     ANIM_CITYFLAG,
     ANIM_CASTLEFLAG,
-    ANIM_SHIPFLAG,    
+    ANIM_SHIPFLAG,
     ANIM_LCBFLAG,
     ANIM_FRAMES
 } TileAnimationStyle;
@@ -50,8 +50,8 @@ public:
     MapTile(const TileId &i, unsigned char f = 0) : id(i), frame(f), freezeAnimation(false) {}
     MapTile(const MapTile &t) : id(t.id), frame(t.frame), freezeAnimation(t.freezeAnimation) {}
 
-    TileId getId() const			{return id;}
-    unsigned char getFrame() const	{return frame;}
+    TileId getId() const            {return id;}
+    unsigned char getFrame() const  {return frame;}
     bool getFreezeAnimation() const {return freezeAnimation;}
 
     MapTile& operator=(const MapTile &m) {
@@ -66,7 +66,7 @@ public:
     bool operator!=(const MapTile &m) const  { return id != m.id; }
     bool operator!=(const TileId &i) const   { return id != i; }
     bool operator<(const MapTile &m) const   { return id < m.id; } /* for std::less */
-    
+
     Direction getDirection() const;
     bool setDirection(Direction d);
 

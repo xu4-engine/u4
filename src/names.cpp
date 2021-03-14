@@ -29,10 +29,10 @@ const char *getClassName(ClassType klass) {
     }
 }
 
-const char *getReagentName(Reagent reagent) {   
+const char *getReagentName(Reagent reagent) {
     static const char * const reagentNames[] = {
-        "Sulfur Ash", "Ginseng", "Garlic", 
-        "Spider Silk", "Blood Moss", "Black Pearl", 
+        "Sulfur Ash", "Ginseng", "Garlic",
+        "Spider Silk", "Blood Moss", "Black Pearl",
         "Nightshade", "Mandrake"
     };
 
@@ -44,8 +44,8 @@ const char *getReagentName(Reagent reagent) {
 
 const char *getVirtueName(Virtue virtue) {
     static const char * const virtueNames[] = {
-        "Honesty", "Compassion", "Valor", 
-        "Justice", "Sacrifice", "Honor", 
+        "Honesty", "Compassion", "Valor",
+        "Justice", "Sacrifice", "Honor",
         "Spirituality", "Humility"
     };
 
@@ -100,8 +100,8 @@ const char *getVirtueAdjective(Virtue virtue) {
 
 const char *getStoneName(Virtue virtue) {
     static const char * const virtueNames[] = {
-        "Blue", "Yellow", "Red", 
-        "Green", "Orange", "Purple", 
+        "Blue", "Yellow", "Red",
+        "Green", "Orange", "Purple",
         "White", "Black"
     };
 

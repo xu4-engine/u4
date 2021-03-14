@@ -31,7 +31,7 @@ using namespace std;
 
 /*
  * Initialize static members
- */ 
+ */
 Settings *Settings::instance = NULL;
 
 #if defined(_WIN32) || defined(__CYGWIN__)
@@ -40,7 +40,7 @@ Settings *Settings::instance = NULL;
 #define SETTINGS_BASE_FILENAME "xu4rc"
 #endif
 
-bool SettingsData::operator==(const SettingsData &s) const {    
+bool SettingsData::operator==(const SettingsData &s) const {
     intptr_t offset = (intptr_t)&end_of_bitwise_comparators - (intptr_t)this;
     if (memcmp(this, &s, offset) != 0)
         return false;
@@ -71,7 +71,7 @@ bool SettingsData::operator!=(const SettingsData &s) const {
 /**
  * Default contructor.  Settings is a singleton so this is private.
  */
-Settings::Settings() {    
+Settings::Settings() {
     battleDiffs.push_back("Normal");
     battleDiffs.push_back("Hard");
     battleDiffs.push_back("Expert");
@@ -82,11 +82,11 @@ Settings::Settings() {
  * Initialize the settings.
  */
 void Settings::init(const bool useProfile, const string profileName) {
-	if (useProfile) {
-		userPath = "./profiles/";
-		userPath += profileName.c_str();
-		userPath += "/";
-	} else {
+    if (useProfile) {
+        userPath = "./profiles/";
+        userPath += profileName.c_str();
+        userPath += "/";
+    } else {
 
 #if defined(MACOSX)
             FSRef folder;
@@ -147,14 +147,14 @@ void Settings::init(const bool useProfile, const string profileName) {
                     pMalloc->Free(pBuffer);
                 }
                 pMalloc->Free(pItemIDList);
-            } 
+            }
             pMalloc->Release();
         }
 #else
         userPath = "./";
 #endif
 
-	}
+    }
     FileSystem::createDirectory(userPath);
 
     filename = userPath + SETTINGS_BASE_FILENAME;
@@ -181,9 +181,9 @@ void Settings::setData(const SettingsData &data) {
  * Read settings in from the settings file.
  */
 bool Settings::read() {
-    char buffer[256];    
+    char buffer[256];
     FILE *settingsFile;
-    extern int eventTimerGranularity;   
+    extern int eventTimerGranularity;
 
     /* default settings */
     scale                 = DEFAULT_SCALE;
@@ -202,7 +202,7 @@ bool Settings::read() {
     keyinterval           = DEFAULT_KEY_INTERVAL;
     filterMoveMessages    = DEFAULT_FILTER_MOVE_MESSAGES;
     battleSpeed           = DEFAULT_BATTLE_SPEED;
-    enhancements          = DEFAULT_ENHANCEMENTS;    
+    enhancements          = DEFAULT_ENHANCEMENTS;
     gameCyclesPerSecond   = DEFAULT_CYCLES_PER_SECOND;
     screenAnimationFramesPerSecond = DEFAULT_ANIMATION_FRAMES_PER_SECOND;
     debug                 = DEFAULT_DEBUG;
@@ -217,7 +217,7 @@ bool Settings::read() {
     titleSpeedOther       = DEFAULT_TITLE_SPEED_OTHER;
 
     pauseForEachMovement  = DEFAULT_PAUSE_FOR_EACH_MOVEMENT;
-    pauseForEachTurn	  = DEFAULT_PAUSE_FOR_EACH_TURN;
+    pauseForEachTurn      = DEFAULT_PAUSE_FOR_EACH_TURN;
 
     /* all specific minor enhancements default to "on", any major enhancements default to "off" */
     enhancementsOptions.activePlayer     = true;
@@ -242,8 +242,8 @@ bool Settings::read() {
 
     logging = DEFAULT_LOGGING;
     game = "Ultima IV";
-    
-    settingsFile = fopen(filename.c_str(), "rt");    
+
+    settingsFile = fopen(filename.c_str(), "rt");
     if (!settingsFile)
         return false;
 
@@ -264,15 +264,15 @@ bool Settings::read() {
         else if (strstr(buffer, "lineOfSight=") == buffer)
             lineOfSight = buffer + strlen("lineOfSight=");
         else if (strstr(buffer, "screenShakes=") == buffer)
-            screenShakes = (int) strtoul(buffer + strlen("screenShakes="), NULL, 0);        
+            screenShakes = (int) strtoul(buffer + strlen("screenShakes="), NULL, 0);
         else if (strstr(buffer, "gamma=") == buffer)
-            gamma = (int) strtoul(buffer + strlen("gamma="), NULL, 0);        
+            gamma = (int) strtoul(buffer + strlen("gamma="), NULL, 0);
         else if (strstr(buffer, "musicVol=") == buffer)
             musicVol = (int) strtoul(buffer + strlen("musicVol="), NULL, 0);
         else if (strstr(buffer, "soundVol=") == buffer)
             soundVol = (int) strtoul(buffer + strlen("soundVol="), NULL, 0);
         else if (strstr(buffer, "volumeFades=") == buffer)
-            volumeFades = (int) strtoul(buffer + strlen("volumeFades="), NULL, 0);        
+            volumeFades = (int) strtoul(buffer + strlen("volumeFades="), NULL, 0);
         else if (strstr(buffer, "shortcutCommands=") == buffer)
             shortcutCommands = (int) strtoul(buffer + strlen("shortcutCommands="), NULL, 0);
         else if (strstr(buffer, "keydelay=") == buffer)
@@ -284,7 +284,7 @@ bool Settings::read() {
         else if (strstr(buffer, "battlespeed=") == buffer)
             battleSpeed = (int) strtoul(buffer + strlen("battlespeed="), NULL, 0);
         else if (strstr(buffer, "enhancements=") == buffer)
-            enhancements = (int) strtoul(buffer + strlen("enhancements="), NULL, 0);        
+            enhancements = (int) strtoul(buffer + strlen("enhancements="), NULL, 0);
         else if (strstr(buffer, "gameCyclesPerSecond=") == buffer)
             gameCyclesPerSecond = (int) strtoul(buffer + strlen("gameCyclesPerSecond="), NULL, 0);
         else if (strstr(buffer, "debug=") == buffer)
@@ -307,7 +307,7 @@ bool Settings::read() {
             titleSpeedRandom = (int) strtoul(buffer + strlen("titleSpeedRandom="), NULL, 0);
         else if (strstr(buffer, "titleSpeedOther=") == buffer)
             titleSpeedOther = (int) strtoul(buffer + strlen("titleSpeedOther="), NULL, 0);
-        
+
         /* minor enhancement options */
         else if (strstr(buffer, "activePlayer=") == buffer)
             enhancementsOptions.activePlayer = (int) strtoul(buffer + strlen("activePlayer="), NULL, 0);
@@ -322,10 +322,10 @@ bool Settings::read() {
         else if (strstr(buffer, "textColorization=") == buffer)
             enhancementsOptions.textColorization = (int) strtoul(buffer + strlen("textColorization="), NULL, 0);
         else if (strstr(buffer, "c64chestTraps=") == buffer)
-            enhancementsOptions.c64chestTraps = (int) strtoul(buffer + strlen("c64chestTraps="), NULL, 0);                
+            enhancementsOptions.c64chestTraps = (int) strtoul(buffer + strlen("c64chestTraps="), NULL, 0);
         else if (strstr(buffer, "smartEnterKey=") == buffer)
-            enhancementsOptions.smartEnterKey = (int) strtoul(buffer + strlen("smartEnterKey="), NULL, 0);        
-        
+            enhancementsOptions.smartEnterKey = (int) strtoul(buffer + strlen("smartEnterKey="), NULL, 0);
+
         /* major enhancement options */
         else if (strstr(buffer, "peerShowsObjects=") == buffer)
             enhancementsOptions.peerShowsObjects = (int) strtoul(buffer + strlen("peerShowsObjects="), NULL, 0);
@@ -334,7 +334,7 @@ bool Settings::read() {
         else if (strstr(buffer, "innAlwaysCombat=") == buffer)
             innAlwaysCombat = (int) strtoul(buffer + strlen("innAlwaysCombat="), NULL, 0);
         else if (strstr(buffer, "campingAlwaysCombat=") == buffer)
-            campingAlwaysCombat = (int) strtoul(buffer + strlen("campingAlwaysCombat="), NULL, 0);    
+            campingAlwaysCombat = (int) strtoul(buffer + strlen("campingAlwaysCombat="), NULL, 0);
 
         /* mouse options */
         else if (strstr(buffer, "mouseEnabled=") == buffer)
@@ -348,27 +348,27 @@ bool Settings::read() {
         else if (strstr(buffer, "renderTileTransparency=") == buffer)
             enhancementsOptions.u4TileTransparencyHack = (int) strtoul(buffer + strlen("renderTileTransparency="), NULL, 0);
         else if (strstr(buffer, "transparentTilePixelShadowOpacity=") == buffer)
-        	enhancementsOptions.u4TileTransparencyHackPixelShadowOpacity = (int) strtoul(buffer + strlen("transparentTilePixelShadowOpacity="), NULL, 0);
+            enhancementsOptions.u4TileTransparencyHackPixelShadowOpacity = (int) strtoul(buffer + strlen("transparentTilePixelShadowOpacity="), NULL, 0);
         else if (strstr(buffer, "transparentTileShadowSize=") == buffer)
-        	enhancementsOptions.u4TrileTransparencyHackShadowBreadth = (int) strtoul(buffer + strlen("transparentTileShadowSize="), NULL, 0);
+            enhancementsOptions.u4TrileTransparencyHackShadowBreadth = (int) strtoul(buffer + strlen("transparentTileShadowSize="), NULL, 0);
 
 
 
         /**
          * FIXME: this is just to avoid an error for those who have not written
          * a new xu4.cfg file since these items were removed.  Remove them after a reasonable
-         * amount of time 
+         * amount of time
          *
          * remove:  attackspeed, minorEnhancements, majorEnhancements, vol
          */
-        
+
         else if (strstr(buffer, "attackspeed=") == buffer);
         else if (strstr(buffer, "minorEnhancements=") == buffer)
             enhancements = (int)strtoul(buffer + strlen("minorEnhancements="), NULL, 0);
         else if (strstr(buffer, "majorEnhancements=") == buffer);
         else if (strstr(buffer, "vol=") == buffer)
-            musicVol = soundVol = (int) strtoul(buffer + strlen("vol="), NULL, 0);        
-        
+            musicVol = soundVol = (int) strtoul(buffer + strlen("vol="), NULL, 0);
+
         /***/
 
         else
@@ -385,16 +385,16 @@ bool Settings::read() {
  * Write the settings out into a human readable file.  This also
  * notifies observers that changes have been commited.
  */
-bool Settings::write() {    
+bool Settings::write() {
     FILE *settingsFile;
-        
+
     settingsFile = fopen(filename.c_str(), "wt");
     if (!settingsFile) {
         errorWarning("can't write settings file");
         return false;
-    }    
+    }
 
-    fprintf(settingsFile, 
+    fprintf(settingsFile,
             "scale=%d\n"
             "fullscreen=%d\n"
             "filter=%s\n"
@@ -411,7 +411,7 @@ bool Settings::write() {
             "keyinterval=%d\n"
             "filterMoveMessages=%d\n"
             "battlespeed=%d\n"
-            "enhancements=%d\n"            
+            "enhancements=%d\n"
             "gameCyclesPerSecond=%d\n"
             "debug=%d\n"
             "battleDiff=%s\n"
@@ -429,7 +429,7 @@ bool Settings::write() {
             "slimeDivides=%d\n"
             "gazerSpawnsInsects=%d\n"
             "textColorization=%d\n"
-            "c64chestTraps=%d\n"            
+            "c64chestTraps=%d\n"
             "smartEnterKey=%d\n"
             "peerShowsObjects=%d\n"
             "u5combat=%d\n"
@@ -457,7 +457,7 @@ bool Settings::write() {
             keyinterval,
             filterMoveMessages,
             battleSpeed,
-            enhancements,            
+            enhancements,
             gameCyclesPerSecond,
             debug,
             battleDiff.c_str(),
@@ -475,7 +475,7 @@ bool Settings::write() {
             enhancementsOptions.slimeDivides,
             enhancementsOptions.gazerSpawnsInsects,
             enhancementsOptions.textColorization,
-            enhancementsOptions.c64chestTraps,            
+            enhancementsOptions.c64chestTraps,
             enhancementsOptions.smartEnterKey,
             enhancementsOptions.peerShowsObjects,
             enhancementsOptions.u5combat,
@@ -503,6 +503,6 @@ const string &Settings::getUserPath() {
     return userPath;
 }
 
-const vector<string> &Settings::getBattleDiffs() { 
+const vector<string> &Settings::getBattleDiffs() {
     return battleDiffs;
 }

@@ -84,7 +84,7 @@ static U4PATH * u4path_instance = NULL;
 static U4ZipPackageMgr * u4zip_instance = NULL;
 
 U4PATH * U4PATH::getInstance() {
-	return u4path_instance;
+    return u4path_instance;
 }
 
 /**
@@ -132,40 +132,40 @@ void u4fcleanup()
 }
 
 void U4PATH::initDefaultPaths() {
-	if (defaultsHaveBeenInitd)
-		return;
+    if (defaultsHaveBeenInitd)
+        return;
 
-	//The first part of the path searched will be one of these root directories
+    //The first part of the path searched will be one of these root directories
 
-	/*Try to cover all root possibilities. These can be added to by separate modules*/
-	rootResourcePaths.push_back("");
-	rootResourcePaths.push_back(".");
-	rootResourcePaths.push_back("./ultima4");
-	rootResourcePaths.push_back("/usr/lib/u4");
-	rootResourcePaths.push_back("/usr/local/lib/u4");
-	rootResourcePaths.push_back("C:");
-	rootResourcePaths.push_back("C:/DOS");
-	rootResourcePaths.push_back("C:/GAMES");
+    /*Try to cover all root possibilities. These can be added to by separate modules*/
+    rootResourcePaths.push_back("");
+    rootResourcePaths.push_back(".");
+    rootResourcePaths.push_back("./ultima4");
+    rootResourcePaths.push_back("/usr/lib/u4");
+    rootResourcePaths.push_back("/usr/local/lib/u4");
+    rootResourcePaths.push_back("C:");
+    rootResourcePaths.push_back("C:/DOS");
+    rootResourcePaths.push_back("C:/GAMES");
 
-	//The second (specific) part of the path searched will be these various subdirectories
+    //The second (specific) part of the path searched will be these various subdirectories
 
-	/* the possible paths where u4 for DOS can be installed */
-	u4ForDOSPaths.push_back(".");
-	u4ForDOSPaths.push_back("u4");
-	u4ForDOSPaths.push_back("ultima4");
+    /* the possible paths where u4 for DOS can be installed */
+    u4ForDOSPaths.push_back(".");
+    u4ForDOSPaths.push_back("u4");
+    u4ForDOSPaths.push_back("ultima4");
 
-	/* the possible paths where the u4 zipfiles can be installed */
-	u4ZipPaths.push_back(".");
-	u4ZipPaths.push_back("u4");
+    /* the possible paths where the u4 zipfiles can be installed */
+    u4ZipPaths.push_back(".");
+    u4ZipPaths.push_back("u4");
 
-	/* the possible paths where the u4 music files can be installed */
-	musicPaths.push_back(".");
-	musicPaths.push_back("mid");
-	musicPaths.push_back("../mid");
-	musicPaths.push_back("music");
-	musicPaths.push_back("../music");
+    /* the possible paths where the u4 music files can be installed */
+    musicPaths.push_back(".");
+    musicPaths.push_back("mid");
+    musicPaths.push_back("../mid");
+    musicPaths.push_back("music");
+    musicPaths.push_back("../music");
 
-	/* the possible paths where the u4 sound files can be installed */
+    /* the possible paths where the u4 sound files can be installed */
     soundPaths.push_back(".");
     soundPaths.push_back("./sound");
     soundPaths.push_back("../sound");
@@ -177,8 +177,8 @@ void U4PATH::initDefaultPaths() {
 
     /* the possible paths where the u4 graphics files can be installed */
     graphicsPaths.push_back(".");
-	graphicsPaths.push_back("graphics");
-	graphicsPaths.push_back("../graphics");
+    graphicsPaths.push_back("graphics");
+    graphicsPaths.push_back("../graphics");
 }
 
 /**
@@ -210,7 +210,7 @@ U4ZipPackage::U4ZipPackage(const string &name, const string &path, bool extensio
 void U4ZipPackage::addTranslation(const string &value, const string &translation) {
     translations[value] = translation;
 }
-    
+
 const string &U4ZipPackage::translate(const string &name) const {
     std::map<string, string>::const_iterator i = translations.find(name);
     if (i != translations.end())
@@ -220,8 +220,8 @@ const string &U4ZipPackage::translate(const string &name) const {
 }
 
 U4ZipPackageMgr::U4ZipPackageMgr() {
-	unzFile f;
-	
+    unzFile f;
+
     string upg_pathname(u4find_path("u4upgrad.zip", u4Path.u4ZipPaths));
     if (!upg_pathname.empty()) {
         /* upgrade zip is present */
@@ -255,116 +255,116 @@ U4ZipPackageMgr::U4ZipPackageMgr() {
         upgrade->addTranslation("yew.tlk", "yew.old");
         add(upgrade);
     }
-	
-	// Check for the default zip packages
-	int flag = 0;
-	string pathname;
 
-	do {
-		//Check for the upgraded package once. unlikely it'll be renamed.
-		pathname = u4find_path("ultima4-1.01.zip", u4Path.u4ZipPaths);
-		if (!pathname.empty()) {
-		    flag = 1;
-			break;
-		}
+    // Check for the default zip packages
+    int flag = 0;
+    string pathname;
 
-		// We check for all manner of generic packages, though.
-		pathname = u4find_path("ultima4.zip", u4Path.u4ZipPaths);
-		if (!pathname.empty()) {
-		    flag = 1;
-			break;
-		}
+    do {
+        //Check for the upgraded package once. unlikely it'll be renamed.
+        pathname = u4find_path("ultima4-1.01.zip", u4Path.u4ZipPaths);
+        if (!pathname.empty()) {
+            flag = 1;
+            break;
+        }
 
-	    pathname = u4find_path("Ultima4.zip", u4Path.u4ZipPaths);
-		if (!pathname.empty()) {
-		    flag = 1;
-			break;
-		}
+        // We check for all manner of generic packages, though.
+        pathname = u4find_path("ultima4.zip", u4Path.u4ZipPaths);
+        if (!pathname.empty()) {
+            flag = 1;
+            break;
+        }
 
-	    pathname = u4find_path("ULTIMA4.zip", u4Path.u4ZipPaths);
-		if (!pathname.empty()) {
-		    flag = 1;
-			break;
-		}
+        pathname = u4find_path("Ultima4.zip", u4Path.u4ZipPaths);
+        if (!pathname.empty()) {
+            flag = 1;
+            break;
+        }
 
-	    pathname = u4find_path("u4.zip", u4Path.u4ZipPaths);
-		if (!pathname.empty()) {
-		    flag = 1;
-			break;
-		}
-		
-	    pathname = u4find_path("U4.zip", u4Path.u4ZipPaths);
-		if (!pathname.empty()) {
-		    flag = 1;
-			break;
-		}
+        pathname = u4find_path("ULTIMA4.zip", u4Path.u4ZipPaths);
+        if (!pathname.empty()) {
+            flag = 1;
+            break;
+        }
 
-		//search for the ultimaforever.com zip and variations
-		pathname = u4find_path("UltimaIV.zip", u4Path.u4ZipPaths);
-		if (!pathname.empty()) {
-		    flag = 1;
-			break;
-		}
-		
-		pathname = u4find_path("Ultimaiv.zip", u4Path.u4ZipPaths);
-		if (!pathname.empty()) {
-		    flag = 1;
-			break;
-		}
-		
-		pathname = u4find_path("ULTIMAIV.zip", u4Path.u4ZipPaths);
-		if (!pathname.empty()) {
-		    flag = 1;
-			break;
-		}
-		
-		pathname = u4find_path("ultimaIV.zip", u4Path.u4ZipPaths);
-		if (!pathname.empty()) {
-		    flag = 1;
-			break;
-		}
-		
-		pathname = u4find_path("ultimaiv.zip", u4Path.u4ZipPaths);
-		if (!pathname.empty()) {
-		    flag = 1;
-			break;
-		}
-		
-		// If it's not found by this point, give up.
-		break;
-		
-	} while (flag == 0);
+        pathname = u4find_path("u4.zip", u4Path.u4ZipPaths);
+        if (!pathname.empty()) {
+            flag = 1;
+            break;
+        }
 
-	if (flag) {
-		f = unzOpen(pathname.c_str());
-		if (!f)
-			return;
-	
-		//Now we detect the folder structure inside the zipfile.
-		if (unzLocateFile(f, "charset.ega", 2) == UNZ_OK) {
-			add(new U4ZipPackage(pathname, "", false));
-			
-    	} else if (unzLocateFile(f, "ultima4/charset.ega", 2) == UNZ_OK) {
-			add(new U4ZipPackage(pathname, "ultima4/", false));
+        pathname = u4find_path("U4.zip", u4Path.u4ZipPaths);
+        if (!pathname.empty()) {
+            flag = 1;
+            break;
+        }
 
-		} else if (unzLocateFile(f, "Ultima4/charset.ega", 2) == UNZ_OK) {
-			add(new U4ZipPackage(pathname, "Ultima4/", false));
+        //search for the ultimaforever.com zip and variations
+        pathname = u4find_path("UltimaIV.zip", u4Path.u4ZipPaths);
+        if (!pathname.empty()) {
+            flag = 1;
+            break;
+        }
 
-		} else if (unzLocateFile(f, "ULTIMA4/charset.ega", 2) == UNZ_OK) {
-			add(new U4ZipPackage(pathname, "ULTIMA4/", false));
+        pathname = u4find_path("Ultimaiv.zip", u4Path.u4ZipPaths);
+        if (!pathname.empty()) {
+            flag = 1;
+            break;
+        }
 
-		} else if (unzLocateFile(f, "u4/charset.ega", 2) == UNZ_OK) {
-			add(new U4ZipPackage(pathname, "u4/", false));
+        pathname = u4find_path("ULTIMAIV.zip", u4Path.u4ZipPaths);
+        if (!pathname.empty()) {
+            flag = 1;
+            break;
+        }
 
-		} else if (unzLocateFile(f, "U4/charset.ega", 2) == UNZ_OK) {
-			add(new U4ZipPackage(pathname, "U4/", false));
+        pathname = u4find_path("ultimaIV.zip", u4Path.u4ZipPaths);
+        if (!pathname.empty()) {
+            flag = 1;
+            break;
+        }
 
-		}
+        pathname = u4find_path("ultimaiv.zip", u4Path.u4ZipPaths);
+        if (!pathname.empty()) {
+            flag = 1;
+            break;
+        }
 
-		unzClose(f);
+        // If it's not found by this point, give up.
+        break;
 
-	}
-	
+    } while (flag == 0);
+
+    if (flag) {
+        f = unzOpen(pathname.c_str());
+        if (!f)
+            return;
+
+        //Now we detect the folder structure inside the zipfile.
+        if (unzLocateFile(f, "charset.ega", 2) == UNZ_OK) {
+            add(new U4ZipPackage(pathname, "", false));
+
+        } else if (unzLocateFile(f, "ultima4/charset.ega", 2) == UNZ_OK) {
+            add(new U4ZipPackage(pathname, "ultima4/", false));
+
+        } else if (unzLocateFile(f, "Ultima4/charset.ega", 2) == UNZ_OK) {
+            add(new U4ZipPackage(pathname, "Ultima4/", false));
+
+        } else if (unzLocateFile(f, "ULTIMA4/charset.ega", 2) == UNZ_OK) {
+            add(new U4ZipPackage(pathname, "ULTIMA4/", false));
+
+        } else if (unzLocateFile(f, "u4/charset.ega", 2) == UNZ_OK) {
+            add(new U4ZipPackage(pathname, "u4/", false));
+
+        } else if (unzLocateFile(f, "U4/charset.ega", 2) == UNZ_OK) {
+            add(new U4ZipPackage(pathname, "U4/", false));
+
+        }
+
+        unzClose(f);
+
+    }
+
     /* scan for extensions */
 }
 
@@ -388,7 +388,7 @@ U4FILE *U4FILE_stdio::open(const string &fname) {
 
     u4f = new U4FILE_stdio;
     u4f->file = f;
-    
+
     return u4f;
 }
 
@@ -651,7 +651,7 @@ vector<string> u4read_stringtable(U4FILE *f, long offset, int nstrings) {
 
         while ((c = f->getc()) != '\0')
             buffer += c;
-        
+
         strs.push_back(buffer);
     }
 
@@ -708,7 +708,7 @@ string u4find_path(const string &fname, std::list<string> specificSubPaths) {
         // This is VERY dependant on the current layout of the XML files. It will fail in a general case.
         size_t seppos = fname.rfind('/');
         if (seppos != string::npos)
-            dir = fname.substr(0, seppos);        
+            dir = fname.substr(0, seppos);
         size_t pos = fname.rfind('.');
         if (pos != string::npos) {
             if (seppos != string::npos)
@@ -717,20 +717,20 @@ string u4find_path(const string &fname, std::list<string> specificSubPaths) {
                 base = fname.substr(0, pos);
             ext = fname.substr(pos + 1);
         }
-        
+
         string pathFile = U4IOS::getFileLocation(dir, base, ext);
         strncpy(path, pathFile.c_str(), 2048);
         if (verbose)
             printf("trying to open %s\n", path);
-        
+
         f = fopen(path, "rb");
-    }    
+    }
 #endif
 
     if (verbose) {
         if (f != NULL)
             printf("%s successfully found\n", path);
-        else 
+        else
             printf("%s not found\n", fname.c_str());
     }
 

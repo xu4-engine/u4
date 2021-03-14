@@ -44,22 +44,22 @@ void TileRule::load() {
         TileRule *rule = new TileRule;
         rule->initFromConf(*i);
         TileRule::rules[rule->name] = rule;
-    }    
-    
+    }
+
     if (TileRule::findByName("default") == NULL)
         errorFatal("no 'default' rule found in tile rules");
 }
 
 /**
- * Load properties for the current rule node 
+ * Load properties for the current rule node
  */
-bool TileRule::initFromConf(const ConfigElement &conf) {    
+bool TileRule::initFromConf(const ConfigElement &conf) {
     unsigned int i;
-    
+
     static const struct {
         const char *name;
-        unsigned int mask;        
-    } booleanAttributes[] = {        
+        unsigned int mask;
+    } booleanAttributes[] = {
         { "dispel", MASK_DISPEL },
         { "talkover", MASK_TALKOVER },
         { "door", MASK_DOOR },
@@ -79,12 +79,12 @@ bool TileRule::initFromConf(const ConfigElement &conf) {
 
     static const struct {
         const char *name;
-        unsigned int mask;      
-    } movementBooleanAttr[] = {        
+        unsigned int mask;
+    } movementBooleanAttr[] = {
         { "swimable", MASK_SWIMABLE },
-        { "sailable", MASK_SAILABLE },       
-        { "unflyable", MASK_UNFLYABLE },       
-        { "creatureunwalkable", MASK_CREATURE_UNWALKABLE }        
+        { "sailable", MASK_SAILABLE },
+        { "unflyable", MASK_UNFLYABLE },
+        { "creatureunwalkable", MASK_CREATURE_UNWALKABLE }
     };
     static const char *speedEnumStrings[] = { "fast", "slow", "vslow", "vvslow", NULL };
     static const char *effectsEnumStrings[] = { "none", "fire", "sleep", "poison", "poisonField", "electricity", "lava", NULL };
@@ -94,12 +94,12 @@ bool TileRule::initFromConf(const ConfigElement &conf) {
     this->speed = FAST;
     this->effect = EFFECT_NONE;
     this->walkonDirs = MASK_DIR_ALL;
-    this->walkoffDirs = MASK_DIR_ALL;    
+    this->walkoffDirs = MASK_DIR_ALL;
     this->name = conf.getString("name");
 
     for (i = 0; i < sizeof(booleanAttributes) / sizeof(booleanAttributes[0]); i++) {
         if (conf.getBool(booleanAttributes[i].name))
-            this->mask |= booleanAttributes[i].mask;        
+            this->mask |= booleanAttributes[i].mask;
     }
 
     for (i = 0; i < sizeof(movementBooleanAttr) / sizeof(movementBooleanAttr[0]); i++) {
@@ -151,15 +151,15 @@ bool TileRule::initFromConf(const ConfigElement &conf) {
  */
 
 /* static member variables */
-Tileset::TilesetMap Tileset::tilesets;    
+Tileset::TilesetMap Tileset::tilesets;
 
 /**
  * Loads all tilesets using the filename
  * indicated by 'filename' as a definition
  */
-void Tileset::loadAll() {    
+void Tileset::loadAll() {
     Debug dbg("debug/tileset.txt", "Tileset");
-    const Config *config = Config::getInstance();    
+    const Config *config = Config::getInstance();
     vector<ConfigElement> conf;
 
     TRACE(dbg, "Unloading all tilesets");
@@ -168,7 +168,7 @@ void Tileset::loadAll() {
     // get the config element for all tilesets
     TRACE_LOCAL(dbg, "Loading tilesets info from config");
     conf = config->getElement("tilesets").getChildren();
-    
+
     // load tile rules
     TRACE_LOCAL(dbg, "Loading tile rules");
     if (!TileRule::rules.size())
@@ -197,16 +197,16 @@ void Tileset::loadAll() {
  */
 void Tileset::unloadAll() {
     TilesetMap::iterator i;
-    
+
     // unload all tilemaps
     TileMap::unloadAll();
-    
+
     for (i = tilesets.begin(); i != tilesets.end(); i++) {
         i->second->unload();
         delete i->second;
     }
     tilesets.clear();
-    
+
     Tile::resetNextId();
 }
 
@@ -241,7 +241,7 @@ Tile* Tileset::findTileByName(const string &name) {
     for (i = tilesets.begin(); i != tilesets.end(); i++) {
         Tile *t = i->second->getByName(name);
         if (t)
-            return t;        
+            return t;
     }
 
     return NULL;
@@ -252,7 +252,7 @@ Tile* Tileset::findTileById(TileId id) {
     for (i = tilesets.begin(); i != tilesets.end(); i++) {
         Tile *t = i->second->get(id);
         if (t)
-            return t;        
+            return t;
     }
 
     return NULL;
@@ -263,7 +263,7 @@ Tile* Tileset::findTileById(TileId id) {
  */
 void Tileset::load(const ConfigElement &tilesetConf) {
     Debug dbg("debug/tileset.txt", "Tileset", true);
-    
+
     name = tilesetConf.getString("name");
     if (tilesetConf.exists("imageName"))
         imageName = tilesetConf.getString("imageName");
@@ -278,7 +278,7 @@ void Tileset::load(const ConfigElement &tilesetConf) {
     for (std::vector<ConfigElement>::iterator i = children.begin(); i != children.end(); i++) {
         if (i->getName() != "tile")
             continue;
-        
+
         Tile *tile = new Tile(this);
         tile->loadProperties(*i);
 
@@ -287,10 +287,10 @@ void Tileset::load(const ConfigElement &tilesetConf) {
         /* add the tile to our tileset */
         tiles[tile->getId()] = tile;
         nameMap[tile->getName()] = tile;
-        
+
         index += tile->getFrames();
     }
-    totalFrames = index;   
+    totalFrames = index;
 }
 
 void Tileset::unloadImages()
@@ -300,7 +300,7 @@ void Tileset::unloadImages()
     /* free all the image memory and nullify so that reloading can automatically take place lazily */
     for (i = tiles.begin(); i != tiles.end(); i++)
     {
-    	i->second->deleteImage();
+        i->second->deleteImage();
     }
 }
 
@@ -308,15 +308,15 @@ void Tileset::unloadImages()
  * Unload the current tileset
  */
 void Tileset::unload() {
-    Tileset::TileIdMap::iterator i;    
-        
+    Tileset::TileIdMap::iterator i;
+
     /* free all the memory for the tiles */
     for (i = tiles.begin(); i != tiles.end(); i++)
-        delete i->second;    
+        delete i->second;
 
     tiles.clear();
     totalFrames = 0;
-    imageName.erase();    
+    imageName.erase();
 }
 
 /**
@@ -327,7 +327,7 @@ Tile* Tileset::get(TileId id) {
         return tiles[id];
     else if (extends)
         return extends->get(id);
-    return NULL;    
+    return NULL;
 }
 
 /**
@@ -359,7 +359,7 @@ unsigned int Tileset::numTiles() const {
 
 /**
  * Returns the total number of frames in the tileset
- */ 
+ */
 unsigned int Tileset::numFrames() const {
     return totalFrames;
 }

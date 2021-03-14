@@ -31,7 +31,7 @@ public:
     Music();
     ~Music();
 
-    static void callback(void *);    
+    static void callback(void *);
 
     void fadeOut(int msecs);
     void fadeIn(int msecs, bool loadFromMap);

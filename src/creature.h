@@ -31,7 +31,7 @@ typedef std::vector<class Creature *> CreatureVector;
 /* Creature ids */
 
 typedef enum {
-    HORSE1_ID		= 0,
+    HORSE1_ID       = 0,
     HORSE2_ID       = 1,
 
     MAGE_ID         = 2,
@@ -97,9 +97,9 @@ typedef enum {
     MATTR_GOOD          = 0x10,
     MATTR_WATER         = 0x20,
     MATTR_NONATTACKABLE = 0x40,
-    MATTR_NEGATE        = 0x80,    
-    MATTR_CAMOUFLAGE    = 0x100,    
-    MATTR_NOATTACK      = 0x200,    
+    MATTR_NEGATE        = 0x80,
+    MATTR_CAMOUFLAGE    = 0x100,
+    MATTR_NOATTACK      = 0x200,
     MATTR_AMBUSHES      = 0x400,
     MATTR_RANDOMRANGED  = 0x800,
     MATTR_INCORPOREAL   = 0x1000,
@@ -138,7 +138,7 @@ typedef enum {
  *      creature instance)</li>
  *      <li>creatures can be looked up by name, ids can probably go away</li>
  * </ul>
- */ 
+ */
 class Creature : public Object {
     typedef std::list<StatusType> StatusList;
 
@@ -195,7 +195,7 @@ public:
     bool leavesTile() const             {return leavestile;}
     bool castsSleep() const             {return mattr & MATTR_CASTS_SLEEP;}
     bool isForceOfNature() const        {return mattr & MATTR_FORCE_OF_NATURE;}
-    int getDamage() const;    
+    int getDamage() const;
     const string &getCamouflageTile() const {return camouflageTile;}
     void setRandomRanged();
     int setInitialHp(int hp = -1);
@@ -229,15 +229,15 @@ protected:
     string          name;
     string          rangedhittile;
     string          rangedmisstile;
-    CreatureId      id;    
-    string          camouflageTile;    
+    CreatureId      id;
+    string          camouflageTile;
     CreatureId      leader;
     int             basehp;
     int             hp;
     StatusList      status;
     int             xp;
     unsigned char   ranged;
-    string          worldrangedtile;    
+    string          worldrangedtile;
     bool            leavestile;
     CreatureAttrib  mattr;
     CreatureMovementAttrib movementAttr;
@@ -249,7 +249,7 @@ protected:
 
 /**
  * CreatureMgr Class Definition
- */ 
+ */
 class CreatureMgr {
 public:
     static CreatureMgr *getInstance();
@@ -263,7 +263,7 @@ public:
     Creature *randomForDungeon(int dnglevel);
     Creature *randomAmbushing();
 
-private:    
+private:
     CreatureMgr() {}
 
     // disallow assignments, copy contruction
@@ -272,7 +272,7 @@ private:
 
     static CreatureMgr *instance;
 
-    CreatureMap creatures;    
+    CreatureMap creatures;
 };
 
 bool isCreature(Object *punknown);

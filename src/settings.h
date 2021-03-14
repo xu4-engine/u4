@@ -61,12 +61,12 @@ using std::string;
 #define DEFAULT_TITLE_SPEED_RANDOM      150
 #define DEFAULT_TITLE_SPEED_OTHER       30
 
-#define DEFAULT_PAUSE_FOR_EACH_TURN		100
+#define DEFAULT_PAUSE_FOR_EACH_TURN     100
 #define DEFAULT_PAUSE_FOR_EACH_MOVEMENT 10
 
 //--Tile transparency stuff
-#define DEFAULT_SHADOW_PIXEL_OPACITY	64
-#define DEFAULT_SHADOW_PIXEL_SIZE		2
+#define DEFAULT_SHADOW_PIXEL_OPACITY    64
+#define DEFAULT_SHADOW_PIXEL_SIZE       2
 
 struct SettingsEnhancementOptions {
     bool activePlayer;
@@ -76,12 +76,12 @@ struct SettingsEnhancementOptions {
     bool slimeDivides;
     bool gazerSpawnsInsects;
     bool textColorization;
-    bool c64chestTraps;    
+    bool c64chestTraps;
     bool smartEnterKey;
     bool peerShowsObjects;
     bool u4TileTransparencyHack;
-    int	 u4TileTransparencyHackPixelShadowOpacity;
-    int	 u4TrileTransparencyHackShadowBreadth;
+    int  u4TileTransparencyHackPixelShadowOpacity;
+    int  u4TrileTransparencyHackShadowBreadth;
 
 };
 
@@ -102,11 +102,11 @@ public:
     int                 campTime;
     bool                debug;
     bool                enhancements;
-    SettingsEnhancementOptions enhancementsOptions;    
+    SettingsEnhancementOptions enhancementsOptions;
     bool                filterMoveMessages;
     bool                fullscreen;
     int                 gameCyclesPerSecond;
-    int					screenAnimationFramesPerSecond;
+    int                 screenAnimationFramesPerSecond;
     bool                innAlwaysCombat;
     int                 innTime;
     int                 keydelay;
@@ -127,15 +127,15 @@ public:
     int                 titleSpeedOther;
 
     //Settings that aren't in file yet
-    int					pauseForEachTurn;
-    int					pauseForEachMovement;
+    int                 pauseForEachTurn;
+    int                 pauseForEachMovement;
 
     /**
      * Strings, classes, and other objects that cannot
      * be bitwise-compared must be placed here at the
      * end of the list so that our == and != operators
      * function correctly
-     */ 
+     */
     long                end_of_bitwise_comparators;
 
     string              filter;
@@ -156,7 +156,7 @@ class Settings : public SettingsData, public Observable<Settings *> {
 
 public:
     /* Methods */
-	void init(const bool useProfile, const string profileName);
+    void init(const bool useProfile, const string profileName);
     static Settings &getInstance();
     void setData(const SettingsData &data);
     bool read();

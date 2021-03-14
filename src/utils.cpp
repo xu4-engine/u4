@@ -17,7 +17,7 @@
  * Seed the random number generator.
  */
 void xu4_srandom() {
-#if (defined(BSD) && (BSD >= 199103)) || (defined (MACOSX) || defined (IOS)) 
+#if (defined(BSD) && (BSD >= 199103)) || (defined (MACOSX) || defined (IOS))
     srandom(time(NULL));
 #else
     srand((unsigned int)time(NULL));
@@ -31,7 +31,7 @@ void xu4_srandom() {
  * lower bits (e.g. MacOS X).
  */
 int xu4_random(int upperRange) {
-#if (defined(BSD) && (BSD >= 199103)) || (defined (MACOSX) || defined (IOS)) 
+#if (defined(BSD) && (BSD >= 199103)) || (defined (MACOSX) || defined (IOS))
     int r = random();
 #else
     int r = rand();
@@ -50,7 +50,7 @@ string& trim(string &val, const string &chars_to_trim) {
     if (val.size()) {
         string::size_type pos;
         for (i = val.begin(); (i != val.end()) && (pos = chars_to_trim.find(*i)) != string::npos; )
-            i = val.erase(i);    
+            i = val.erase(i);
         for (i = val.end()-1; (i != val.begin()) && (pos = chars_to_trim.find(*i)) != string::npos; )
             i = val.erase(i)-1;
     }
@@ -59,7 +59,7 @@ string& trim(string &val, const string &chars_to_trim) {
 
 /**
  * Converts the string to lowercase
- */ 
+ */
 string& lowercase(string &val) {
     using namespace std;
     string::iterator i;
@@ -70,7 +70,7 @@ string& lowercase(string &val) {
 
 /**
  * Converts the string to uppercase
- */ 
+ */
 string& uppercase(string &val) {
     using namespace std;
     string::iterator i;
@@ -81,9 +81,9 @@ string& uppercase(string &val) {
 
 /**
  * Converts an integer value to a string
- */ 
+ */
 string xu4_to_string(int val) {
-    char buffer[16];    
+    char buffer[16];
     sprintf(buffer, "%d", val);
     return buffer;
 }

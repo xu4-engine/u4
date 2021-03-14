@@ -35,8 +35,8 @@ bool isCreature(Object *punknown) {
 
 /**
  * Creature class implementation
- */ 
-Creature::Creature(MapTile tile) : 
+ */
+Creature::Creature(MapTile tile) :
     Object(Object::CREATURE) {
     const Creature *m = creatureMgr->getByTile(tile);
     if (m)
@@ -53,17 +53,17 @@ void Creature::load(const ConfigElement &conf) {
         { "undead", MATTR_UNDEAD },
         { "good", MATTR_GOOD },
         { "swims", MATTR_WATER },
-        { "sails", MATTR_WATER },       
-        { "cantattack", MATTR_NONATTACKABLE },       
-        { "camouflage", MATTR_CAMOUFLAGE }, 
-        { "wontattack", MATTR_NOATTACK },       
+        { "sails", MATTR_WATER },
+        { "cantattack", MATTR_NONATTACKABLE },
+        { "camouflage", MATTR_CAMOUFLAGE },
+        { "wontattack", MATTR_NOATTACK },
         { "ambushes", MATTR_AMBUSHES },
         { "incorporeal", MATTR_INCORPOREAL },
         { "nochest", MATTR_NOCHEST },
         { "divides", MATTR_DIVIDES },
         { "forceOfNature", MATTR_FORCE_OF_NATURE }
-    };    
-    
+    };
+
     /* steals="" */
     static const struct {
         const char *name;
@@ -111,14 +111,14 @@ void Creature::load(const ConfigElement &conf) {
         { "fire", EFFECT_FIRE },
         { "poison", EFFECT_POISONFIELD },
         { "sleep", EFFECT_SLEEP }
-    };    
+    };
 
     name = conf.getString("name");
     id = static_cast<unsigned short>(conf.getInt("id"));
-        
+
     /* Get the leader if it's been included, otherwise the leader is itself */
     leader = static_cast<unsigned char>(conf.getInt("leader", id));
-        
+
     xp = static_cast<unsigned short>(conf.getInt("exp"));
     ranged = conf.getBool("ranged");
     setTile(Tileset::findTileByName(conf.getString("tile")));
@@ -153,10 +153,10 @@ void Creature::load(const ConfigElement &conf) {
     if (conf.exists("rangedhittile")) {
         if (conf.getString("rangedhittile") == "random")
             mattr = static_cast<CreatureAttrib>(mattr | MATTR_RANDOMRANGED);
-        else 
+        else
             setHitTile(conf.getString("rangedhittile"));
     }
-        
+
     /* get ranged miss tile */
     if (conf.exists("rangedmisstile")) {
         if (conf.getString("rangedmisstile") ==  "random")
@@ -174,14 +174,14 @@ void Creature::load(const ConfigElement &conf) {
             resists = effects[idx].effect;
         }
     }
-        
+
     /* Load creature attributes */
     for (idx = 0; idx < sizeof(booleanAttributes) / sizeof(booleanAttributes[0]); idx++) {
         if (conf.getBool(booleanAttributes[idx].name)) {
             mattr = static_cast<CreatureAttrib>(mattr | booleanAttributes[idx].mask);
         }
     }
-        
+
     /* Load boolean attributes that affect movement */
     for (idx = 0; idx < sizeof(movementBoolean) / sizeof(movementBoolean[0]); idx++) {
         if (conf.getBool(movementBoolean[idx].name)) {
@@ -225,18 +225,18 @@ void Creature::load(const ConfigElement &conf) {
         slowedType = SLOWED_BY_NOTHING;
 }
 
-bool Creature::isAttackable() const  { 
+bool Creature::isAttackable() const  {
     if (mattr & MATTR_NONATTACKABLE)
         return false;
     /* can't attack horse transport */
     if (tile.getTileType()->isHorse() && getMovementBehavior() == MOVEMENT_FIXED)
         return false;
-    return true; 
+    return true;
 }
 
 int  Creature::getDamage() const {
     int damage, val, x;
-    val = basehp;    
+    val = basehp;
     x = xu4_random(val >> 2);
     damage = (x >> 4) + ((x >> 2) & 0xfc);
     damage += x % 10;
@@ -248,7 +248,7 @@ int Creature::setInitialHp(int points) {
         hp = xu4_random(basehp) | (basehp / 2);
     else
         hp = points;
-    
+
     /* make sure the creature doesn't flee initially */
     if (hp < 24) hp = 24;
 
@@ -274,7 +274,7 @@ void Creature::setRandomRanged() {
 
 CreatureStatus Creature::getState() const {
     int heavy_threshold, light_threshold, crit_threshold;
-    
+
     crit_threshold = basehp >> 2;  /* (basehp / 4) */
     heavy_threshold = basehp >> 1; /* (basehp / 2) */
     light_threshold = crit_threshold + heavy_threshold;
@@ -298,9 +298,9 @@ CreatureStatus Creature::getState() const {
  * Performs a special action for the creature
  * Returns true if the action takes up the creatures
  * whole turn (i.e. it cant move afterwords)
- */ 
+ */
 bool Creature::specialAction() {
-    bool retval = false;        
+    bool retval = false;
 
     int dx = abs(c->location->coords.x - coords.x);
     int dy = abs(c->location->coords.y - coords.y);
@@ -314,13 +314,13 @@ bool Creature::specialAction() {
     int broadsidesDirs = 0;
 
     switch(id) {
-    
+
     case LAVA_LIZARD_ID:
     case SEA_SERPENT_ID:
     case HYDRA_ID:
-    case DRAGON_ID:       
-        
-        /* A 50/50 chance they try to range attack when you're close enough 
+    case DRAGON_ID:
+
+        /* A 50/50 chance they try to range attack when you're close enough
            and not in a city
            Note: Monsters in settlements in U3 do fire on party
         */
@@ -332,11 +332,11 @@ bool Creature::specialAction() {
                     break;
             }
         }
-        
+
         break;
 
     case PIRATE_ID:
-        
+
         /* Fire cannon: Pirates only fire broadsides and only when they can hit you :) */
         retval = true;
         broadsidesDirs = dirGetBroadsidesDirs(tile.getDirection());
@@ -355,7 +355,7 @@ bool Creature::specialAction() {
         }
         else
             retval = false;
-        
+
         break;
 
     default: break;
@@ -368,11 +368,11 @@ bool Creature::specialAction() {
  * Performs a special effect for the creature
  * Returns true if something special happened,
  * or false if nothing happened
- */ 
+ */
 bool Creature::specialEffect() {
-    Object *obj;    
+    Object *obj;
     bool retval = false;
-    
+
     switch(id) {
 
     case STORM_ID:
@@ -383,8 +383,8 @@ bool Creature::specialEffect() {
 
                 /* damage the ship */
                 if (c->transportContext == TRANSPORT_SHIP) {
-                    /* FIXME: Check actual damage from u4dos */                           
-                    gameDamageShip(10, 30);                        
+                    /* FIXME: Check actual damage from u4dos */
+                    gameDamageShip(10, 30);
                 }
                 /* anything else but balloon damages the party */
                 else if (c->transportContext != TRANSPORT_BALLOON) {
@@ -407,15 +407,15 @@ bool Creature::specialEffect() {
                 }
                 else i++;
             }
-        }      
+        }
         break;
-    
-    case WHIRLPOOL_ID:        
+
+    case WHIRLPOOL_ID:
         {
             ObjectDeque::iterator i;
 
-            if (coords == c->location->coords && (c->transportContext == TRANSPORT_SHIP)) {                    
-                                
+            if (coords == c->location->coords && (c->transportContext == TRANSPORT_SHIP)) {
+
                 /* Deal 10 damage to the ship */
                 gameDamageShip(-1, 10);
 
@@ -435,9 +435,9 @@ bool Creature::specialEffect() {
                 obj = *i;
 
                 if (this != obj &&
-                	obj->getCoords() == coords) {
+                    obj->getCoords() == coords) {
 
-                	Creature *m = dynamic_cast<Creature*>(obj);
+                    Creature *m = dynamic_cast<Creature*>(obj);
 
                     /* Make sure the object isn't a flying creature or object */
                     if (!m || (m && (m->swims() || m->sails()) && !m->flies())) {
@@ -446,11 +446,11 @@ bool Creature::specialEffect() {
                         retval = true;
                     }
                     else {
-                    	i++;
+                        i++;
                     }
                 }
                 else i++;
-            }            
+            }
         }
 
     default: break;
@@ -466,7 +466,7 @@ void Creature::act(CombatController *controller) {
 
     /* see if creature wakes up if it is asleep */
     if ((getStatus() == STAT_SLEEPING) && (xu4_random(8) == 0))
-        wakeUp();    
+        wakeUp();
 
     /* if the creature is still asleep, then do nothing */
     if (getStatus() == STAT_SLEEPING)
@@ -484,7 +484,7 @@ void Creature::act(CombatController *controller) {
         action = CA_TELEPORT;
     // creatures who ranged attack do so 1/4 of the time.  Make sure
     // their ranged attack is not negated!
-    else if (ranged != 0 && xu4_random(4) == 0 && 
+    else if (ranged != 0 && xu4_random(4) == 0 &&
              (rangedhittile != "magic_flash" || (*c->aura != Aura::NEGATE)))
         action = CA_RANGED;
     // creatures who cast sleep do so 1/4 of the time they don't ranged attack
@@ -494,13 +494,13 @@ void Creature::act(CombatController *controller) {
         action = CA_FLEE;
     // default action: attack (or move towards) closest target
     else
-        action = CA_ATTACK;        
-    
-    /* 
+        action = CA_ATTACK;
+
+    /*
      * now find out who to do it to
      */
 
-    target = nearestOpponent(&dist, action == CA_RANGED);    
+    target = nearestOpponent(&dist, action == CA_RANGED);
     if (target == NULL)
         return;
 
@@ -529,7 +529,7 @@ void Creature::act(CombatController *controller) {
                     soundPlay(SOUND_ITEM_STOLEN, false);                       // ITEM_STOLEN, gold
                     c->party->adjustGold(-(xu4_random(0x3f)));
                 }
-            
+
                 /* steal food if the creature steals food */
                 if (stealsFood()) {
                     soundPlay(SOUND_ITEM_STOLEN, false);                       // ITEM_STOLEN, food
@@ -537,15 +537,15 @@ void Creature::act(CombatController *controller) {
                 }
             }
         } else {
-        	GameController::flashTile(target->getCoords(), "miss_flash", 1);
+            GameController::flashTile(target->getCoords(), "miss_flash", 1);
         }
         break;
 
-    case CA_CAST_SLEEP: {            
+    case CA_CAST_SLEEP: {
         screenMessage("\nSleep!\n");
 
         gameSpellEffect('s', -1, static_cast<Sound>(SOUND_MAGIC)); /* show the sleep spell effect */
-        
+
         /* Apply the sleep spell to party members still in combat */
         if (!isPartyMember(this)) {
             PartyMemberVector party = controller->getMap()->getPartyMembers();
@@ -562,14 +562,14 @@ void Creature::act(CombatController *controller) {
     case CA_TELEPORT: {
         Coords new_c;
         bool valid = false;
-        bool firstTry = true;                    
-        
+        bool firstTry = true;
+
         while (!valid) {
             Map *map = getMap();
             new_c = Coords(xu4_random(map->width), xu4_random(map->height), c->location->coords.z);
-                
+
             const Tile *tile = map->tileTypeAt(new_c, WITH_OBJECTS);
-            
+
             if (tile->isCreatureWalkable()) {
                 /* If the tile would slow me down, try again! */
                 if (firstTry && tile->getSpeed() != FAST)
@@ -579,7 +579,7 @@ void Creature::act(CombatController *controller) {
                     valid = true;
             }
         }
-        
+
         /* Teleport! */
         setCoords(new_c);
         break;
@@ -622,12 +622,12 @@ void Creature::act(CombatController *controller) {
 
             if (MAP_IS_OOB(map, coords)) {
                 screenMessage("\n%c%s Flees!%c\n", FG_YELLOW, name.c_str(), FG_WHITE);
-                
+
                 /* Congrats, you have a heart! */
                 if (isGood())
                     c->party->adjustKarma(KA_SPARED_GOOD);
 
-                map->removeObject(this);                
+                map->removeObject(this);
             }
         }
         break;
@@ -649,7 +649,7 @@ void Creature::addStatus(StatusType s) {
     else status.push_back(s);
 }
 
-void Creature::applyTileEffect(TileEffect effect) {        
+void Creature::applyTileEffect(TileEffect effect) {
     if (effect != EFFECT_NONE) {
         gameUpdateScreen();
 
@@ -658,7 +658,7 @@ void Creature::applyTileEffect(TileEffect effect) {
             /* creature fell asleep! */
             if ((resists != EFFECT_SLEEP) &&
                 (xu4_random(0xFF) >= hp))
-                putToSleep();            
+                putToSleep();
             break;
 
         case EFFECT_LAVA:
@@ -696,14 +696,14 @@ bool Creature::divide() {
     /* this is a game enhancement, make sure it's turned on! */
     if (!settings.enhancements || !settings.enhancementsOptions.slimeDivides)
         return false;
-    
+
     /* make sure there's a place to put the divided creature! */
-    if (d != DIR_NONE) {                            
+    if (d != DIR_NONE) {
         MapCoords coords(getCoords());
-        
+
         screenMessage("%s Divides!\n", name.c_str());
 
-        /* find a spot to put our new creature */        
+        /* find a spot to put our new creature */
         coords.move(d, map);
 
         /* create our new creature! */
@@ -722,12 +722,12 @@ bool Creature::spawnOnDeath() {
     /* this is a game enhancement, make sure it's turned on! */
     if (!settings.enhancements || !settings.enhancementsOptions.gazerSpawnsInsects)
         return false;
-    
+
     /* make sure there's a place to put the divided creature! */
     MapCoords coords(getCoords());
-        
+
     /* create our new creature! */
-    map->addCreature(creatureMgr->getById(spawn), coords);                
+    map->addCreature(creatureMgr->getById(spawn), coords);
     return true;
 }
 
@@ -736,12 +736,12 @@ StatusType Creature::getStatus() const {
 }
 
 bool Creature::isAsleep() const {
-	for (StatusList::const_iterator itr = this->status.begin();
-		itr != this->status.end();
-		++itr)
-		if (*itr == STAT_SLEEPING)
-			return true;
-	return false;
+    for (StatusList::const_iterator itr = this->status.begin();
+        itr != this->status.end();
+        ++itr)
+        if (*itr == STAT_SLEEPING)
+            return true;
+    return false;
 }
 
 /**
@@ -751,7 +751,7 @@ bool Creature::isAsleep() const {
 bool Creature::hideOrShow() {
     /* find the nearest opponent */
     int dist;
-    
+
     /* ok, now we've got the nearest party member.  Now, see if they're close enough */
     if (nearestOpponent(&dist, false) != NULL) {
         if ((dist < 5) && !isVisible())
@@ -765,7 +765,7 @@ bool Creature::hideOrShow() {
 
 Creature *Creature::nearestOpponent(int *dist, bool ranged) {
     Creature *opponent = NULL;
-    int d, leastDist = 0xFFFF;    
+    int d, leastDist = 0xFFFF;
     ObjectDeque::iterator i;
     bool jinx = (*c->aura == Aura::JINX);
     Map *map = getMap();
@@ -779,7 +779,7 @@ Creature *Creature::nearestOpponent(int *dist, bool ranged) {
 
         /* if a party member, find a creature. If a creature, find a party member */
         /* if jinxed is false, find anything that isn't self */
-        if ((amPlayer != fightingPlayer) || 
+        if ((amPlayer != fightingPlayer) ||
             (jinx && !amPlayer && *i != this)) {
             MapCoords objCoords = (*i)->getCoords();
 
@@ -787,13 +787,13 @@ Creature *Creature::nearestOpponent(int *dist, bool ranged) {
             if (ranged)
                 d = objCoords.distance(getCoords());
             else d = objCoords.movementDistance(getCoords());
-            
+
             /* skip target 50% of time if same distance */
             if (d < leastDist || (d == leastDist && xu4_random(2) == 0)) {
                 opponent = dynamic_cast<Creature*>(*i);
                 leastDist = d;
             }
-        }    
+        }
     }
 
     if (opponent)
@@ -845,15 +845,15 @@ void Creature::wakeUp() {
 bool Creature::applyDamage(int damage, bool byplayer) {
     /* deal the damage */
     if (id != LORDBRITISH_ID)
-        AdjustValueMin(hp, -damage, 0);    
+        AdjustValueMin(hp, -damage, 0);
 
     switch (getState()) {
 
-    case MSTAT_DEAD:        
+    case MSTAT_DEAD:
         if (byplayer)
             screenMessage("%c%s Killed!%c\nExp. %d\n", FG_RED, name.c_str(), FG_WHITE, xp);
         else
-            screenMessage("%c%s Killed!%c\n", FG_RED, name.c_str(), FG_WHITE);        
+            screenMessage("%c%s Killed!%c\n", FG_RED, name.c_str(), FG_WHITE);
 
         /*
          * the creature is dead; let it spawns something else on
@@ -865,7 +865,7 @@ bool Creature::applyDamage(int damage, bool byplayer) {
 
         // Remove yourself from the map
         remove();
-        return false;        
+        return false;
 
     case MSTAT_FLEEING:
         screenMessage("%c%s Fleeing!%c\n", FG_YELLOW, name.c_str(), FG_WHITE);
@@ -929,17 +929,17 @@ void CreatureMgr::loadAll() {
 /**
  * Returns a creature using a tile to find which one to create
  * or NULL if a creature with that tile cannot be found
- */ 
+ */
 Creature *CreatureMgr::getByTile(MapTile tile) {
     CreatureMap::const_iterator i;
 
     for (i = creatures.begin(); i != creatures.end(); i++) {
         if (i->second->getTile() == tile)
-            return i->second;        
+            return i->second;
     }
 
 //    if (tile.id)
-//    	errorWarning("Did not find creature for tile %d", tile.id);
+//      errorWarning("Did not find creature for tile %d", tile.id);
     return NULL;
 }
 
@@ -959,7 +959,7 @@ Creature *CreatureMgr::getById(CreatureId id) {
  * Returns the creature that has the corresponding name
  * or returns NULL if no creature can be found with
  * that name (case insensitive)
- */ 
+ */
 Creature *CreatureMgr::getByName(string name) {
     CreatureMap::const_iterator i;
     for (i = creatures.begin(); i != creatures.end(); i++) {
@@ -971,20 +971,20 @@ Creature *CreatureMgr::getByName(string name) {
 
 /**
  * Creates a random creature based on the tile given
- */ 
+ */
 Creature *CreatureMgr::randomForTile(const Tile *tile) {
     /* FIXME: this is too dependent on the tile system, and easily
-       broken when tileset changes are made.  Methinks the logic 
+       broken when tileset changes are made.  Methinks the logic
        behind this should be moved to monsters.xml or another conf
        file */
 
     int era;
     TileId randTile;
 
-    if (tile->isSailable()) {        
+    if (tile->isSailable()) {
         randTile = creatures.find(PIRATE_ID)->second->getTile().getId();
         randTile += xu4_random(7);
-        return getByTile(randTile);        
+        return getByTile(randTile);
     }
     else if (tile->isSwimable()) {
         randTile = creatures.find(NIXIE_ID)->second->getTile().getId();
@@ -1018,16 +1018,16 @@ Creature *CreatureMgr::randomForDungeon(int dngLevel) {
     int adjustedDngLevel = dngLevel + 1;
     size_t range = adjustedDngLevel < 5 ? 3 : 4;
     CreatureId monster = STORM_ID + adjustedDngLevel + xu4_random(range);
-	if(monster >= MIMIC_ID)
-		++monster;
+    if(monster >= MIMIC_ID)
+        ++monster;
 
-	return getById(monster);
+    return getById(monster);
 }
 
 
 /**
  * Creates a random ambushing creature
- */ 
+ */
 Creature *CreatureMgr::randomAmbushing() {
     CreatureMap::const_iterator i;
     int numAmbushingCreatures = 0,
@@ -1038,7 +1038,7 @@ Creature *CreatureMgr::randomAmbushing() {
         if (i->second->ambushes())
             numAmbushingCreatures++;
     }
-    
+
     if (numAmbushingCreatures > 0) {
         /* now, randomely select one of them */
         randCreature = xu4_random(numAmbushingCreatures);

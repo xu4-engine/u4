@@ -13,7 +13,7 @@
 
 enum SpellCastError {
     CASTERR_NOERROR,            /* success */
-    CASTERR_NOMIX,              /* no mixture available */    
+    CASTERR_NOMIX,              /* no mixture available */
     CASTERR_MPTOOLOW,           /* caster doesn't have enough mp */
     CASTERR_FAILED,             /* the spell failed */
     CASTERR_WRONGCONTEXT,       /* generic 'wrong-context' error (generrally finds the correct

@@ -81,17 +81,17 @@ Image *Image::createScreenImage() {
 /**
  * Creates a duplicate of another image
  */
-Image *Image::duplicate(Image *image) {    
+Image *Image::duplicate(Image *image) {
     bool alphaOn = image->isAlphaOn();
     Image *im = create(image->width(), image->height(), false, HARDWARE);
-    
+
 //    if (image->isIndexed())
 //        im->setPaletteFromImage(image);
 
     /* Turn alpha off before blitting to non-screen surfaces */
     if (alphaOn)
         image->alphaOff();
-    
+
     image->drawOn(im, 0, 0);
 
     if (alphaOn)
@@ -114,7 +114,7 @@ Image::~Image() {
  */
 void Image::setPalette(const RGBA *colors, unsigned n_colors) {
     ASSERT(indexed, "imageSetPalette called on non-indexed image");
-    
+
     SDL_Color *sdlcolors = new SDL_Color[n_colors];
     for (unsigned i = 0; i < n_colors; i++) {
         sdlcolors[i].r = colors[i].r;
@@ -132,14 +132,14 @@ void Image::setPalette(const RGBA *colors, unsigned n_colors) {
  */
 void Image::setPaletteFromImage(const Image *src) {
     ASSERT(indexed && src->indexed, "imageSetPaletteFromImage called on non-indexed image");
-    memcpy(surface->format->palette->colors, 
-           src->surface->format->palette->colors, 
+    memcpy(surface->format->palette->colors,
+           src->surface->format->palette->colors,
            sizeof(SDL_Color) * src->surface->format->palette->ncolors);
 }
 
 // returns the color of the specified palette index
 RGBA Image::getPaletteColor(int index) {
-	RGBA color = RGBA(0, 0, 0, 0);
+    RGBA color = RGBA(0, 0, 0, 0);
 
     if (indexed)
     {
@@ -172,7 +172,7 @@ int Image::getPaletteIndex(RGBA color) {
 }
 
 RGBA Image::setColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
-	RGBA color = RGBA(r, g, b, a);
+    RGBA color = RGBA(r, g, b, a);
     return color;
 }
 
@@ -254,21 +254,21 @@ bool Image::setPaletteIndex(unsigned int index, RGBA color) {
 bool Image::getTransparentIndex(unsigned int &index) const {
     if (!indexed || (surface->flags & SDL_SRCCOLORKEY) == 0)
         return false;
-        
+
     index = surface->format->colorkey;
     return true;
 }
 
 void Image::initializeToBackgroundColor(RGBA backgroundColor)
 {
-	if (indexed)
-		throw "Not supported"; //TODO, this better
-	this->backgroundColor = backgroundColor;
+    if (indexed)
+        throw "Not supported"; //TODO, this better
+    this->backgroundColor = backgroundColor;
     this->fillRect(0,0,this->w,this->h,
-    		backgroundColor.r,
-    		backgroundColor.g,
-    		backgroundColor.b,
-    		backgroundColor.a);
+            backgroundColor.r,
+            backgroundColor.g,
+            backgroundColor.b,
+            backgroundColor.a);
 }
 
 bool Image::isAlphaOn() const
@@ -293,13 +293,13 @@ void Image::putPixel(int x, int y, int r, int g, int b, int a) {
 
 void Image::makeBackgroundColorTransparent(int haloSize, int shadowOpacity)
 {
-	int bgColor = SDL_MapRGBA(surface->format,
-			static_cast<Uint8>(backgroundColor.r),
-			static_cast<Uint8>(backgroundColor.g),
-			static_cast<Uint8>(backgroundColor.b),
-			static_cast<Uint8>(backgroundColor.a));
+    int bgColor = SDL_MapRGBA(surface->format,
+            static_cast<Uint8>(backgroundColor.r),
+            static_cast<Uint8>(backgroundColor.g),
+            static_cast<Uint8>(backgroundColor.b),
+            static_cast<Uint8>(backgroundColor.a));
 
-	performTransparencyHack(bgColor, 1, 0, haloSize,shadowOpacity);
+    performTransparencyHack(bgColor, 1, 0, haloSize,shadowOpacity);
 }
 
 //TODO Separate functionalities found in here
@@ -329,35 +329,35 @@ void Image::performTransparencyHack(unsigned int colorValue, unsigned int numFra
             } else {
                 putPixel(x, y, r, g, b, a);
                 if (haloWidth)
-                	opaqueXYs.push_back(std::pair<int,int>(x,y));
+                    opaqueXYs.push_back(std::pair<int,int>(x,y));
             }
         }
     }
     int ox, oy;
     for (std::list<std::pair<unsigned int,unsigned int> >::iterator xy = opaqueXYs.begin();
-    		xy != opaqueXYs.end();
-    		++xy)
+            xy != opaqueXYs.end();
+            ++xy)
     {
-    	ox = xy->first;
-    	oy = xy->second;
-    	int span = int(haloWidth);
-    	unsigned int x_start = std::max(0,ox - span);
-    	unsigned int x_finish = std::min(int(w), ox + span + 1);
-    	for (x = x_start; x < x_finish; ++x)
-    	{
-    		unsigned int y_start = std::max(int(top),oy - span);
-    		unsigned int y_finish = std::min(int(bottom), oy + span + 1);
-        	for (y = y_start; y < y_finish; ++y) {
+        ox = xy->first;
+        oy = xy->second;
+        int span = int(haloWidth);
+        unsigned int x_start = std::max(0,ox - span);
+        unsigned int x_finish = std::min(int(w), ox + span + 1);
+        for (x = x_start; x < x_finish; ++x)
+        {
+            unsigned int y_start = std::max(int(top),oy - span);
+            unsigned int y_finish = std::min(int(bottom), oy + span + 1);
+            for (y = y_start; y < y_finish; ++y) {
 
-        		int divisor = 1 + span * 2 - abs(int(ox - x)) - abs(int(oy - y));
+                int divisor = 1 + span * 2 - abs(int(ox - x)) - abs(int(oy - y));
 
                 unsigned int r, g, b, a;
                 getPixel(x, y, r, g, b, a);
                 if (a != IM_OPAQUE) {
                     putPixel(x, y, r, g, b, std::min(IM_OPAQUE, a + haloOpacityIncrementByPixelDistance / divisor));
                 }
-        	}
-    	}
+            }
+        }
     }
 
 
@@ -368,7 +368,7 @@ void Image::setTransparentIndex(unsigned int index)//, unsigned int numFrames, u
     if (indexed) {
         SDL_SetColorKey(surface, SDL_SRCCOLORKEY, index);
     } else {
-    	//errorWarning("Setting transparent index for non indexed");
+        //errorWarning("Setting transparent index for non indexed");
     }
 }
 

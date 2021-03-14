@@ -63,7 +63,7 @@ void CampController::init(Creature *m) {
 void CampController::begin() {
     // make sure everyone's asleep
     for (int i = 0; i < c->party->size(); i++)
-        c->party->member(i)->putToSleep();            
+        c->party->member(i)->putToSleep();
 
     CombatController::begin();
 
@@ -77,15 +77,15 @@ void CampController::begin() {
     screenEnableCursor();
 
     /* Is the party ambushed during their rest? */
-    if (settings.campingAlwaysCombat || (xu4_random(8) == 0)) {        
+    if (settings.campingAlwaysCombat || (xu4_random(8) == 0)) {
         const Creature *m = creatureMgr->randomAmbushing();
-                
+
         musicPlayLocale();
         screenMessage("Ambushed!\n");
-        
+
         /* create an ambushing creature (so it leaves a chest) */
         setCreature(c->location->prev->map->addCreature(m, c->location->prev->coords));
-        
+
         /* fill the creature table with creatures and place them */
         fillCreatureTable(m);
         placeCreatures();
@@ -94,9 +94,9 @@ void CampController::begin() {
         finishTurn();
     }
     else {
-        /* Wake everyone up! */    
+        /* Wake everyone up! */
         for (int i = 0; i < c->party->size(); i++)
-            c->party->member(i)->wakeUp();    
+            c->party->member(i)->wakeUp();
 
         /* Make sure we've waited long enough for camping to be effective */
         bool healed = false;
@@ -105,7 +105,7 @@ void CampController::begin() {
 
         screenMessage(healed ? "Party Healed!\n" : "No effect.\n");
         c->saveGame->lastcamp = (c->saveGame->moves / CAMP_HEAL_INTERVAL) & 0xffff;
-    
+
         eventHandler->popController();
         game->exitToParentMap();
         musicFadeIn(CAMP_FADE_IN_TIME, true);
@@ -116,7 +116,7 @@ void CampController::begin() {
 void CampController::end(bool adjustKarma) {
     // wake everyone up!
     for (int i = 0; i < c->party->size(); i++)
-        c->party->member(i)->wakeUp();        
+        c->party->member(i)->wakeUp();
     CombatController::end(adjustKarma);
 }
 
@@ -149,7 +149,7 @@ void InnController::begin() {
     /* in the original, the vendor music plays straight through sleeping */
     if (settings.enhancements)
         musicFadeOut(INN_FADE_OUT_TIME); /* Fade volume out to ease into rest */
-    
+
     EventHandler::wait_msecs(INN_FADE_OUT_TIME);
 
     /* show the sleeping avatar */
@@ -172,14 +172,14 @@ void InnController::begin() {
     /* Is there a special encounter during your stay? */
     // mwinterrowd suggested code, based on u4dos
     if (c->party->member(0)->isDead()) {
-    	maybeMeetIsaac();
+        maybeMeetIsaac();
     }
     else {
         if (xu4_random(8) != 0) {
-        	maybeMeetIsaac();
+            maybeMeetIsaac();
         }
         else {
-        	maybeAmbush();
+            maybeAmbush();
         }
     }
 
@@ -206,9 +206,9 @@ bool InnController::heal() {
 void InnController::maybeMeetIsaac()
 {
     // Does Isaac the Ghost pay a visit to the Avatar?
-	//	if ((location == skara_brae) && (random(4) = 0) {
-	//			// create Isaac the Ghost
-	//	}
+    //  if ((location == skara_brae) && (random(4) = 0) {
+    //          // create Isaac the Ghost
+    //  }
     if ((c->location->map->id == 11) && (xu4_random(4) == 0)) {
         City *city = dynamic_cast<City*>(c->location->map);
 
@@ -250,7 +250,7 @@ void InnController::maybeAmbush()
         MapId mapid;
         Creature *creature;
         bool showMessage = true;
-            
+
         /* Rats seem much more rare than meeting rogues in the streets */
         if (xu4_random(4) == 0) {
             /* Rats! */
@@ -263,7 +263,6 @@ void InnController::maybeAmbush()
             screenMessage("\nIn the middle of the night while out on a stroll...\n\n");
             showMessage = false;
         }
-
 
         map = getCombatMap(mapMgr->get(mapid));
         game->setMap(map, true, NULL, this);

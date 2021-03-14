@@ -25,7 +25,7 @@ class Object;
  */
 enum WeaponType {
     WEAP_HANDS,
-    WEAP_STAFF, 
+    WEAP_STAFF,
     WEAP_DAGGER,
     WEAP_SLING,
     WEAP_MACE,
@@ -165,7 +165,7 @@ enum Rune {
 };
 
 /**
- * The Ultima IV savegame player record data.  
+ * The Ultima IV savegame player record data.
  */
 struct SaveGamePlayerRecord {
     int write(FILE *f) const;

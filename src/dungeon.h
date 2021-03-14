@@ -38,7 +38,7 @@ struct DngRoom {
     unsigned char party_south_start_y[8];
     unsigned char party_west_start_x[8];
     unsigned char party_west_start_y[8];
-    MapData  map_data;  // This is OK to change to MapData since sizeof(DngRoom) or 
+    MapData  map_data;  // This is OK to change to MapData since sizeof(DngRoom) or
                         // anything like it is not being used.
     unsigned char buffer[7];
 };
@@ -53,10 +53,10 @@ enum DungeonToken {
     DUNGEON_LADDER_UPDOWN       = 0x30,
     DUNGEON_CHEST               = 0x40,
     DUNGEON_CEILING_HOLE        = 0x50,
-    DUNGEON_FLOOR_HOLE          = 0x60,    
+    DUNGEON_FLOOR_HOLE          = 0x60,
     DUNGEON_MAGIC_ORB           = 0x70,
     DUNGEON_TRAP                = 0x80,
-    DUNGEON_FOUNTAIN            = 0x90,    
+    DUNGEON_FOUNTAIN            = 0x90,
     DUNGEON_FIELD               = 0xA0,
     DUNGEON_ALTAR               = 0xB0,
     DUNGEON_DOOR                = 0xC0,

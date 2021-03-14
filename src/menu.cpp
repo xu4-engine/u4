@@ -10,7 +10,7 @@
 #include "event.h"
 #include "textview.h"
 
-Menu::Menu() : 
+Menu::Menu() :
     closed(false),
     title(""),
     titleX(0),
@@ -48,7 +48,7 @@ void Menu::addShortcutKey(int id, int shortcutKey) {
             (*i)->addShortcutKey(shortcutKey);
             break;
         }
-    }    
+    }
 }
 
 void Menu::setClosesMenu(int id) {
@@ -268,13 +268,13 @@ MenuItem *Menu::getItemById(int id) {
  */
 void Menu::activateItem(int id, MenuEvent::Type action) {
     MenuItem *mi;
-    
+
     /* find the given menu item by id */
     if (id >= 0)
         mi = getItemById(id);
     /* or use the current item */
     else mi = *getCurrent();
-       
+
     if (!mi)
         errorFatal("Error: Unable to find menu item with id '%d'", id);
 

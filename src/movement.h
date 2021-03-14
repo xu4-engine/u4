@@ -19,7 +19,7 @@ enum SlowedType {
 };
 
 enum MoveResult {
-    MOVE_SUCCEEDED          = 0x0001,    
+    MOVE_SUCCEEDED          = 0x0001,
     MOVE_END_TURN           = 0x0002,
     MOVE_BLOCKED            = 0x0004,
     MOVE_MAP_CHANGE         = 0x0008,

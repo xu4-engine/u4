@@ -261,7 +261,7 @@ int SaveGamePlayerRecord::read(FILE *f) {
         !readShort(&mp, f) ||
         !readShort(&unknown, f))
         return 0;
-        
+
     if (!readShort(&s, f))
         return 0;
     weapon = (WeaponType) s;
@@ -311,7 +311,7 @@ void SaveGamePlayerRecord::init() {
 
 int saveGameMonstersWrite(SaveGameMonsterRecord *monsterTable, FILE *f) {
     int i, max;
-    
+
     if (monsterTable) {
         for (i = 0; i < MONSTERTABLE_SIZE; i++)
             if (!writeChar(monsterTable[i].tile, f)) return 0;
@@ -340,7 +340,7 @@ int saveGameMonstersWrite(SaveGameMonsterRecord *monsterTable, FILE *f) {
 
 int saveGameMonstersRead(SaveGameMonsterRecord *monsterTable, FILE *f) {
     int i;
-        
+
     for (i = 0; i < MONSTERTABLE_SIZE; i++)
         if (!readChar(&monsterTable[i].tile, f)) return 0;
     for (i = 0; i < MONSTERTABLE_SIZE; i++)
@@ -358,5 +358,5 @@ int saveGameMonstersRead(SaveGameMonsterRecord *monsterTable, FILE *f) {
     for (i = 0; i < MONSTERTABLE_SIZE; i++)
         if (!readChar(&monsterTable[i].unused1, f)) return 0;
 
-    return 1;    
+    return 1;
 }

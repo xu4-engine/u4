@@ -72,7 +72,7 @@ int writePngFromEga(unsigned char *data, int height, int width, int bits, const 
         palette_size = 16;
     else if (bits == 8)
         palette_size = 256;
-    else 
+    else
         palette_size = 0;
 
     if (palette_size != 0) {
@@ -103,7 +103,7 @@ int writePngFromEga(unsigned char *data, int height, int width, int bits, const 
         perror(fname);
         exit(1);
     }
-    
+
     png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
     if (!png_ptr) {
         fprintf(stderr, "png_create_write_struct error\n");
@@ -147,7 +147,7 @@ int writePngFromEga(unsigned char *data, int height, int width, int bits, const 
     interlace_type = PNG_INTERLACE_NONE;
     compression_type = PNG_COMPRESSION_TYPE_DEFAULT;
     filter_method = PNG_FILTER_TYPE_DEFAULT;
-    png_set_IHDR(png_ptr, info_ptr, (png_uint_32) width, (png_uint_32) height, bit_depth, 
+    png_set_IHDR(png_ptr, info_ptr, (png_uint_32) width, (png_uint_32) height, bit_depth,
                  color_type, interlace_type, compression_type, filter_method);
 
     if (palette_size != 0)
@@ -178,7 +178,7 @@ int readEgaFromPng(unsigned char **data, int *height, int *width, int *bits, con
     if (!fp) {
         perror(fname);
         exit(1);
-    }    
+    }
     fread(header, 1, sizeof(header), fp);
     if (png_sig_cmp((png_byte*)header, 0, sizeof(header)) != 0) {
         fprintf(stderr, "not a PNG\n");
@@ -216,7 +216,7 @@ int readEgaFromPng(unsigned char **data, int *height, int *width, int *bits, con
     png_set_sig_bytes(png_ptr, sizeof(header));
 
     png_read_png(png_ptr, info_ptr, PNG_TRANSFORM_IDENTITY, NULL);
-    
+
     png_get_IHDR(png_ptr, info_ptr, &pwidth, &pheight,
        &bit_depth, &color_type, &interlace_type,
        &compression_type, &filter_method);

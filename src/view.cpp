@@ -59,14 +59,14 @@ void View::update(int x, int y, int width, int height) {
 
 /**
  * Highlight a piece of the screen by drawing it in inverted colors.
- */ 
+ */
 void View::highlight(int x, int y, int width, int height) {
     highlighted = true;
     highlightX = x;
     highlightY = y;
     highlightW = width;
     highlightH = height;
-    
+
     update(x, y, width, height);
 }
 
@@ -78,13 +78,13 @@ void View::unhighlight() {
 
 void View::drawHighlighted() {
     Image *screen = imageMgr->get("screen")->image;
-    
+
     Image *tmp = Image::create(SCALED(highlightW), SCALED(highlightH), false, Image::SOFTWARE);
     if (!tmp)
         return;
-    
+
     screen->drawSubRectOn(tmp, 0, 0, SCALED(this->x + highlightX), SCALED(this->y + highlightY), SCALED(highlightW), SCALED(highlightH));
     tmp->drawHighlighted();
     tmp->draw(SCALED(this->x + highlightX), SCALED(this->y + highlightY));
-    delete tmp;    
+    delete tmp;
 }

@@ -17,7 +17,6 @@ class U5LzwImageLoader : public ImageLoader {
 
 public:
     virtual Image *load(U4FILE *file, int width, int height, int bpp);
-    
 };
 
 #endif /* IMAGELOADER_U5_H */

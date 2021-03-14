@@ -48,18 +48,18 @@ void createDngLadder(Location *location, PortalTriggerAction action, Portal *p) 
 int usePortalAt(Location *location, MapCoords coords, PortalTriggerAction action) {
     Map *destination;
     char msg[35] = {0};
-    
+
     const Portal *portal = location->map->portalAt(coords, action);
     Portal dngLadder;
 
     /* didn't find a portal there */
     if (!portal) {
-        
+
         /* if it's a dungeon, then ladders are predictable.  Create one! */
         if (location->context == CTX_DUNGEON) {
             Dungeon *dungeon = dynamic_cast<Dungeon *>(location->map);
-            if ((action & ACTION_KLIMB) && dungeon->ladderUpAt(coords)) 
-                createDngLadder(location, action, &dngLadder);                
+            if ((action & ACTION_KLIMB) && dungeon->ladderUpAt(coords))
+                createDngLadder(location, action, &dngLadder);
             else if ((action & ACTION_DESCEND) && dungeon->ladderDownAt(coords))
                 createDngLadder(location, action, &dngLadder);
             else return 0;
@@ -75,8 +75,8 @@ int usePortalAt(Location *location, MapCoords coords, PortalTriggerAction action
     else if (c->transportContext & ~TRANSPORT_FOOT && (action == ACTION_KLIMB || action == ACTION_DESCEND)) {
         screenMessage("%sOnly on foot!\n", action == ACTION_KLIMB ? "Klimb\n" : "");
         return 1;
-    }    
-    
+    }
+
     destination = mapMgr->get(portal->destid);
 
     if (portal->message.empty()) {
@@ -92,12 +92,12 @@ int usePortalAt(Location *location, MapCoords coords, PortalTriggerAction action
             break;
         case ACTION_ENTER:
             switch (destination->type) {
-            case Map::CITY: 
+            case Map::CITY:
                 {
                     City *city = dynamic_cast<City*>(destination);
                     screenMessage("Enter %s!\n\n%s\n\n", city->type.c_str(), city->getName().c_str());
                 }
-                break;            
+                break;
             case Map::SHRINE:
                 screenMessage("Enter the %s!\n\n", destination->getName().c_str());
                 break;
@@ -118,7 +118,7 @@ int usePortalAt(Location *location, MapCoords coords, PortalTriggerAction action
 
     /* check the transportation requisites of the portal */
     if (c->transportContext & ~portal->portalTransportRequisites) {
-        screenMessage("Only on foot!\n");        
+        screenMessage("Only on foot!\n");
         return 1;
     }
     /* ok, we know the portal is going to work -- now display the custom message, if any */
@@ -126,26 +126,26 @@ int usePortalAt(Location *location, MapCoords coords, PortalTriggerAction action
         screenMessage("%s", portal->message.empty() ? msg : portal->message.c_str());
 
     /* portal just exits to parent map */
-    if (portal->exitPortal) {        
+    if (portal->exitPortal) {
         game->exitToParentMap();
         musicPlayLocale();
         return 1;
     }
     else if (portal->destid == location->map->id)
-        location->coords = portal->start;        
-    
+        location->coords = portal->start;
+
     else {
         game->setMap(destination, portal->saveLocation, portal);
         musicPlayLocale();
     }
 
     /* if the portal changes the map retroactively, do it here */
-    /* 
+    /*
      * note that we use c->location instead of location, since
-     * location has probably been invalidated above 
+     * location has probably been invalidated above
      */
     if (portal->retroActiveDest && c->location->prev) {
-        c->location->prev->coords = portal->retroActiveDest->coords;        
+        c->location->prev->coords = portal->retroActiveDest->coords;
         c->location->prev->map = mapMgr->get(portal->retroActiveDest->mapid);
     }
 

@@ -38,7 +38,7 @@ void codexImpureThoughts();
 
 /**
  * Key handlers
- */ 
+ */
 bool codexHandleInfinityAnyKey(int key, void *data);
 bool codexHandleEndgameAnyKey(int key, void *data);
 
@@ -51,11 +51,11 @@ vector<string> codexEndgameText2;
  */
 int codexInit() {
     U4FILE *avatar;
-    
+
     avatar = u4fopen("avatar.exe");
     if (!avatar)
         return 0;
-        
+
     codexVirtueQuestions = u4read_stringtable(avatar, 0x0fc7b, 11);
     codexEndgameText1 = u4read_stringtable(avatar, 0x0fee4, 7);
     codexEndgameText2 = u4read_stringtable(avatar, 0x10187, 5);
@@ -77,8 +77,8 @@ void codexDelete() {
 /**
  * Begins the Chamber of the Codex sequence
  */
-void codexStart() { 
-    codexInit();  
+void codexStart() {
+    codexInit();
 
     /**
      * disable the whirlpool cursor and black out the screen
@@ -88,7 +88,7 @@ void codexStart() {
 #endif
     screenDisableCursor();
     screenUpdate(&game->mapArea, false, true);
-    
+
     /**
      * make the avatar alone
      */
@@ -101,7 +101,7 @@ void codexStart() {
      */
     gameSetViewMode(VIEW_CODEX);
 
-    screenMessage("\n\n\n\nThere is a sudden darkness, and you find yourself alone in an empty chamber.\n");    
+    screenMessage("\n\n\n\nThere is a sudden darkness, and you find yourself alone in an empty chamber.\n");
     EventHandler::sleep(4000);
 
     /**
@@ -118,8 +118,8 @@ void codexStart() {
     screenMessage("\nYou use your key of Three Parts.\n");
     EventHandler::sleep(3000);
 
-    screenMessage("\nA voice rings out:\n\"What is the Word of Passage?\"\n\n");    
-    
+    screenMessage("\nA voice rings out:\n\"What is the Word of Passage?\"\n\n");
+
     /**
      * Get the Word of Passage
      */
@@ -144,24 +144,24 @@ void codexEject(CodexEjectCode code) {
         { 158, 21 },
         { 105, 183 },
         { 23, 129 },
-        { 186, 171 }        
+        { 186, 171 }
     };
 
     switch(code) {
     case CODEX_EJECT_NO_3_PART_KEY:
         screenMessage("\nThou dost not have the Key of Three Parts.\n\n");
-        break;    
+        break;
     case CODEX_EJECT_NO_FULL_PARTY:
       screenMessage("\nThou hast not proved thy leadership in all eight virtues.\n\n");
       EventHandler::sleep(2000);
-      screenMessage("\nPassage is not granted.\n\n");      
+      screenMessage("\nPassage is not granted.\n\n");
       break;
     case CODEX_EJECT_NO_FULL_AVATAR:
         screenMessage("\nThou art not ready.\n");
         EventHandler::sleep(2000);
         screenMessage("\nPassage is not granted.\n\n");
         break;
-    case CODEX_EJECT_BAD_WOP:        
+    case CODEX_EJECT_BAD_WOP:
         screenMessage("\nPassage is not granted.\n\n");
         break;
     case CODEX_EJECT_HONESTY:
@@ -180,7 +180,7 @@ void codexEject(CodexEjectCode code) {
     case CODEX_EJECT_BAD_INFINITY:
         screenMessage("\nThou dost not know the true nature of the Universe.\n\n");
         break;
-    default: 
+    default:
         screenMessage("\nOops, you just got too close to beating the game.\nBAD AVATAR!\n");
         break;
     }
@@ -193,21 +193,21 @@ void codexEject(CodexEjectCode code) {
     /* re-enable the cursor and show it */
     screenEnableCursor();
     screenShowCursor();
-        
+
     /* return view to normal and exit the Abyss */
     gameSetViewMode(VIEW_NORMAL);
-    game->exitToParentMap();    
+    game->exitToParentMap();
     musicPlayLocale();
-    
+
     /**
-     * if being ejected because of a missed virtue question, 
+     * if being ejected because of a missed virtue question,
      * then teleport the party to the starting location for
      * that virtue.
      */
     if (code >= CODEX_EJECT_HONESTY && code <= CODEX_EJECT_HUMILITY) {
         int virtue = code - CODEX_EJECT_HONESTY;
         c->location->coords.x = startLocations[virtue].x;
-        c->location->coords.y = startLocations[virtue].y;        
+        c->location->coords.y = startLocations[virtue].y;
     }
 
     /* finally, finish the turn */
@@ -222,15 +222,15 @@ void codexHandleWOP(const string &word) {
     static int tries = 1;
     int i;
 
-    eventHandler->popKeyHandler();    
+    eventHandler->popKeyHandler();
 
     /* slight pause before continuing */
-    screenMessage("\n");    
+    screenMessage("\n");
     screenDisableCursor();
-    EventHandler::sleep(1000);    
+    EventHandler::sleep(1000);
 
     /* entered correctly */
-    if (strcasecmp(word.c_str(), "veramocor") == 0) {        
+    if (strcasecmp(word.c_str(), "veramocor") == 0) {
         tries = 1; /* reset 'tries' in case we need to enter this again later */
 
         /* eject them if they don't have all 8 party members */
@@ -238,15 +238,15 @@ void codexHandleWOP(const string &word) {
             codexEject(CODEX_EJECT_NO_FULL_PARTY);
             return;
         }
-        
+
         /* eject them if they're not a full avatar at this point */
         for (i = 0; i < VIRT_MAX; i++) {
             if (c->saveGame->karma[i] != 0) {
                 codexEject(CODEX_EJECT_NO_FULL_AVATAR);
                 return;
             }
-        }        
-        
+        }
+
         screenMessage("\nPassage is granted.\n");
         EventHandler::sleep(4000);
 
@@ -259,10 +259,10 @@ void codexHandleWOP(const string &word) {
         screenMessage("\n%s\n\n", codexVirtueQuestions[0].c_str());
 
         codexHandleVirtues(gameGetInput());
-        
+
         return;
     }
-    
+
     /* entered incorrectly - give 3 tries before ejecting */
     else if (tries++ < 3) {
         codexImpureThoughts();
@@ -272,7 +272,7 @@ void codexHandleWOP(const string &word) {
 #endif
         codexHandleWOP(gameGetInput());
     }
-    
+
     /* 3 tries are up... eject! */
     else {
         tries = 1;
@@ -285,7 +285,7 @@ void codexHandleWOP(const string &word) {
  */
 void codexHandleVirtues(const string &virtue) {
     static const char *codexImageNames[] = {
-        BKGD_HONESTY, BKGD_COMPASSN, BKGD_VALOR, BKGD_JUSTICE, 
+        BKGD_HONESTY, BKGD_COMPASSN, BKGD_VALOR, BKGD_JUSTICE,
         BKGD_SACRIFIC, BKGD_HONOR, BKGD_SPIRIT, BKGD_HUMILITY,
         BKGD_TRUTH, BKGD_LOVE, BKGD_COURAGE
     };
@@ -295,13 +295,13 @@ void codexHandleVirtues(const string &virtue) {
 
     eventHandler->popKeyHandler();
 
-    /* slight pause before continuing */    
+    /* slight pause before continuing */
     screenMessage("\n");
-    screenDisableCursor();    
-    EventHandler::sleep(1000);    
-        
+    screenDisableCursor();
+    EventHandler::sleep(1000);
+
     /* answered with the correct one of eight virtues */
-    if ((current < VIRT_MAX) && 
+    if ((current < VIRT_MAX) &&
         (strcasecmp(virtue.c_str(), getVirtueName(static_cast<Virtue>(current))) == 0)) {
 
         screenDrawImageInMapArea(codexImageNames[current]);
@@ -342,10 +342,10 @@ void codexHandleVirtues(const string &virtue) {
             screenMessage("\n%s\n\n", codexVirtueQuestions[current].c_str());
 #ifdef IOS
             U4IOS::IOSConversationHelper::setIntroString("Which principle?");
-#endif    
+#endif
             codexHandleVirtues(gameGetInput());
         }
-        else {            
+        else {
             screenMessage("\nThe ground rumbles beneath your feet.\n");
             EventHandler::sleep(1000);
             screenShake(10);
@@ -357,11 +357,11 @@ void codexHandleVirtues(const string &virtue) {
             // Ugh, we now enter happy callback land, so I know how to do these things manually. Good thing I kept these separate functions.
             U4IOS::beginChoiceConversation();
             U4IOS::updateChoicesInDialog(" ", "", -1);
-#endif    
+#endif
             eventHandler->pushKeyHandler(&codexHandleInfinityAnyKey);
         }
     }
-    
+
     /* give them 3 tries to enter the correct virtue, then eject them! */
     else if (tries++ < 3) {
         codexImpureThoughts();
@@ -371,12 +371,12 @@ void codexHandleVirtues(const string &virtue) {
 #endif
         codexHandleVirtues(gameGetInput());
     }
-    
+
     /* failed 3 times... eject! */
-    else {        
+    else {
         codexEject(static_cast<CodexEjectCode>(CODEX_EJECT_HONESTY + current));
 
-        tries = 1;        
+        tries = 1;
         current = 0;
     }
 }
@@ -400,15 +400,15 @@ void codexHandleInfinity(const string &answer) {
 #ifdef IOS
     U4IOS::IOSHideGameControllerHelper hideControllsHelper;
 #endif
-    /* slight pause before continuing */    
+    /* slight pause before continuing */
     screenMessage("\n");
     screenDisableCursor();
     EventHandler::sleep(1000);
 
-    if (strcasecmp(answer.c_str(), "infinity") == 0) {        
+    if (strcasecmp(answer.c_str(), "infinity") == 0) {
         EventHandler::sleep(2000);
         screenShake(10);
-        
+
         screenEnableCursor();
         screenMessage("\n%s", codexEndgameText1[0].c_str());
 #ifdef IOS
@@ -418,7 +418,7 @@ void codexHandleInfinity(const string &answer) {
         U4IOS::updateChoicesInDialog(" ", "", -1);
         U4IOS::testFlightPassCheckPoint("Game won!");
 #endif
-        eventHandler->pushKeyHandler(&codexHandleEndgameAnyKey); 
+        eventHandler->pushKeyHandler(&codexHandleEndgameAnyKey);
     }
     else if (tries++ < 3) {
         codexImpureThoughts();
@@ -441,7 +441,7 @@ bool codexHandleEndgameAnyKey(int key, void *data) {
                 screenRedrawMapArea();
             }
             screenMessage("%s", codexEndgameText1[index].c_str());
-        } 
+        }
         else if (index == 7) {
             screenDrawImageInMapArea(BKGD_STONCRCL);
             screenRedrawMapArea();
@@ -449,18 +449,18 @@ bool codexHandleEndgameAnyKey(int key, void *data) {
         }
         else if (index > 7)
             screenMessage("%s", codexEndgameText2[index-7].c_str());
-    
+
         index++;
         eventHandler->pushKeyHandler(&codexHandleEndgameAnyKey);
     }
     else {
-        /* CONGRATULATIONS!... you have completed the game in x turns */    
+        /* CONGRATULATIONS!... you have completed the game in x turns */
         screenDisableCursor();
         screenMessage("%s%d%s", codexEndgameText2[index-7].c_str(), c->saveGame->moves, codexEndgameText2[index-6].c_str());
 #ifdef IOS
         U4IOS::endChoiceConversation();
 #endif
-        eventHandler->pushKeyHandler(&KeyHandler::ignoreKeys);        
+        eventHandler->pushKeyHandler(&KeyHandler::ignoreKeys);
     }
 
     return true;

@@ -20,7 +20,7 @@ DialogueLoader* U4TlkDialogueLoader::instance = DialogueLoader::registerLoader(n
  */
 Dialogue* U4TlkDialogueLoader::load(void *source) {
     U4FILE *file = static_cast<U4FILE*>(source);
-    
+
     enum QTrigger {
         NONE = 0,
         JOB = 3,
@@ -28,13 +28,13 @@ Dialogue* U4TlkDialogueLoader::load(void *source) {
         KEYWORD1 = 5,
         KEYWORD2 = 6
     };
-    
+
     /* there's no dialogues left in the file */
     char tlk_buffer[288];
     if (u4fread(tlk_buffer, 1, sizeof(tlk_buffer), file) != sizeof(tlk_buffer))
         return NULL;
-    
-    char *ptr = &tlk_buffer[3];    
+
+    char *ptr = &tlk_buffer[3];
     vector<string> strings;
     for (int i = 0; i < 12; i++) {
         strings.push_back(ptr);
@@ -99,7 +99,7 @@ Dialogue* U4TlkDialogueLoader::load(void *source) {
     Response *health = new Response(string("\n") + strings[4]);
     Response *kw1 = new Response(string("\n") + strings[5]);
     Response *kw2 = new Response(string("\n") + strings[6]);
-    
+
     switch(qtrigger) {
     case JOB:       job->add(ResponsePart::ASK); break;
     case HEALTH:    health->add(ResponsePart::ASK); break;
@@ -131,7 +131,7 @@ Dialogue* U4TlkDialogueLoader::load(void *source) {
     dlg->addKeyword("bye", bye);
     dlg->addKeyword("", bye);
 
-    /* 
+    /*
      * This little easter egg appeared in the Amiga version of Ultima IV.
      * I've never figured out what the number means.
      * "Banjo" Bob Hardy was the programmer for the Amiga version.

@@ -15,11 +15,11 @@
 
 using std::string;
 
-/* The AdjustValue functions used to be #define'd macros, but these are 
+/* The AdjustValue functions used to be #define'd macros, but these are
  * evil for several reasons, *especially* when they contain multiple
  * statements, and have if statements in them. The macros did both.
  * See http://www.parashift.com/c++-faq-lite/inline-functions.html#faq-9.5
- * for more information. 
+ * for more information.
  */
 inline void AdjustValueMax(int &v, int val, int max) { v += val; if (v > max) v = max; }
 inline void AdjustValueMin(int &v, int val, int min) { v += val; if (v < min) v = min; }
@@ -50,7 +50,7 @@ public:
 #endif
     }
 
-    void init(const string &s) {        
+    void init(const string &s) {
 #ifndef NPERF
         Path path(s);
         FileSystem::createDirectory(path);
@@ -80,7 +80,7 @@ public:
 #endif
     }
 
-    void end(const string &funcName) {        
+    void end(const string &funcName) {
 #ifndef NPERF
         e = clock();
         times[funcName] = e - s;
@@ -89,11 +89,11 @@ public:
 
     void report(const char *pre = NULL) {
 #ifndef NPERF
-        static const double msec = double(CLOCKS_PER_SEC) / double(1000);        
+        static const double msec = double(CLOCKS_PER_SEC) / double(1000);
         TimeMap::const_iterator i;
         clock_t total = 0;
         std::map<double, string> percentages;
-        std::map<double, string>::iterator perc;        
+        std::map<double, string>::iterator perc;
 
         if (pre)
             fprintf(log, "%s", pre);
@@ -110,9 +110,9 @@ public:
 
         fprintf(log, "\n");
         for (perc = percentages.begin(); perc != percentages.end(); perc++)
-            fprintf(log, "%0.1f%% - %s\n", perc->first, perc->second.c_str());        
+            fprintf(log, "%0.1f%% - %s\n", perc->first, perc->second.c_str());
 
-        fprintf(log, "\nTotal [%0.2f msecs]\n", double(total) / msec);        
+        fprintf(log, "\nTotal [%0.2f msecs]\n", double(total) / msec);
 
         fclose(log);
         log = NULL;

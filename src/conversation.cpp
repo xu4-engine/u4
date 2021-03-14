@@ -78,7 +78,7 @@ bool ResponsePart::isCommand() const {
     return command;
 }
 
-DynamicResponse::DynamicResponse(Response *(*generator)(const DynamicResponse *), const string &param) : 
+DynamicResponse::DynamicResponse(Response *(*generator)(const DynamicResponse *), const string &param) :
     Response(""), param(param) {
     this->generator = generator;
     currentResponse = NULL;
@@ -111,10 +111,9 @@ Response *Dialogue::Question::getResponse(bool yes) {
     return noresp;
 }
 
-            
 /*
  * Dialogue::Keyword class
- */ 
+ */
 Dialogue::Keyword::Keyword(const string &kw, Response *resp) :
     keyword(kw), response(resp->addref()) {
     trim(keyword);
@@ -145,14 +144,14 @@ bool Dialogue::Keyword::operator==(const string &kw) const {
 }
 
 /*
- * Dialogue class 
- */ 
+ * Dialogue class
+ */
 
 Dialogue::Dialogue()
-	: intro(NULL)
-	, longIntro(NULL)
-	, defaultAnswer(NULL)
-	, question(NULL) {
+    : intro(NULL)
+    , longIntro(NULL)
+    , defaultAnswer(NULL)
+    , question(NULL) {
 }
 
 Dialogue::~Dialogue() {
@@ -170,21 +169,21 @@ void Dialogue::addKeyword(const string &kw, Response *response) {
 
 Dialogue::Keyword *Dialogue::operator[](const string &kw) {
     KeywordMap::iterator i = keywords.find(kw);
-    
+
     // If they entered the keyword verbatim, return it!
     if (i != keywords.end())
         return i->second;
     // Otherwise, go find one that fits the description.
-    else {            
+    else {
         for (i = keywords.begin(); i != keywords.end(); i++) {
             if ((*i->second) == kw)
                 return i->second;
-        }            
+        }
     }
     return NULL;
 }
 
-const ResponsePart &Dialogue::getAction() const { 
+const ResponsePart &Dialogue::getAction() const {
     int prob = xu4_random(0x100);
 
     /* Does the person turn away from/attack you? */
@@ -214,11 +213,11 @@ string Dialogue::dump(const string &arg) {
 }
 
 /*
- * Conversation class 
- */ 
+ * Conversation class
+ */
 
 Conversation::Conversation() : logger(0), state(INTRO), script(new Script()) {
-    logger = new Debug("debug/conversation.txt", "Conversation"); 
+    logger = new Debug("debug/conversation.txt", "Conversation");
 #ifdef IOS
     U4IOS::incrementConversationCount();
 #endif
@@ -233,7 +232,7 @@ Conversation::~Conversation() {
     delete script;
 }
 
-Conversation::InputType Conversation::getInputRequired(int *bufferlen) {    
+Conversation::InputType Conversation::getInputRequired(int *bufferlen) {
     switch (state) {
     case BUY_QUANTITY:
     case SELL_QUANTITY:

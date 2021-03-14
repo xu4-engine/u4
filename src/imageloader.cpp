@@ -45,9 +45,9 @@ void ImageLoader::setFromRawData(Image *image, int width, int height, int bpp, u
     case 32:
         for (y = 0; y < height; y++) {
             for (x = 0; x < width; x++)
-                image->putPixel(x, y, 
-                                rawData[(y * width + x) * 4], 
-                                rawData[(y * width + x) * 4 + 1], 
+                image->putPixel(x, y,
+                                rawData[(y * width + x) * 4],
+                                rawData[(y * width + x) * 4 + 1],
                                 rawData[(y * width + x) * 4 + 2],
                                 rawData[(y * width + x) * 4 + 3]);
         }
@@ -56,9 +56,9 @@ void ImageLoader::setFromRawData(Image *image, int width, int height, int bpp, u
     case 24:
         for (y = 0; y < height; y++) {
             for (x = 0; x < width; x++)
-                image->putPixel(x, y, 
-                                rawData[(y * width + x) * 3], 
-                                rawData[(y * width + x) * 3 + 1], 
+                image->putPixel(x, y,
+                                rawData[(y * width + x) * 3],
+                                rawData[(y * width + x) * 3 + 1],
                                 rawData[(y * width + x) * 3 + 2],
                                 IM_OPAQUE);
         }

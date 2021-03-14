@@ -54,7 +54,7 @@ int main(int argc, char *argv[]) {
     }
     inlen = ftell(infile);
     fseek(infile, 0L, SEEK_SET);
-        
+
     indata = (unsigned char *)malloc(inlen);
     if (!indata) {
         perror("malloc");
@@ -73,7 +73,7 @@ int main(int argc, char *argv[]) {
         }
 
         lzwDecompress(indata, outdata, inlen);
-    } 
+    }
 
     else if (strcmp(alg, "rle") == 0) {
         outlen = rleGetDecompressedSize(indata, inlen);
@@ -97,7 +97,7 @@ int main(int argc, char *argv[]) {
     else if (strcmp(alg, "raw") == 0) {
         outlen = inlen;
         outdata = indata;
-    } 
+    }
 
     else {
         fprintf(stderr, "unknown algorithm %s\n", alg);

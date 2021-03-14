@@ -48,13 +48,13 @@ const struct {
     { 5, "I feel motion...\n" },
     { 5, "\nLord British says: I have pulled thy spirit and some possessions from the void.  Be more careful in the future!\n\n\020" }
 };
-    
+
 #define N_MSGS (sizeof(deathMsgs) / sizeof(deathMsgs[0]))
 
 void deathStart(int delay) {
     if (deathSequenceRunning)
         return;
-    
+
     // stop playing music
     musicFadeOut(1000);
 
@@ -65,9 +65,9 @@ void deathStart(int delay) {
     WaitController waitCtrl(delay * settings.gameCyclesPerSecond);
     eventHandler->pushController(&waitCtrl);
     waitCtrl.wait();
-    
+
     gameSetViewMode(VIEW_DEAD);
-    
+
     eventHandler->pushKeyHandler(&KeyHandler::ignoreKeys);
     screenDisableCursor();
 
@@ -94,17 +94,17 @@ void deathTimer(void *data) {
 
 void deathRevive() {
     while(!c->location->map->isWorldMap() && c->location->prev != NULL) {
-        game->exitToParentMap();        
+        game->exitToParentMap();
     }
 
     eventHandler->setController(game);
-    
+
     deathSequenceRunning = 0;
     gameSetViewMode(VIEW_NORMAL);
 
     /* Move our world map location to Lord British's Castle */
     c->location->coords = c->location->map->portals[0]->coords;
-    
+
     /* Now, move the avatar into the castle and put him
        in front of Lord British */
     game->setMap(mapMgr->get(100), 1, NULL);
@@ -114,7 +114,7 @@ void deathRevive() {
 
     c->aura->set();
     c->horseSpeed = 0;
-    c->lastCommandTime = time(NULL);    
+    c->lastCommandTime = time(NULL);
     musicPlayLocale();
 
     c->party->reviveParty();

@@ -9,7 +9,7 @@
 #include <string>
 
 using std::string;
- 
+
 /**
  * The following code was taken from the Boost filesystem libraries (http://www.boost.org)
  */
@@ -27,7 +27,7 @@ using std::string;
 class Path {
 public:
     Path(const string &p);
-    
+
     bool exists() const;
     bool isFile() const;
     bool isDir() const;
@@ -46,9 +46,9 @@ public:
 private:
     string path;
     std::list<string> dirs;
-    string file, ext;    
+    string file, ext;
 };
- 
+
 /**
  * Provides cross-platform functionality for file and directory operations.
  * It currently only supports directory creation, but other operations
@@ -60,5 +60,5 @@ public:
     static void createDirectory(Path &path);
     static void createDirectory(const string &filepath);
 };
- 
+
 #endif

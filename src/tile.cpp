@@ -49,7 +49,7 @@ Tile::Tile(Tileset *tileset)
 void Tile::loadProperties(const ConfigElement &conf) {
     if (conf.getName() != "tile")
         return;
-            
+
     name = conf.getString("name"); /* get the name of the tile */
 
     /* get the animation for the tile, if one is specified */
@@ -58,7 +58,7 @@ void Tile::loadProperties(const ConfigElement &conf) {
     }
 
     /* see if the tile is opaque */
-    opaque = conf.getBool("opaque"); 
+    opaque = conf.getBool("opaque");
 
     foreground = conf.getBool("usesReplacementTileAsBackground");
     waterForeground = conf.getBool("usesWaterReplacementTileAsBackground");
@@ -72,13 +72,13 @@ void Tile::loadProperties(const ConfigElement &conf) {
     }
     else rule = TileRule::findByName("default");
 
-    /* get the number of frames the tile has */    
+    /* get the number of frames the tile has */
     frames = conf.getInt("frames", 1);
 
     /* get the name of the image that belongs to this tile */
     if (conf.exists("image"))
         imageName = conf.getString("image");
-    else 
+    else
         imageName = string("tile_") + name;
 
     tiledInDungeon = conf.getBool("tiledInDungeon");
@@ -110,18 +110,18 @@ Image *Tile::getImage() {
 
 /**
  * Loads the tile image
- */ 
+ */
 void Tile::loadImage() {
     if (!image) {
         scale = settings.scale;
 
-    	SubImage *subimage = NULL;
+        SubImage *subimage = NULL;
 
         ImageInfo *info = imageMgr->get(imageName);
         if (!info) {
             subimage = imageMgr->getSubImage(imageName);
-            if (subimage)            
-                info = imageMgr->get(subimage->srcImageName);            
+            if (subimage)
+                info = imageMgr->get(subimage->srcImageName);
         }
         if (!info) //IF still no info loaded
         {
@@ -134,15 +134,15 @@ void Tile::loadImage() {
            a better way to handle this? */
         if (name == "guard")
         {
-        	if (settings.videoType == "EGA")
-        		frames = 2;
-        	else
-        		frames = 4;
+            if (settings.videoType == "EGA")
+                frames = 2;
+            else
+                frames = 4;
         }
 
 
         if (info->image)
-        	info->image->alphaOff();
+            info->image->alphaOff();
 
         if (info) {
             w = (subimage ? subimage->width * scale : info->width * scale / info->prescale);

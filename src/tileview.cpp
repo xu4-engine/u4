@@ -47,19 +47,19 @@ void TileView::reinit() {
     //Scratchpad needs to be re-inited if we rescale...
     if (animated)
     {
-    	delete animated;
-    	animated = NULL;
+        delete animated;
+        animated = NULL;
     }
     animated = Image::create(SCALED(tileWidth), SCALED(tileHeight), false, Image::HARDWARE);
 }
 
 void TileView::loadTile(MapTile &mapTile)
 {
-	//This attempts to preload tiles in advance
+    //This attempts to preload tiles in advance
     Tile *tile = tileset->get(mapTile.id);
     if (tile)
     {
-    	tile->getImage();
+        tile->getImage();
     }
     //But may fail if the tiles don't exist directly in the expected imagesets
 }
@@ -72,14 +72,14 @@ void TileView::drawTile(MapTile &mapTile, bool focus, int x, int y) {
     ASSERT(y < rows, "y value of %d out of range", y);
 
     //Blank scratch pad
-	animated->fillRect(0,0,SCALED(tileWidth),SCALED(tileHeight),0,0,0, 255);
-	//Draw blackness on the tile.
-	animated->drawSubRect(SCALED(x * tileWidth + this->x),
-						  SCALED(y * tileHeight + this->y),
-						  0,
-						  0,
-						  SCALED(tileWidth),
-						  SCALED(tileHeight));
+    animated->fillRect(0,0,SCALED(tileWidth),SCALED(tileHeight),0,0,0, 255);
+    //Draw blackness on the tile.
+    animated->drawSubRect(SCALED(x * tileWidth + this->x),
+                          SCALED(y * tileHeight + this->y),
+                          0,
+                          0,
+                          SCALED(tileWidth),
+                          SCALED(tileHeight));
 
     // draw the tile to the screen
     if (tile->getAnim()) {
@@ -92,13 +92,13 @@ void TileView::drawTile(MapTile &mapTile, bool focus, int x, int y) {
         // Then draw it to the screen
         animated->drawSubRect(SCALED(x * tileWidth + this->x),
                               SCALED(y * tileHeight + this->y),
-                              0, 
-                              0, 
-                              SCALED(tileWidth), 
+                              0,
+                              0,
+                              SCALED(tileWidth),
                               SCALED(tileHeight));
     }
     else {
-        image->drawSubRect(SCALED(x * tileWidth + this->x), 
+        image->drawSubRect(SCALED(x * tileWidth + this->x),
                            SCALED(y * tileHeight + this->y),
                            0,
                            SCALED(tileHeight * mapTile.frame),
@@ -112,61 +112,61 @@ void TileView::drawTile(MapTile &mapTile, bool focus, int x, int y) {
 }
 
 void TileView::drawTile(vector<MapTile> &tiles, bool focus, int x, int y) {
-	ASSERT(x < columns, "x value of %d out of range", x);
-	ASSERT(y < rows, "y value of %d out of range", y);
+    ASSERT(x < columns, "x value of %d out of range", x);
+    ASSERT(y < rows, "y value of %d out of range", y);
 
-	animated->fillRect(0,0,SCALED(tileWidth),SCALED(tileHeight),0,0,0, 255);
-	animated->drawSubRect(SCALED(x * tileWidth + this->x),
-						  SCALED(y * tileHeight + this->y),
-						  0,
-						  0,
-						  SCALED(tileWidth),
-						  SCALED(tileHeight));
+    animated->fillRect(0,0,SCALED(tileWidth),SCALED(tileHeight),0,0,0, 255);
+    animated->drawSubRect(SCALED(x * tileWidth + this->x),
+                          SCALED(y * tileHeight + this->y),
+                          0,
+                          0,
+                          SCALED(tileWidth),
+                          SCALED(tileHeight));
 
-	//int layer = 0;
+    //int layer = 0;
 
-	for (vector<MapTile>::reverse_iterator t = tiles.rbegin();
-			t != tiles.rend();
-			++t)
-	{
-		MapTile& frontTile = *t;
-		Tile *frontTileType = tileset->get(frontTile.id);
+    for (vector<MapTile>::reverse_iterator t = tiles.rbegin();
+            t != tiles.rend();
+            ++t)
+    {
+        MapTile& frontTile = *t;
+        Tile *frontTileType = tileset->get(frontTile.id);
 
-		if (!frontTileType)
-		{
-			//TODO, this leads to an error. It happens after graphics mode changes.
-			return;
-		}
+        if (!frontTileType)
+        {
+            //TODO, this leads to an error. It happens after graphics mode changes.
+            return;
+        }
 
-		Image *image = frontTileType->getImage();
+        Image *image = frontTileType->getImage();
 
 
-		// draw the tile to the screen
-		if (frontTileType->getAnim()) {
-			// First, create our animated version of the tile
-			frontTileType->getAnim()->draw(animated, frontTileType, frontTile, DIR_NONE);
-		}
-		else {
+        // draw the tile to the screen
+        if (frontTileType->getAnim()) {
+            // First, create our animated version of the tile
+            frontTileType->getAnim()->draw(animated, frontTileType, frontTile, DIR_NONE);
+        }
+        else {
             if (!image)
-                return; //This is a problem //FIXME, error message it. 
-			image->drawSubRectOn(animated,
-								0, 0,
-								0, SCALED(tileHeight * frontTile.frame),
-								SCALED(tileWidth),  SCALED(tileHeight));
-		}
+                return; //This is a problem //FIXME, error message it.
+            image->drawSubRectOn(animated,
+                                0, 0,
+                                0, SCALED(tileHeight * frontTile.frame),
+                                SCALED(tileWidth),  SCALED(tileHeight));
+        }
 
-		// Then draw it to the screen
-		animated->drawSubRect(SCALED(x * tileWidth + this->x),
-							  SCALED(y * tileHeight + this->y),
-							  0,
-							  0,
-							  SCALED(tileWidth),
-							  SCALED(tileHeight));
-	}
+        // Then draw it to the screen
+        animated->drawSubRect(SCALED(x * tileWidth + this->x),
+                              SCALED(y * tileHeight + this->y),
+                              0,
+                              0,
+                              SCALED(tileWidth),
+                              SCALED(tileHeight));
+    }
 
 
-	// draw the focus around the tile if it has the focus
-	if (focus)
+    // draw the focus around the tile if it has the focus
+    if (focus)
         drawFocus(x, y);
 }
 

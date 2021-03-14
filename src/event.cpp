@@ -33,19 +33,19 @@ unsigned int TimedEventMgr::instances = 0;
 
 EventHandler *EventHandler::instance = NULL;
 EventHandler *EventHandler::getInstance() {
-    if (instance == NULL) 
+    if (instance == NULL)
         instance = new EventHandler();
     return instance;
 }
 
 /**
- * Waits a given number of milliseconds before continuing 
- */ 
+ * Waits a given number of milliseconds before continuing
+ */
 void EventHandler::wait_msecs(unsigned int msecs) {
     int msecs_per_cycle = (1000 / settings.gameCyclesPerSecond);
     int cycles = msecs / msecs_per_cycle;
 
-    if (cycles > 0) {        
+    if (cycles > 0) {
         WaitController waitCtrl(cycles);
         getInstance()->pushController(&waitCtrl);
         waitCtrl.wait();
@@ -56,16 +56,16 @@ void EventHandler::wait_msecs(unsigned int msecs) {
 
 /**
  * Waits a given number of game cycles before continuing
- */ 
+ */
 void EventHandler::wait_cycles(unsigned int cycles) {
     WaitController waitCtrl(cycles);
     getInstance()->pushController(&waitCtrl);
     waitCtrl.wait();
 }
 
-void EventHandler::setControllerDone(bool done) 
-{ 
-	controllerDone = done; 
+void EventHandler::setControllerDone(bool done)
+{
+    controllerDone = done;
 #if defined(IOS)
     if (done)
         controllerStopped_helper();
@@ -182,9 +182,9 @@ void TimedEventMgr::remove(TimedEvent::Callback callback, void *data) {
 void TimedEventMgr::tick() {
     List::iterator i;
     lock();
-    
+
     for (i = events.begin(); i != events.end(); i++)
-        (*i)->tick();   
+        (*i)->tick();
 
     unlock();
 
@@ -241,7 +241,7 @@ bool ReadStringController::keyPressed(int key) {
     int valid = true,
         len = value.length();
     string::size_type pos = string::npos;
-    
+
     if (key < U4_ALT)
          pos = accepted.find_first_of(key);
 
@@ -262,7 +262,7 @@ bool ReadStringController::keyPressed(int key) {
                 }
             }
         }
-        else if (key == '\n' || key == '\r') {            
+        else if (key == '\n' || key == '\r') {
             doneWaiting();
         }
         else if (len < maxlen) {
@@ -276,11 +276,11 @@ bool ReadStringController::keyPressed(int key) {
                 screenTextAt(screenX + len, screenY, "%c", key);
                 screenSetCursorPos(screenX + len + 1, screenY);
                 c->col = len + 1;
-                screenShowCursor();            
+                screenShowCursor();
             }
         }
     }
-    else valid = false;    
+    else valid = false;
 
     return valid || KeyHandler::defaultHandler(key, NULL);
 }
@@ -334,7 +334,7 @@ bool ReadChoiceController::keyPressed(int key) {
     if (choices.empty() || choices.find_first_of(value) < choices.length()) {
         // If the value is printable, display it
         if (!isspace(key))
-        	screenMessage("%c", toupper(key));
+            screenMessage("%c", toupper(key));
         doneWaiting();
         return true;
     }
@@ -345,7 +345,7 @@ bool ReadChoiceController::keyPressed(int key) {
 char ReadChoiceController::get(const string &choices, EventHandler *eh) {
     if (!eh)
         eh = eventHandler;
-    
+
     ReadChoiceController ctrl(choices);
     eh->pushController(&ctrl);
     return ctrl.waitFor();
@@ -358,7 +358,7 @@ ReadDirController::ReadDirController() {
 bool ReadDirController::keyPressed(int key) {
     Direction d = keyToDirection(key);
     bool valid = (d != DIR_NONE);
-    
+
     switch(key) {
     case U4_ESC:
     case U4_SPACE:
@@ -374,7 +374,7 @@ bool ReadDirController::keyPressed(int key) {
             return true;
         }
         break;
-    }    
+    }
 
     return false;
 }
@@ -393,7 +393,7 @@ bool WaitController::keyPressed(int key) {
 }
 
 void WaitController::wait() {
-    Controller_startWait();    
+    Controller_startWait();
 }
 
 void WaitController::setCycles(int c) {

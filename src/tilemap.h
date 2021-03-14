@@ -19,7 +19,7 @@ using std::string;
 class TileMap {
 public:
     typedef std::map<string, TileMap *> TileIndexMapMap;
-    
+
     MapTile translate(unsigned int index);
     unsigned int untranslate(MapTile &tile);
 

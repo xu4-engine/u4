@@ -8,7 +8,7 @@
  *
  * intro stuff goes here...
  */
- 
+
 #include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
 
 #include "u4.h"
@@ -44,23 +44,23 @@ using namespace std;
 
 int main(int argc, char *argv[]) {
     Debug::initGlobal("debug/global.txt");
-    
+
 #if defined(MACOSX)
     osxInit(argv[0]);
 #endif
 
     if (!u4fsetup())
-	{
-        errorFatal(	"xu4 requires the PC version of Ultima IV to be present. "
-        			"It must either be in the same directory as the xu4 executable, "
-        			"or in a subdirectory named \"ultima4\"."
-        			"\n\nThis can be achieved by downloading \"UltimaIV.zip\" from www.ultimaforever.com"
-        			"\n - Extract the contents of UltimaIV.zip"
-        			"\n - Copy the \"ultima4\" folder to your xu4 executable location."
-        			"\n\nVisit the XU4 website for additional information.\n\thttp://xu4.sourceforge.net/");
-	}
+    {
+        errorFatal( "xu4 requires the PC version of Ultima IV to be present. "
+                    "It must either be in the same directory as the xu4 executable, "
+                    "or in a subdirectory named \"ultima4\"."
+                    "\n\nThis can be achieved by downloading \"UltimaIV.zip\" from www.ultimaforever.com"
+                    "\n - Extract the contents of UltimaIV.zip"
+                    "\n - Copy the \"ultima4\" folder to your xu4 executable location."
+                    "\n\nVisit the XU4 website for additional information.\n\thttp://xu4.sourceforge.net/");
+    }
 
-	unsigned int i;
+    unsigned int i;
     int skipIntro = 0;
 
 
@@ -165,18 +165,18 @@ int main(int argc, char *argv[]) {
             printf("xu4: Ultima IV Recreated\n");
             printf("v%s\n\n", VERSION);
 
-            printf("-v, --verbose		Runs xu4 in verbose mode. Increased console output.\n");
-            printf("-q, --quiet		Sets all audio volume to zero.\n");
-            printf("-f, --fullscreen	Runs xu4 in fullscreen mode.\n");
-            printf("-i, --skip-intro	Skips the intro and loads the last savegame.\n");
+            printf("-v, --verbose       Runs xu4 in verbose mode. Increased console output.\n");
+            printf("-q, --quiet         Sets all audio volume to zero.\n");
+            printf("-f, --fullscreen    Runs xu4 in fullscreen mode.\n");
+            printf("-i, --skip-intro    Skips the intro and loads the last savegame.\n");
 
             printf("\n-s <int>,\n");
-            printf("--scale <int>		Used to specify scaling options.\n");
+            printf("--scale <int>       Used to specify scaling options.\n");
             printf("-p <string>,\n");
-            printf("--profile <string>	Used to pass extra arguements to the program.\n");
-            printf("--filter <string>	Used to specify filtering options.\n");
+            printf("--profile <string>  Used to pass extra arguements to the program.\n");
+            printf("--filter <string>   Used to specify filtering options.\n");
 
-            printf("\n-h, --help		Prints this message.\n");
+            printf("\n-h, --help        Prints this message.\n");
 
             printf("\nHomepage: http://xu4.sourceforge.com\n");
 
@@ -253,7 +253,7 @@ int main(int argc, char *argv[]) {
     game = new GameController();
     game->init();
     perf.end("gameInit()");
-    
+
     /* give a performance report */
     if (settings.debug)
         perf.report("\n===============================\n\n");

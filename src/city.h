@@ -41,7 +41,7 @@ public:
     string type;
     PersonList persons;
     string tlk_fname;
-    PersonRoleList personroles;    
+    PersonRoleList personroles;
     std::vector<Dialogue *> extraDialogues;
 };
 

@@ -36,7 +36,7 @@ using std::string;
 void print_trace(FILE *file);
 
 #if HAVE_VARIADIC_MACROS
-#   ifdef NDEBUG        
+#   ifdef NDEBUG
 #       define ASSERT(exp, desc, ...)  /* nothing */
 #   else
 #       define ASSERT(exp, ...)                                             \
@@ -70,7 +70,7 @@ public:
     static void initGlobal(const string &filename);
     void trace(const string &msg, const string &file = "", const string &func = "", const int line = -1, bool glbl = true);
 
-private:        
+private:
     // disallow assignments, copy contruction
     Debug(const Debug&);
     const Debug &operator=(const Debug &);
@@ -80,7 +80,7 @@ private:
     bool disabled;
     string filename, name;
     FILE *file;
-    static FILE *global; 
+    static FILE *global;
 
     string l_filename, l_func;
     int l_line;

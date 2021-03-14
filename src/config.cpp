@@ -68,7 +68,7 @@ char * Config::CONFIG_XML_LOCATION_POINTER = &DEFAULT_CONFIG_XML_LOCATION[0];
 Config::Config() {
     doc = xmlParseFile(Config::CONFIG_XML_LOCATION_POINTER);
     if (!doc) {
-    	printf("Failed to read core config.xml. Assuming it is located at '%s'", Config::CONFIG_XML_LOCATION_POINTER);
+        printf("Failed to read core config.xml. Assuming it is located at '%s'", Config::CONFIG_XML_LOCATION_POINTER);
         errorFatal("error parsing config.xml");
     }
 
@@ -161,7 +161,7 @@ string ConfigElement::getString(const string &name) const {
 
     string result(reinterpret_cast<const char *>(prop));
     xmlFree(prop);
-    
+
     return result;
 }
 
