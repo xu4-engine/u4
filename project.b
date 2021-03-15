@@ -53,7 +53,6 @@ exe %u4 [
 		%menuitem.cpp
 		%moongate.cpp
 		%movement.cpp
-		%music.cpp
 		%names.cpp
 		%object.cpp
 		%person.cpp

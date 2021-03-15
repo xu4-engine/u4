@@ -1,5 +1,6 @@
 /*
- * $Id$
+ * NOTE: This is a legacy file to keep iOS code working until a developer
+ *       for that system can update sound_ios.mm & music_ios.mm.
  */
 
 #ifndef MUSIC_H
@@ -19,9 +20,6 @@
 typedef void U4AudioController;
 # endif
 typedef U4AudioController OSMusicMixer;
-#else // SDL
-struct _Mix_Music;
-typedef _Mix_Music OSMusicMixer;
 #endif
 
 class Music {

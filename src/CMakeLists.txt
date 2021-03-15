@@ -48,7 +48,6 @@ set(XU4_INC
 	menuitem.h
 	moongate.h
 	movement.h
-	music.h
 	names.h
 	object.h
 	observable.h
@@ -131,7 +130,6 @@ set(XU4_SRC
 	menuitem.cpp 
 	moongate.cpp 
 	movement.cpp
-	music.cpp 
 	names.cpp 
 	object.cpp 
 	person.cpp 
