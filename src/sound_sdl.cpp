@@ -5,7 +5,6 @@
 #include <SDL.h>
 #include <SDL_mixer.h>
 
-#include "sound_p.h"
 #include "sound.h"
 #include "config.h"
 #include "debug.h"
@@ -18,42 +17,69 @@ extern int u4_SDL_InitSubSystem(Uint32 flags);
 extern void u4_SDL_QuitSubSystem(Uint32 flags);
 
 
-bool SoundManager::load_sys(Sound sound, const char* pathname) {
-    soundChunk[sound] = Mix_LoadWAV(pathname);
-    if (!soundChunk[sound]) {
-        errorWarning("Unable to load sound file %s: %s", pathname, Mix_GetError());
-        return false;
+Music* musicMgr = NULL;
+std::vector<Mix_Chunk *> soundChunk;
+
+int soundInit(void)
+{
+    ASSERT(! musicMgr, "soundInit called more than once");
+    musicMgr = new Music;
+    soundChunk.resize(SOUND_MAX, NULL);
+    return 1;
+}
+
+void soundDelete(void)
+{
+    delete musicMgr;
+}
+
+static bool sound_load(Sound sound) {
+    if (soundChunk[sound] == NULL) {
+        const char* pathname = configService->soundFile(sound);
+        if (pathname) {
+            soundChunk[sound] = Mix_LoadWAV(pathname);
+            if (!soundChunk[sound]) {
+                errorWarning("Unable to load sound file %s: %s",
+                             pathname, Mix_GetError());
+                return false;
+            }
+        }
     }
     return true;
 }
 
-void SoundManager::play_sys(Sound sound, bool onlyOnce, int specificDurationInTicks) {
+void soundPlay(Sound sound, bool onlyOnce, int specificDurationInTicks) {
+    ASSERT(sound < SOUND_MAX, "Attempted to play an invalid sound in soundPlay()");
+
+    // If music didn't initialize correctly, then we can't play it anyway
+    if (!Music::functional || !settings.soundVol)
+        return;
+
+    if (soundChunk[sound] == NULL)
+    {
+        if (!sound_load(sound))
+            return;
+    }
+
     /**
      * Use Channel 1 for sound effects
      */
     if (!onlyOnce || !Mix_Playing(1)) {
-        if (Mix_PlayChannelTimed(1, soundChunk[sound], specificDurationInTicks == -1 ? 0 : -1, specificDurationInTicks) == -1)
-            fprintf(stderr, "Error playing sound %d: %s\n", sound, Mix_GetError());
+        if (Mix_PlayChannelTimed(1, soundChunk[sound],
+                    specificDurationInTicks == -1 ? 0 : -1,
+                    specificDurationInTicks) == -1)
+            fprintf(stderr, "Error playing sound %d: %s\n",
+                    sound, Mix_GetError());
     }
 }
 
-void SoundManager::stop(int channel)
-{
+void soundStop(int channel) {
     // If music didn't initialize correctly, then we shouldn't try to stop it
     if (!musicMgr->functional || !settings.soundVol)
         return;
 
     if (Mix_Playing(channel))
         Mix_HaltChannel(channel);
-}
-
-int SoundManager::init_sys()
-{
-    return 1;
-}
-
-void SoundManager::del_sys()
-{
 }
 
 

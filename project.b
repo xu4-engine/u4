@@ -67,7 +67,6 @@ exe %u4 [
 		%script.cpp
 		%settings.cpp
 		%shrine.cpp
-		%sound.cpp
 		%spell.cpp
 		%stats.cpp
 		%textview.cpp

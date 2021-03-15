@@ -1,4 +1,7 @@
 /*
+ * NOTE: This is a legacy file to keep iOS code working until a developer
+ *       for that system can update sound_ios.mm & music_ios.mm.
+ *
  *  sound_p.h
  *  xu4
  *
@@ -40,14 +43,10 @@
 typedef void U4AudioController;
 # endif
 typedef U4AudioController OSSoundChunk;
-#else // SDL
-struct Mix_Chunk;
-typedef Mix_Chunk OSSoundChunk;
 #endif
 
 #include <string>
 #include <vector>
-
 #include "sound.h"
 
 class SoundManager {

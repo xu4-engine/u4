@@ -1,5 +1,6 @@
 /*
- * $Id$
+ * NOTE: This is a legacy file to keep iOS code working until a developer
+ *       for that system can update sound_ios.mm & music_ios.mm.
  */
 
 #include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise

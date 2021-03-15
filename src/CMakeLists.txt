@@ -65,7 +65,6 @@ set(XU4_INC
 	settings.h
 	shrine.h
 	sound.h
-	sound_p.h
 	spell.h
 	stats.h
 	textcolor.h
@@ -146,7 +145,6 @@ set(XU4_SRC
 	script.cpp 
 	settings.cpp 
 	shrine.cpp
-	sound.cpp 
 	spell.cpp 
 	stats.cpp 
 	textview.cpp 
