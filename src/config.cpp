@@ -26,27 +26,49 @@
 #include "config.h"
 #include "error.h"
 #include "settings.h"
+#include "sound.h"
 #include "u4file.h"
 
 using namespace std;
 
 extern bool verbose;
-Config *Config::instance = NULL;
+
+Config* configService = NULL;
 
 const Config *Config::getInstance() {
-    if (!instance) {
-        xmlRegisterInputCallbacks(&xmlFileMatch, &fileOpen, xmlFileRead, xmlFileClose);
-        instance = new Config;
-    }
-    return instance;
+    return configService;
 }
+
+#if 0
+// For future expansion...
+const char** Config::getGames() {
+    return &"Ultima IV";
+}
+
+void Config::setGame(const char* name) {
+}
+#endif
+
+//--------------------------------------
+// XML Backend
+
+struct XMLConfig
+{
+    xmlDocPtr doc;
+    string sbuf;        // Temporary buffer for const char* return values.
+    vector<string> musicFiles;
+    vector<string> soundFiles;
+};
+
+static const char* configXmlPath = "config.xml";
+static XMLConfig xcd;
 
 ConfigElement Config::getElement(const string &name) const {
     xmlXPathContextPtr context;
     xmlXPathObjectPtr result;
 
     string path = "/config/" + name;
-    context = xmlXPathNewContext(doc);
+    context = xmlXPathNewContext(xcd.doc);
     result = xmlXPathEvalExpression(reinterpret_cast<const xmlChar *>(path.c_str()), context);
     if(xmlXPathNodeSetIsEmpty(result->nodesetval))
         errorFatal("no match for xpath %s\n", path.c_str());
@@ -62,45 +84,7 @@ ConfigElement Config::getElement(const string &name) const {
     return ConfigElement(node);
 }
 
-char DEFAULT_CONFIG_XML_LOCATION[] = "config.xml";
-char * Config::CONFIG_XML_LOCATION_POINTER = &DEFAULT_CONFIG_XML_LOCATION[0];
-
-Config::Config() {
-    doc = xmlParseFile(Config::CONFIG_XML_LOCATION_POINTER);
-    if (!doc) {
-        printf("Failed to read core config.xml. Assuming it is located at '%s'", Config::CONFIG_XML_LOCATION_POINTER);
-        errorFatal("error parsing config.xml");
-    }
-
-    xmlXIncludeProcess(doc);
-
-    if (settings.validateXml && doc->intSubset) {
-        string errorMessage;
-        xmlValidCtxt cvp;
-
-        if (verbose)
-            printf("validating config.xml\n");
-
-        cvp.userData = &errorMessage;
-        cvp.error = &accumError;
-
-        // Error changed to not fatal due to regression in libxml2
-        if (!xmlValidateDocument(&cvp, doc))
-            errorWarning("xml validation error:\n%s", errorMessage.c_str());
-    }
-}
-
-
-vector<string> Config::getGames() {
-    vector<string> result;
-    result.push_back("Ultima IV");
-    return result;
-}
-
-void Config::setGame(const string &name) {
-}
-
-void *Config::fileOpen(const char *filename) {
+static void *conf_fileOpen(const char *filename) {
     void *result;
     string pathname(u4find_conf(filename));
 
@@ -114,7 +98,7 @@ void *Config::fileOpen(const char *filename) {
     return result;
 }
 
-void Config::accumError(void *l, const char *fmt, ...) {
+static void conf_accumError(void *l, const char *fmt, ...) {
     string* errorMessage = static_cast<string *>(l);
     char buffer[1000];
     va_list args;
@@ -126,13 +110,72 @@ void Config::accumError(void *l, const char *fmt, ...) {
     errorMessage->append(buffer);
 }
 
-ConfigElement::ConfigElement(xmlNodePtr xmlNode) : node(xmlNode), name(reinterpret_cast<const char *>(xmlNode->name)) {
+Config::Config() {
+    xmlRegisterInputCallbacks(&xmlFileMatch, &conf_fileOpen, xmlFileRead, xmlFileClose);
+
+    xcd.doc = xmlParseFile(configXmlPath);
+    if (!xcd.doc) {
+        printf("Failed to read main configuration file '%s'", configXmlPath);
+        errorFatal("error parsing main config.");
+    }
+
+    xmlXIncludeProcess(xcd.doc);
+
+    if (settings.validateXml && xcd.doc->intSubset) {
+        string errorMessage;
+        xmlValidCtxt cvp;
+
+        if (verbose)
+            printf("validating config.xml\n");
+
+        cvp.userData = &errorMessage;
+        cvp.error = &conf_accumError;
+
+        // Error changed to not fatal due to regression in libxml2
+        if (!xmlValidateDocument(&cvp, xcd.doc))
+            errorWarning("xml validation error:\n%s", errorMessage.c_str());
+    }
+
+    // Load primary elements.
+
+    // musicFile
+    {
+    xcd.musicFiles.reserve(MUSIC_MAX);
+    xcd.musicFiles.push_back("");    // filename for MUSIC_NONE;
+    vector<ConfigElement> ce = getElement("music").getChildren();
+    vector<ConfigElement>::const_iterator it  = ce.begin();
+    vector<ConfigElement>::const_iterator end = ce.end();
+    for (; it != end; ++it) {
+        if (it->getName() == "track") {
+            xcd.musicFiles.push_back(it->getString("file"));
+        }
+    }
+    }
+
+    // soundFile
+    {
+    xcd.soundFiles.reserve(SOUND_MAX);
+    vector<ConfigElement> ce = getElement("sound").getChildren();
+    vector<ConfigElement>::const_iterator it  = ce.begin();
+    vector<ConfigElement>::const_iterator end = ce.end();
+    for (; it != end; ++it) {
+        if (it->getName() == "track") {
+            xcd.soundFiles.push_back(it->getString("file"));
+        }
+    }
+    }
 }
 
-ConfigElement::ConfigElement(const ConfigElement &e) : node(e.node), name(e.name) {
+Config::~Config() {
+    xmlFreeDoc(xcd.doc);
 }
 
-ConfigElement::~ConfigElement() {
+ConfigElement::ConfigElement(xmlNodePtr xmlNode) :
+    node(xmlNode), name(reinterpret_cast<const char *>(xmlNode->name)) {
+}
+
+ConfigElement::ConfigElement(const ConfigElement &e) :
+    node(e.node), name(e.name) {
 }
 
 ConfigElement &ConfigElement::operator=(const ConfigElement &e) {
@@ -228,3 +271,44 @@ vector<ConfigElement> ConfigElement::getChildren() const {
     return result;
 }
 
+/*
+ * Return a filename pointer for the given MusicTrack id (see sound.h)
+ * The value is a C string as that is what low-level audio APIs require.
+ * The pointer is valid until the next musicFile or soundFile call.
+ */
+const char* Config::musicFile( uint32_t id ) {
+    if (id < xcd.musicFiles.size()) {
+        xcd.sbuf = u4find_music(xcd.musicFiles[id]);
+        return xcd.sbuf.c_str();
+    }
+    return NULL;
+}
+
+/*
+ * Return a filename pointer for the given Sound id (see sound.h)
+ * The value is a C string as that is what low-level audio APIs require.
+ * The pointer is valid until the next musicFile or soundFile call.
+ */
+const char* Config::soundFile( uint32_t id ) {
+    if (id < xcd.soundFiles.size()) {
+        xcd.sbuf = u4find_sound(xcd.soundFiles[id]);
+        return xcd.sbuf.c_str();
+    }
+    return NULL;
+}
+
+//--------------------------------------
+// Config Service API
+
+// Create configService.
+bool configInit() {
+    // Here's where we can compile the program with alternate back-ends
+    // (e.g. SQL, JSON, ... or something better.)
+
+    configService = new Config;
+    return configService ? true : false;
+}
+
+void configFree() {
+    delete configService;
+}

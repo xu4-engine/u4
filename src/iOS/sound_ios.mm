@@ -159,9 +159,9 @@ void SoundManager::del_sys() {
     soundChunk.clear();
 }
 
-bool SoundManager::load_sys(Sound sound, const std::string &soundPathName) {
+bool SoundManager::load_sys(Sound sound, const char* soundPathName) {
     U4AudioController *player = [[U4AudioController alloc] 
-                                 initWithFile:[NSString stringWithUTF8String:soundPathName.c_str()]];
+                                 initWithFile:[NSString stringWithUTF8String:soundPathName]];
     soundChunk[sound] = player; // Released in soundDelete.
     return true;
 }

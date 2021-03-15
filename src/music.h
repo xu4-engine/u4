@@ -24,8 +24,6 @@ struct _Mix_Music;
 typedef _Mix_Music OSMusicMixer;
 #endif
 
-
-
 class Music {
 public:
     Music();
@@ -47,7 +45,7 @@ private:
     void destroy_sys();
     void fadeOut_sys(int msecs);
     void fadeIn_sys(int msecs, bool loadFromMap);
-    bool load_sys(const string &pathname);
+    bool load_sys(const char* pathname);
     bool load(int music);
 
     static bool musicEnabled;
@@ -58,7 +56,6 @@ public:
     /*
      * Properties
      */
-    std::vector<std::string> filenames;
     int current;
     OSMusicMixer *playing;
     Debug *logger;

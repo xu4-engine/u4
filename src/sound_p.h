@@ -62,8 +62,7 @@ private:
     int init_sys();
     void del_sys();
     void play_sys(Sound sound, bool onlyOnce, int specificDurationInTicks);
-    bool load_sys(Sound sound, const std::string &soundPathName);
-    std::vector<std::string> soundFilenames;
+    bool load_sys(Sound sound, const char* pathname);
     std::vector<OSSoundChunk *> soundChunk;
     static SoundManager *instance;
 };

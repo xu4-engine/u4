@@ -99,7 +99,7 @@ void Music::playMid(int music) {
     }
 }
 
-bool Music::load_sys(const string &pathname) {
+bool Music::load_sys(const char* pathname) {
     CGFloat volume = settings.musicVol / CGFloat(MAX_VOLUME);
 	if (playing) {
         volume = playing.volume;
@@ -108,7 +108,7 @@ bool Music::load_sys(const string &pathname) {
 	    playing = nil;
 	}
 	playing = [[U4AudioController alloc] initWithFile:
-	            [NSString stringWithUTF8String:pathname.c_str()]];
+	            [NSString stringWithUTF8String:pathname]];
     playing.volume = volume;
 	return true;
 }

@@ -53,22 +53,7 @@ SoundManager::~SoundManager() {
 }
 
 int SoundManager::init() {
-    /*
-     * load sound track filenames from xml config file
-     */
-    const Config *config = Config::getInstance();
-    soundFilenames.reserve(SOUND_MAX);
     soundChunk.resize(SOUND_MAX, NULL);
-
-    vector<ConfigElement> soundConfs = config->getElement("sound").getChildren();
-    vector<ConfigElement>::const_iterator i = soundConfs.begin();
-    vector<ConfigElement>::const_iterator theEnd = soundConfs.end();
-    for (; i != theEnd; ++i) {
-        if (i->getName() != "track")
-            continue;
-
-        soundFilenames.push_back(i->getString("file"));
-    }
     return init_sys();
 }
 
@@ -80,9 +65,8 @@ bool SoundManager::load(Sound sound) {
         return false;
 
     if (soundChunk[sound] == NULL) {
-        string pathname(u4find_sound(soundFilenames[sound]));
-        string basename = pathname.substr(pathname.find_last_of("/") + 1);
-        if (!basename.empty())
+        const char* pathname = configService->soundFile(sound);
+        if( pathname )
             return load_sys(sound, pathname);
     }
     return true;

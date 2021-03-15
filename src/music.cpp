@@ -2,15 +2,7 @@
  * $Id$
  */
 
-#include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
-
-/* FIXME: should this file have all SDL-related stuff extracted and put in music_sdl.c? */
-// Yes! :)
-
-
-#include <memory>
 #include <string>
-#include <vector>
 
 #include "music.h"
 #include "sound.h"
@@ -22,8 +14,6 @@
 #include "event.h"
 #include "location.h"
 #include "settings.h"
-#include "u4.h"
-#include "u4file.h"
 
 /*
  * Static variables
@@ -39,28 +29,7 @@ bool Music::functional = true;
  * Initiliaze the music
  */
 Music::Music() : current(MUSIC_NONE), playing(NULL), logger(new Debug("debug/music.txt", "Music")) {
-    filenames.reserve(MUSIC_MAX);
-    filenames.push_back("");    // filename for MUSIC_NONE;
-
     TRACE(*logger, "Initializing music");
-
-    /*
-     * load music track filenames from xml config file
-     */
-    const Config *config = Config::getInstance();
-
-    TRACE_LOCAL(*logger, "Loading music tracks");
-
-    vector<ConfigElement> musicConfs = config->getElement("music").getChildren();
-    vector<ConfigElement>::const_iterator i = musicConfs.begin();
-    vector<ConfigElement>::const_iterator theEnd = musicConfs.end();
-    for (; i != theEnd; ++i) {
-        if (i->getName() != "track")
-            continue;
-
-        filenames.push_back(i->getString("file"));
-        TRACE_LOCAL(*logger, string("\tTrack file: ") + filenames.back());
-    }
 
     create_sys(); // Call the Sound System specific creation file.
 
@@ -97,12 +66,12 @@ bool Music::load(int music) {
             return true;
     }
 
-    string pathname(u4find_music(filenames[music]));
-    if (!pathname.empty()) {
-        bool status = load_sys(pathname);
-        if (status)
+    const char* pathname = configService->musicFile(music);
+    if (pathname) {
+        if (load_sys(pathname)) {
             current = music;
-        return status;
+            return true;
+        }
     }
     return false;
 }

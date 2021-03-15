@@ -13,6 +13,7 @@
 
 #include "u4.h"
 #include <cstring>
+#include "config.h"
 #include "debug.h"
 #include "error.h"
 #include "event.h"
@@ -172,12 +173,12 @@ int main(int argc, char *argv[]) {
         }
         else
             errorFatal("Unrecognized argument: %s\n\nUse --help for a list of supported arguments.", argv[i]);
-
     }
 
     xu4_srandom();
 
     perf.start();
+    configInit();
     screenInit();
     {
     ProgressBar pb((320/2) - (200/2), (200/2), 200, 10, 0, (skipIntro ? 4 : 6));
@@ -254,6 +255,7 @@ int main(int argc, char *argv[]) {
 
     soundDelete();
     screenDelete();
+    configFree();
 
 cleanup:
     u4fcleanup();

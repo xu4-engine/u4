@@ -1,11 +1,10 @@
 /*
- * $Id$
+ * config.h
  */
 
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
 #include <string>
 #include <vector>
 #include <libxml/xmlmemory.h>
@@ -13,38 +12,37 @@
 class ConfigElement;
 
 /**
- * Singleton class that manages the XML configuration tree.
+ * Config is a singleton data provider interface which hides the storage
+ * format of the game configuration.
+ * It provides data in a form easily digestible for game engine modules.
  */
 class Config {
 public:
-    static const Config *getInstance();
-
-    ConfigElement getElement(const std::string &name) const;
-
-    static std::vector<std::string> getGames();
-    static void setGame(const std::string &name);
-
-    static char * CONFIG_XML_LOCATION_POINTER;
-
-
-private:
     Config();
-    static void *fileOpen(const char *filename);
-    static void accumError(void *l, const char *fmt, ...);
+    ~Config();
 
-    static Config *instance;
-    xmlDocPtr doc;
+    //const char** getGames();
+    //void setGame(const char* name);
+
+    // Primary configurable elements.
+    const char* musicFile( uint32_t id );
+    const char* soundFile( uint32_t id );
+    // More to be added...
+
+    // Deprecated methods for manually parsing a tree.
+    static const Config *getInstance();
+    ConfigElement getElement(const std::string &name) const;
 };
 
 /**
- * A single configuration element in the config tree.  Right now, a
- * thin wrapper around the XML DOM element.
+ * NOTE: This class is deprecated and will be eliminated over time.
+ *
+ * A single configuration element in the config tree.
  */
 class ConfigElement {
 public:
     ConfigElement(xmlNodePtr xmlNode);
     ConfigElement(const ConfigElement &e);
-    ~ConfigElement();
 
     ConfigElement &operator=(const ConfigElement &e);
 
@@ -64,5 +62,9 @@ private:
     xmlNodePtr node;
     std::string name;
 };
+
+extern Config* configService;
+bool configInit();
+void configFree();
 
 #endif /* CONFIG_H */

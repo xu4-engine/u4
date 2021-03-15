@@ -18,10 +18,10 @@ extern int u4_SDL_InitSubSystem(Uint32 flags);
 extern void u4_SDL_QuitSubSystem(Uint32 flags);
 
 
-bool SoundManager::load_sys(Sound sound, const string &pathname) {
-    soundChunk[sound] = Mix_LoadWAV(pathname.c_str());
+bool SoundManager::load_sys(Sound sound, const char* pathname) {
+    soundChunk[sound] = Mix_LoadWAV(pathname);
     if (!soundChunk[sound]) {
-        errorWarning("Unable to load sound effect file %s: %s", soundFilenames[sound].c_str(), Mix_GetError());
+        errorWarning("Unable to load sound file %s: %s", pathname, Mix_GetError());
         return false;
     }
     return true;
@@ -104,16 +104,15 @@ void Music::destroy_sys() {
 
 }
 
-bool Music::load_sys(const string &pathname) {
-
+bool Music::load_sys(const char* pathname) {
     if (playing) {
         Mix_FreeMusic(playing);
         playing = NULL;
     }
 
-    playing = Mix_LoadMUS(pathname.c_str());
+    playing = Mix_LoadMUS(pathname);
     if (!playing) {
-        errorWarning("unable to load music file %s: %s", pathname.c_str(),
+        errorWarning("unable to load music file %s: %s", pathname,
                 Mix_GetError());
         return false;
     }
