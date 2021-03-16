@@ -193,7 +193,7 @@ int screenLoadImageCga(Image **image, int width, int height, U4FILE *file, Compr
 
     screenDeinterlaceCga(decompressed_data, width, height, tiles, 0);
 
-    img = Image::create(width, height, true, Image::HARDWARE);
+    img = Image::create(width, height, true);
     if (!img) {
         if (decompressed_data)
             free(decompressed_data);
@@ -349,7 +349,7 @@ Image *screenScaleDown(Image *src, int scale) {
 
     src->alphaOff();
 
-    dest = Image::create(src->width() / scale, src->height() / scale, src->isIndexed(), Image::HARDWARE);
+    dest = Image::create(src->width() / scale, src->height() / scale, src->isIndexed());
     if (!dest)
         return NULL;
 

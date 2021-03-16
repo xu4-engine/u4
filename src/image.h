@@ -53,12 +53,8 @@ struct SubImage {
  */
 class Image {
 public:
-    enum Type {
-        HARDWARE,
-        SOFTWARE
-    };
-
-    static Image *create(int w, int h, bool indexed, Type type);
+    static Image *create(int w, int h, bool indexed);
+    static Image *createMem(int w, int h, bool indexed);
     static Image *createScreenImage();
     static Image *duplicate(Image *image);
     ~Image();

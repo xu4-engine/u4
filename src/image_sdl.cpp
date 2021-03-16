@@ -17,21 +17,8 @@
 Image::Image() : surface(NULL) {
 }
 
-/**
- * Creates a new image.  Scale is stored to allow drawing using U4
- * (320x200) coordinates, regardless of the actual image scale.
- * Indexed is true for palette based images, or false for RGB images.
- * Image type determines whether to create a hardware (i.e. video ram)
- * or software (i.e. normal ram) image.
- */
-Image *Image::create(int w, int h, bool indexed, Image::Type type) {
+static SDL_Surface* createSDLSurf(int w, int h, bool indexed, Uint32 flags) {
     Uint32 rmask, gmask, bmask, amask;
-    Uint32 flags;
-    Image *im = new Image;
-
-    im->w = w;
-    im->h = h;
-    im->indexed = indexed;
 
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
     rmask = 0xff000000;
@@ -45,21 +32,42 @@ Image *Image::create(int w, int h, bool indexed, Image::Type type) {
     amask = 0xff000000;
 #endif
 
-    if (type == Image::HARDWARE)
-        flags = SDL_HWSURFACE | SDL_SRCALPHA;
-    else
-        flags = SDL_SWSURFACE | SDL_SRCALPHA;
+    return SDL_CreateRGBSurface(flags, w, h, indexed ? 8 : 32,
+                                rmask, gmask, bmask, amask);
+}
 
-    if (indexed)
-        im->surface = SDL_CreateRGBSurface(flags, w, h, 8, rmask, gmask, bmask, amask);
-    else
-        im->surface = SDL_CreateRGBSurface(flags, w, h, 32, rmask, gmask, bmask, amask);
-
+/**
+ * Creates a new image in video card memory.
+ * Scale is stored to allow drawing using U4 (320x200) coordinates, regardless
+ * of the actual image scale.
+ * Indexed is true for palette based images, or false for RGB images.
+ */
+Image *Image::create(int w, int h, bool indexed) {
+    Image *im = new Image;
+    im->surface = createSDLSurf(w, h, indexed, SDL_HWSURFACE | SDL_SRCALPHA);
     if (!im->surface) {
         delete im;
         return NULL;
     }
+    im->w = w;
+    im->h = h;
+    im->indexed = indexed;
+    return im;
+}
 
+/**
+ * Creates a new image in main system memory.
+ */
+Image *Image::createMem(int w, int h, bool indexed) {
+    Image *im = new Image;
+    im->surface = createSDLSurf(w, h, indexed, SDL_SWSURFACE | SDL_SRCALPHA);
+    if (!im->surface) {
+        delete im;
+        return NULL;
+    }
+    im->w = w;
+    im->h = h;
+    im->indexed = indexed;
     return im;
 }
 
@@ -83,7 +91,7 @@ Image *Image::createScreenImage() {
  */
 Image *Image::duplicate(Image *image) {
     bool alphaOn = image->isAlphaOn();
-    Image *im = create(image->width(), image->height(), false, HARDWARE);
+    Image *im = create(image->width(), image->height(), false);
 
 //    if (image->isIndexed())
 //        im->setPaletteFromImage(image);

@@ -40,7 +40,7 @@
     ImageWidth = 320 * settings.scale;
     ImageHeight = 200 * settings.scale;
 
-    image = Image::create(ImageWidth, ImageHeight, false, Image::HARDWARE);
+    image = Image::create(ImageWidth, ImageHeight, false);
 }
 
 - (id)initWithFrame:(CGRect)frame {

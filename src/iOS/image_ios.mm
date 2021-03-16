@@ -53,10 +53,8 @@ Image::Image() : surface(0), cachedImageData(0) {}
  * Creates a new image.  Scale is stored to allow drawing using U4
  * (320x200) coordinates, regardless of the actual image scale.
  * Indexed is true for palette based images, or false for RGB images.
- * Image type determines whether to create a hardware (i.e. video ram)
- * or software (i.e. normal ram) image.
  */
-Image *Image::create(int w, int h, bool indexed, Image::Type type) {
+Image *Image::create(int w, int h, bool indexed) {
     if (genericColorSpace == 0)
         genericColorSpace = U4IOS::u4colorSpace();
     Image *im = new Image();
@@ -73,6 +71,10 @@ Image *Image::create(int w, int h, bool indexed, Image::Type type) {
         im->surface = CGLayerCreateWithContext(context.get(), CGSizeMake(w, h), 0);
     }
     return im;
+}
+
+Image *Image::createMem(int w, int h, bool indexed) {
+    return Image::create(w, h, indexed);
 }
 
 /**

@@ -92,7 +92,7 @@ Image *PngImageLoader::load(U4FILE *file, int width, int height, int bpp) {
         }
     }
 
-    Image *image = Image::create(width, height, bpp == 4 || bpp == 8, Image::HARDWARE);
+    Image *image = Image::create(width, height, bpp == 4 || bpp == 8);
     if (!image) {
         delete [] raw;
         png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);

@@ -42,7 +42,7 @@ Image *scalePoint(Image *src, int scale, int n) {
     int x, y, i, j;
     Image *dest;
 
-    dest = Image::create(src->width() * scale, src->height() * scale, src->isIndexed(), Image::HARDWARE);
+    dest = Image::create(src->width() * scale, src->height() * scale, src->isIndexed());
     if (!dest)
         return NULL;
 
@@ -76,7 +76,7 @@ Image *scale2xBilinear(Image *src, int scale, int n) {
     /* this scaler works only with images scaled by 2x */
     ASSERT(scale == 2, "invalid scale: %d", scale);
 
-    dest = Image::create(src->width() * scale, src->height() * scale, false, Image::HARDWARE);
+    dest = Image::create(src->width() * scale, src->height() * scale, false);
     if (!dest)
         return NULL;
 
@@ -174,7 +174,7 @@ Image *scale2xSaI(Image *src, int scale, int N) {
     /* this scaler works only with images scaled by 2x */
     ASSERT(scale == 2, "invalid scale: %d", scale);
 
-    dest = Image::create(src->width() * scale, src->height() * scale, false, Image::HARDWARE);
+    dest = Image::create(src->width() * scale, src->height() * scale, false);
     if (!dest)
         return NULL;
 
@@ -347,7 +347,7 @@ Image *scaleScale2x(Image *src, int scale, int n) {
     /* this scaler works only with images scaled by 2x or 3x */
     ASSERT(scale == 2 || scale == 3, "invalid scale: %d", scale);
 
-    dest = Image::create(src->width() * scale, src->height() * scale, src->isIndexed(), Image::HARDWARE);
+    dest = Image::create(src->width() * scale, src->height() * scale, src->isIndexed());
     if (!dest)
         return NULL;
 

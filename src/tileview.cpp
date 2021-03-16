@@ -24,7 +24,7 @@ TileView::TileView(int x, int y, int columns, int rows) : View(x, y, columns * T
     this->tileWidth = TILE_WIDTH;
     this->tileHeight = TILE_HEIGHT;
     this->tileset = Tileset::get("base");
-    animated = Image::create(SCALED(tileWidth), SCALED(tileHeight), false, Image::HARDWARE);
+    animated = Image::create(SCALED(tileWidth), SCALED(tileHeight), false);
 }
 
 TileView::TileView(int x, int y, int columns, int rows, const string &tileset) : View(x, y, columns * TILE_WIDTH, rows * TILE_HEIGHT) {
@@ -33,7 +33,7 @@ TileView::TileView(int x, int y, int columns, int rows, const string &tileset) :
     this->tileWidth = TILE_WIDTH;
     this->tileHeight = TILE_HEIGHT;
     this->tileset = Tileset::get(tileset);
-    animated = Image::create(SCALED(tileWidth), SCALED(tileHeight), false, Image::HARDWARE);
+    animated = Image::create(SCALED(tileWidth), SCALED(tileHeight), false);
 }
 
 TileView::~TileView() {
@@ -50,7 +50,7 @@ void TileView::reinit() {
         delete animated;
         animated = NULL;
     }
-    animated = Image::create(SCALED(tileWidth), SCALED(tileHeight), false, Image::HARDWARE);
+    animated = Image::create(SCALED(tileWidth), SCALED(tileHeight), false);
 }
 
 void TileView::loadTile(MapTile &mapTile)

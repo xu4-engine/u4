@@ -1128,7 +1128,7 @@ void screenShake(int iterations) {
         // specify the size of the offset, and create a buffer
         // to store the offset row plus 1
         shakeOffset = 1;
-        bottom = Image::create(SCALED(320), SCALED(shakeOffset+1), false, Image::HARDWARE);
+        bottom = Image::create(SCALED(320), SCALED(shakeOffset+1), false);
 
         for (i = 0; i < iterations; i++) {
             // store the bottom row

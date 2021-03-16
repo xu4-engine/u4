@@ -114,7 +114,7 @@ Image *screenScale(Image *src, int scale, int n, int filter) {
     // The CGImage owns the cachedImageData now, so reset it to zero.
     src->cachedImageData = 0;
     
-    Image *dest = Image::create(srcWidth * scale, srcHeight * scale, false, Image::HARDWARE);
+    Image *dest = Image::create(srcWidth * scale, srcHeight * scale, false);
     CGLayerRef destLayer = dest->getSurface();
     CGContextRef destContext = CGLayerGetContext(destLayer);
     CGInterpolationQuality oldQuality = CGContextGetInterpolationQuality(destContext);
@@ -139,7 +139,7 @@ Image *screenScaleDown(Image *src, int scale) {
     
     src->alphaOff();
     
-    dest = Image::create(src->width() / scale, src->height() / scale, src->isIndexed(), Image::HARDWARE);
+    dest = Image::create(src->width() / scale, src->height() / scale, src->isIndexed());
     if (!dest)
         return NULL;
     

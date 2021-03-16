@@ -62,7 +62,7 @@ Image *PngImageLoader::load(U4FILE *file, int width, int height, int bpp) {
     
     int imageWidth = CGImageGetWidth(cgimage.get());
     int imageHeight = CGImageGetHeight(cgimage.get());
-    Image *image = Image::create(imageWidth, imageHeight, false, Image::HARDWARE);
+    Image *image = Image::create(imageWidth, imageHeight, false);
     image->initWithImage(cgimage.get());
     return image;
 }
