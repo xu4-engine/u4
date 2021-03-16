@@ -54,8 +54,6 @@ typedef struct CGColorSpace * CGColorSpaceRef;
 typedef struct CGImage *CGImageRef;
 typedef double NSTimeInterval;
 struct CGRect;
-void startTicks();
-int getTicks();
 class Aura;
 class Party;
 class PartyEvent;

@@ -51,22 +51,6 @@
 #include <CoreFoundation/CoreFoundation.h>
 #import "TestFlight.h"
 
-struct timeval start;
-void startTicks()
-{
-    /* Set first ticks value */
-    gettimeofday(&start, NULL);
-}
-
-int getTicks()
-{
-    int ticks;
-    struct timeval now;
-    gettimeofday(&now, NULL);
-    ticks=(now.tv_sec-start.tv_sec)*1000+(now.tv_usec-start.tv_usec)/1000;
-    return(ticks);
-}
-
 namespace U4IOS {
     
 void testFlightPassCheckPoint(const std::string &checkPointName) {

@@ -2,12 +2,6 @@
  * $Id$
  */
 
-#ifndef IOS
-#define SLACK_ON_SDL_AGNOSTICISM
-#ifdef SLACK_ON_SDL_AGNOSTICISM
-#include <SDL.h>
-#endif
-#endif
 
 #include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
 
@@ -1236,16 +1230,9 @@ void IntroController::updateInputMenu(MenuEvent &event) {
 
             // re-initialize keyboard
             KeyHandler::setKeyRepeat(settingsChanged.keydelay, settingsChanged.keyinterval);
-
-#ifdef SLACK_ON_SDL_AGNOSTICISM
-            if (settings.mouseOptions.enabled) {
-                SDL_ShowCursor(SDL_ENABLE);
-            }
-            else {
-                SDL_ShowCursor(SDL_DISABLE);
-            }
+#ifndef IOS
+            screenShowMouseCursor(settings.mouseOptions.enabled);
 #endif
-
             break;
         case CANCEL:
             // discard settings
@@ -1765,34 +1752,43 @@ void IntroController::getTitleSourceData()
 }
 
 
+static uint32_t tickStart = 0;
 
-#ifdef SLACK_ON_SDL_AGNOSTICISM
-int getTicks()
-{
-    return SDL_GetTicks();
-}
-#elif !defined(IOS)
-static int ticks = 0;
-int getTicks()
-{
-    ticks += 1000;
-    return ticks;
-}
+#ifdef _WIN32
+#include <sys/types.h>
+#include <sys/timeb.h>
+#else
+#include <sys/time.h>
 #endif
+
+// Return milliseconds elapsed since first call to getTicks().
+uint32_t getTicks()
+{
+    uint32_t now;
+
+#ifdef _WIN32
+    struct _timeb tb;
+    _ftime( &tb );
+    now = (uint32_t) (tb.time*1000 + tb.millitm);
+#else
+    // Android, Linux, iOS, macOS.
+    struct timeval ts;
+    gettimeofday(&ts, NULL);
+    now = (uint32_t) (ts.tv_sec*1000 + ts.tv_usec/1000);
+#endif
+
+    if (tickStart)
+        return now - tickStart;
+    tickStart = now;
+    return 0;
+}
+
 
 //
 // Update the title element, drawing the appropriate frame of animation
 //
 bool IntroController::updateTitle()
 {
-#ifdef IOS
-    static bool firstTime = true;
-    if (firstTime) {
-        firstTime = false;
-        startTicks();
-    }
-#endif
-
     int animStepTarget = 0;
 
     int timeCurrent = getTicks();

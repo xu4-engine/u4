@@ -127,6 +127,7 @@ void screenDisableCursor(void);
 void screenSetCursorPos(int x, int y);
 
 void screenSetMouseCursor(MouseCursor cursor);
+void screenShowMouseCursor(bool visible);
 int screenPointInMouseArea(int x, int y, MouseArea *area);
 
 Image *screenScale(Image *src, int scale, int n, int filter);

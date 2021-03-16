@@ -423,3 +423,7 @@ void screenSetMouseCursor(MouseCursor cursor) {
         current = cursor;
     }
 }
+
+void screenShowMouseCursor(bool visible) {
+    SDL_ShowCursor(visible ? SDL_ENABLE : SDL_DISABLE);
+}
