@@ -56,8 +56,6 @@ CXXSRCS=\
         menuitem.cpp \
         moongate.cpp \
         movement.cpp \
-        music.cpp \
-        music_$(UI).cpp \
         names.cpp \
         object.cpp \
         person.cpp \
@@ -72,7 +70,6 @@ CXXSRCS=\
         screen_$(UI).cpp \
         settings.cpp \
         shrine.cpp \
-        sound.cpp \
         sound_$(UI).cpp \
         spell.cpp \
         stats.cpp \
@@ -83,7 +80,6 @@ CXXSRCS=\
         tileset.cpp \
         tileview.cpp \
         u4.cpp \
-        u4_$(UI).cpp \
         u4file.cpp \
         utils.cpp \
         view.cpp \
