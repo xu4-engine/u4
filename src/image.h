@@ -14,10 +14,6 @@
 #if defined(IOS)
 typedef struct CGImage *CGImageRef;
 typedef struct CGLayer *CGLayerRef;
-typedef CGLayerRef BackendSurface;
-#else
-struct SDL_Surface;
-typedef SDL_Surface *BackendSurface;
 #endif
 
 using std::string;
@@ -142,9 +138,9 @@ public:
     int width() const { return w; }
     int height() const { return h; }
     bool isIndexed() const { return indexed; }
-    BackendSurface getSurface() { return surface; }
     void save(const string &filename);
 #ifdef IOS
+    CGLayerRef getSurface() { return surface; }
     void initWithImage(CGImageRef image);
     void clearImageContents();
 #endif
@@ -157,17 +153,18 @@ private:
     RGBA backgroundColor;
 #ifdef IOS
     mutable char *cachedImageData;
+    CGLayerRef surface;
     void clearCachedImageData() const;
     void createCachedImage() const;
     friend Image *screenScale(Image *src, int scale, int n, int filter);
+#else
+    void* surface;
 #endif
     Image();                    /* use create method to construct images */
 
     // disallow assignments, copy contruction
     Image(const Image&);
     const Image &operator=(const Image&);
-
-    BackendSurface surface;
 };
 
 #endif /* IMAGE_H */
