@@ -72,7 +72,6 @@ public:
     KeyHandler(Callback func, void *data = NULL, bool asyncronous = true);
 
     /* Static functions */
-    static int setKeyRepeat(int delay, int interval);
     static bool globalHandler(int key);
 
     /* Static default key handler functions */
@@ -291,6 +290,7 @@ public:
     static bool getControllerDone();
     static void end();
     static bool timerQueueEmpty();
+    static int setKeyRepeat(int delay, int interval);
 
     /* Member functions */
     TimedEventMgr* getTimer();

@@ -126,7 +126,7 @@ void screenInit() {
         settings.videoType = "EGA";
 
 
-    KeyHandler::setKeyRepeat(settings.keydelay, settings.keyinterval);
+    EventHandler::setKeyRepeat(settings.keydelay, settings.keyinterval);
 
     /* find the tile animations for our tileset */
     tileanims = NULL;

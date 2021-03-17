@@ -1229,7 +1229,7 @@ void IntroController::updateInputMenu(MenuEvent &event) {
             settings.write();
 
             // re-initialize keyboard
-            KeyHandler::setKeyRepeat(settingsChanged.keydelay, settingsChanged.keyinterval);
+            EventHandler::setKeyRepeat(settingsChanged.keydelay, settingsChanged.keyinterval);
 #ifndef IOS
             screenShowMouseCursor(settings.mouseOptions.enabled);
 #endif
