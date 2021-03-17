@@ -42,8 +42,8 @@ void soundPlay(Sound sound, bool onlyOnce, int specificDurationInTicks) {
     soundMgr->play(sound, onlyOnce, specificDurationInTicks);
 }
 
-void soundStop(int channel) {
-    soundMgr->stop(channel);
+void soundStop() {
+    soundMgr->stop(1);
 }
 
 SoundManager::SoundManager() {

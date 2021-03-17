@@ -60,7 +60,7 @@ void soundDelete(void);
 
 void soundPlay(Sound sound, bool onlyOnce = true, int specificDurationInTicks = -1);
 
-void soundStop(int channel = 1);
+void soundStop();
 void soundSetVolume(int);
 int  soundVolumeDec();
 int  soundVolumeInc();

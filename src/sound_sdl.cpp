@@ -17,6 +17,8 @@ extern int u4_SDL_InitSubSystem(Uint32 flags);
 extern void u4_SDL_QuitSubSystem(Uint32 flags);
 
 
+// Use Channel 1 for sound effects
+#define FX_CHANNEL  1
 #define NLOOPS -1
 
 static bool audioFunctional = false;
@@ -134,11 +136,8 @@ void soundPlay(Sound sound, bool onlyOnce, int specificDurationInTicks) {
             return;
     }
 
-    /**
-     * Use Channel 1 for sound effects
-     */
-    if (!onlyOnce || !Mix_Playing(1)) {
-        if (Mix_PlayChannelTimed(1, soundChunk[sound],
+    if (!onlyOnce || !Mix_Playing(FX_CHANNEL)) {
+        if (Mix_PlayChannelTimed(FX_CHANNEL, soundChunk[sound],
                     specificDurationInTicks == -1 ? 0 : -1,
                     specificDurationInTicks) == -1)
             fprintf(stderr, "Error playing sound %d: %s\n",
@@ -146,13 +145,16 @@ void soundPlay(Sound sound, bool onlyOnce, int specificDurationInTicks) {
     }
 }
 
-void soundStop(int channel) {
+/*
+ * Stop all sound effects.  Use musicStop() to halt music playback.
+ */
+void soundStop() {
     // If music didn't initialize correctly, then we shouldn't try to stop it
     if (!audioFunctional || !settings.soundVol)
         return;
 
-    if (Mix_Playing(channel))
-        Mix_HaltChannel(channel);
+    if (Mix_Playing(FX_CHANNEL))
+        Mix_HaltChannel(FX_CHANNEL);
 }
 
 static bool music_load(int music) {
