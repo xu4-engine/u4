@@ -231,9 +231,6 @@ public:
     TimedEventMgr(int baseInterval);
     ~TimedEventMgr();
 
-    /* Static functions */
-    static unsigned int callback(unsigned int interval, void *param);
-
     /* Member functions */
     bool isLocked() const;      /**< Returns true if the event list is locked (in use) */
 
@@ -256,17 +253,15 @@ private:
 
     /* Properties */
 protected:
-    /* Static properties */
-    static unsigned int instances;
-
+#if defined(IOS)
+    TimedManagerHelper *m_helper;
+#else
     void *id;
+#endif
     int baseInterval;
     bool locked;
     List events;
     List deferredRemovals;
-#if defined(IOS)
-    TimedManagerHelper *m_helper;
-#endif
 };
 
 typedef void(*updateScreenCallback)(void);

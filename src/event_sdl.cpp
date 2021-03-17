@@ -21,6 +21,28 @@ extern int eventTimerGranularity;
 extern int u4_SDL_InitSubSystem(Uint32 flags);
 extern void u4_SDL_QuitSubSystem(Uint32 flags);
 
+enum UserEventCode {
+    UC_TimedEventMgr,
+    UC_Sleep
+};
+
+/**
+ * Adds an SDL timer event to the message queue.
+ */
+static unsigned int tem_callback(unsigned int interval, void *param) {
+    SDL_Event event;
+
+    event.type = SDL_USEREVENT;
+    event.user.code = UC_TimedEventMgr;
+    event.user.data1 = param;
+    event.user.data2 = NULL;
+    SDL_PushEvent(&event);
+
+    return interval;
+}
+
+static unsigned int tem_instances = 0;
+
 /**
  * Constructs a timed event manager object.
  * Adds a timer callback to the SDL subsystem, which
@@ -29,13 +51,13 @@ extern void u4_SDL_QuitSubSystem(Uint32 flags);
  */
 TimedEventMgr::TimedEventMgr(int i) : baseInterval(i) {
     /* start the SDL timer */
-    if (instances == 0) {
+    if (tem_instances == 0) {
         if (u4_SDL_InitSubSystem(SDL_INIT_TIMER) < 0)
             errorFatal("unable to init SDL: %s", SDL_GetError());
     }
 
-    id = static_cast<void*>(SDL_AddTimer(i, &TimedEventMgr::callback, this));
-    instances++;
+    id = static_cast<void*>(SDL_AddTimer(i, &tem_callback, this));
+    tem_instances++;
 }
 
 /**
@@ -48,26 +70,11 @@ TimedEventMgr::~TimedEventMgr() {
     SDL_RemoveTimer(static_cast<SDL_TimerID>(id));
     id = NULL;
 
-    if (instances == 1)
+    if (tem_instances == 1)
         u4_SDL_QuitSubSystem(SDL_INIT_TIMER);
 
-    if (instances > 0)
-        instances--;
-}
-
-/**
- * Adds an SDL timer event to the message queue.
- */
-unsigned int TimedEventMgr::callback(unsigned int interval, void *param) {
-    SDL_Event event;
-
-    event.type = SDL_USEREVENT;
-    event.user.code = 0;
-    event.user.data1 = param;
-    event.user.data2 = NULL;
-    SDL_PushEvent(&event);
-
-    return interval;
+    if (tem_instances > 0)
+        tem_instances--;
 }
 
 /**
@@ -88,7 +95,7 @@ void TimedEventMgr::stop() {
 
 void TimedEventMgr::start() {
     if (!id)
-        id = static_cast<void*>(SDL_AddTimer(baseInterval, &TimedEventMgr::callback, this));
+        id = static_cast<void*>(SDL_AddTimer(baseInterval, &tem_callback, this));
 }
 
 /**
@@ -194,7 +201,7 @@ static void handleKeyDownEvent(const SDL_Event &event, Controller *controller, u
 static Uint32 sleepTimerCallback(Uint32 interval, void *) {
     SDL_Event stopEvent;
     stopEvent.type = SDL_USEREVENT;
-    stopEvent.user.code = 1;
+    stopEvent.user.code = UC_Sleep;
     stopEvent.user.data1 = 0;
     stopEvent.user.data2 = 0;
     SDL_PushEvent(&stopEvent);
@@ -231,9 +238,9 @@ void EventHandler::sleep(unsigned int usec) {
             handleActiveEvent(event, eventHandler->updateScreen);
             break;
         case SDL_USEREVENT:
-            if (event.user.code == 0) {
+            if (event.user.code == UC_TimedEventMgr) {
                 eventHandler->getTimer()->tick();
-            } else if (event.user.code == 1) {
+            } else if (event.user.code == UC_Sleep) {
                 SDL_RemoveTimer(sleepingTimer);
                 stopUserInput = false;
             }

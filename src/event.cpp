@@ -29,7 +29,6 @@ int eventTimerGranularity = 250;
 extern bool quit;
 bool EventHandler::controllerDone = false;
 bool EventHandler::ended = false;
-unsigned int TimedEventMgr::instances = 0;
 
 EventHandler *EventHandler::instance = NULL;
 EventHandler *EventHandler::getInstance() {

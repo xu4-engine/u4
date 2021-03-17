@@ -121,7 +121,6 @@ TimedEventMgr::TimedEventMgr(int i) : baseInterval(i) {
     m_helper = [[TimedManagerHelper alloc] initWithTimedEventMgr:this];
     [m_helper setInterval:baseInterval];
     [m_helper startTimer];
-    instances++;
 }
 
 /**
@@ -133,13 +132,6 @@ TimedEventMgr::TimedEventMgr(int i) : baseInterval(i) {
 TimedEventMgr::~TimedEventMgr() {
     [m_helper stopTimer];
     [m_helper release];
-    if (instances > 0)
-        instances--;
-}
-
-
-unsigned int TimedEventMgr::callback(unsigned int, void *) {
-    return 0;
 }
 
 /**
