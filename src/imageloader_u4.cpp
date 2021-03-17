@@ -4,8 +4,6 @@
 
 #include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
 
-#include <vector>
-
 #include "config.h"
 #include "debug.h"
 #include "error.h"
@@ -15,15 +13,10 @@
 #include "rle.h"
 #include "lzw/u4decode.h"
 
-using std::vector;
-
 ImageLoader *U4RawImageLoader::instance = ImageLoader::registerLoader(new U4RawImageLoader, "image/x-u4raw");
 ImageLoader *U4RleImageLoader::instance = ImageLoader::registerLoader(new U4RleImageLoader, "image/x-u4rle");
 ImageLoader *U4LzwImageLoader::instance = ImageLoader::registerLoader(new U4LzwImageLoader, "image/x-u4lzw");
 
-RGBA *U4PaletteLoader::bwPalette = NULL;
-RGBA *U4PaletteLoader::egaPalette = NULL;
-RGBA *U4PaletteLoader::vgaPalette = NULL;
 
 /**
  * Loads in the raw image and apply the standard U4 16 or 256 color
@@ -55,16 +48,7 @@ Image *U4RawImageLoader::load(U4FILE *file, int width, int height, int bpp) {
         return NULL;
     }
 
-    U4PaletteLoader paletteLoader;
-    if (bpp == 8)
-        image->setPalette(paletteLoader.loadVgaPalette(), 256);
-    else if (bpp == 4)
-        image->setPalette(paletteLoader.loadEgaPalette(), 16);
-    else if (bpp == 1)
-        image->setPalette(paletteLoader.loadBWPalette(), 2);
-
-    setFromRawData(image, width, height, bpp, raw);
-
+    setFromRawData(image, width, height, bpp, raw, stdPalette(bpp));
     free(raw);
 
     return image;
@@ -102,16 +86,7 @@ Image *U4RleImageLoader::load(U4FILE *file, int width, int height, int bpp) {
         return NULL;
     }
 
-    U4PaletteLoader paletteLoader;
-    if (bpp == 8)
-        image->setPalette(paletteLoader.loadVgaPalette(), 256);
-    else if (bpp == 4)
-        image->setPalette(paletteLoader.loadEgaPalette(), 16);
-    else if (bpp == 1)
-        image->setPalette(paletteLoader.loadBWPalette(), 2);
-
-    setFromRawData(image, width, height, bpp, raw);
-
+    setFromRawData(image, width, height, bpp, raw, stdPalette(bpp));
     free(raw);
 
     return image;
@@ -149,85 +124,9 @@ Image *U4LzwImageLoader::load(U4FILE *file, int width, int height, int bpp) {
         return NULL;
     }
 
-    U4PaletteLoader paletteLoader;
-    if (bpp == 8)
-        image->setPalette(paletteLoader.loadVgaPalette(), 256);
-    else if (bpp == 4)
-        image->setPalette(paletteLoader.loadEgaPalette(), 16);
-    else if (bpp == 1)
-        image->setPalette(paletteLoader.loadBWPalette(), 2);
-
-    setFromRawData(image, width, height, bpp, raw);
-
+    setFromRawData(image, width, height, bpp, raw, stdPalette(bpp));
     free(raw);
 
     return image;
 }
 
-/**
- * Loads a simple black & white palette
- */
-RGBA *U4PaletteLoader::loadBWPalette() {
-    if (bwPalette == NULL) {
-        bwPalette = new RGBA[2];
-
-        bwPalette[0].r = 0;
-        bwPalette[0].g = 0;
-        bwPalette[0].b = 0;
-
-        bwPalette[1].r = 255;
-        bwPalette[1].g = 255;
-        bwPalette[1].b = 255;
-
-    }
-    return bwPalette;
-}
-
-/**
- * Loads the basic EGA palette from egaPalette.xml
- */
-RGBA *U4PaletteLoader::loadEgaPalette() {
-    if (egaPalette == NULL) {
-        int index = 0;
-        const Config *config = Config::getInstance();
-
-        egaPalette = new RGBA[16];
-
-        vector<ConfigElement> paletteConf = config->getElement("egaPalette").getChildren();
-        for (std::vector<ConfigElement>::iterator i = paletteConf.begin(); i != paletteConf.end(); i++) {
-
-            if (i->getName() != "color")
-                continue;
-
-            egaPalette[index].r = i->getInt("red");
-            egaPalette[index].g = i->getInt("green");
-            egaPalette[index].b = i->getInt("blue");
-
-            index++;
-        }
-    }
-    return egaPalette;
-}
-
-/**
- * Load the 256 color VGA palette from a file.
- */
-RGBA *U4PaletteLoader::loadVgaPalette() {
-    if (vgaPalette == NULL) {
-        U4FILE *pal = u4fopen("u4vga.pal");
-        if (!pal)
-            return NULL;
-
-        vgaPalette = new RGBA[256];
-
-        for (int i = 0; i < 256; i++) {
-            vgaPalette[i].r = u4fgetc(pal) * 255 / 63;
-            vgaPalette[i].g = u4fgetc(pal) * 255 / 63;
-            vgaPalette[i].b = u4fgetc(pal) * 255 / 63;
-        }
-        u4fclose(pal);
-
-    }
-
-    return vgaPalette;
-}

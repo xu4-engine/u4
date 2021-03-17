@@ -2,20 +2,13 @@
  * $Id$
  */
 
-#include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
-
-#include <vector>
-
 #include "config.h"
 #include "debug.h"
 #include "error.h"
 #include "image.h"
 #include "imageloader.h"
-#include "imageloader_u4.h"
 #include "imageloader_u5.h"
 #include "lzw/u6decode.h"
-
-using std::vector;
 
 ImageLoader *U5LzwImageLoader::instance = ImageLoader::registerLoader(new U5LzwImageLoader, "image/x-u5lzw");
 
@@ -53,14 +46,7 @@ Image *U5LzwImageLoader::load(U4FILE *file, int width, int height, int bpp) {
         return NULL;
     }
 
-    U4PaletteLoader paletteLoader;
-    if (bpp == 8)
-        image->setPalette(paletteLoader.loadVgaPalette(), 256);
-    else if (bpp == 4)
-        image->setPalette(paletteLoader.loadEgaPalette(), 16);
-
-    setFromRawData(image, width, height, bpp, raw);
-
+    setFromRawData(image, width, height, bpp, raw, stdPalette(bpp));
     delete [] raw;
 
     return image;

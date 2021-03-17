@@ -2,10 +2,6 @@
  * $Id: imageloader_u4.cpp 2885 2011-04-03 19:18:32Z andrewtaylor $
  */
 
-#include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
-
-#include <vector>
-
 #include "config.h"
 #include "debug.h"
 #include "error.h"
@@ -14,8 +10,6 @@
 #include "imageloader_fmtowns.h"
 #include "imageloader_u4.h"
 #include "lzw/u4decode.h"
-
-using std::vector;
 
 //ImageLoader *FMTOWNSImageLoader::instance_pic = ImageLoader::registerLoader(new FMTOWNSImageLoader(0), "image/fmtowns-pic"); Doesn't work so easily, different graphics format.
 ImageLoader *FMTOWNSImageLoader::instance_tif = ImageLoader::registerLoader(new FMTOWNSImageLoader(510), "image/fmtowns-tif");
@@ -52,9 +46,7 @@ Image *FMTOWNSImageLoader::load(U4FILE *file, int width, int height, int bpp) {
 
     if (bpp == 4)
     {
-        U4PaletteLoader pal;
-        image->setPalette(pal.loadEgaPalette(), 16);
-        setFromRawData(image, width, height, bpp, raw);
+        setFromRawData(image, width, height, bpp, raw, stdPalette(bpp));
 //      if (width % 2)
 //          errorFatal("FMTOWNS 4bit images cannot handle widths not divisible by 2!");
 //      unsigned char nibble_mask = 0x0F;
@@ -68,11 +60,8 @@ Image *FMTOWNSImageLoader::load(U4FILE *file, int width, int height, int bpp) {
 //            }
 //        }
     }
-
-
-    if (bpp == 16)
+    else if (bpp == 16)
     {
-
     //The FM towns uses 16 bits for graphics. I'm assuming 5R 5G 5B and 1 Misc bit.
     //Please excuse my ugly byte manipulation code
 
@@ -87,8 +76,7 @@ Image *FMTOWNSImageLoader::load(U4FILE *file, int width, int height, int bpp) {
     // Warning, this diagram is left-to-right, not standard right-to-left
 
     for (int y = 0; y < height; y++) {
-        for (int x = 0; x < width; x++)
-        {
+        for (int x = 0; x < width; x++) {
             unsigned char byte0 = raw[(y * width + x) * 2];
             unsigned char byte1 = raw[(y * width + x) * 2 + 1];
 
@@ -102,19 +90,13 @@ Image *FMTOWNSImageLoader::load(U4FILE *file, int width, int height, int bpp) {
             int b = byte1 & high6;
             b <<= 1;
 
-
-
-
-            image->putPixel(x, y,
-                            g,b,r,
+            image->putPixel(x, y, g, b, r,
                             lastbit & byte1 ? IM_TRANSPARENT : IM_OPAQUE);
         }
     }
     }
 
-
     free(raw);
 
     return image;
 }
-

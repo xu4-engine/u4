@@ -2,8 +2,6 @@
  * $Id$
  */
 
-#include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <png.h>
@@ -99,26 +97,25 @@ Image *PngImageLoader::load(U4FILE *file, int width, int height, int bpp) {
         return NULL;
     }
 
+    RGBA *palette = NULL;
     if (bpp == 4 || bpp == 8) {
         int num_pngpalette;
         png_colorp pngpalette;
         png_get_PLTE(png_ptr, info_ptr, &pngpalette, &num_pngpalette);
-        RGBA *palette = new RGBA[num_pngpalette];
+        palette = new RGBA[num_pngpalette];
         for (int c = 0; c < num_pngpalette; c++) {
             palette[c].r = pngpalette[c].red;
             palette[c].g = pngpalette[c].green;
             palette[c].b = pngpalette[c].blue;
             palette[c].a = IM_OPAQUE;
         }
-        image->setPalette(palette, num_pngpalette);
-        delete [] palette;
     }
 
-    setFromRawData(image, width, height, bpp, raw);
-
+    setFromRawData(image, width, height, bpp, raw, palette);
+    if (palette)
+        delete [] palette;
     delete [] raw;
     png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
 
     return image;
 }
-

@@ -6,9 +6,8 @@
 #define IMAGELOADER_H
 
 #include <map>
-#include <string>
+#include "image.h"
 
-class Image;
 class U4FILE;
 
 /**
@@ -28,8 +27,9 @@ public:
 
 protected:
     static ImageLoader *registerLoader(ImageLoader *loader, const std::string &type);
-    static void setFromRawData(Image *image, int width, int height, int bpp, unsigned char *rawData);
+    static void setFromRawData(Image *image, int width, int height, int bpp, unsigned char *rawData, RGBA *palette);
 
+    RGBA* stdPalette(int bpp);
 private:
     static std::map<std::string, ImageLoader *> *loaderMap;
 };
