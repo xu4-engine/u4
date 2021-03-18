@@ -6,14 +6,12 @@
 #define TILE_H
 
 #include <string>
-#include <vector>
 
 #include "direction.h"
 #include "types.h"
 #include "tileset.h"
 
 using std::string;
-using std::vector;
 
 class ConfigElement;
 class Image;
@@ -132,7 +130,8 @@ private:
 
     Image *image;       /**< The original image for this tile (with all of its frames) */
     bool tiledInDungeon;
-    vector<Direction> directions;
+    uint8_t directionCount;
+    uint8_t directions[7];  /**< Directions used = frames (if present) */
 
     string animationRule;
 

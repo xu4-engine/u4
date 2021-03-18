@@ -39,7 +39,7 @@ Tile::Tile(Tileset *tileset)
     , looks_like()
     , image(NULL)
     , tiledInDungeon(false)
-    , directions()
+    , directionCount(0)
     , animationRule("") {
 }
 
@@ -83,22 +83,29 @@ void Tile::loadProperties(const ConfigElement &conf) {
 
     tiledInDungeon = conf.getBool("tiledInDungeon");
 
+    /* Fill directions if they are specified. */
+    directionCount = 0;
     if (conf.exists("directions")) {
+        const unsigned maxDir = sizeof(directions);
         string dirs = conf.getString("directions");
-        if (dirs.length() != (unsigned) frames)
-            errorFatal("Error: %ld directions for tile but only %d frames", (long) dirs.length(), frames);
-        for (unsigned i = 0; i < dirs.length(); i++) {
-            if (dirs[i] == 'w')
-                directions.push_back(DIR_WEST);
-            else if (dirs[i] == 'n')
-                directions.push_back(DIR_NORTH);
-            else if (dirs[i] == 'e')
-                directions.push_back(DIR_EAST);
-            else if (dirs[i] == 's')
-                directions.push_back(DIR_SOUTH);
-            else
+        directionCount = dirs.length();
+        if (directionCount != (unsigned) frames)
+            errorFatal("Error: %d directions for tile but only %d frames", (int) directionCount, frames);
+        if (directionCount > maxDir)
+            errorFatal("Error: Number of directions exceeds limit of %d", maxDir);
+        unsigned i = 0;
+        for (; i < directionCount; i++) {
+            switch (dirs[i]) {
+            case 'w': directions[i] = DIR_WEST;  break;
+            case 'n': directions[i] = DIR_NORTH; break;
+            case 'e': directions[i] = DIR_EAST;  break;
+            case 's': directions[i] = DIR_SOUTH; break;
+            default:
                 errorFatal("Error: unknown direction specified by %c", dirs[i]);
+            }
         }
+        for (; i < maxDir; i++)
+            directions[i] = DIR_NONE;
     }
 }
 
@@ -229,14 +236,14 @@ bool Tile::isForeground() const {
 }
 
 Direction Tile::directionForFrame(int frame) const {
-    if (static_cast<unsigned>(frame) >= directions.size())
+    if (frame >= directionCount)
         return DIR_NONE;
     else
-        return directions[frame];
+        return (Direction) directions[frame];
 }
 
 int Tile::frameForDirection(Direction d) const {
-    for (int i = 0; (unsigned) i < directions.size() && i < frames; i++) {
+    for (int i = 0; i < directionCount; i++) {
         if (directions[i] == d)
             return i;
     }
