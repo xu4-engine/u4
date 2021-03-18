@@ -96,6 +96,7 @@ protected:
 class StringMenuItem : public MenuItem {
 public:
     StringMenuItem(string text, short x, short y, int shortcutKey, string *val, const vector<string> &validSettings);
+    StringMenuItem(string text, short x, short y, int shortcutKey, string *val, const char** validStrings);
 
     virtual void activate(MenuEvent &event);
     virtual string getText() const;

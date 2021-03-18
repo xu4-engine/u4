@@ -163,7 +163,7 @@ public:
     bool write();
 
     const string &getUserPath();
-    const std::vector<string> &getBattleDiffs();
+    const char** getBattleDiffs();
 
 private:
     Settings();
@@ -172,7 +172,6 @@ private:
 
     string userPath;
     string filename;
-    std::vector<string> battleDiffs;
 };
 
 /* the global settings */

@@ -91,8 +91,8 @@ void screenWait(int numberOfAnimationFrames);
 void screenIconify(void);
 
 const std::vector<std::string> &screenGetGemLayoutNames();
-const std::vector<std::string> &screenGetFilterNames();
-const std::vector<std::string> &screenGetLineOfSightStyles();
+const char** screenGetFilterNames();
+const char** screenGetLineOfSightStyles();
 
 void screenDrawImage(const std::string &name, int x = 0, int y = 0);
 void screenDrawImageInMapArea(const std::string &bkgd);

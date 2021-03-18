@@ -110,6 +110,14 @@ StringMenuItem::StringMenuItem(string text, short x, short y, int shortcutKey, s
 {
 }
 
+StringMenuItem::StringMenuItem(string text, short x, short y, int shortcutKey, string *val, const char** validStrings) :
+    MenuItem(text, x, y, shortcutKey),
+    val(val)
+{
+    while (*validStrings)
+        validSettings.push_back(*validStrings++);
+}
+
 string StringMenuItem::getText() const {
     char buffer[64];
     snprintf(buffer, sizeof(buffer), text.c_str(), val->c_str());

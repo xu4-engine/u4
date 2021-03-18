@@ -65,8 +65,6 @@ void screenShowGemTile(Layout *layout, Map *map, MapTile &t, bool focus, int x, 
 vector<Layout *> layouts;
 vector<TileAnimSet *> tileanimSets;
 vector<string> gemLayoutNames;
-vector<string> filterNames;
-vector<string> lineOfSightStyles;
 Layout *gemlayout = NULL;
 std::map<string, int> dungeonTileChars;
 TileAnimSet *tileanims = NULL;
@@ -96,16 +94,6 @@ extern void screenInit_sys();
 extern void screenDelete_sys();
 
 void screenInit() {
-    filterNames.clear();
-    filterNames.push_back("point");
-    filterNames.push_back("2xBi");
-    filterNames.push_back("2xSaI");
-    filterNames.push_back("Scale2x");
-
-    lineOfSightStyles.clear();
-    lineOfSightStyles.push_back("DOS");
-    lineOfSightStyles.push_back("Enhanced");
-
     screenInit_sys();
 
     imageMgr = new ImageMgr;
@@ -295,15 +283,19 @@ void screenMessage(const char *fmt, ...) {
     screenNeedPrompt = 1;
 }
 
-const vector<string> &screenGetFilterNames() {
-    return filterNames;
-}
-
 const vector<string> &screenGetGemLayoutNames() {
     return gemLayoutNames;
 }
 
-const vector<string> &screenGetLineOfSightStyles() {
+const char** screenGetFilterNames() {
+    static const char* filterNames[] = {
+        "point", "2xBi", "2xSaI", "Scale2x", NULL
+    };
+    return filterNames;
+}
+
+const char** screenGetLineOfSightStyles() {
+    static const char* lineOfSightStyles[] = {"DOS", "Enhanced", NULL};
     return lineOfSightStyles;
 }
 

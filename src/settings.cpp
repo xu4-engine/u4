@@ -72,9 +72,6 @@ bool SettingsData::operator!=(const SettingsData &s) const {
  * Default contructor.  Settings is a singleton so this is private.
  */
 Settings::Settings() {
-    battleDiffs.push_back("Normal");
-    battleDiffs.push_back("Hard");
-    battleDiffs.push_back("Expert");
 }
 
 
@@ -503,6 +500,7 @@ const string &Settings::getUserPath() {
     return userPath;
 }
 
-const vector<string> &Settings::getBattleDiffs() {
-    return battleDiffs;
+const char** Settings::getBattleDiffs() {
+    static const char* difficulty[] = {"Normal", "Hard", "Expert", NULL};
+    return difficulty;
 }
