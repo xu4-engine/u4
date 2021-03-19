@@ -80,7 +80,7 @@ void screenInit_sys() {
     SDL_WM_SetIcon(SDL_LoadBMP(ICON_FILE), NULL);
 #endif
 
-    if (!SDL_SetVideoMode(320 * settings.scale, 200 * settings.scale, 0, SDL_HWSURFACE | SDL_ANYFORMAT | (settings.fullscreen ? SDL_FULLSCREEN : 0)))
+    if (!SDL_SetVideoMode(320 * settings.scale, 200 * settings.scale, 32, SDL_HWSURFACE | (settings.fullscreen ? SDL_FULLSCREEN : 0)))
         errorFatal("unable to set video: %s", SDL_GetError());
 
     if (verbose) {
@@ -222,15 +222,56 @@ int screenLoadImageCga(Image **image, int width, int height, U4FILE *file, Compr
  * Force a redraw.
  */
 
-SDL_mutex *screenLockMutex = NULL;
-int frameDuration = 0;
+extern Image* screenImage;
+static SDL_mutex *screenLockMutex = NULL;
+static int frameDuration = 0;
 
-void screenLock() {
-    SDL_mutexP(screenLockMutex);
-}
+/*
+ * Show screenImage on the display.
+ * If w is zero then the entire display is updated.
+ */
+// This would be static but its an Image friend to access screenImage->pixels.
+void updateDisplay( int x, int y, int w, int h ) {
+    SDL_Surface* ss = SDL_GetVideoSurface();
+    if (ss) {
+        uint32_t* dp;
+        uint32_t* drow;
+        const uint32_t* sp;
+        const uint32_t* send;
+        const uint32_t* srow;
+        int dpitch = ss->pitch / sizeof(uint32_t);
+        int cr;
 
-void screenUnlock() {
-    SDL_mutexV(screenLockMutex);
+#if 0
+        printf( "KR redraw format:(%d %08x %08x %d,%d pitch:%d\n",
+                ss->format->BitsPerPixel,
+                ss->format->Rmask, ss->format->Amask,
+                ss->w, ss->h, ss->pitch );
+#endif
+
+        if (w == 0) {
+            w = ss->w;
+            h = ss->h;
+        }
+
+        SDL_LockSurface(ss);
+        srow = screenImage->pixels + y*screenImage->w + x;
+        drow = ((uint32_t*) ss->pixels) + y*dpitch + x;
+        for (cr = 0; cr < h; ++cr) {
+            dp = drow;
+            sp = srow;
+            send = srow + screenImage->w;
+            while (sp != send)
+                *dp++ = *sp++;
+            srow += screenImage->w;
+            drow += dpitch;
+        }
+        SDL_UnlockSurface(ss);
+
+        SDL_mutexP(screenLockMutex);
+        SDL_UpdateRect(ss, 0, 0, 0, 0);
+        SDL_mutexV(screenLockMutex);
+    }
 }
 
 //#define CPU_TEST
@@ -238,18 +279,15 @@ void screenUnlock() {
 
 void screenRedrawScreen() {
     CPU_START()
-
-    screenLock();
-    SDL_UpdateRect(SDL_GetVideoSurface(), 0, 0, 0, 0);
-    screenUnlock();
-
+    updateDisplay(0, 0, 0, 0);
     CPU_END("ut:")
 }
 
 void screenRedrawTextArea(int x, int y, int width, int height) {
-    screenLock();
-    SDL_UpdateRect(SDL_GetVideoSurface(), x * CHAR_WIDTH * settings.scale, y * CHAR_HEIGHT * settings.scale, width * CHAR_WIDTH * settings.scale, height * CHAR_HEIGHT * settings.scale);
-    screenUnlock();
+    updateDisplay(x * CHAR_WIDTH * settings.scale,
+                  y * CHAR_HEIGHT * settings.scale,
+                  width * CHAR_WIDTH * settings.scale,
+                  height * CHAR_HEIGHT * settings.scale);
 }
 
 void screenWait(int numberOfAnimationFrames) {
@@ -269,7 +307,7 @@ int screenRefreshThreadFunction(void *unused) {
 }
 
 void screenRefreshThreadInit() {
-    screenLockMutex = SDL_CreateMutex();;
+    screenLockMutex = SDL_CreateMutex();
 
     frameDuration = 1000 / settings.screenAnimationFramesPerSecond;
 

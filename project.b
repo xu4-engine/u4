@@ -35,6 +35,7 @@ exe %u4 [
 		%event.cpp
 		%filesystem.cpp
 		%game.cpp
+		%image.cpp
 		%imageloader.cpp
 		%imageloader_fmtowns.cpp
 		%imageloader_png.cpp
@@ -92,6 +93,5 @@ exe %u4 [
 		%event_sdl.cpp
 		%screen_sdl.cpp
 		%sound_sdl.cpp
-		%image_sdl.cpp
 	]
 ]

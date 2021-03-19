@@ -2,6 +2,7 @@
  * $Id$
  */
 
+#include <assert.h>
 #include "debug.h"
 #include "config.h"
 #include "image.h"
@@ -124,70 +125,104 @@ RGBA* ImageLoader::stdPalette(int bpp)
  * entries for that depth (i.e. 2, 16, and 256 respectively).
  */
 void ImageLoader::setFromRawData(Image *image, int width, int height, int bpp, unsigned char *rawData, RGBA *palette) {
-    int x, y;
+    const RGBA* col;
+    uint32_t* row;
+    uint32_t* rowEnd;
+    uint32_t* cpix;
+    int rowAdvance;
+    int y, i;
+
+#define PIXEL_U32(c)    ((c->a << 24) | (c->r << 16) | (c->g << 8) | c->b)
+
+    //printf("KR setFromRawData bpp:%d\n", bpp);
+
+    row = image->pixels;
+    rowAdvance = image->w;
 
     switch (bpp) {
-
     case 32:
-        for (y = 0; y < height; y++) {
-            for (x = 0; x < width; x++)
-                image->putPixel(x, y,
-                                rawData[(y * width + x) * 4],
-                                rawData[(y * width + x) * 4 + 1],
-                                rawData[(y * width + x) * 4 + 2],
-                                rawData[(y * width + x) * 4 + 3]);
+        for (y = 0; y < height; ++y) {
+            cpix = row;
+            rowEnd = row + width;
+            while (cpix != rowEnd) {
+                *cpix++ = ((rawData[3] << 24) | (rawData[0] << 16) |
+                           (rawData[1] << 8)  | rawData[2]);
+                rawData += 4;
+            }
+            row += rowAdvance;
         }
         break;
 
     case 24:
-        for (y = 0; y < height; y++) {
-            for (x = 0; x < width; x++)
-                image->putPixel(x, y,
-                                rawData[(y * width + x) * 3],
-                                rawData[(y * width + x) * 3 + 1],
-                                rawData[(y * width + x) * 3 + 2],
-                                IM_OPAQUE);
+        for (y = 0; y < height; ++y) {
+            cpix = row;
+            rowEnd = row + width;
+            while (cpix != rowEnd) {
+                *cpix++ = (0xff000000 | (rawData[0] << 16) |
+                           (rawData[1] << 8)  | rawData[2]);
+                rawData += 3;
+            }
+            row += rowAdvance;
         }
         break;
 
     case 8:
-        if (palette)
-            image->setPalette(palette, 256);
-        for (y = 0; y < height; y++) {
-            for (x = 0; x < width; x++)
-                image->putPixelIndex(x, y, rawData[y * width + x]);
+        for (y = 0; y < height; ++y) {
+            cpix = row;
+            rowEnd = row + width;
+            while (cpix != rowEnd) {
+                i = *rawData++;
+                col = palette + i;
+                *cpix++ = PIXEL_U32(col);
+            }
+            row += rowAdvance;
         }
         break;
 
     case 4:
-        if (palette)
-            image->setPalette(palette, 16);
-        for (y = 0; y < height; y++) {
-            for (x = 0; x < width; x+=2) {
-                image->putPixelIndex(x, y, rawData[(y * width + x) / 2] >> 4);
-                image->putPixelIndex(x + 1, y, rawData[(y * width + x) / 2] & 0x0f);
+        assert((width & 1) == 0);
+        for (y = 0; y < height; ++y) {
+            cpix = row;
+            rowEnd = row + width;
+            while (cpix != rowEnd) {
+                i = *rawData++;
+
+                col = palette + (i >> 4);
+                *cpix++ = PIXEL_U32(col);
+
+                col = palette + (i & 15);
+                *cpix++ = PIXEL_U32(col);
             }
+            row += rowAdvance;
         }
         break;
 
     case 1:
-        if (palette)
-            image->setPalette(palette, 2);
-        for (y = 0; y < height; y++) {
-            for (x = 0; x < width; x+=8) {
-                image->putPixelIndex(x + 0, y, (rawData[(y * width + x) / 8] >> 7) & 0x01);
-                image->putPixelIndex(x + 1, y, (rawData[(y * width + x) / 8] >> 6) & 0x01);
-                image->putPixelIndex(x + 2, y, (rawData[(y * width + x) / 8] >> 5) & 0x01);
-                image->putPixelIndex(x + 3, y, (rawData[(y * width + x) / 8] >> 4) & 0x01);
-                image->putPixelIndex(x + 4, y, (rawData[(y * width + x) / 8] >> 3) & 0x01);
-                image->putPixelIndex(x + 5, y, (rawData[(y * width + x) / 8] >> 2) & 0x01);
-                image->putPixelIndex(x + 6, y, (rawData[(y * width + x) / 8] >> 1) & 0x01);
-                image->putPixelIndex(x + 7, y, (rawData[(y * width + x) / 8] >> 0) & 0x01);
+    {
+        uint32_t black, white;
+        int mask;
+
+        col = palette;
+        black = PIXEL_U32(col);
+        ++col;
+        white = PIXEL_U32(col);
+
+        assert((width & 7) == 0);
+        for (y = 0; y < height; ++y) {
+            cpix = row;
+            rowEnd = row + width;
+            while (cpix != rowEnd) {
+                i = *rawData++;
+                for (mask = 0x80; mask; mask >>= 1) {
+                    *cpix++ = (i & mask) ? white : black;
+                }
             }
+            row += rowAdvance;
         }
+    }
         break;
 
     default:
-        ASSERT(0, "invalid bits-per-pixel (bpp): %d", bpp);
+        ASSERT(0, "Invalid rawData bits-per-pixel (bpp): %d", bpp);
     }
 }

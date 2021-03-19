@@ -22,11 +22,10 @@ using std::string;
 #define DARK_GRAY_HALO RGBA(14,15,16,255)
 
 struct RGBA {
-    RGBA(int r, int g, int b, int a) : r(r), g(g), b(b), a(a){}
-    RGBA() : r(0), g(0), b(0), a(255){}
-    unsigned int r, g, b, a;
+    RGBA(uint8_t R, uint8_t G, uint8_t B, uint8_t A) : r(R), g(G), b(B), a(A) {}
+    RGBA() : r(0), g(0), b(0), a(255) {}
+    uint8_t r, g, b, a;
 };
-bool operator==(const RGBA &lhs, const RGBA &rhs);
 
 class Image;
 
@@ -36,8 +35,8 @@ struct SubImage {
     int x, y, width, height;
 };
 
-#define IM_OPAQUE (unsigned int) 255
-#define IM_TRANSPARENT 0
+#define IM_OPAQUE       255
+#define IM_TRANSPARENT  0
 
 /**
  * A simple image object that can be drawn and read/written to at the
@@ -49,10 +48,10 @@ struct SubImage {
  */
 class Image {
 public:
-    static Image *create(int w, int h, bool indexed);
+    static Image *create(int w, int h, bool indexed = false);
     static Image *createMem(int w, int h, bool indexed);
     static Image *createScreenImage();
-    static Image *duplicate(Image *image);
+    static Image *duplicate(const Image *image);
     ~Image();
 
     /* palette handling */
@@ -95,13 +94,14 @@ public:
     void putPixel(int x, int y, int r, int g, int b, int a); //TODO Consider using &
 
 
-    void putPixelIndex(int x, int y, unsigned int index);
+    void putPixelIndex(int x, int y, uint32_t index);
 
 
     void fillRect(int x, int y, int w, int h, int r, int g, int b, int a=IM_OPAQUE);
 
     /* reading from image */
     void getPixel(int x, int y, unsigned int &r, unsigned int &g, unsigned int &b, unsigned int &a) const;
+    void getPixel(int x, int y, RGBA &col) const;
     void getPixelIndex(int x, int y, unsigned int &index) const;
 
     /* image drawing methods */
@@ -137,7 +137,7 @@ public:
 
     int width() const { return w; }
     int height() const { return h; }
-    bool isIndexed() const { return indexed; }
+    bool isIndexed() const { return false; }
     void save(const string &filename);
 #ifdef IOS
     CGLayerRef getSurface() { return surface; }
@@ -149,22 +149,23 @@ public:
 
 private:
     unsigned int w, h;
-    bool indexed;
     RGBA backgroundColor;
+    uint32_t* pixels;
 #ifdef IOS
     mutable char *cachedImageData;
     CGLayerRef surface;
     void clearCachedImageData() const;
     void createCachedImage() const;
     friend Image *screenScale(Image *src, int scale, int n, int filter);
-#else
-    void* surface;
 #endif
     Image();                    /* use create method to construct images */
 
     // disallow assignments, copy contruction
     Image(const Image&);
     const Image &operator=(const Image&);
+
+    friend class ImageLoader;
+    friend void updateDisplay(int, int, int, int);
 };
 
 #endif /* IMAGE_H */

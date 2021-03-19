@@ -106,10 +106,10 @@ Image *scale2xBilinear(Image *src, int scale, int n) {
                 else
                     xoff = 1;
 
-                src->getPixel(x, y, a.r, a.g, a.b, a.a);
-                src->getPixel(x + xoff, y, b.r, b.g, b.b, b.a);
-                src->getPixel(x, y + yoff, c.r, c.g, c.b, c.a);
-                src->getPixel(x + xoff, y + yoff, d.r, d.g, d.b, d.a);
+                src->getPixel(x, y, a);
+                src->getPixel(x + xoff, y, b);
+                src->getPixel(x, y + yoff, c);
+                src->getPixel(x + xoff, y + yoff, d);
 
                 dest->putPixel(x * 2, y * 2, a.r, a.g, a.b, a.a);
                 dest->putPixel(x * 2 + 1, y * 2, (a.r + b.r) >> 1, (a.g + b.g) >> 1, (a.b + b.b) >> 1, (a.a + b.a) >> 1);
@@ -227,25 +227,25 @@ Image *scale2xSaI(Image *src, int scale, int N) {
                     xoff2 = 2;
                 }
 
-                src->getPixel(x, y, a.r, a.g, a.b, a.a);
-                src->getPixel(x + xoff1, y, b.r, b.g, b.b, b.a);
-                src->getPixel(x, y + yoff1, c.r, c.g, c.b, c.a);
-                src->getPixel(x + xoff1, y + yoff1, d.r, d.g, d.b, d.a);
+                src->getPixel(x, y, a);
+                src->getPixel(x + xoff1, y, b);
+                src->getPixel(x, y + yoff1, c);
+                src->getPixel(x + xoff1, y + yoff1, d);
 
-                src->getPixel(x, y + yoff0, e.r, e.g, e.b, e.a);
-                src->getPixel(x + xoff1, y + yoff0, f.r, f.g, f.b, f.a);
-                src->getPixel(x + xoff0, y, g.r, g.g, g.b, g.a);
-                src->getPixel(x + xoff0, y + yoff1, h.r, h.g, h.b, h.a);
+                src->getPixel(x, y + yoff0, e);
+                src->getPixel(x + xoff1, y + yoff0, f);
+                src->getPixel(x + xoff0, y, g);
+                src->getPixel(x + xoff0, y + yoff1, h);
 
-                src->getPixel(x + xoff0, y + yoff0, i.r, i.g, i.b, i.a);
-                src->getPixel(x + xoff2, y + yoff0, j.r, j.g, j.b, j.a);
-                src->getPixel(x + xoff0, y, k.r, k.g, k.b, k.a);
-                src->getPixel(x + xoff0, y + yoff1, l.r, l.g, l.b, l.a);
+                src->getPixel(x + xoff0, y + yoff0, i);
+                src->getPixel(x + xoff2, y + yoff0, j);
+                src->getPixel(x + xoff0, y, k);
+                src->getPixel(x + xoff0, y + yoff1, l);
 
-                src->getPixel(x + xoff0, y + yoff2, m.r, m.g, m.b, m.a);
-                src->getPixel(x, y + yoff2, n.r, n.g, n.b, n.a);
-                src->getPixel(x + xoff1, y + yoff2, o.r, o.g, o.b, o.a);
-                src->getPixel(x + xoff2, y + yoff2, p.r, p.g, p.b, p.a);
+                src->getPixel(x + xoff0, y + yoff2, m);
+                src->getPixel(x, y + yoff2, n);
+                src->getPixel(x + xoff1, y + yoff2, o);
+                src->getPixel(x + xoff2, y + yoff2, p);
 
                 if (colorEqual(a, d) && !colorEqual(b, c)) {
                     if ((colorEqual(a, e) && colorEqual(b, l)) ||
@@ -386,17 +386,17 @@ Image *scaleScale2x(Image *src, int scale, int n) {
                 else
                     xoff1 = 1;
 
-                src->getPixel(x + xoff0, y + yoff0, a.r, a.g, a.b, a.a);
-                src->getPixel(x, y + yoff0, b.r, b.g, b.b, b.a);
-                src->getPixel(x + xoff1, y + yoff0, c.r, c.g, c.b, c.a);
+                src->getPixel(x + xoff0, y + yoff0, a);
+                src->getPixel(x, y + yoff0, b);
+                src->getPixel(x + xoff1, y + yoff0, c);
 
-                src->getPixel(x + xoff0, y, d.r, d.g, d.b, d.a);
-                src->getPixel(x, y, e.r, e.g, e.b, e.a);
-                src->getPixel(x + xoff1, y, f.r, f.g, f.b, f.a);
+                src->getPixel(x + xoff0, y, d);
+                src->getPixel(x, y, e);
+                src->getPixel(x + xoff1, y, f);
 
-                src->getPixel(x + xoff0, y + yoff1, g.r, g.g, g.b, g.a);
-                src->getPixel(x, y + yoff1, h.r, h.g, h.b, h.a);
-                src->getPixel(x + xoff1, y + yoff1, i.r, i.g, i.b, i.a);
+                src->getPixel(x + xoff0, y + yoff1, g);
+                src->getPixel(x, y + yoff1, h);
+                src->getPixel(x + xoff1, y + yoff1, i);
 
                 // lissen diagonals (45°,135°,225°,315°)
                 // corner : if there is gradient towards a diagonal direction,

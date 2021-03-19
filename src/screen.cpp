@@ -435,7 +435,7 @@ bool screenTileUpdate(TileView *view, const Coords &coords, bool redraw)
 void screenUpdate(TileView *view, bool showmap, bool blackout) {
     ASSERT(c != NULL, "context has not yet been initialized");
 
-    screenLock();
+    //screenLock();
 
     if (blackout)
     {
@@ -479,7 +479,7 @@ void screenUpdate(TileView *view, bool showmap, bool blackout) {
     screenUpdateMoons();
     screenUpdateWind();
 
-    screenUnlock();
+    //screenUnlock();
 }
 
 /**
@@ -1318,7 +1318,5 @@ void screenGemUpdate() {
 
 #ifdef IOS
 //Unsure if implementation required in iOS.
-void inline screenLock(){};
-void inline screenUnlock(){};
 void inline screenWait(int numberOfAnimationFrames){};
 #endif
