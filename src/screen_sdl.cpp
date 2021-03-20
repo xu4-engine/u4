@@ -38,6 +38,8 @@
 
 using std::vector;
 
+bool screenFormatIsABGR = true;
+
 SDL_Cursor *cursors[5];
 Scaler filterScaler;
 
@@ -103,6 +105,11 @@ void screenInit_sys() {
     filterScaler = scalerGet(settings.filter);
     if (!filterScaler)
         errorFatal("%s is not a valid filter", settings.filter.c_str());
+
+    {
+    SDL_Surface* ss = SDL_GetVideoSurface();
+    screenFormatIsABGR = (ss->format->Rmask == 0x000000ff);
+    }
 
     screenRefreshThreadInit();
 }
