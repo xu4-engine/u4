@@ -238,7 +238,7 @@ xu4 also accepts the following command line options:
                       * The active profile name is shown on the
                         introduction map view off the main menu.
 
-   --quiet          Quiet mode - no music.
+   --quiet          Quiet mode - no sound or music.
    -q
 
    --scale <n>      Scale the original graphics by a factor of <n>.

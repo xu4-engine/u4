@@ -63,6 +63,7 @@ int main(int argc, char *argv[]) {
 
     unsigned int i;
     int skipIntro = 0;
+    bool enableAudio = true;
 
 
     /*
@@ -145,8 +146,7 @@ int main(int argc, char *argv[]) {
         else if (strcmp(argv[i], "-q") == 0
               || strcmp(argv[i], "--quiet") == 0)
         {
-            settings.musicVol = 0;
-            settings.soundVol = 0;
+            enableAudio = false;
         }
         else if (strcmp(argv[i], "-h") == 0
               || strcmp(argv[i], "--help") == 0)
@@ -161,7 +161,7 @@ int main(int argc, char *argv[]) {
             "  -i, --skip-intro        Skip the intro. and load the last saved game.\n"
             "  -p <string>,\n"
             "      --profile <string>  Pass extra arguments to the program.\n"
-            "  -q, --quiet             Set audio volume to zero.\n"
+            "  -q, --quiet             Disable audio.\n"
             "  -s <int>,\n"
             "      --scale <int>       Specify scaling factor (1-5).\n"
             "  -v, --verbose           Enable verbose console output.\n"
@@ -192,7 +192,8 @@ int main(int argc, char *argv[]) {
     ++pb;
 
     perf.start();
-    soundInit();
+    if (enableAudio)
+        soundInit();
     perf.end("Misc Initialization");
     ++pb;
 

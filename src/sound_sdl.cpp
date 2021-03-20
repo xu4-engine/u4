@@ -92,6 +92,9 @@ static void music_callback(void *data) {
 
 void soundDelete(void)
 {
+    if (! audioFunctional)
+        return;
+
     //TRACE(*logger, "Uninitializing sound");
     eventHandler->getTimer()->remove(&music_callback);
 
@@ -205,7 +208,8 @@ void musicPlayLocale()
 
 void musicStop()
 {
-    Mix_HaltMusic();
+    if (audioFunctional)
+        Mix_HaltMusic();
 }
 
 void musicFadeOut(int msec)
@@ -243,7 +247,8 @@ void musicFadeIn(int msec, bool loadFromMap)
 
 void musicSetVolume(int volume)
 {
-    Mix_VolumeMusic(int((float)MIX_MAX_VOLUME / MAX_VOLUME * volume));
+    if (audioFunctional)
+        Mix_VolumeMusic(int((float)MIX_MAX_VOLUME / MAX_VOLUME * volume));
 }
 
 int musicVolumeDec()
@@ -265,6 +270,9 @@ int musicVolumeInc()
  */
 bool musicToggle()
 {
+    if (! audioFunctional)
+        return false;
+
     eventHandler->getTimer()->remove(&music_callback);
 
     musicEnabled = !musicEnabled;
@@ -278,8 +286,8 @@ bool musicToggle()
 }
 
 void soundSetVolume(int volume) {
-    // Use Channel 1 for sound effects
-    Mix_Volume(1, int((float)MIX_MAX_VOLUME / MAX_VOLUME * volume));
+    if (audioFunctional)
+        Mix_Volume(FX_CHANNEL, int((float)MIX_MAX_VOLUME / MAX_VOLUME * volume));
 }
 
 int soundVolumeDec()
