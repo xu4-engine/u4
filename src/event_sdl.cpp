@@ -246,7 +246,7 @@ void EventHandler::sleep(unsigned int usec) {
             }
             break;
         case SDL_QUIT:
-            ::exit(0);
+            EventHandler::quitGame();
             break;
         }
     }
@@ -286,7 +286,7 @@ void EventHandler::run() {
             break;
 
         case SDL_QUIT:
-            ::exit(0);
+            EventHandler::quitGame();
             break;
         }
     }

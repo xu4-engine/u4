@@ -408,8 +408,7 @@ bool IntroController::keyPressed(int key) {
             about();
             break;
         case 'q':
-            EventHandler::end();
-            quit = true;
+            EventHandler::quitGame();
             break;
         case '1':
         case '2':

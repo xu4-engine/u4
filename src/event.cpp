@@ -70,8 +70,16 @@ void EventHandler::setControllerDone(bool done)
         controllerStopped_helper();
 #endif
 }     /**< Sets the controller exit flag for the event handler */
-bool EventHandler::getControllerDone()         { return controllerDone; }      /**< Returns the current value of the global exit flag */
-void EventHandler::end() { ended = true; }                                     /**< End all event processing */
+
+/** Returns the current value of the controller exit flag */
+bool EventHandler::getControllerDone() { return controllerDone; }
+
+/** Signals that the game should immediately exit. */
+void EventHandler::quitGame() {
+    ended = true;
+    quit = true;
+}
+
 TimedEventMgr* EventHandler::getTimer()  { return &timer;}
 
 Controller *EventHandler::pushController(Controller *c) {
@@ -493,8 +501,7 @@ bool KeyHandler::globalHandler(int key) {
 #if defined(WIN32)
     case U4_ALT + U4_FKEY + 3:
 #endif
-        quit = true;
-        EventHandler::end();
+        EventHandler::quitGame();
         return true;
     default: return false;
     }

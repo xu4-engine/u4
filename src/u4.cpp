@@ -233,27 +233,25 @@ int main(int argc, char *argv[]) {
     }
 
     eventHandler->setControllerDone(false);
-    if (quit)
-        goto cleanup;
+    if (! quit) {
+        perf.reset();
 
-    perf.reset();
+        /* play the game! */
+        perf.start();
+        game = new GameController();
+        game->init();
+        perf.end("gameInit()");
 
-    /* play the game! */
-    perf.start();
-    game = new GameController();
-    game->init();
-    perf.end("gameInit()");
+        /* give a performance report */
+        if (settings.debug)
+            perf.report("\n===============================\n\n");
 
-    /* give a performance report */
-    if (settings.debug)
-        perf.report("\n===============================\n\n");
-
-    eventHandler->pushController(game);
-    eventHandler->run();
-    eventHandler->popController();
+        eventHandler->pushController(game);
+        eventHandler->run();
+        eventHandler->popController();
+    }
 
     Tileset::unloadAll();
-
     soundDelete();
     screenDelete();
     configFree();

@@ -283,7 +283,7 @@ public:
     static void wait_cycles(unsigned int cycles);
     static void setControllerDone(bool exit = true);
     static bool getControllerDone();
-    static void end();
+    static void quitGame();
     static bool timerQueueEmpty();
     static int setKeyRepeat(int delay, int interval);
 
