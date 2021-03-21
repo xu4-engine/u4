@@ -1748,36 +1748,7 @@ void IntroController::getTitleSourceData()
 }
 
 
-static uint32_t tickStart = 0;
-
-#ifdef _WIN32
-#include <sys/types.h>
-#include <sys/timeb.h>
-#else
-#include <sys/time.h>
-#endif
-
-// Return milliseconds elapsed since first call to getTicks().
-uint32_t getTicks()
-{
-    uint32_t now;
-
-#ifdef _WIN32
-    struct _timeb tb;
-    _ftime( &tb );
-    now = (uint32_t) (tb.time*1000 + tb.millitm);
-#else
-    // Android, Linux, iOS, macOS.
-    struct timeval ts;
-    gettimeofday(&ts, NULL);
-    now = (uint32_t) (ts.tv_sec*1000 + ts.tv_usec/1000);
-#endif
-
-    if (tickStart)
-        return now - tickStart;
-    tickStart = now;
-    return 0;
-}
+#include "support/getTicks.c"
 
 
 //

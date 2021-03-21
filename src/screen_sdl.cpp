@@ -233,10 +233,17 @@ void screenUnlock() {
     SDL_mutexV(screenLockMutex);
 }
 
+//#define CPU_TEST
+#include "support/cpuCounter.h"
+
 void screenRedrawScreen() {
+    CPU_START()
+
     screenLock();
     SDL_UpdateRect(SDL_GetVideoSurface(), 0, 0, 0, 0);
     screenUnlock();
+
+    CPU_END("ut:")
 }
 
 void screenRedrawTextArea(int x, int y, int width, int height) {

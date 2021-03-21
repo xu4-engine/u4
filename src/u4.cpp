@@ -37,7 +37,11 @@ bool quit = false;
 bool useProfile = false;
 string profileName = "";
 
-Performance perf("debug/performance.txt");
+//#define ENABLE_PERF
+#include "support/performance.h"
+PERF_OBJ(perf, "debug/performance.txt")
+#define PSTART      PERF_START(perf)
+#define PEND(msg)   PERF_END(perf,msg)
 
 using namespace std;
 
@@ -177,7 +181,7 @@ int main(int argc, char *argv[]) {
 
     xu4_srandom();
 
-    perf.start();
+    PSTART
     configInit();
     screenInit();
     {
@@ -188,42 +192,40 @@ int main(int argc, char *argv[]) {
 
     screenTextAt(15, 11, "Loading...");
     screenRedrawScreen();
-    perf.end("Screen Initialization");
+    PEND("screenInit")
     ++pb;
 
-    perf.start();
+    PSTART
     if (enableAudio)
         soundInit();
-    perf.end("Misc Initialization");
+    PEND("soundInit")
     ++pb;
 
-    perf.start();
+    PSTART
     Tileset::loadAll();
-    perf.end("Tileset::loadAll()");
+    PEND("Tileset::loadAll")
     ++pb;
 
-    perf.start();
+    PSTART
     creatureMgr->getInstance();
-    perf.end("creatureMgr->getInstance()");
+    PEND("creatureMgr->getInstance()")
     ++pb;
 
     intro = new IntroController();
     if (!skipIntro)
     {
         /* do the intro */
-        perf.start();
+        PSTART
         intro->init();
-        perf.end("introInit()");
+        PEND("intro->init()")
         ++pb;
 
-        perf.start();
+        PSTART
         intro->preloadMap();
-        perf.end("intro->preloadMap()");
+        PEND("intro->preloadMap()")
         ++pb;
 
-        /* give a performance report */
-        if (settings.debug)
-            perf.report();
+        PERF_REPORT(perf, NULL)
 
         eventHandler->pushController(intro);
         eventHandler->run();
@@ -234,17 +236,15 @@ int main(int argc, char *argv[]) {
 
     eventHandler->setControllerDone(false);
     if (! quit) {
-        perf.reset();
+        PERF_RESET(perf)
 
         /* play the game! */
-        perf.start();
+        PSTART
         game = new GameController();
         game->init();
-        perf.end("gameInit()");
+        PEND("gameInit()")
 
-        /* give a performance report */
-        if (settings.debug)
-            perf.report("\n===============================\n\n");
+        PERF_REPORT(perf, "\n===============================\n\n")
 
         eventHandler->pushController(game);
         eventHandler->run();
