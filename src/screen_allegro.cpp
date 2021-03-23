@@ -257,15 +257,8 @@ void updateDisplay(int x, int y, int w, int h) {
     CPU_END("ut:")
 }
 
-void screenRedrawScreen() {
+void screenSwapBuffers() {
     updateDisplay(0, 0, 0, 0);
-}
-
-void screenRedrawTextArea(int x, int y, int width, int height) {
-    updateDisplay(CHAR_WIDTH  * settings.scale * x,
-                  CHAR_HEIGHT * settings.scale * y,
-                  CHAR_WIDTH  * settings.scale * width,
-                  CHAR_HEIGHT * settings.scale * height);
 }
 
 void screenWait(int numberOfAnimationFrames) {
@@ -276,7 +269,7 @@ void screenWait(int numberOfAnimationFrames) {
 
     // Stop refresh timer to prevent events from accumulating in queue.
     al_stop_timer(sa_refreshTimer);
-    screenRedrawScreen();
+    screenSwapBuffers();
     al_rest(0.001 * (numberOfAnimationFrames * frameDuration));
     al_start_timer(sa_refreshTimer);
 }

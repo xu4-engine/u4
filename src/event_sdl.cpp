@@ -122,7 +122,6 @@ static void handleActiveEvent(const SDL_Event &event, updateScreenCallback updat
         if (event.active.gain) {
             if (updateScreen)
                 (*updateScreen)();
-            screenRedrawScreen();
         }
     }
 }
@@ -141,7 +140,6 @@ static void handleMouseButtonDownEvent(const SDL_Event &event, Controller *contr
     controller->keyPressed(area->command[button]);
     if (updateScreen)
         (*updateScreen)();
-    screenRedrawScreen();
 }
 
 static void handleKeyDownEvent(const SDL_Event &event, Controller *controller, updateScreenCallback updateScreen) {
@@ -193,7 +191,6 @@ static void handleKeyDownEvent(const SDL_Event &event, Controller *controller, u
     if (processed) {
         if (updateScreen)
             (*updateScreen)();
-        screenRedrawScreen();
     }
 
 }
@@ -255,7 +252,9 @@ void EventHandler::sleep(unsigned int usec) {
 void EventHandler::run() {
     if (updateScreen)
         (*updateScreen)();
-    screenRedrawScreen();
+    screenSwapBuffers();
+
+    // NOTE: All other screenSwapBuffers are done by the screenRefreshThread.
 
     while (!ended && !controllerDone) {
         SDL_Event event;
@@ -296,19 +295,6 @@ void EventHandler::run() {
 void EventHandler::setScreenUpdate(void (*updateScreen)(void)) {
     this->updateScreen = updateScreen;
 }
-
-/**
- * Returns true if the queue is empty of events that match 'mask'.
- */
- bool EventHandler::timerQueueEmpty() {
-    SDL_Event event;
-
-    if (SDL_PeepEvents(&event, 1, SDL_PEEKEVENT, SDL_EVENTMASK(SDL_USEREVENT)))
-        return false;
-    else
-        return true;
-}
-
 
 /**
  * Sets the key-repeat characteristics of the keyboard.

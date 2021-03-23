@@ -8,6 +8,7 @@
 
 #include "image.h"
 #include "settings.h"
+#include "screen.h"
 
 ProgressBar::ProgressBar(int x, int y, int width, int height, int _min, int _max) :
     View(x, y, width, height),
@@ -30,6 +31,7 @@ void ProgressBar::draw() {
 
     bar->drawOn(screen, SCALED(x), SCALED(y));
     update();
+    screenSwapBuffers();
 
     delete bar;
 }

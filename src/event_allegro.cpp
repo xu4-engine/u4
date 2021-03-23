@@ -83,7 +83,6 @@ static void handleActiveEvent(const ALLEGRO_EVENT* event, updateScreenCallback u
         if (event.active.gain) {
             if (updateScreen)
                 (*updateScreen)();
-            screenRedrawScreen();
         }
     }
 }
@@ -102,7 +101,6 @@ static void handleMouseButtonDownEvent(const ALLEGRO_EVENT* event, Controller *c
     controller->keyPressed(area->command[button]);
     if (updateScreen)
         (*updateScreen)();
-    screenRedrawScreen();
 }
 
 static void handleKeyDownEvent(const ALLEGRO_EVENT* event, Controller *controller, updateScreenCallback updateScreen) {
@@ -152,7 +150,6 @@ static void handleKeyDownEvent(const ALLEGRO_EVENT* event, Controller *controlle
     if (processed) {
         if (updateScreen)
             (*updateScreen)();
-        screenRedrawScreen();
     }
 }
 
@@ -208,8 +205,7 @@ void EventHandler::sleep(unsigned int msec) {
 
         if (redraw) {
             redraw = false;
-            //printf( "KR EventHandler updateScreen\n" );
-            screenRedrawScreen();
+            screenSwapBuffers();
         }
     }
 
@@ -222,7 +218,8 @@ void EventHandler::run() {
 
     if (updateScreen)
         (*updateScreen)();
-    screenRedrawScreen();
+    screenSwapBuffers();
+    al_start_timer(sa_refreshTimer);
 
     while (!ended && !controllerDone) {
         do {
@@ -264,29 +261,15 @@ void EventHandler::run() {
 
         if (redraw) {
             redraw = false;
-            //printf( "KR EventHandler updateScreen\n" );
-            screenRedrawScreen();
+            screenSwapBuffers();
         }
     }
+
+    al_stop_timer(sa_refreshTimer);
 }
 
 void EventHandler::setScreenUpdate(void (*updateFunc)(void)) {
     updateScreen = updateFunc;
-}
-
-/**
- * Returns true if the queue does not contain any timer events.
- * (Used to skip screen refresh in game.cpp & intro.cpp)
- */
-bool EventHandler::timerQueueEmpty() {
-    ALLEGRO_EVENT event;
-    // There is no Allegro equivalent to SDL_PeepEvents so we can only look
-    // at one event, not the entire queue.
-    if (al_peek_next_event(sa_queue, &event)) {
-        if (event.type == ALLEGRO_EVENT_TIMER)
-            return false;
-    }
-    return true;
 }
 
 /**

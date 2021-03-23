@@ -284,17 +284,10 @@ void updateDisplay( int x, int y, int w, int h ) {
 //#define CPU_TEST
 #include "support/cpuCounter.h"
 
-void screenRedrawScreen() {
+void screenSwapBuffers() {
     CPU_START()
     updateDisplay(0, 0, 0, 0);
     CPU_END("ut:")
-}
-
-void screenRedrawTextArea(int x, int y, int width, int height) {
-    updateDisplay(x * CHAR_WIDTH * settings.scale,
-                  y * CHAR_HEIGHT * settings.scale,
-                  width * CHAR_WIDTH * settings.scale,
-                  height * CHAR_HEIGHT * settings.scale);
 }
 
 void screenWait(int numberOfAnimationFrames) {
@@ -308,7 +301,7 @@ int screenRefreshThreadFunction(void *unused) {
 
     while (continueScreenRefresh) {
         SDL_Delay(frameDuration);
-        screenRedrawScreen();
+        screenSwapBuffers();
     }
     return 0;
 }

@@ -578,14 +578,11 @@ void screenScrollMessageArea() {
                      TEXT_AREA_W * charsetInfo->image->width(),
                      CHAR_HEIGHT * settings.scale,
                      0, 0, 0);
-
-    screenRedrawScreen();
 }
 
 void screenCycle() {
     if (++screenCurrentCycle >= SCR_CYCLE_MAX)
         screenCurrentCycle = 0;
-    screenRedrawScreen();
 }
 
 void screenUpdateCursor() {
@@ -595,7 +592,6 @@ void screenUpdateCursor() {
 
     if (screenCursorStatus) {
         screenShowChar(31 - phase, screenCursorX, screenCursorY);
-        screenRedrawTextArea(screenCursorX, screenCursorY, 1, 1);
     }
 }
 
@@ -619,8 +615,6 @@ void screenUpdateMoons() {
         screenShowChar(trammelChar, 11, 0);
         screenShowChar(feluccaChar, 12, 0);
     }
-
-    screenRedrawTextArea(11, 0, 2, 1);
 }
 
 void screenUpdateWind() {
@@ -635,7 +629,6 @@ void screenUpdateWind() {
         screenEraseTextArea(WIND_AREA_X, WIND_AREA_Y, WIND_AREA_W, WIND_AREA_H);
         screenTextAt(WIND_AREA_X, WIND_AREA_Y, "Wind %5s", getDirectionName((Direction) c->windDirection));
     }
-    screenRedrawTextArea(WIND_AREA_X, WIND_AREA_Y, WIND_AREA_W, WIND_AREA_H);
 }
 
 void screenShowCursor() {
@@ -648,7 +641,6 @@ void screenShowCursor() {
 void screenHideCursor() {
     if (screenCursorStatus) {
         screenEraseTextArea(screenCursorX, screenCursorY, 1, 1);
-        screenRedrawTextArea(screenCursorX, screenCursorY, 1, 1);
     }
     screenCursorStatus = 0;
 }
@@ -1130,13 +1122,11 @@ void screenShake(int iterations) {
             screen->drawSubRectOn(screen, 0, SCALED(shakeOffset), 0, 0, SCALED(320), SCALED(200-(shakeOffset+1)));
             bottom->drawOn(screen, 0, SCALED(200-(shakeOffset)));
             screen->fillRect(0, 0, SCALED(320), SCALED(shakeOffset), 0, 0, 0);
-            screenRedrawScreen();
             EventHandler::sleep(settings.shakeInterval);
 
             // shift the screen back up, and replace the bottom row
             screen->drawOn(screen, 0, 0-SCALED(shakeOffset));
             bottom->drawOn(screen, 0, SCALED(200-(shakeOffset+1)));
-            screenRedrawScreen();
             EventHandler::sleep(settings.shakeInterval);
         }
         // free the bottom row image
