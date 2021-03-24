@@ -48,6 +48,7 @@ struct SubImage {
  */
 class Image {
 public:
+    static void enableBlend(int on);
     static Image *create(int w, int h, bool indexed = false);
     static Image *createMem(int w, int h, bool indexed);
     static Image *createScreenImage();

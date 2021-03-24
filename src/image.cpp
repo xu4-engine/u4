@@ -13,6 +13,15 @@
 
 //#define REPORT_PAL
 
+static int imageBlending = 0;
+
+/**
+ * Enable blending (use alpha channel) for drawOn & drawSubRectOn.
+ */
+void Image::enableBlend(int on) {
+    imageBlending = on ? 1 : 0;
+}
+
 Image::Image() {}
 
 /**
@@ -453,14 +462,15 @@ void Image::getPixelIndex(int x, int y, unsigned int &index) const {
     index = pixels[ y*w + x ];
 }
 
+inline uint8_t MIX(int A, int B, int alpha) {
+    return (int8_t) (A + ((B - A) * alpha / 255));
+}
+
 /**
  * Draws the image onto another image.
  */
 void Image::drawOn(Image *dest, int x, int y) const {
-    uint32_t* dp;
     uint32_t* drow;
-    const uint32_t* sp;
-    const uint32_t* send;
     const uint32_t* srow = pixels;
     int blitW, blitH;
 
@@ -491,14 +501,43 @@ void Image::drawOn(Image *dest, int x, int y) const {
     if (blitH < 1)
         return;
 
-    while (blitH--) {
-        dp = drow;
-        sp = srow;
-        send = sp + blitW;
-        while( sp != send )
-            *dp++ = *sp++;
-        drow += dest->w;
-        srow += w;
+    if (imageBlending) {
+        uint8_t* dp;
+        const uint8_t* sp;
+        const uint8_t* send;
+        int alpha;
+
+        while (blitH--) {
+            dp = (uint8_t*) drow;
+            sp = (const uint8_t*) srow;
+            send = (const uint8_t*) (srow + blitW);
+            while( sp != send ) {
+                alpha = sp[3];
+                dp[0] = MIX(dp[0], sp[0], alpha);
+                dp[1] = MIX(dp[1], sp[1], alpha);
+                dp[2] = MIX(dp[2], sp[2], alpha);
+                dp[3] = alpha;
+
+                dp += 4;
+                sp += 4;
+            }
+            drow += dest->w;
+            srow += w;
+        }
+    } else {
+        uint32_t* dp;
+        const uint32_t* sp;
+        const uint32_t* send;
+
+        while (blitH--) {
+            dp = drow;
+            sp = srow;
+            send = sp + blitW;
+            while( sp != send )
+                *dp++ = *sp++;
+            drow += dest->w;
+            srow += w;
+        }
     }
 }
 
@@ -522,10 +561,7 @@ void Image::drawOn(Image *dest, int x, int y) const {
  * Draws a piece of the image onto another image.
  */
 void Image::drawSubRectOn(Image *dest, int x, int y, int rx, int ry, int rw, int rh) const {
-    uint32_t* dp;
     uint32_t* drow;
-    const uint32_t* sp;
-    const uint32_t* send;
     const uint32_t* srow;
 
     if (dest == NULL)
@@ -538,14 +574,43 @@ void Image::drawSubRectOn(Image *dest, int x, int y, int rx, int ry, int rw, int
     srow = pixels + w * ry + rx;
     drow = dest->pixels + dest->w * y + x;
 
-    while (rh--) {
-        dp = drow;
-        sp = srow;
-        send = sp + rw;
-        while( sp != send )
-            *dp++ = *sp++;
-        drow += dest->w;
-        srow += w;
+    if (imageBlending) {
+        uint8_t* dp;
+        const uint8_t* sp;
+        const uint8_t* send;
+        int alpha;
+
+        while (rh--) {
+            dp = (uint8_t*) drow;
+            sp = (const uint8_t*) srow;
+            send = (const uint8_t*) (srow + rw);
+            while( sp != send ) {
+                alpha = sp[3];
+                dp[0] = MIX(dp[0], sp[0], alpha);
+                dp[1] = MIX(dp[1], sp[1], alpha);
+                dp[2] = MIX(dp[2], sp[2], alpha);
+                dp[3] = alpha;
+
+                dp += 4;
+                sp += 4;
+            }
+            drow += dest->w;
+            srow += w;
+        }
+    } else {
+        uint32_t* dp;
+        const uint32_t* sp;
+        const uint32_t* send;
+
+        while (rh--) {
+            dp = drow;
+            sp = srow;
+            send = sp + rw;
+            while( sp != send )
+                *dp++ = *sp++;
+            drow += dest->w;
+            srow += w;
+        }
     }
 }
 
@@ -592,9 +657,9 @@ void Image::save(const string &filename) {
     uint8_t* rowEnd;
     uint8_t* cp;
     int rowBytes = w*4;
+    int alpha;
+    RGBA color;
     FILE* fp;
-
-    // TODO: Need to save in a format that supports the alpha channel.
 
     fp = fopen(filename.c_str(), "w");
     if (! fp) {
@@ -608,7 +673,26 @@ void Image::save(const string &filename) {
         cp = row;
         rowEnd = row + rowBytes;
         while (cp != rowEnd) {
-            fwrite(cp, 1, 3, fp);
+            alpha = cp[3];
+#if 1
+            if (alpha == 255) {
+                fwrite(cp, 1, 3, fp);
+            } else {
+                // PPM has no alpha channel so blend with pink to indicate it.
+                color.r = MIX(255, cp[0], alpha);
+                color.g = MIX(  0, cp[1], alpha);
+                color.b = MIX(255, cp[2], alpha);
+                fwrite(&color, 1, 3, fp);
+            }
+#else
+            // Show alpha as greyscale and fully opaque as red.
+            if (alpha == 255) {
+                color.r = 255;
+                color.g = color.b = 0;
+            } else
+                color.r = color.g = color.b = alpha;
+            fwrite(&color, 1, 3, fp);
+#endif
             cp += 4;
         }
         row += rowBytes;
