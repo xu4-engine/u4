@@ -55,8 +55,9 @@ Image* screenImage = NULL;
  * pushU4View & popU4View in U4AppDelegate.mm.
  */
 Image *Image::createScreenImage() {
-    return screenImage = create(320 * settings.scale,
-                                200 * settings.scale);
+    screenImage = create(320 * settings.scale, 200 * settings.scale);
+    screenImage->fill(RGBA(0, 0, 0, 255));
+    return screenImage;
 }
 
 /**
@@ -383,6 +384,17 @@ void Image::setTransparentIndex(unsigned int index)//, unsigned int numFrames, u
  */
 void Image::putPixelIndex(int x, int y, uint32_t index) {
     pixels[ y*w + x ] = index;
+}
+
+/**
+ * Fills entire image with a given color.
+ */
+void Image::fill(const RGBA& col) {
+    uint32_t icol = *((uint32_t*) &col);
+    uint32_t* dp = pixels;
+    uint32_t* dend = pixels + w * h;
+    while (dp != dend)
+        *dp++ = icol;
 }
 
 /**

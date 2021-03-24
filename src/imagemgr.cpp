@@ -246,6 +246,17 @@ void ImageMgr::fixupIntro(Image *im, int prescale) {
                           33 * prescale,
                           204 * prescale,
                           46 * prescale);
+#if 0
+        /*
+         * NOTE: This just tweaks the kerning by a few pixels.  With the Image
+         * rewrite for RGBA8-only images, "THE" disappears (dest. X must be
+         * less than source X when an image blits onto itself).
+         *
+         * If the goal is to preserve the original experience then the image
+         * should not be touched anyway, and a "recreated" experience will
+         * have correct input images.
+         */
+
         /* ---------------------------------------------
          * update the position of "Quest of the Avatar"
          * --------------------------------------------- */
@@ -284,6 +295,7 @@ void ImageMgr::fixupIntro(Image *im, int prescale) {
                           80 * prescale,
                           11 * prescale,
                           13 * prescale);
+#endif
     }
     /* -----------------------------------------------------------------------------
      * copy "present" to new location between "Origin Systems, Inc." and "Ultima IV"

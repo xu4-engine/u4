@@ -97,6 +97,7 @@ public:
     void putPixelIndex(int x, int y, uint32_t index);
 
 
+    void fill(const RGBA& col);
     void fillRect(int x, int y, int w, int h, int r, int g, int b, int a=IM_OPAQUE);
 
     /* reading from image */

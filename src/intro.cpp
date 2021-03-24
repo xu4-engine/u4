@@ -1585,10 +1585,6 @@ void IntroController::getTitleSourceData()
     // get the transparent color
     transparentColor = info->image->getPaletteColor(transparentIndex);
 
-    // turn alpha off, if necessary
-    bool alpha = info->image->isAlphaOn();
-    info->image->alphaOff();
-
     // for each element, get the source data
     for (unsigned i=0; i < titles.size(); i++)
     {
@@ -1661,7 +1657,9 @@ void IntroController::getTitleSourceData()
             {
                 for (int y=0; y < titles[i].rh; y++)
                 {
-                    for (int x=0; x < titles[i].rw ; x++)
+                    // Here x is set to exclude PRESENT at top of image.
+                    int x = (y < 6) ? 133 : 0;
+                    for ( ; x < titles[i].rw ; x++)
                     {
                         titles[i].srcImage->getPixel(x*info->prescale, y*info->prescale, r, g, b, a);
                         if (r || g || b)
@@ -1707,24 +1705,12 @@ void IntroController::getTitleSourceData()
             }
         }
 
-        // permanently disable alpha
-        if (titles[i].srcImage)
-            titles[i].srcImage->alphaOff();
-
-        bool indexed = info->image->isIndexed() && titles[i].method != MAP;
         // create the initial animation frame
         titles[i].destImage = Image::create(
             2 + (titles[i].prescaled ? SCALED(titles[i].rw) : titles[i].rw) * info->prescale ,
             2 + (titles[i].prescaled ? SCALED(titles[i].rh) : titles[i].rh) * info->prescale,
-            indexed);
-        if (indexed)
-            titles[i].destImage->setPaletteFromImage(info->image);
-    }
-
-    // turn alpha back on
-    if (alpha)
-    {
-        info->image->alphaOn();
+            false);
+        titles[i].destImage->fill(RGBA(0, 0, 0, 255));
     }
 
     // scale the original image now
@@ -1905,12 +1891,9 @@ bool IntroController::updateTitle()
                     title->plotData[i].a);
             }
 
-            // cover the "present" area with the transparent color
-            title->destImage->fillRect(
-                75, 1, 54, 5,
-                transparentColor.r,
-                transparentColor.g,
-                transparentColor.b);
+            // Re-draw the PRESENT area.
+            title->srcImage->drawSubRectOn(title->destImage, 73, 1,
+                72, 0, 58, 5);
             break;
         }
 
