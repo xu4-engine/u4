@@ -120,13 +120,13 @@ void TileView::drawTile(MapTile &mapTile, bool focus, int x, int y) {
 void TileView::drawTile(vector<MapTile> &tiles, bool focus, int x, int y) {
     ASSERT(x < columns, "x value of %d out of range", x);
     ASSERT(y < rows, "y value of %d out of range", y);
-    //int layer = 0;
+    int layer = 0;
 
     //animated->fillRect(0,0, SCALED(tileWidth),SCALED(tileHeight), 0,0,0,0);
 
     for (vector<MapTile>::reverse_iterator t = tiles.rbegin();
             t != tiles.rend();
-            ++t)
+            ++t, ++layer)
     {
         MapTile& frontTile = *t;
         Tile *frontTileType = tileset->get(frontTile.id);
@@ -146,6 +146,12 @@ void TileView::drawTile(vector<MapTile> &tiles, bool focus, int x, int y) {
             Image *image = frontTileType->getImage();
             if (!image)
                 return; //This is a problem //FIXME, error message it.
+
+            // FIXME: This extra enableBlend can go away when getImage above
+            // is moved outside this function.  All image loading should be
+            // done up front before any rendering.
+            Image::enableBlend(layer != 0);
+
             image->drawSubRectOn(animated,
                                 0, 0,
                                 0, SCALED(tileHeight * frontTile.frame),
