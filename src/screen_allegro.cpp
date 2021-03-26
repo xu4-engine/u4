@@ -12,20 +12,11 @@
 #include "settings.h"
 #include "screen.h"
 
-#if defined(MACOSX)
-#include "macosx/cursors.h"
-#else
-#include "cursors.h"
-#endif
-
 extern bool verbose;
 
 
 ALLEGRO_EVENT_QUEUE* sa_queue = NULL;
 ALLEGRO_DISPLAY* sa_disp = NULL;
-#ifdef FBUF
-ALLEGRO_BITMAP* sa_frameBuffer = NULL;
-#endif
 ALLEGRO_TIMER* sa_refreshTimer = NULL;
 bool screenFormatIsABGR = true;
 
@@ -33,50 +24,50 @@ static ALLEGRO_MOUSE_CURSOR* cursors[5];
 static int frameDuration = 0;
 
 
+#if defined(MACOSX)
+#define CURSORSIZE 16
+#define XPMSIZE    CURSORSIZE
+#include "macosx/cursors.h"
+#else
+#define CURSORSIZE 24
+#define XPMSIZE    32
+#include "cursors.h"
+#endif
+
 /**
  * Create an Allegro cursor object from an xpm.
  */
-#if defined(MACOSX)
-#define CURSORSIZE 16
-#else
-#define CURSORSIZE 32
-#endif
-static ALLEGRO_MOUSE_CURSOR* screenInitCursor(const char * const xpm[]) {
-    return NULL;
-#if 0
-    int i, row, col;
-    Uint8 data[(CURSORSIZE/8)*CURSORSIZE];
-    Uint8 mask[(CURSORSIZE/8)*CURSORSIZE];
+static ALLEGRO_MOUSE_CURSOR* screenInitCursor(ALLEGRO_BITMAP* bmp, const char * const xpm[]) {
+    ALLEGRO_COLOR white, black, empty;
+    int row, col;
     int hot_x, hot_y;
 
-    i = -1;
+    white = al_map_rgb(255, 255, 255);
+    black = al_map_rgb(0, 0, 0);
+    empty = al_map_rgba(0, 0, 0, 0);
+
+    al_lock_bitmap(bmp, ALLEGRO_PIXEL_FORMAT_ANY, ALLEGRO_LOCK_WRITEONLY);
+    al_set_target_bitmap(bmp);
+
     for (row=0; row < CURSORSIZE; row++) {
         for (col=0; col < CURSORSIZE; col++) {
-            if (col % 8) {
-                data[i] <<= 1;
-                mask[i] <<= 1;
-            } else {
-                i++;
-                data[i] = mask[i] = 0;
-            }
             switch (xpm[4+row][col]) {
-            case 'X':
-                data[i] |= 0x01;
-                mask[i] |= 0x01;
-                break;
-            case '.':
-                mask[i] |= 0x01;
-                break;
-            case ' ':
-                break;
+                case 'X':
+                    al_put_pixel(col, row, black);
+                    break;
+                case '.':
+                    al_put_pixel(col, row, white);
+                    break;
+                case ' ':
+                    al_put_pixel(col, row, empty);
+                    break;
             }
         }
     }
-    sscanf(xpm[4+row], "%d,%d", &hot_x, &hot_y);
+    sscanf(xpm[4+XPMSIZE], "%d,%d", &hot_x, &hot_y);
 
-    ALLEGRO_BITMAP* bmp
+    al_unlock_bitmap(bmp);
     return al_create_mouse_cursor(bmp, hot_x, hot_y);
-#endif
 }
 
 
@@ -106,24 +97,31 @@ void screenInit_sys() {
     // Default is ALLEGRO_PIXEL_FORMAT_ANY_WITH_ALPHA.
     //printf("KR fmt %d\n", al_get_new_bitmap_format());
     al_set_new_bitmap_format(ALLEGRO_PIXEL_FORMAT_ABGR_8888);
-    al_set_new_bitmap_flags(ALLEGRO_VIDEO_BITMAP);
-#ifdef FBUF
-    sa_frameBuffer = al_create_bitmap(w, h);
-    al_set_target_backbuffer(sa_disp);
-#endif
+    //al_set_new_bitmap_flags(ALLEGRO_VIDEO_BITMAP);
 
     al_set_window_title(sa_disp, "Ultima IV");  // configService->gameName()
     //al_set_display_icon(sa_disp, ALLEGRO_BITMAP*);  LoadBMP(ICON_FILE));
 
     /* enable or disable the mouse cursor */
     if (settings.mouseOptions.enabled) {
-        al_show_mouse_cursor(sa_disp);
+        if (!al_install_mouse())
+            goto fatal;
 
-        cursors[0] = NULL;
-        cursors[1] = screenInitCursor(w_xpm);
-        cursors[2] = screenInitCursor(n_xpm);
-        cursors[3] = screenInitCursor(e_xpm);
-        cursors[4] = screenInitCursor(s_xpm);
+        al_register_event_source(sa_queue, al_get_mouse_event_source());
+
+        // Create a temporary bitmap to build the cursor in.
+        al_set_new_bitmap_flags(ALLEGRO_VIDEO_BITMAP);
+        ALLEGRO_BITMAP* bm = al_create_bitmap(CURSORSIZE, CURSORSIZE);
+        if (bm) {
+            cursors[0] = NULL;
+            cursors[1] = screenInitCursor(bm, w_xpm);
+            cursors[2] = screenInitCursor(bm, n_xpm);
+            cursors[3] = screenInitCursor(bm, e_xpm);
+            cursors[4] = screenInitCursor(bm, s_xpm);
+
+            al_destroy_bitmap(bm);
+            al_show_mouse_cursor(sa_disp);
+        }
     } else {
         al_hide_mouse_cursor(sa_disp);
     }
@@ -144,15 +142,8 @@ void screenDelete_sys() {
     al_destroy_timer(sa_refreshTimer);
     sa_refreshTimer = NULL;
 
-    /*
     for( int i = 1; i < 5; ++i )
         al_destroy_mouse_cursor(cursors[i]);
-    */
-
-#ifdef FBUF
-    al_destroy_bitmap(sa_frameBuffer);
-    sa_frameBuffer = NULL;
-#endif
 
     al_destroy_display(sa_disp);
     sa_disp = NULL;
@@ -202,12 +193,9 @@ void updateDisplay(int x, int y, int w, int h) {
         h = screenImage->h;
     }
 
-#ifndef FBUF
-    ALLEGRO_BITMAP* bbmap = al_get_backbuffer(sa_disp);
-#define sa_frameBuffer  bbmap
-#endif
+    ALLEGRO_BITMAP* backBuf = al_get_backbuffer(sa_disp);
 
-    lr = al_lock_bitmap(sa_frameBuffer, ALLEGRO_PIXEL_FORMAT_ANY,
+    lr = al_lock_bitmap(backBuf, ALLEGRO_PIXEL_FORMAT_ANY,
                         ALLEGRO_LOCK_WRITEONLY);
     assert(lr);
 #if 0
@@ -228,14 +216,8 @@ void updateDisplay(int x, int y, int w, int h) {
         drow += dpitch;
         srow += screenImage->w;
     }
-    al_unlock_bitmap(sa_frameBuffer);
+    al_unlock_bitmap(backBuf);
 
-#ifdef FBUF
-    if (w)
-        al_draw_bitmap_region(sa_frameBuffer, x, y, w, h, x, y, 0);
-    else
-        al_draw_bitmap(sa_frameBuffer, 0, 0, 0);
-#endif
     al_flip_display();
 
     CPU_END("ut:")

@@ -89,12 +89,12 @@ static void handleActiveEvent(const ALLEGRO_EVENT* event, updateScreenCallback u
 */
 
 static void handleMouseButtonDownEvent(const ALLEGRO_EVENT* event, Controller *controller, updateScreenCallback updateScreen) {
+    static const uint8_t buttonMap[4] = { 0, 0, 2, 1 };
+
     if (!settings.mouseOptions.enabled)
         return;
 
-    int button = event->mouse.button - 1;
-    if (button > 2)
-        button = 0;
+    int button = buttonMap[event->mouse.button & 3];
     MouseArea *area = eventHandler->mouseAreaForPoint(event->mouse.x, event->mouse.y);
     if (!area || area->command[button] == 0)
         return;
