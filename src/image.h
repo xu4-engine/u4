@@ -19,8 +19,6 @@ typedef struct CGLayer *CGLayerRef;
 using std::string;
 
 
-#define DARK_GRAY_HALO RGBA(14,15,16,255)
-
 struct RGBA {
     RGBA(uint8_t R, uint8_t G, uint8_t B, uint8_t A) : r(R), g(G), b(B), a(A) {}
     RGBA() : r(0), g(0), b(0), a(255) {}
@@ -78,13 +76,8 @@ public:
     void alphaOff();
 
 
-    /* Will clear the image to the background color, and set the internal backgroundColor variable */
-    void initializeToBackgroundColor(RGBA backgroundColor = DARK_GRAY_HALO);
-    /* Will make the pixels that match the background color disappear, with a blur halo */
-    void makeBackgroundColorTransparent(int haloSize = 0,  int shadowOpacity = 255);
-
-
-    //void finalizeAlphaSurface(RGBA * key = NULL);
+    /* Will make the pixels that match the color disappear, with a blur halo */
+    void makeColorTransparent(const RGBA& bgColor, int haloSize = 0, int shadowOpacity = 2);
 
     /* writing to image */
 
@@ -149,7 +142,6 @@ public:
 
 private:
     unsigned int w, h;
-    RGBA backgroundColor;
     uint32_t* pixels;
 #ifdef IOS
     mutable char *cachedImageData;

@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * dungeonview.h
  */
 
 #ifndef DUNGEONVIEW_H
@@ -7,15 +7,13 @@
 
 #include "context.h"
 #include "debug.h"
+#include "direction.h"
 #include "dungeon.h"
+#include "location.h"
 #include "savegame.h"
 #include "tileset.h"
-
-#include "direction.h"
 #include "tileview.h"
-
 #include "types.h"
-#include "location.h"
 
 typedef enum {
     DNGGRAPHIC_NONE,
@@ -33,21 +31,17 @@ DungeonGraphicType dungeonViewTilesToGraphic(const std::vector<MapTile> &tiles);
 
 #define DungeonViewer (*DungeonView::getInstance())
 
-/**
- * @todo
- * <ul>
- *      <li>move the rest of the dungeon drawing logic here from screen_sdl</li>
- * </ul>
- */
 class DungeonView : public TileView {
 private:
     DungeonView(int x, int y, int columns, int rows);
+    void drawInDungeon(Tile *tile, int x_offset, int distance, Direction orientation, bool tiled);
+
     bool screen3dDungeonViewEnabled;
+
 public:
     static DungeonView * instance;
     static DungeonView * getInstance();
 
-    void drawInDungeon(Tile *tile, int x_offset, int distance, Direction orientation, bool tiled);
     int graphicIndex(int xoffset, int distance, Direction orientation, DungeonGraphicType type);
     void drawTile(Tile *tile, int x_offset, int distance, Direction orientation);
     void drawWall(int xoffset, int distance, Direction orientation, DungeonGraphicType type);
@@ -59,7 +53,5 @@ public:
 
     std::vector<MapTile> getTiles(int fwd, int side);
 };
-
-
 
 #endif /* DUNGEONVIEW_H */

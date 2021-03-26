@@ -83,7 +83,6 @@ Image *Image::duplicate(const Image *image) {
     Image *im = create(image->w, image->h);
     if (im) {
         image->drawOn(im, 0, 0);
-        im->backgroundColor = image->backgroundColor;
     }
     return im;
 }
@@ -274,12 +273,6 @@ bool Image::getTransparentIndex(unsigned int &index) const {
 #endif
 }
 
-void Image::initializeToBackgroundColor(RGBA bgColor)
-{
-    backgroundColor = bgColor;
-    fillRect(0, 0, w, h, bgColor.r, bgColor.g, bgColor.b, bgColor.a);
-}
-
 bool Image::isAlphaOn() const
 {
 #if 0
@@ -313,9 +306,9 @@ void Image::putPixel(int x, int y, int r, int g, int b, int a) {
     pixels[ y*w + x ] = *((uint32_t*) &col);
 }
 
-void Image::makeBackgroundColorTransparent(int haloSize, int shadowOpacity)
+void Image::makeColorTransparent(const RGBA& bgColor, int haloSize, int shadowOpacity)
 {
-    uint32_t icol = *((uint32_t*) &backgroundColor);
+    uint32_t icol = *((uint32_t*) &bgColor);
     performTransparencyHack(icol, 1, 0, haloSize,shadowOpacity);
 }
 
