@@ -213,13 +213,17 @@ void EventHandler::sleep(unsigned int msec) {
 }
 
 void EventHandler::run() {
+    static int recursion = 0;
     ALLEGRO_EVENT event;
     bool redraw = false;
 
     if (updateScreen)
         (*updateScreen)();
     screenSwapBuffers();
-    al_start_timer(sa_refreshTimer);
+
+    if (! recursion)
+        al_start_timer(sa_refreshTimer);
+    ++recursion;
 
     while (!ended && !controllerDone) {
         do {
@@ -265,7 +269,9 @@ void EventHandler::run() {
         }
     }
 
-    al_stop_timer(sa_refreshTimer);
+    --recursion;
+    if (! recursion)
+        al_stop_timer(sa_refreshTimer);
 }
 
 void EventHandler::setScreenUpdate(void (*updateFunc)(void)) {
