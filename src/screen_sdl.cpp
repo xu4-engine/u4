@@ -19,10 +19,14 @@
 #endif
 
 extern bool verbose;
+extern Image* screenImage;
+extern unsigned int refresh_callback(unsigned int, void*);
 
 bool screenFormatIsABGR = true;
 
-SDL_Cursor *cursors[5];
+static SDL_Cursor *cursors[5];
+static SDL_TimerID refreshTimer = NULL;
+static int frameDuration = 0;
 
 SDL_Cursor *screenInitCursor(const char * const xpm[]);
 
@@ -45,12 +49,9 @@ void u4_SDL_QuitSubSystem(Uint32 flags) {
         SDL_QuitSubSystem(flags);
 }
 
-void screenRefreshThreadInit();
-void screenRefreshThreadEnd();
-
 void screenInit_sys() {
     /* start SDL */
-    if (u4_SDL_InitSubSystem(SDL_INIT_VIDEO) < 0)
+    if (u4_SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_TIMER) < 0)
         errorFatal("unable to init SDL: %s", SDL_GetError());
     SDL_EnableUNICODE(1);
     SDL_SetGamma(settings.gamma / 100.0f, settings.gamma / 100.0f, settings.gamma / 100.0f);
@@ -91,16 +92,20 @@ void screenInit_sys() {
 #endif
     }
 
-    screenRefreshThreadInit();
+    frameDuration = 1000 / settings.screenAnimationFramesPerSecond;
+    refreshTimer = SDL_AddTimer(frameDuration, &refresh_callback, NULL);
 }
 
 void screenDelete_sys() {
-    screenRefreshThreadEnd();
+    SDL_RemoveTimer(refreshTimer);
+    refreshTimer = NULL;
+
     SDL_FreeCursor(cursors[1]);
     SDL_FreeCursor(cursors[2]);
     SDL_FreeCursor(cursors[3]);
     SDL_FreeCursor(cursors[4]);
-    u4_SDL_QuitSubSystem(SDL_INIT_VIDEO);
+
+    u4_SDL_QuitSubSystem(SDL_INIT_VIDEO | SDL_INIT_TIMER);
 }
 
 /**
@@ -205,14 +210,6 @@ int screenLoadImageCga(Image **image, int width, int height, U4FILE *file, Compr
 }
 #endif
 
-/**
- * Force a redraw.
- */
-
-extern Image* screenImage;
-static SDL_mutex *screenLockMutex = NULL;
-static int frameDuration = 0;
-
 /*
  * Show screenImage on the display.
  * If w is zero then the entire display is updated.
@@ -255,9 +252,7 @@ void updateDisplay( int x, int y, int w, int h ) {
         }
         SDL_UnlockSurface(ss);
 
-        SDL_mutexP(screenLockMutex);
         SDL_UpdateRect(ss, 0, 0, 0, 0);
-        SDL_mutexV(screenLockMutex);
     }
 }
 
@@ -272,41 +267,6 @@ void screenSwapBuffers() {
 
 void screenWait(int numberOfAnimationFrames) {
     SDL_Delay(numberOfAnimationFrames * frameDuration);
-}
-
-bool continueScreenRefresh = true;
-SDL_Thread *screenRefreshThread = NULL;
-
-int screenRefreshThreadFunction(void *unused) {
-    while (continueScreenRefresh) {
-        SDL_Delay(frameDuration);
-        screenSwapBuffers();
-    }
-    return 0;
-}
-
-void screenRefreshThreadInit() {
-    screenLockMutex = SDL_CreateMutex();
-
-    frameDuration = 1000 / settings.screenAnimationFramesPerSecond;
-
-    continueScreenRefresh = true;
-    if (screenRefreshThread) {
-        errorWarning("Screen refresh thread already exists.");
-        return;
-    }
-
-    screenRefreshThread = SDL_CreateThread(screenRefreshThreadFunction, NULL);
-    if (!screenRefreshThread) {
-        errorWarning(SDL_GetError());
-        return;
-    }
-}
-
-void screenRefreshThreadEnd() {
-    continueScreenRefresh = false;
-    SDL_WaitThread(screenRefreshThread, NULL);
-    screenRefreshThread = NULL;
 }
 
 /**
