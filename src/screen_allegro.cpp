@@ -15,7 +15,6 @@
 #include "intro.h"
 #include "savegame.h"
 #include "settings.h"
-#include "scale.h"
 #include "screen.h"
 #include "tileanim.h"
 #include "tileset.h"
@@ -41,7 +40,6 @@ ALLEGRO_TIMER* sa_refreshTimer = NULL;
 bool screenFormatIsABGR = true;
 
 static ALLEGRO_MOUSE_CURSOR* cursors[5];
-static Scaler filterScaler;
 static int frameDuration = 0;
 
 
@@ -139,10 +137,6 @@ void screenInit_sys() {
     } else {
         al_hide_mouse_cursor(sa_disp);
     }
-
-    filterScaler = scalerGet(settings.filter);
-    if (!filterScaler)
-        errorFatal("%s is not a valid filter", settings.filter.c_str());
 
     sa_refreshTimer = al_create_timer(1.0 / settings.screenAnimationFramesPerSecond);
 
@@ -272,90 +266,6 @@ void screenWait(int numberOfAnimationFrames) {
     screenSwapBuffers();
     al_rest(0.001 * (numberOfAnimationFrames * frameDuration));
     al_start_timer(sa_refreshTimer);
-}
-
-/**
- * Scale an image up.  The resulting image will be scale * the
- * original dimensions.  The original image is no longer deleted.
- * n is the number of tiles in the image; each tile is filtered
- * seperately. filter determines whether or not to filter the
- * resulting image.
- */
-Image *screenScale(Image *src, int scale, int n, int filter) {
-    Image *dest = NULL;
-    bool isTransparent;
-    unsigned int transparentIndex;
-    bool alpha = src->isAlphaOn();
-
-    if (n == 0)
-        n = 1;
-
-    isTransparent = src->getTransparentIndex(transparentIndex);
-    src->alphaOff();
-
-    while (filter && filterScaler && (scale % 2 == 0)) {
-        dest = (*filterScaler)(src, 2, n);
-        src = dest;
-        scale /= 2;
-    }
-    if (scale == 3 && scaler3x(settings.filter)) {
-        dest = (*filterScaler)(src, 3, n);
-        src = dest;
-        scale /= 3;
-    }
-
-    if (scale != 1)
-        dest = (*scalerGet("point"))(src, scale, n);
-
-    if (!dest)
-        dest = Image::duplicate(src);
-
-    if (isTransparent)
-        dest->setTransparentIndex(transparentIndex);
-
-    if (alpha)
-        src->alphaOn();
-
-    return dest;
-}
-
-/**
- * Scale an image down.  The resulting image will be 1/scale * the
- * original dimensions.  The original image is no longer deleted.
- */
-Image *screenScaleDown(Image *src, int scale) {
-    int x, y;
-    Image *dest;
-    bool isTransparent;
-    unsigned int transparentIndex;
-    bool alpha = src->isAlphaOn();
-
-    isTransparent = src->getTransparentIndex(transparentIndex);
-
-    src->alphaOff();
-
-    dest = Image::create(src->width() / scale, src->height() / scale, src->isIndexed());
-    if (!dest)
-        return NULL;
-
-    if (dest->isIndexed())
-        dest->setPaletteFromImage(src);
-
-    for (y = 0; y < src->height(); y+=scale) {
-        for (x = 0; x < src->width(); x+=scale) {
-            unsigned int index;
-            src->getPixelIndex(x, y, index);
-            dest->putPixelIndex(x / scale, y / scale, index);
-        }
-    }
-
-    if (isTransparent)
-        dest->setTransparentIndex(transparentIndex);
-
-    if (alpha)
-        src->alphaOn();
-
-    return dest;
 }
 
 void screenSetMouseCursor(MouseCursor cursor) {
