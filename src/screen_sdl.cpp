@@ -1,17 +1,16 @@
 /*
- * $Id$
+ * screen_sdl.cpp
  */
 
-#include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
-
-#include <algorithm>
-#include <functional>
-#include <vector>
-#include <map>
 #include <SDL.h>
 
 #include "config.h"
 #include "context.h"
+#include "debug.h"
+#include "error.h"
+#include "image.h"
+#include "settings.h"
+#include "screen.h"
 
 #if defined(MACOSX)
 #include "macosx/cursors.h"
@@ -19,31 +18,13 @@
 #include "cursors.h"
 #endif
 
-#include "debug.h"
-#include "dungeonview.h"
-#include "error.h"
-#include "event.h"
-#include "image.h"
-#include "imagemgr.h"
-#include "intro.h"
-#include "savegame.h"
-#include "settings.h"
-#include "screen.h"
-#include "tileanim.h"
-#include "tileset.h"
-#include "u4.h"
-#include "u4file.h"
-#include "utils.h"
-
-using std::vector;
+extern bool verbose;
 
 bool screenFormatIsABGR = true;
 
 SDL_Cursor *cursors[5];
 
 SDL_Cursor *screenInitCursor(const char * const xpm[]);
-
-extern bool verbose;
 
 
 int u4_SDL_InitSubSystem(Uint32 flags) {
@@ -297,7 +278,6 @@ bool continueScreenRefresh = true;
 SDL_Thread *screenRefreshThread = NULL;
 
 int screenRefreshThreadFunction(void *unused) {
-
     while (continueScreenRefresh) {
         SDL_Delay(frameDuration);
         screenSwapBuffers();
