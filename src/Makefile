@@ -8,8 +8,15 @@ libdir=$(prefix)/lib
 datadir=$(prefix)/share
 
 UI=sdl
+#UI=allegro
+
+ifeq ($(UI), sdl)
 UILIBS=$(shell sdl-config --libs) -lSDL_mixer
 UIFLAGS=$(shell sdl-config --cflags)
+else
+UILIBS=-lallegro_acodec -lallegro_audio -lallegro
+UIFLAGS=
+endif
 
 FEATURES=-DHAVE_BACKTRACE=1 -DHAVE_VARIADIC_MACROS=1
 DEBUGCXXFLAGS=-ggdb1 -rdynamic -g -O0 -fno-inline -fno-eliminate-unused-debug-types -gstabs -g3
