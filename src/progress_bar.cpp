@@ -20,7 +20,7 @@ ProgressBar::ProgressBar(int x, int y, int width, int height, int _min, int _max
 ProgressBar& ProgressBar::operator++()  { current++; draw(); return *this; }
 ProgressBar& ProgressBar::operator--()  { current--; draw(); return *this; }
 void ProgressBar::draw() {
-    Image *bar = Image::create(SCALED(width), SCALED(height), false);
+    Image *bar = Image::create(SCALED(width), SCALED(height));
     int pos = static_cast<int>((double(current - min) / double(max - min)) * (width - (bwidth * 2)));
 
     // border color

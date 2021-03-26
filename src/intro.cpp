@@ -1593,9 +1593,7 @@ void IntroController::getTitleSourceData()
             // create a place to store the source image
             titles[i].srcImage = Image::create(
                 titles[i].rw * info->prescale,
-                titles[i].rh * info->prescale, false);
-            if (titles[i].srcImage->isIndexed())
-                titles[i].srcImage->setPaletteFromImage(info->image);
+                titles[i].rh * info->prescale);
 
             // get the source image
             info->image->drawSubRectOn(
@@ -1707,16 +1705,14 @@ void IntroController::getTitleSourceData()
         // create the initial animation frame
         titles[i].destImage = Image::create(
             2 + (titles[i].prescaled ? SCALED(titles[i].rw) : titles[i].rw) * info->prescale ,
-            2 + (titles[i].prescaled ? SCALED(titles[i].rh) : titles[i].rh) * info->prescale,
-            false);
+            2 + (titles[i].prescaled ? SCALED(titles[i].rh) : titles[i].rh) * info->prescale);
         titles[i].destImage->fill(RGBA(0, 0, 0, 255));
     }
 
     // scale the original image now
     Image *scaled = screenScale(info->image,
                                 settings.scale / info->prescale,
-                                info->image->isIndexed(),
-                                1);
+                                1, 1);
     delete info->image;
     info->image = scaled;
 }

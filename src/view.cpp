@@ -77,7 +77,7 @@ void View::unhighlight() {
 void View::drawHighlighted() {
     Image *screen = imageMgr->get("screen")->image;
 
-    Image *tmp = Image::createMem(SCALED(highlightW), SCALED(highlightH), false);
+    Image *tmp = Image::create(SCALED(highlightW), SCALED(highlightH));
     if (!tmp)
         return;
 

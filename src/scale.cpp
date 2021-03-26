@@ -42,12 +42,9 @@ Image *scalePoint(Image *src, int scale, int n) {
     int x, y, i, j;
     Image *dest;
 
-    dest = Image::create(src->width() * scale, src->height() * scale, src->isIndexed());
+    dest = Image::create(src->width() * scale, src->height() * scale);
     if (!dest)
         return NULL;
-
-    if (dest->isIndexed())
-        dest->setPaletteFromImage(src);
 
     for (y = 0; y < src->height(); y++) {
         for (x = 0; x < src->width(); x++) {
@@ -76,7 +73,7 @@ Image *scale2xBilinear(Image *src, int scale, int n) {
     /* this scaler works only with images scaled by 2x */
     ASSERT(scale == 2, "invalid scale: %d", scale);
 
-    dest = Image::create(src->width() * scale, src->height() * scale, false);
+    dest = Image::create(src->width() * scale, src->height() * scale);
     if (!dest)
         return NULL;
 
@@ -174,7 +171,7 @@ Image *scale2xSaI(Image *src, int scale, int N) {
     /* this scaler works only with images scaled by 2x */
     ASSERT(scale == 2, "invalid scale: %d", scale);
 
-    dest = Image::create(src->width() * scale, src->height() * scale, false);
+    dest = Image::create(src->width() * scale, src->height() * scale);
     if (!dest)
         return NULL;
 
@@ -347,12 +344,9 @@ Image *scaleScale2x(Image *src, int scale, int n) {
     /* this scaler works only with images scaled by 2x or 3x */
     ASSERT(scale == 2 || scale == 3, "invalid scale: %d", scale);
 
-    dest = Image::create(src->width() * scale, src->height() * scale, src->isIndexed());
+    dest = Image::create(src->width() * scale, src->height() * scale);
     if (!dest)
         return NULL;
-
-    if (dest->isIndexed())
-        dest->setPaletteFromImage(src);
 
     /*
      * Each pixel in the source image is translated into four (or

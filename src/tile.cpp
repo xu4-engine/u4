@@ -150,7 +150,7 @@ void Tile::loadImage() {
         if (info) {
             w = (subimage ? subimage->width * scale : info->width * scale / info->prescale);
             h = (subimage ? (subimage->height * scale) / frames : (info->height * scale / info->prescale) / frames);
-            image = Image::create(w, h * frames, false);
+            image = Image::create(w, h * frames);
 
             // NOTE: Blending should be off by default, but TileView::drawTile
             // is loading images on the fly from inside the draw loop.

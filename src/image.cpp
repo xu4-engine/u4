@@ -42,12 +42,9 @@ void Image::enableBlend(int on) {
 Image::Image() {}
 
 /**
- * Creates a new image in video card memory.
- * Scale is stored to allow drawing using U4 (320x200) coordinates, regardless
- * of the actual image scale.
- * Indexed is true for palette based images, or false for RGB images.
+ * Creates a new RGBA image.
  */
-Image *Image::create(int w, int h, bool indexed) {
+Image *Image::create(int w, int h) {
     Image *im = new Image;
     im->pixels = new uint32_t[w * h];
     if (!im->pixels) {
@@ -57,13 +54,6 @@ Image *Image::create(int w, int h, bool indexed) {
     im->w = w;
     im->h = h;
     return im;
-}
-
-/**
- * Creates a new image in main system memory.
- */
-Image *Image::createMem(int w, int h, bool indexed) {
-    return create(w, h, indexed);
 }
 
 // Third copy of screen image pointer.  TODO: Consolidate these.

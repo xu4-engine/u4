@@ -1118,7 +1118,7 @@ void screenShake(int iterations) {
         // specify the size of the offset, and create a buffer
         // to store the offset row plus 1
         shakeOffset = 1;
-        bottom = Image::create(SCALED(320), SCALED(shakeOffset+1), false);
+        bottom = Image::create(SCALED(320), SCALED(shakeOffset+1));
 
         for (i = 0; i < iterations; i++) {
             // store the bottom row
@@ -1353,12 +1353,9 @@ Image *screenScaleDown(Image *src, int scale) {
     int x, y;
     Image *dest;
 
-    dest = Image::create(src->width() / scale, src->height() / scale, src->isIndexed());
+    dest = Image::create(src->width() / scale, src->height() / scale);
     if (!dest)
         return NULL;
-
-    if (dest->isIndexed())
-        dest->setPaletteFromImage(src);
 
     for (y = 0; y < src->height(); y+=scale) {
         for (x = 0; x < src->width(); x+=scale) {

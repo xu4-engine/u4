@@ -49,8 +49,7 @@ struct SubImage {
 class Image {
 public:
     static void enableBlend(int on);
-    static Image *create(int w, int h, bool indexed = false);
-    static Image *createMem(int w, int h, bool indexed);
+    static Image *create(int w, int h);
     static Image *createScreenImage();
     static Image *duplicate(const Image *image);
     ~Image();
@@ -139,7 +138,6 @@ public:
 
     int width() const { return w; }
     int height() const { return h; }
-    bool isIndexed() const { return false; }
     void save(const string &filename);
 #ifdef IOS
     CGLayerRef getSurface() { return surface; }
