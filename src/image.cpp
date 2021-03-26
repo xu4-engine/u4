@@ -13,6 +13,23 @@
 
 //#define REPORT_PAL
 
+#define CHANNEL_REMAP
+#ifdef CHANNEL_REMAP
+extern bool screenFormatIsABGR;
+
+static void screenColor(RGBA* col, int r, int g, int b, int a) {
+    if (screenFormatIsABGR) {
+        col->r = r;
+        col->b = b;
+    } else {
+        col->r = b;
+        col->b = r;
+    }
+    col->g = g;
+    col->a = a;
+}
+#endif
+
 static int imageBlending = 0;
 
 /**
@@ -399,9 +416,21 @@ void Image::putPixelIndex(int x, int y, uint32_t index) {
  * Fills entire image with a given color.
  */
 void Image::fill(const RGBA& col) {
-    uint32_t icol = *((uint32_t*) &col);
+    uint32_t icol;
     uint32_t* dp = pixels;
     uint32_t* dend = pixels + w * h;
+
+#ifdef CHANNEL_REMAP
+    RGBA swap;
+    if (screenFormatIsABGR) {
+        screenColor(&swap, col.r, col.g, col.b, col.a);
+        icol = *((uint32_t*) &swap);
+    } else
+        icol = *((uint32_t*) &col);
+#else
+    icol = *((uint32_t*) &col);
+#endif
+
     while (dp != dend)
         *dp++ = icol;
 }
@@ -410,12 +439,22 @@ void Image::fill(const RGBA& col) {
  * Fills a rectangle in the image with a given color.
  */
 void Image::fillRect(int x, int y, int rw, int rh, int r, int g, int b, int a) {
-    RGBA col(r, g, b, a);
-    uint32_t icol = *((uint32_t*) &col);
+    RGBA col;
+    uint32_t icol;
     uint32_t* dp;
     uint32_t* dend;
     uint32_t* drow = pixels + w * y + x;
     int blitW, blitH;
+
+#ifdef CHANNEL_REMAP
+    screenColor(&col, r, g, b, a);
+#else
+    col.r = r;
+    col.g = g;
+    col.b = b;
+    col.a = a;
+#endif
+    icol = *((uint32_t*) &col);
 
     blitW = rw;
     if ((blitW + x) > int(w))
