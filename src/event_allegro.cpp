@@ -11,6 +11,8 @@
 #include "screen.h"
 #include "settings.h"
 
+extern uint32_t getTicks();
+
 extern bool verbose;
 extern int eventTimerGranularity;
 extern ALLEGRO_EVENT_QUEUE* sa_queue;
@@ -157,20 +159,19 @@ static void handleKeyDownEvent(const ALLEGRO_EVENT* event, Controller *controlle
  * Delays program execution for the specified number of milliseconds.
  * This doesn't actually stop events, but it stops the user from interacting
  * While some important event happens (e.g., getting hit by a cannon ball or a spell effect).
+ *
+ * This method is not expected to handle msec values less than one game frame.
  */
 void EventHandler::sleep(unsigned int msec) {
-    // Make this static so that all instance stop. (e.g., sleep calling sleep).
-    static bool stopUserInput = true;
     ALLEGRO_EVENT event;
+    uint32_t endTime = getTicks() + msec;
+    bool sleeping = true;
     bool redraw = false;
 
-    // Start a timer for the amount of time we want to sleep from user input.
-    ALLEGRO_TIMER* sleepTimer = al_create_timer(double(msec) * 0.001);
-    al_register_event_source(sa_queue, al_get_timer_event_source(sleepTimer));
-    al_start_timer(sleepTimer);
+    // Using getTicks() rather than an ALLEGRO_TIMER to avoid the overhead
+    // to create/destroy & regiseter/unregister it.
 
-    stopUserInput = true;
-    while (stopUserInput) {
+    while (sleeping) {
         do {
             al_wait_for_event(sa_queue, &event);
             switch (event.type) {
@@ -187,18 +188,17 @@ void EventHandler::sleep(unsigned int msec) {
                 break;
             */
             case ALLEGRO_EVENT_TIMER:
-                if (event.timer.source == sleepTimer) {
-                    // NOTE: This will terminate all nested sleep calls.
-                    stopUserInput = false;
-                } else if (event.timer.source == sa_refreshTimer) {
+                if (event.timer.source == sa_refreshTimer) {
                     redraw = true;
                 } else {
                     eventHandler->getTimer()->tick();
                 }
+                if (getTicks() >= endTime)
+                    sleeping = false;
                 break;
             case ALLEGRO_EVENT_DISPLAY_CLOSE:
                 EventHandler::quitGame();
-                stopUserInput = false;
+                sleeping = false;
                 break;
             }
         } while (! al_is_event_queue_empty(sa_queue));
@@ -208,8 +208,6 @@ void EventHandler::sleep(unsigned int msec) {
             screenSwapBuffers();
         }
     }
-
-    al_destroy_timer(sleepTimer);   // Automatically unregisters.
 }
 
 void EventHandler::run() {

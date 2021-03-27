@@ -18,13 +18,13 @@
 extern bool verbose, quit;
 extern int eventTimerGranularity;
 
+extern uint32_t getTicks();
 extern int u4_SDL_InitSubSystem(Uint32 flags);
 extern void u4_SDL_QuitSubSystem(Uint32 flags);
 
 enum UserEventCode {
     UC_ScreenRefresh,
-    UC_TimedEventMgr,
-    UC_Sleep
+    UC_TimedEventMgr
 };
 
 unsigned int refresh_callback(unsigned int interval, void *param) {
@@ -208,30 +208,20 @@ static void handleKeyDownEvent(const SDL_Event &event, Controller *controller, u
 
 }
 
-static Uint32 sleepTimerCallback(Uint32 interval, void *) {
-    SDL_Event stopEvent;
-    stopEvent.type = SDL_USEREVENT;
-    stopEvent.user.code = UC_Sleep;
-    stopEvent.user.data1 = 0;
-    stopEvent.user.data2 = 0;
-    SDL_PushEvent(&stopEvent);
-    return 0;
-}
-
 /**
  * Delays program execution for the specified number of milliseconds.
  * This doesn't actually stop events, but it stops the user from interacting
  * While some important event happens (e.g., getting hit by a cannon ball or a spell effect).
+ *
+ * This method is not expected to handle msec values less than one game frame.
  */
-void EventHandler::sleep(unsigned int usec) {
-    // Start a timer for the amount of time we want to sleep from user input.
-    static bool stopUserInput = true; // Make this static so that all instance stop. (e.g., sleep calling sleep).
+void EventHandler::sleep(unsigned int msec) {
     SDL_Event event;
-    SDL_TimerID sleepingTimer = SDL_AddTimer(usec, sleepTimerCallback, 0);
+    uint32_t endTime = getTicks() + msec;
+    bool sleeping = true;
     bool redraw = false;
 
-    stopUserInput = true;
-    while (stopUserInput) {
+    while (sleeping) {
         do {
             SDL_WaitEvent(&event);
             switch (event.type) {
@@ -254,13 +244,13 @@ void EventHandler::sleep(unsigned int usec) {
                     redraw = true;
                 } else if (event.user.code == UC_TimedEventMgr) {
                     eventHandler->getTimer()->tick();
-                } else if (event.user.code == UC_Sleep) {
-                    SDL_RemoveTimer(sleepingTimer);
-                    stopUserInput = false;
                 }
+                if (getTicks() >= endTime)
+                    sleeping = false;
                 break;
             case SDL_QUIT:
                 EventHandler::quitGame();
+                sleeping = false;
                 break;
             }
         } while (SDL_PollEvent(NULL));
