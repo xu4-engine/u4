@@ -16,6 +16,7 @@
 #include "screen.h"
 #include "settings.h"
 #include "textview.h"
+#include "xu4.h"
 
 using namespace std;
 
@@ -41,7 +42,7 @@ EventHandler *EventHandler::getInstance() {
  * Waits a given number of milliseconds before continuing
  */
 void EventHandler::wait_msecs(unsigned int msecs) {
-    int msecs_per_cycle = (1000 / settings.gameCyclesPerSecond);
+    int msecs_per_cycle = (1000 / xu4.settings->gameCyclesPerSecond);
     int cycles = msecs / msecs_per_cycle;
 
     if (cycles > 0) {

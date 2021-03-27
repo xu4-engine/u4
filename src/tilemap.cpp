@@ -16,8 +16,6 @@
 
 using std::vector;
 
-Debug dbg("debug/tilemap.txt", "TileMap");
-
 /**
  * Static variables
  */
@@ -27,6 +25,7 @@ TileMap::TileIndexMapMap TileMap::tileMaps;
  * Load all tilemaps from the specified xml file
  */
 void TileMap::loadAll() {
+    Debug dbg("debug/tilemap.txt", "TileMap");
     const Config *config = Config::getInstance();
     vector<ConfigElement> conf;
 
@@ -74,7 +73,7 @@ void TileMap::load(const ConfigElement &tilemapConf) {
     TileMap *tm = new TileMap;
 
     string name = tilemapConf.getString("name");
-    TRACE_LOCAL(dbg, string("Tilemap name is: ") + name);
+    //TRACE_LOCAL(dbg, string("Tilemap name is: ") + name);
 
     string tileset = tilemapConf.getString("tileset");
 
@@ -90,7 +89,7 @@ void TileMap::load(const ConfigElement &tilemapConf) {
         int frames = 1;
         string tile = i->getString("tile");
 
-        TRACE_LOCAL(dbg, string("\tLoading '") + tile + "'");
+        //TRACE_LOCAL(dbg, string("\tLoading '") + tile + "'");
 
         /* find the tile this references */
         Tile *t = Tileset::get(tileset)->getByName(tile);

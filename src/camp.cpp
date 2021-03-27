@@ -29,6 +29,7 @@
 #include "stats.h"
 #include "tileset.h"
 #include "utils.h"
+#include "xu4.h"
 
 
 #define CAMP_FADE_OUT_TIME  1000
@@ -72,12 +73,12 @@ void CampController::begin() {
     screenMessage("Resting...\n");
     screenDisableCursor();
 
-    EventHandler::wait_msecs(settings.campTime * 1000);
+    EventHandler::wait_msecs(xu4.settings->campTime * 1000);
 
     screenEnableCursor();
 
     /* Is the party ambushed during their rest? */
-    if (settings.campingAlwaysCombat || (xu4_random(8) == 0)) {
+    if (xu4.settings->campingAlwaysCombat || (xu4_random(8) == 0)) {
         const Creature *m = creatureMgr->randomAmbushing();
 
         musicPlayLocale();
@@ -147,7 +148,7 @@ void InnController::begin() {
     gameUpdateScreen();
 
     /* in the original, the vendor music plays straight through sleeping */
-    if (settings.enhancements)
+    if (xu4.settings->enhancements)
         musicFadeOut(INN_FADE_OUT_TIME); /* Fade volume out to ease into rest */
 
     EventHandler::wait_msecs(INN_FADE_OUT_TIME);
@@ -158,7 +159,7 @@ void InnController::begin() {
 
     screenDisableCursor();
 
-    EventHandler::wait_msecs(settings.innTime * 1000);
+    EventHandler::wait_msecs(xu4.settings->innTime * 1000);
 
     screenEnableCursor();
 
@@ -246,7 +247,7 @@ void InnController::maybeMeetIsaac()
 
 void InnController::maybeAmbush()
 {
-    if (settings.innAlwaysCombat || (xu4_random(8) == 0)) {
+    if (xu4.settings->innAlwaysCombat || (xu4_random(8) == 0)) {
         MapId mapid;
         Creature *creature;
         bool showMessage = true;

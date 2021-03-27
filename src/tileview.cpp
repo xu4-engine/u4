@@ -15,6 +15,7 @@
 #include "tileview.h"
 #include "u4.h"
 #include "error.h"
+#include "xu4.h"
 
 using std::vector;
 

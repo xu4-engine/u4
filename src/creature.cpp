@@ -22,6 +22,7 @@
 #include "textcolor.h"  /* required to change the color of screen message text */
 #include "tileset.h"
 #include "utils.h"
+#include "xu4.h"
 
 CreatureMgr *CreatureMgr::instance = NULL;
 
@@ -136,9 +137,9 @@ void Creature::load(const ConfigElement &conf) {
     /* get the base hp */
     basehp = conf.getInt("basehp", 0);
     /* adjust basehp according to battle difficulty setting */
-    if (settings.battleDiff == "Hard")
+    if (xu4.settings->battleDiff == "Hard")
         basehp *= 2;
-    if (settings.battleDiff == "Expert")
+    if (xu4.settings->battleDiff == "Expert")
         basehp *= 4;
 
     /* get the camouflaged tile */
@@ -694,7 +695,8 @@ bool Creature::divide() {
     Direction d = dirRandomDir(dirmask);
 
     /* this is a game enhancement, make sure it's turned on! */
-    if (!settings.enhancements || !settings.enhancementsOptions.slimeDivides)
+    if (!xu4.settings->enhancements ||
+        !xu4.settings->enhancementsOptions.slimeDivides)
         return false;
 
     /* make sure there's a place to put the divided creature! */
@@ -720,7 +722,8 @@ bool Creature::spawnOnDeath() {
     Map *map = getMap();
 
     /* this is a game enhancement, make sure it's turned on! */
-    if (!settings.enhancements || !settings.enhancementsOptions.gazerSpawnsInsects)
+    if (!xu4.settings->enhancements ||
+        !xu4.settings->enhancementsOptions.gazerSpawnsInsects)
         return false;
 
     /* make sure there's a place to put the divided creature! */

@@ -284,6 +284,4 @@ private:
     bool bSkipTitles;
 };
 
-extern IntroController *intro;
-
 #endif

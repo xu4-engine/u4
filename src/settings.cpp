@@ -29,11 +29,6 @@
 
 using namespace std;
 
-/*
- * Initialize static members
- */
-Settings *Settings::instance = NULL;
-
 #if defined(_WIN32) || defined(__CYGWIN__)
 #define SETTINGS_BASE_FILENAME "xu4.cfg"
 #else
@@ -65,13 +60,6 @@ bool SettingsData::operator==(const SettingsData &s) const {
 
 bool SettingsData::operator!=(const SettingsData &s) const {
     return !operator==(s);
-}
-
-
-/**
- * Default contructor.  Settings is a singleton so this is private.
- */
-Settings::Settings() {
 }
 
 
@@ -162,16 +150,6 @@ void Settings::init(const char* profileName) {
     filename = userPath + SETTINGS_BASE_FILENAME;
 
     read();
-}
-
-
-/**
- * Return the global instance of settings.
- */
-Settings &Settings::getInstance() {
-    if (instance == NULL)
-        instance = new Settings();
-    return *instance;
 }
 
 void Settings::setData(const SettingsData &data) {
@@ -498,14 +476,7 @@ bool Settings::write() {
     return true;
 }
 
-/**
- * Return the path where user settings are stored.
- */
-const string &Settings::getUserPath() {
-    return userPath;
-}
-
-const char** Settings::getBattleDiffs() {
+const char** Settings::getBattleDiffs() const {
     static const char* difficulty[] = {"Normal", "Hard", "Expert", NULL};
     return difficulty;
 }

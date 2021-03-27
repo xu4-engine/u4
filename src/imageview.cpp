@@ -10,6 +10,7 @@
 #include "imagemgr.h"
 #include "imageview.h"
 #include "settings.h"
+#include "xu4.h"
 
 ImageView::ImageView(int x, int y, int width, int height) : View(x, y, width, height) {
 }
@@ -40,5 +41,5 @@ void ImageView::draw(const string &imageName, int x, int y) {
             return;
         }
     }
-    errorFatal("ERROR 1005: Unable to load the image \"%s\".\t\n\nIs %s installed?\n\nVisit the XU4 website for additional information.\n\thttp://xu4.sourceforge.net/", imageName.c_str(), settings.game.c_str());
+    errorFatal("ERROR 1005: Unable to load the image \"%s\".\t\n\nIs %s installed?\n\nVisit the XU4 website for additional information.\n\thttp://xu4.sourceforge.net/", imageName.c_str(), xu4.settings->game.c_str());
 }

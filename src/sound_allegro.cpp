@@ -18,10 +18,13 @@
 #define ASSERT(exp,msg)
 #define errorWarning(...)   printf(__VA_ARGS__); printf("\n");
 #define MAX_VOLUME 10
+struct Settings {
+    int musicVol, soundVol;
+};
+Settings ts = {5, 10};
 struct {
-    int musicVol = 5;
-    int soundVol = 10;
-} settings;
+    Settings* settings = &ts;
+} xu4;
 const char* config_soundFile(int id) {
     return NULL;
 }
@@ -45,6 +48,7 @@ const char* config_musicFile(int id) {
 #include "error.h"
 #include "event.h"
 #include "settings.h"
+#include "xu4.h"
 
 #define config_soundFile(id)    configService->soundFile(id)
 #define config_musicFile(id)    configService->musicFile(id)
@@ -104,9 +108,9 @@ int soundInit(void)
     audioFunctional = true;
 
     // Set up the volume.
-    musicEnabled = settings.musicVol;
-    musicSetVolume(settings.musicVol);
-    soundSetVolume(settings.soundVol);
+    musicEnabled = xu4.settings->musicVol;
+    musicSetVolume(xu4.settings->musicVol);
+    soundSetVolume(xu4.settings->soundVol);
     //TRACE(*logger, string("Music initialized: volume is ") + (musicEnabled ? "on" : "off"));
 
     sa_samples.resize(SOUND_MAX, NULL);
@@ -195,7 +199,7 @@ void soundPlay(Sound sound, bool onlyOnce, int specificDurationInTicks) {
     ASSERT(sound < SOUND_MAX, "Attempted to play an invalid sound in soundPlay()");
 
     // If audio didn't initialize correctly, then we can't play it anyway
-    if (!audioFunctional || !settings.soundVol)
+    if (!audioFunctional || !xu4.settings->soundVol)
         return;
 
     if (sa_samples[sound] == NULL)
@@ -217,7 +221,7 @@ void soundPlay(Sound sound, bool onlyOnce, int specificDurationInTicks) {
  */
 void soundStop() {
     // If audio didn't initialize correctly, then we shouldn't try to stop it
-    if (!audioFunctional || !settings.soundVol)
+    if (!audioFunctional || !xu4.settings->soundVol)
         return;
 
     al_stop_samples();
@@ -295,7 +299,7 @@ void musicFadeOut(int msec)
 
     if (musicStream && al_get_audio_stream_playing(musicStream)) {
         /*
-        if (settings.volumeFades) {
+        if (xu4.settings->volumeFades) {
             if (Mix_FadeOutMusic(msec) == -1)
                 errorWarning("Mix_FadeOutMusic");
         } else
@@ -320,7 +324,7 @@ void musicFadeIn(int msec, bool loadFromMap)
         }
 
         /*
-        if (settings.volumeFades) {
+        if (xu4.settings->volumeFades) {
             if (Mix_FadeInMusic(musicStream, NLOOPS, msec) == -1)
                 errorWarning("Mix_FadeInMusic");
         } else
@@ -336,16 +340,16 @@ void musicSetVolume(int volume)
 
 int musicVolumeDec()
 {
-    if (settings.musicVol > 0)
-        musicSetVolume(--settings.musicVol);
-    return (settings.musicVol * 100 / MAX_VOLUME);  // percentage
+    if (xu4.settings->musicVol > 0)
+        musicSetVolume(--xu4.settings->musicVol);
+    return (xu4.settings->musicVol * 100 / MAX_VOLUME);  // percentage
 }
 
 int musicVolumeInc()
 {
-    if (settings.musicVol < MAX_VOLUME)
-        musicSetVolume(++settings.musicVol);
-    return (settings.musicVol * 100 / MAX_VOLUME);  // percentage
+    if (xu4.settings->musicVol < MAX_VOLUME)
+        musicSetVolume(++xu4.settings->musicVol);
+    return (xu4.settings->musicVol * 100 / MAX_VOLUME);  // percentage
 }
 
 /**
@@ -367,7 +371,7 @@ bool musicToggle()
         musicFadeOut(1000);
 
 #ifndef UNIT_TEST
-    eventHandler->getTimer()->add(&music_callback, settings.gameCyclesPerSecond);
+    eventHandler->getTimer()->add(&music_callback, xu4.settings->gameCyclesPerSecond);
 #endif
     return musicEnabled;
 }
@@ -379,16 +383,16 @@ void soundSetVolume(int volume) {
 
 int soundVolumeDec()
 {
-    if (settings.soundVol > 0)
-        soundSetVolume(--settings.soundVol);
-    return (settings.soundVol * 100 / MAX_VOLUME);  // percentage
+    if (xu4.settings->soundVol > 0)
+        soundSetVolume(--xu4.settings->soundVol);
+    return (xu4.settings->soundVol * 100 / MAX_VOLUME);  // percentage
 }
 
 int soundVolumeInc()
 {
-    if (settings.soundVol < MAX_VOLUME)
-        soundSetVolume(++settings.soundVol);
-    return (settings.soundVol * 100 / MAX_VOLUME);  // percentage
+    if (xu4.settings->soundVol < MAX_VOLUME)
+        soundSetVolume(++xu4.settings->soundVol);
+    return (xu4.settings->soundVol * 100 / MAX_VOLUME);  // percentage
 }
 
 

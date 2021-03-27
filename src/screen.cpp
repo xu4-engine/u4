@@ -32,6 +32,7 @@
 #include "tileset.h"
 #include "tileview.h"
 #include "annotation.h"
+#include "xu4.h"
 
 #ifdef IOS
 #include "ios_helpers.h"
@@ -96,6 +97,8 @@ extern void screenInit_sys();
 extern void screenDelete_sys();
 
 void screenInit() {
+    Settings& settings = *xu4.settings;
+
     filterScaler = scalerGet(settings.filter);
     if (!filterScaler)
         errorFatal("%s is not a valid filter", settings.filter.c_str());
@@ -172,12 +175,12 @@ void screenDelete() {
  * Re-initializes the screen and implements any changes made in settings
  */
 void screenReInit() {
-    intro->deleteIntro();       /* delete intro stuff */
+    xu4.intro->deleteIntro();   /* delete intro stuff */
     Tileset::unloadAllImages(); /* unload tilesets, which will be reloaded lazily as needed */
     tileanims = NULL;
     screenDelete(); /* delete screen stuff */
     screenInit();   /* re-init screen stuff (loading new backgrounds, etc.) */
-    intro->init();    /* re-fix the backgrounds loaded and scale images, etc. */
+    xu4.intro->init();  /* re-fix the backgrounds loaded and scale images, etc. */
 }
 
 void screenTextAt(int x, int y, const char *fmt, ...) {
@@ -332,13 +335,13 @@ void screenLoadGraphicsFromConf() {
     for (i = layouts.begin(); i != layouts.end(); i++) {
         Layout *layout = *i;
 
-        if (layout->type == LAYOUT_GEM && layout->name == settings.gemLayout) {
+        if (layout->type == LAYOUT_GEM && layout->name == xu4.settings->gemLayout) {
             gemlayout = layout;
             break;
         }
     }
     if (!gemlayout)
-        errorFatal("no gem layout named %s found!\n", settings.gemLayout.c_str());
+        errorFatal("no gem layout named %s found!\n", xu4.settings->gemLayout.c_str());
 }
 
 Layout *screenLoadLayoutFromConf(const ConfigElement &conf) {
@@ -507,15 +510,16 @@ void screenDrawImage(const string &name, int x, int y) {
         info->image->alphaOn();
 
         if (info) {
+            unsigned int scale = xu4.settings->scale;
             info->image->drawSubRect(x, y,
-                                     subimage->x * (settings.scale / info->prescale),
-                                     subimage->y * (settings.scale / info->prescale),
-                                     subimage->width * (settings.scale / info->prescale),
-                                     subimage->height * (settings.scale / info->prescale));
+                                     subimage->x * (scale / info->prescale),
+                                     subimage->y * (scale / info->prescale),
+                                     subimage->width * (scale / info->prescale),
+                                     subimage->height * (scale / info->prescale));
             return;
         }
     }
-    errorFatal("ERROR 1006: Unable to load the image \"%s\".\t\n\nIs %s installed?\n\nVisit the XU4 website for additional information.\n\thttp://xu4.sourceforge.net/", name.c_str(), settings.game.c_str());
+    errorFatal("ERROR 1006: Unable to load the image \"%s\".\t\n\nIs %s installed?\n\nVisit the XU4 website for additional information.\n\thttp://xu4.sourceforge.net/", name.c_str(), xu4.settings->game.c_str());
 }
 
 void screenDrawImageInMapArea(const string &name) {
@@ -523,12 +527,13 @@ void screenDrawImageInMapArea(const string &name) {
 
     info = imageMgr->get(name);
     if (!info)
-        errorFatal("ERROR 1004: Unable to load data files.\t\n\nIs %s installed?\n\nVisit the XU4 website for additional information.\n\thttp://xu4.sourceforge.net/", settings.game.c_str());
+        errorFatal("ERROR 1004: Unable to load data files.\t\n\nIs %s installed?\n\nVisit the XU4 website for additional information.\n\thttp://xu4.sourceforge.net/", xu4.settings->game.c_str());
 
-    info->image->drawSubRect(BORDER_WIDTH * settings.scale, BORDER_HEIGHT * settings.scale,
-                             BORDER_WIDTH * settings.scale, BORDER_HEIGHT * settings.scale,
-                             VIEWPORT_W * TILE_WIDTH * settings.scale,
-                             VIEWPORT_H * TILE_HEIGHT * settings.scale);
+    unsigned int scale = xu4.settings->scale;
+    info->image->drawSubRect(BORDER_WIDTH * scale, BORDER_HEIGHT * scale,
+                             BORDER_WIDTH * scale, BORDER_HEIGHT * scale,
+                             VIEWPORT_W * TILE_WIDTH * scale,
+                             VIEWPORT_H * TILE_HEIGHT * scale);
 }
 
 
@@ -536,7 +541,8 @@ void screenDrawImageInMapArea(const string &name) {
  * Change the current text color
  */
 void screenTextColor(int color) {
-    if (!settings.enhancements || !settings.enhancementsOptions.textColorization) {
+    if (!xu4.settings->enhancements ||
+        !xu4.settings->enhancementsOptions.textColorization) {
         return;
     }
 
@@ -557,9 +563,10 @@ void screenTextColor(int color) {
  * Draw a character from the charset onto the screen.
  */
 void screenShowChar(int chr, int x, int y) {
-    charsetInfo->image->drawSubRect(x * charsetInfo->image->width(), y * (CHAR_HEIGHT * settings.scale),
-                                    0, chr * (CHAR_HEIGHT * settings.scale),
-                                    charsetInfo->image->width(), CHAR_HEIGHT * settings.scale);
+    unsigned int scale = xu4.settings->scale;
+    charsetInfo->image->drawSubRect(x * charsetInfo->image->width(), y * (CHAR_HEIGHT * scale),
+                                    0, chr * (CHAR_HEIGHT * scale),
+                                    charsetInfo->image->width(), CHAR_HEIGHT * scale);
 }
 
 /**
@@ -568,21 +575,22 @@ void screenShowChar(int chr, int x, int y) {
 void screenScrollMessageArea() {
     ASSERT(charsetInfo != NULL && charsetInfo->image != NULL, "charset not initialized!");
 
+    unsigned int scale = xu4.settings->scale;
     Image *screen = imageMgr->get("screen")->image;
 
     screen->drawSubRectOn(screen,
                           TEXT_AREA_X * charsetInfo->image->width(),
-                          TEXT_AREA_Y * CHAR_HEIGHT * settings.scale,
+                          TEXT_AREA_Y * CHAR_HEIGHT * scale,
                           TEXT_AREA_X * charsetInfo->image->width(),
-                          (TEXT_AREA_Y + 1) * CHAR_HEIGHT * settings.scale,
+                          (TEXT_AREA_Y + 1) * CHAR_HEIGHT * scale,
                           TEXT_AREA_W * charsetInfo->image->width(),
-                          (TEXT_AREA_H - 1) * CHAR_HEIGHT * settings.scale);
+                          (TEXT_AREA_H - 1) * CHAR_HEIGHT * scale);
 
 
     screen->fillRect(TEXT_AREA_X * charsetInfo->image->width(),
-                     TEXT_AREA_Y * CHAR_HEIGHT * settings.scale + (TEXT_AREA_H - 1) * CHAR_HEIGHT * settings.scale,
+                     TEXT_AREA_Y * CHAR_HEIGHT * scale + (TEXT_AREA_H - 1) * CHAR_HEIGHT * scale,
                      TEXT_AREA_W * charsetInfo->image->width(),
-                     CHAR_HEIGHT * settings.scale,
+                     CHAR_HEIGHT * scale,
                      0, 0, 0);
 }
 
@@ -696,12 +704,12 @@ void screenFindLineOfSight(vector <MapTile> viewportTiles[VIEWPORT_W][VIEWPORT_H
         }
     }
 
-    if (settings.lineOfSight == "DOS")
+    if (xu4.settings->lineOfSight == "DOS")
         screenFindLineOfSightDOS(viewportTiles);
-    else if (settings.lineOfSight == "Enhanced")
+    else if (xu4.settings->lineOfSight == "Enhanced")
         screenFindLineOfSightEnhanced(viewportTiles);
     else
-        errorFatal("unknown line of sight style %s!\n", settings.lineOfSight.c_str());
+        errorFatal("unknown line of sight style %s!\n", xu4.settings->lineOfSight.c_str());
 }
 
 
@@ -1055,13 +1063,14 @@ static int screenPointInTriangle(int x, int y, int tx1, int ty1, int tx2, int ty
  */
 int screenPointInMouseArea(int x, int y, MouseArea *area) {
     ASSERT(area->npoints == 2 || area->npoints == 3, "unsupported number of points in area: %d", area->npoints);
+    unsigned int scale = xu4.settings->scale;
 
     /* two points define a rectangle */
     if (area->npoints == 2) {
-        if (x >= (int)(area->point[0].x * settings.scale) &&
-            y >= (int)(area->point[0].y * settings.scale) &&
-            x < (int)(area->point[1].x * settings.scale) &&
-            y < (int)(area->point[1].y * settings.scale)) {
+        if (x >= (int)(area->point[0].x * scale) &&
+            y >= (int)(area->point[0].y * scale) &&
+            x < (int)(area->point[1].x * scale) &&
+            y < (int)(area->point[1].y * scale)) {
             return 1;
         }
     }
@@ -1069,9 +1078,9 @@ int screenPointInMouseArea(int x, int y, MouseArea *area) {
     /* three points define a triangle */
     else if (area->npoints == 3) {
         return screenPointInTriangle(x, y,
-                                     area->point[0].x * settings.scale, area->point[0].y * settings.scale,
-                                     area->point[1].x * settings.scale, area->point[1].y * settings.scale,
-                                     area->point[2].x * settings.scale, area->point[2].y * settings.scale);
+                                     area->point[0].x * scale, area->point[0].y * scale,
+                                     area->point[1].x * scale, area->point[1].y * scale,
+                                     area->point[2].x * scale, area->point[2].y * scale);
     }
 
     return 0;
@@ -1082,20 +1091,22 @@ void screenRedrawMapArea() {
 }
 
 void screenEraseMapArea() {
+    unsigned int scale = xu4.settings->scale;
     Image *screen = imageMgr->get("screen")->image;
-    screen->fillRect(BORDER_WIDTH * settings.scale,
-                     BORDER_WIDTH * settings.scale,
-                     VIEWPORT_W * TILE_WIDTH * settings.scale,
-                     VIEWPORT_H * TILE_HEIGHT * settings.scale,
+    screen->fillRect(BORDER_WIDTH * scale,
+                     BORDER_WIDTH * scale,
+                     VIEWPORT_W * TILE_WIDTH * scale,
+                     VIEWPORT_H * TILE_HEIGHT * scale,
                      0, 0, 0);
 }
 
 void screenEraseTextArea(int x, int y, int width, int height) {
+    unsigned int scale = xu4.settings->scale;
     Image *screen = imageMgr->get("screen")->image;
-    screen->fillRect(x * CHAR_WIDTH * settings.scale,
-                     y * CHAR_HEIGHT * settings.scale,
-                     width * CHAR_WIDTH * settings.scale,
-                     height * CHAR_HEIGHT * settings.scale,
+    screen->fillRect(x * CHAR_WIDTH * scale,
+                     y * CHAR_HEIGHT * scale,
+                     width * CHAR_WIDTH * scale,
+                     height * CHAR_HEIGHT * scale,
                      0, 0, 0);
 }
 
@@ -1114,7 +1125,7 @@ void screenShake(int iterations) {
     // Therefore, a temporary Image buffer is used to store the area
     // that gets clipped at the bottom.
 
-    if (settings.screenShakes) {
+    if (xu4.settings->screenShakes) {
         // specify the size of the offset, and create a buffer
         // to store the offset row plus 1
         shakeOffset = 1;
@@ -1128,12 +1139,12 @@ void screenShake(int iterations) {
             screen->drawSubRectOn(screen, 0, SCALED(shakeOffset), 0, 0, SCALED(320), SCALED(200-(shakeOffset+1)));
             bottom->drawOn(screen, 0, SCALED(200-(shakeOffset)));
             screen->fillRect(0, 0, SCALED(320), SCALED(shakeOffset), 0, 0, 0);
-            EventHandler::sleep(settings.shakeInterval);
+            EventHandler::sleep(xu4.settings->shakeInterval);
 
             // shift the screen back up, and replace the bottom row
             screen->drawOn(screen, 0, 0-SCALED(shakeOffset));
             bottom->drawOn(screen, 0, SCALED(200-(shakeOffset+1)));
-            EventHandler::sleep(settings.shakeInterval);
+            EventHandler::sleep(xu4.settings->shakeInterval);
         }
         // free the bottom row image
         delete bottom;
@@ -1144,6 +1155,7 @@ void screenShake(int iterations) {
  * Draw a tile graphic on the screen.
  */
 void screenShowGemTile(Layout *layout, Map *map, MapTile &t, bool focus, int x, int y) {
+    unsigned int scale = xu4.settings->scale;
     // Make sure we account for tiles that look like other tiles (dungeon tiles, mainly)
     string looks_like = t.getTileType()->getLooksLike();
     if (!looks_like.empty())
@@ -1155,34 +1167,34 @@ void screenShowGemTile(Layout *layout, Map *map, MapTile &t, bool focus, int x, 
         ASSERT(charsetInfo, "charset not initialized");
         std::map<string, int>::iterator charIndex = dungeonTileChars.find(t.getTileType()->getName());
         if (charIndex != dungeonTileChars.end()) {
-            charsetInfo->image->drawSubRect((layout->viewport.x + (x * layout->tileshape.width)) * settings.scale,
-                                            (layout->viewport.y + (y * layout->tileshape.height)) * settings.scale,
+            charsetInfo->image->drawSubRect((layout->viewport.x + (x * layout->tileshape.width)) * scale,
+                                            (layout->viewport.y + (y * layout->tileshape.height)) * scale,
                                             0,
-                                            charIndex->second * layout->tileshape.height * settings.scale,
-                                            layout->tileshape.width * settings.scale,
-                                            layout->tileshape.height * settings.scale);
+                                            charIndex->second * layout->tileshape.height * scale,
+                                            layout->tileshape.width * scale,
+                                            layout->tileshape.height * scale);
         }
     }
     else {
         if (gemTilesInfo == NULL) {
             gemTilesInfo = imageMgr->get(BKGD_GEMTILES);
             if (!gemTilesInfo)
-                errorFatal("ERROR 1002: Unable to load the \"%s\" data file.\t\n\nIs %s installed?\n\nVisit the XU4 website for additional information.\n\thttp://xu4.sourceforge.net/", BKGD_GEMTILES, settings.game.c_str());
+                errorFatal("ERROR 1002: Unable to load the \"%s\" data file.\t\n\nIs %s installed?\n\nVisit the XU4 website for additional information.\n\thttp://xu4.sourceforge.net/", BKGD_GEMTILES, xu4.settings->game.c_str());
         }
 
         if (tile < 128) {
-            gemTilesInfo->image->drawSubRect((layout->viewport.x + (x * layout->tileshape.width)) * settings.scale,
-                                             (layout->viewport.y + (y * layout->tileshape.height)) * settings.scale,
+            gemTilesInfo->image->drawSubRect((layout->viewport.x + (x * layout->tileshape.width)) * scale,
+                                             (layout->viewport.y + (y * layout->tileshape.height)) * scale,
                                              0,
-                                             tile * layout->tileshape.height * settings.scale,
-                                             layout->tileshape.width * settings.scale,
-                                             layout->tileshape.height * settings.scale);
+                                             tile * layout->tileshape.height * scale,
+                                             layout->tileshape.width * scale,
+                                             layout->tileshape.height * scale);
         } else {
             Image *screen = imageMgr->get("screen")->image;
-            screen->fillRect((layout->viewport.x + (x * layout->tileshape.width)) * settings.scale,
-                             (layout->viewport.y + (y * layout->tileshape.height)) * settings.scale,
-                             layout->tileshape.width * settings.scale,
-                             layout->tileshape.height * settings.scale,
+            screen->fillRect((layout->viewport.x + (x * layout->tileshape.width)) * scale,
+                             (layout->viewport.y + (y * layout->tileshape.height)) * scale,
+                             layout->tileshape.width * scale,
+                             layout->tileshape.height * scale,
                              0, 0, 0);
         }
     }
@@ -1208,12 +1220,13 @@ Layout *screenGetGemLayout(const Map *map) {
 void screenGemUpdate() {
     MapTile tile;
     int x, y;
+    unsigned int scale = xu4.settings->scale;
     Image *screen = imageMgr->get("screen")->image;
 
-    screen->fillRect(BORDER_WIDTH * settings.scale,
-                     BORDER_HEIGHT * settings.scale,
-                     VIEWPORT_W * TILE_WIDTH * settings.scale,
-                     VIEWPORT_H * TILE_HEIGHT * settings.scale,
+    screen->fillRect(BORDER_WIDTH * scale,
+                     BORDER_HEIGHT * scale,
+                     VIEWPORT_W * TILE_WIDTH * scale,
+                     VIEWPORT_H * TILE_HEIGHT * scale,
                      0, 0, 0);
 
     Layout *layout = screenGetGemLayout(c->location->map);
@@ -1330,7 +1343,7 @@ Image *screenScale(Image *src, int scale, int n, int filter) {
         src = dest;
         scale /= 2;
     }
-    if (scale == 3 && scaler3x(settings.filter)) {
+    if (scale == 3 && scaler3x(xu4.settings->filter)) {
         dest = (*filterScaler)(src, 3, n);
         src = dest;
         scale /= 3;

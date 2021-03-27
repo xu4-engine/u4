@@ -10,6 +10,7 @@
 #include "image.h"
 #include "settings.h"
 #include "error.h"
+#include "xu4.h"
 
 //#define REPORT_PAL
 
@@ -71,7 +72,7 @@ Image* screenImage = NULL;
  * pushU4View & popU4View in U4AppDelegate.mm.
  */
 Image *Image::createScreenImage() {
-    screenImage = create(320 * settings.scale, 200 * settings.scale);
+    screenImage = create(320 * xu4.settings->scale, 200 * xu4.settings->scale);
     screenImage->fill(RGBA(0, 0, 0, 255));
     return screenImage;
 }

@@ -7,7 +7,6 @@
 
 #include <map>
 #include <string>
-#include <vector>
 #include "observable.h"
 #include "types.h"
 
@@ -149,34 +148,24 @@ public:
 
 /**
  * The settings class is a singleton that holds all the settings
- * information.  It is dynamically initialized when first accessed.
+ * information.
  */
 class Settings : public SettingsData, public Observable<Settings *> {
     typedef std::map<string, int, std::less<string> > SettingsMap;
 
 public:
-    /* Methods */
     void init(const char* profileName);
-    static Settings &getInstance();
     void setData(const SettingsData &data);
     bool read();
     bool write();
-
-    const string &getUserPath();
-    const char** getBattleDiffs();
+    const string &getUserPath() const { return userPath; }
+    const char** getBattleDiffs() const;
 
     string profile;
 
 private:
-    Settings();
-
-    static Settings *instance;
-
     string userPath;
     string filename;
 };
-
-/* the global settings */
-#define settings (Settings::getInstance())
 
 #endif

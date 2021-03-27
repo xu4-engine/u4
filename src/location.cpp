@@ -21,6 +21,7 @@
 #include "savegame.h"
 #include "settings.h"
 #include "tileset.h"
+#include "xu4.h"
 
 Location *locationPush(Location *stack, Location *loc);
 Location *locationPop(Location **stack);
@@ -55,7 +56,7 @@ std::vector<MapTile> Location::tilesAt(MapCoords coords, bool &focus) {
     bool avatar = this->coords == coords;
 
     /* Do not return objects for VIEW_GEM mode, show only the avatar and tiles */
-    if (viewMode == VIEW_GEM && (!settings.enhancements || !settings.enhancementsOptions.peerShowsObjects)) {
+    if (viewMode == VIEW_GEM && (!xu4.settings->enhancements || !xu4.settings->enhancementsOptions.peerShowsObjects)) {
         // When viewing a gem, always show the avatar regardless of whether or not
         // it is shown in our normal view
         if (avatar)

@@ -14,6 +14,7 @@
 #include "tileset.h"
 #include "u4.h"
 #include "error.h"
+#include "xu4.h"
 
 
 DungeonView::DungeonView(int x, int y, int columns, int rows) : TileView(x, y, rows, columns)
@@ -108,7 +109,7 @@ void DungeonView::drawInDungeon(Tile *tile, int x_offset, int distance, Directio
     const int * nscale;
     int offset_multiplier = 0;
     int offset_adj = 0;
-    if (settings.videoType != "EGA")
+    if (xu4.settings->videoType != "EGA")
     {
         lscale = & lscale_vga[0];
         nscale = & nscale_vga[0];
@@ -417,19 +418,20 @@ void DungeonView::drawWall(int xoffset, int distance, Direction orientation, Dun
         y = subimage->y;
     }
 
-    screenDrawImage(dngGraphicInfo[index].subimage, (BORDER_WIDTH + x) * settings.scale,
-                    (BORDER_HEIGHT + y) * settings.scale);
+    unsigned int scale = xu4.settings->scale;
+    screenDrawImage(dngGraphicInfo[index].subimage, (BORDER_WIDTH + x) * scale,
+                    (BORDER_HEIGHT + y) * scale);
 
     if (dngGraphicInfo[index].subimage2 != NULL) {
         // FIXME: subimage2 is a horrible hack, needs to be cleaned up
-        if (settings.videoType == "EGA")
+        if (xu4.settings->videoType == "EGA")
             screenDrawImage(dngGraphicInfo[index].subimage2,
-                            (8 + dngGraphicInfo[index].ega_x2) * settings.scale,
-                            (8 + dngGraphicInfo[index].ega_y2) * settings.scale);
+                            (8 + dngGraphicInfo[index].ega_x2) * scale,
+                            (8 + dngGraphicInfo[index].ega_y2) * scale);
         else
             screenDrawImage(dngGraphicInfo[index].subimage2,
-                            (8 + dngGraphicInfo[index].vga_x2) * settings.scale,
-                            (8 + dngGraphicInfo[index].vga_y2) * settings.scale);
+                            (8 + dngGraphicInfo[index].vga_x2) * scale,
+                            (8 + dngGraphicInfo[index].vga_y2) * scale);
     }
 }
 

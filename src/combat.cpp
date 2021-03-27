@@ -32,6 +32,7 @@
 #include "tileset.h"
 #include "utils.h"
 #include "weapon.h"
+#include "xu4.h"
 
 #ifdef IOS
 #include "ios_helpers.h"
@@ -824,6 +825,7 @@ void CombatController::movePartyMember(MoveEvent &event) {
 
 // Key handlers
 bool CombatController::keyPressed(int key) {
+    Settings& settings = *xu4.settings;
     bool valid = true;
     bool endTurn = true;
 

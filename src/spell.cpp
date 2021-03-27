@@ -28,6 +28,7 @@
 #include "tile.h"
 #include "tileset.h"
 #include "utils.h"
+#include "xu4.h"
 
 SpellEffectCallback spellEffectCallback = NULL;
 
@@ -315,7 +316,7 @@ bool spellCast(unsigned int spell, int character, int param, SpellCastError *err
         /* recalculate spell speed - based on 5/sec */
         float MP_OF_LARGEST_SPELL = 45;
         int spellMp = spells[spell].mp;
-        time = int(10000.0 / settings.spellEffectSpeed  *  spellMp / MP_OF_LARGEST_SPELL);
+        time = int(10000.0 / xu4.settings->spellEffectSpeed  *  spellMp / MP_OF_LARGEST_SPELL);
         soundPlay(SOUND_PREMAGIC_MANA_JUMBLE, false, time);
         EventHandler::wait_msecs(time);
 

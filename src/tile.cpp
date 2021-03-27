@@ -19,6 +19,7 @@
 #include "tileset.h"
 #include "utils.h"
 #include "assert.h"
+#include "xu4.h"
 
 TileId Tile::nextId = 0;
 
@@ -120,7 +121,7 @@ Image *Tile::getImage() {
  */
 void Tile::loadImage() {
     if (!image) {
-        scale = settings.scale;
+        scale = xu4.settings->scale;
 
         SubImage *subimage = NULL;
 
@@ -141,7 +142,7 @@ void Tile::loadImage() {
            a better way to handle this? */
         if (name == "guard")
         {
-            if (settings.videoType == "EGA")
+            if (xu4.settings->videoType == "EGA")
                 frames = 2;
             else
                 frames = 4;
@@ -185,7 +186,7 @@ void Tile::deleteImage()
         delete image;
         image = NULL;
     }
-    scale = settings.scale;
+    scale = xu4.settings->scale;
 }
 
 /**

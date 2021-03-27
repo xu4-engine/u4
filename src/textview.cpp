@@ -13,6 +13,7 @@
 #include "imagemgr.h"
 #include "settings.h"
 #include "textview.h"
+#include "xu4.h"
 
 Image *TextView::charset = NULL;
 
@@ -73,7 +74,8 @@ void TextView::drawCharMasked(int chr, int x, int y, unsigned char mask) {
 
 /* highlight the selected row using a background color */
 void TextView::textSelectedAt(int x, int y, const char *text) {
-    if (!settings.enhancements || !settings.enhancementsOptions.textColorization) {
+    if (!xu4.settings->enhancements ||
+        !xu4.settings->enhancementsOptions.textColorization) {
         this->textAt(x, y, "%s", text);
         return;
     }
@@ -89,7 +91,8 @@ void TextView::textSelectedAt(int x, int y, const char *text) {
 string TextView::colorizeStatus(char statustype) {
     string output;
 
-    if (!settings.enhancements || !settings.enhancementsOptions.textColorization) {
+    if (!xu4.settings->enhancements ||
+        !xu4.settings->enhancementsOptions.textColorization) {
         output = statustype;
         return output;
     }
@@ -107,7 +110,8 @@ string TextView::colorizeStatus(char statustype) {
 
 /* depending on the status type, apply colorization to the character */
 string TextView::colorizeString(string input, ColorFG color, unsigned int colorstart, unsigned int colorlength) {
-    if (!settings.enhancements || !settings.enhancementsOptions.textColorization)
+    if (!xu4.settings->enhancements ||
+        !xu4.settings->enhancementsOptions.textColorization)
         return input;
 
     string output = "";

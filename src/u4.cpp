@@ -11,6 +11,7 @@
 
 #include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
 
+#include "xu4.h"
 #include "u4.h"
 #include <cstring>
 #include "config.h"
@@ -34,12 +35,6 @@
 
 bool verbose = false;
 bool quit = false;
-
-//#define ENABLE_PERF
-#include "support/performance.h"
-PERF_OBJ(perf, "debug/performance.txt")
-#define PSTART      PERF_START(perf)
-#define PEND(msg)   PERF_END(perf,msg)
 
 
 enum OptionsFlag {
@@ -140,119 +135,122 @@ missing_value:
 }
 
 
-Options opt;
+void servicesInit(XU4GameServices* gs, Options* opt) {
+    if (!u4fsetup())
+    {
+        errorFatal( "xu4 requires the PC version of Ultima IV to be present. "
+            "It must either be in the same directory as the xu4 executable, "
+            "or in a subdirectory named \"ultima4\"."
+            "\n\nThis can be achieved by downloading \"UltimaIV.zip\" from www.ultimaforever.com"
+            "\n - Extract the contents of UltimaIV.zip"
+            "\n - Copy the \"ultima4\" folder to your xu4 executable location."
+            "\n\nVisit the XU4 website for additional information.\n\thttp://xu4.sourceforge.net/");
+    }
+
+    /* initialize the settings */
+    gs->settings = new Settings;
+    gs->settings->init(opt->profile);
+
+    /* update the settings based upon command-line arguments */
+    if (opt->used & OPT_FULLSCREEN)
+        gs->settings->fullscreen = (opt->flags & OPT_FULLSCREEN) ? true : false;
+    if (opt->scale)
+        gs->settings->scale = opt->scale;
+    if (opt->filter)
+        gs->settings->filter = opt->filter;
+
+    Debug::initGlobal("debug/global.txt");
+
+    xu4_srandom();
+    configInit();
+    screenInit();
+
+    if (! (opt->flags & OPT_NO_AUDIO))
+        soundInit();
+
+    Tileset::loadAll();
+    creatureMgr->getInstance();
+
+    /*
+    if (! (opt.flags & OPT_NO_INTRO))
+        gs->intro = new IntroController();
+    */
+}
+
+void servicesFree(XU4GameServices* gs) {
+    delete gs->intro;
+    Tileset::unloadAll();
+    soundDelete();
+    screenDelete();
+    configFree();
+    delete gs->settings;
+    u4fcleanup();
+}
+
+XU4GameServices xu4;
+
 
 int main(int argc, char *argv[]) {
-    Debug::initGlobal("debug/global.txt");
+    int skipIntro;
 
 #if defined(MACOSX)
     osxInit(argv[0]);
 #endif
+
+    {
+    Options opt;
 
     /* Parse arguments before setup in case the user only wants some help. */
     memset(&opt, 0, sizeof opt);
     if (! parseOptions(&opt, argc-1, argv+1))
         return 0;
 
-    if (!u4fsetup())
-    {
-        errorFatal( "xu4 requires the PC version of Ultima IV to be present. "
-                    "It must either be in the same directory as the xu4 executable, "
-                    "or in a subdirectory named \"ultima4\"."
-                    "\n\nThis can be achieved by downloading \"UltimaIV.zip\" from www.ultimaforever.com"
-                    "\n - Extract the contents of UltimaIV.zip"
-                    "\n - Copy the \"ultima4\" folder to your xu4 executable location."
-                    "\n\nVisit the XU4 website for additional information.\n\thttp://xu4.sourceforge.net/");
+    memset(&xu4, 0, sizeof xu4);
+    servicesInit(&xu4, &opt);
+
+    skipIntro = opt.flags & OPT_NO_INTRO;
     }
 
-    /* initialize the settings */
-    settings.init(opt.profile);
+#if 1
+    // Modern systems are fast enough that a progress bar isn't really needed
+    // but it can be useful during development to see something on screen
+    // right away.
 
-    /* update the settings based upon command-line arguments */
-    if (opt.used & OPT_FULLSCREEN)
-        settings.fullscreen = (opt.flags & OPT_FULLSCREEN) ? true : false;
-    if (opt.scale)
-        settings.scale = opt.scale;
-    if (opt.filter)
-        settings.filter = opt.filter;
-
-    xu4_srandom();
-
-    PSTART
-    configInit();
-    screenInit();
-    {
-    int skipIntro = opt.flags & OPT_NO_INTRO;
-    ProgressBar pb((320/2) - (200/2), (200/2), 200, 10, 0, (skipIntro ? 4 : 6));
+    ProgressBar pb((320/2) - (200/2), (200/2), 200, 10, 0, 2);
     pb.setBorderColor(240, 240, 240);
     pb.setColor(0, 0, 128);
     pb.setBorderWidth(1);
-
     screenTextAt(15, 11, "Loading...");
-    PEND("screenInit")
     ++pb;
+#endif
 
-    PSTART
-    if (! (opt.flags & OPT_NO_AUDIO))
-        soundInit();
-    PEND("soundInit")
-    ++pb;
-
-    PSTART
-    Tileset::loadAll();
-    PEND("Tileset::loadAll")
-    ++pb;
-
-    PSTART
-    creatureMgr->getInstance();
-    PEND("creatureMgr->getInstance()")
-    ++pb;
-
-    intro = new IntroController();
-    if (!skipIntro)
+    if (! skipIntro)
     {
+        if (! xu4.intro)
+            xu4.intro = new IntroController;
+
         /* do the intro */
-        PSTART
-        intro->init();
-        PEND("intro->init()")
-        ++pb;
+        xu4.intro->init();
+        xu4.intro->preloadMap();
 
-        PSTART
-        intro->preloadMap();
-        PEND("intro->preloadMap()")
-        ++pb;
-
-        PERF_REPORT(perf, NULL)
-
-        eventHandler->pushController(intro);
+        eventHandler->pushController(xu4.intro);
         eventHandler->run();
         eventHandler->popController();
-        intro->deleteIntro();
-    }
+
+        xu4.intro->deleteIntro();
     }
 
     eventHandler->setControllerDone(false);
     if (! quit) {
-        PERF_RESET(perf)
-
         /* play the game! */
-        PSTART
         game = new GameController();
         game->init();
-        PEND("gameInit()")
-
-        PERF_REPORT(perf, "\n===============================\n\n")
 
         eventHandler->pushController(game);
         eventHandler->run();
         eventHandler->popController();
     }
 
-    Tileset::unloadAll();
-    soundDelete();
-    screenDelete();
-    configFree();
-
-    u4fcleanup();
+    servicesFree(&xu4);
     return 0;
 }

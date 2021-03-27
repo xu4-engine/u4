@@ -3,13 +3,10 @@
  */
 
 #include <allegro5/allegro.h>
-#include "u4.h"
 #include "event.h"
-#include "context.h"
-#include "debug.h"
-#include "error.h"
 #include "screen.h"
 #include "settings.h"
+#include "xu4.h"
 
 extern uint32_t getTicks();
 
@@ -68,7 +65,7 @@ EventHandler::EventHandler() : timer(eventTimerGranularity), updateScreen(NULL) 
 }
 
 static void handleMouseMotionEvent(int x, int y) {
-    if (!settings.mouseOptions.enabled)
+    if (!xu4.settings->mouseOptions.enabled)
         return;
 
     MouseArea* area = eventHandler->mouseAreaForPoint(x, y);
@@ -93,7 +90,7 @@ static void handleActiveEvent(const ALLEGRO_EVENT* event, updateScreenCallback u
 static void handleMouseButtonDownEvent(const ALLEGRO_EVENT* event, Controller *controller, updateScreenCallback updateScreen) {
     static const uint8_t buttonMap[4] = { 0, 0, 2, 1 };
 
-    if (!settings.mouseOptions.enabled)
+    if (!xu4.settings->mouseOptions.enabled)
         return;
 
     int button = buttonMap[event->mouse.button & 3];

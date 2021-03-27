@@ -26,6 +26,7 @@
 #include "tilemap.h"
 #include "u4file.h"
 #include "utils.h"
+#include "xu4.h"
 
 #ifdef IOS
 #include "ios_helpers.h"
@@ -34,8 +35,6 @@
 using namespace std;
 
 extern bool quit;
-
-IntroController *intro = NULL;
 
 #define INTRO_MAP_HEIGHT 5
 #define INTRO_MAP_WIDTH 19
@@ -188,8 +187,8 @@ IntroController::IntroController() :
     confMenu.setClosesMenu(CANCEL);
 
     /* set the default visibility of the two enhancement menus */
-    confMenu.getItemById(MI_CONF_GAMEPLAY)->setVisible(settings.enhancements);
-    confMenu.getItemById(MI_CONF_INTERFACE)->setVisible(settings.enhancements);
+    confMenu.getItemById(MI_CONF_GAMEPLAY)->setVisible(xu4.settings->enhancements);
+    confMenu.getItemById(MI_CONF_INTERFACE)->setVisible(xu4.settings->enhancements);
 
     videoMenu.setTitle("Video Options:", 0, 0);
     videoMenu.add(MI_VIDEO_CONF_GFX,              "\010 Game Graphics Options",  2,  2,/*'g'*/  2);
@@ -252,7 +251,7 @@ IntroController::IntroController() :
 
     /* move the BATTLE DIFFICULTY, DEBUG, and AUTOMATIC ACTIONS settings to "enhancementsOptions" */
     gameplayMenu.setTitle                              ("Enhanced Gameplay Options:", 0, 0);
-    gameplayMenu.add(MI_GAMEPLAY_01, new StringMenuItem("Battle Difficulty          %s", 2,  2,/*'b'*/  0, &settingsChanged.battleDiff, settings.getBattleDiffs()));
+    gameplayMenu.add(MI_GAMEPLAY_01, new StringMenuItem("Battle Difficulty          %s", 2,  2,/*'b'*/  0, &settingsChanged.battleDiff, xu4.settings->getBattleDiffs()));
     gameplayMenu.add(MI_GAMEPLAY_02,   new BoolMenuItem("Fixed Chest Traps          %s", 2,  3,/*'t'*/ 12, &settingsChanged.enhancementsOptions.c64chestTraps));
     gameplayMenu.add(MI_GAMEPLAY_03,   new BoolMenuItem("Gazer Spawns Insects       %s", 2,  4,/*'g'*/  0, &settingsChanged.enhancementsOptions.gazerSpawnsInsects));
     gameplayMenu.add(MI_GAMEPLAY_04,   new BoolMenuItem("Gem View Shows Objects     %s", 2,  5,/*'e'*/  1, &settingsChanged.enhancementsOptions.peerShowsObjects));
@@ -394,7 +393,7 @@ bool IntroController::keyPressed(int key) {
         case 'c': {
             errorMessage.erase();
             // Make a copy of our settings so we can change them
-            settingsChanged = settings;
+            settingsChanged = *xu4.settings;
             screenDisableCursor();
             runMenu(&confMenu, &extendedMenuArea, true);
             screenEnableCursor();
@@ -629,7 +628,7 @@ void IntroController::updateScreen() {
         drawBeasties();
         // display the profile name if a local profile is being used
         {
-        const string& pname = settings.profile;
+        const string& pname = xu4.settings->profile;
         if (! pname.empty())
             screenTextAt(40-pname.length(), 24, "%s", pname.c_str());
         }
@@ -747,7 +746,7 @@ void IntroController::finishInitiateGame(const string &nameBuffer, SexType sex)
     SaveGame saveGame;
     SaveGamePlayerRecord avatar;
 
-    FILE *saveGameFile = fopen((settings.getUserPath() + PARTY_SAV_BASE_FILENAME).c_str(), "wb");
+    FILE *saveGameFile = fopen((xu4.settings->getUserPath() + PARTY_SAV_BASE_FILENAME).c_str(), "wb");
     if (!saveGameFile) {
         questionArea.disableCursor();
         errorMessage = "Unable to create save game!";
@@ -769,7 +768,7 @@ void IntroController::finishInitiateGame(const string &nameBuffer, SexType sex)
     saveGame.write(saveGameFile);
     fclose(saveGameFile);
 
-    saveGameFile = fopen((settings.getUserPath() + MONSTERS_SAV_BASE_FILENAME).c_str(), "wb");
+    saveGameFile = fopen((xu4.settings->getUserPath() + MONSTERS_SAV_BASE_FILENAME).c_str(), "wb");
     if (saveGameFile) {
         saveGameMonstersWrite(NULL, saveGameFile);
         fclose(saveGameFile);
@@ -921,7 +920,7 @@ void IntroController::journeyOnward() {
      * ensure a party.sav file exists, otherwise require user to
      * initiate game
      */
-    saveGameFile = fopen((settings.getUserPath() + PARTY_SAV_BASE_FILENAME).c_str(), "rb");
+    saveGameFile = fopen((xu4.settings->getUserPath() + PARTY_SAV_BASE_FILENAME).c_str(), "rb");
     if (saveGameFile) {
         SaveGame *saveGame = new SaveGame;
 
@@ -1078,8 +1077,8 @@ void IntroController::updateConfMenu(MenuEvent &event) {
         confMenu.getItemById(MI_CONF_INTERFACE)->setVisible(settingsChanged.enhancements);
 
         // save settings
-        settings.setData(settingsChanged);
-        settings.write();
+        xu4.settings->setData(settingsChanged);
+        xu4.settings->write();
 
         switch(event.getMenuItem()->getId()) {
         case MI_CONF_VIDEO:
@@ -1105,7 +1104,7 @@ void IntroController::updateConfMenu(MenuEvent &event) {
             break;
         case CANCEL:
             // discard settings
-            settingsChanged = settings;
+            settingsChanged = *xu4.settings;
             break;
         default: break;
         }
@@ -1124,9 +1123,9 @@ void IntroController::updateVideoMenu(MenuEvent &event) {
         switch(event.getMenuItem()->getId()) {
         case USE_SETTINGS:
             /* save settings (if necessary) */
-            if (settings != settingsChanged) {
-                settings.setData(settingsChanged);
-                settings.write();
+            if (*xu4.settings != settingsChanged) {
+                xu4.settings->setData(settingsChanged);
+                xu4.settings->write();
 
                 /* FIXME: resize images, etc. */
                 screenReInit();
@@ -1140,7 +1139,7 @@ void IntroController::updateVideoMenu(MenuEvent &event) {
             break;
         case CANCEL:
             // discard settings
-            settingsChanged = settings;
+            settingsChanged = *xu4.settings;
             break;
         default: break;
         }
@@ -1186,15 +1185,15 @@ void IntroController::updateSoundMenu(MenuEvent &event) {
                 break;
             case USE_SETTINGS:
                 // save settings
-                settings.setData(settingsChanged);
-                settings.write();
+                xu4.settings->setData(settingsChanged);
+                xu4.settings->write();
                 musicPlay(introMusic);
                 break;
             case CANCEL:
-                musicSetVolume(settings.musicVol);
-                soundSetVolume(settings.soundVol);
+                musicSetVolume(xu4.settings->musicVol);
+                soundSetVolume(xu4.settings->soundVol);
                 // discard settings
-                settingsChanged = settings;
+                settingsChanged = *xu4.settings;
                 break;
             default: break;
         }
@@ -1213,18 +1212,18 @@ void IntroController::updateInputMenu(MenuEvent &event) {
         switch(event.getMenuItem()->getId()) {
         case USE_SETTINGS:
             // save settings
-            settings.setData(settingsChanged);
-            settings.write();
+            xu4.settings->setData(settingsChanged);
+            xu4.settings->write();
 
             // re-initialize keyboard
             EventHandler::setKeyRepeat(settingsChanged.keydelay, settingsChanged.keyinterval);
 #ifndef IOS
-            screenShowMouseCursor(settings.mouseOptions.enabled);
+            screenShowMouseCursor(xu4.settings->mouseOptions.enabled);
 #endif
             break;
         case CANCEL:
             // discard settings
-            settingsChanged = settings;
+            settingsChanged = *xu4.settings;
             break;
         default: break;
         }
@@ -1246,17 +1245,17 @@ void IntroController::updateSpeedMenu(MenuEvent &event) {
         switch(event.getMenuItem()->getId()) {
         case USE_SETTINGS:
             // save settings
-            settings.setData(settingsChanged);
-            settings.write();
+            xu4.settings->setData(settingsChanged);
+            xu4.settings->write();
 
             // re-initialize events
-            eventTimerGranularity = (1000 / settings.gameCyclesPerSecond);
+            eventTimerGranularity = (1000 / xu4.settings->gameCyclesPerSecond);
             eventHandler->getTimer()->reset(eventTimerGranularity);
 
             break;
         case CANCEL:
             // discard settings
-            settingsChanged = settings;
+            settingsChanged = *xu4.settings;
             break;
         default: break;
         }
@@ -1275,12 +1274,12 @@ void IntroController::updateGameplayMenu(MenuEvent &event) {
         switch(event.getMenuItem()->getId()) {
         case USE_SETTINGS:
             // save settings
-            settings.setData(settingsChanged);
-            settings.write();
+            xu4.settings->setData(settingsChanged);
+            xu4.settings->write();
             break;
         case CANCEL:
             // discard settings
-            settingsChanged = settings;
+            settingsChanged = *xu4.settings;
             break;
         default: break;
         }
@@ -1299,12 +1298,12 @@ void IntroController::updateInterfaceMenu(MenuEvent &event) {
         switch(event.getMenuItem()->getId()) {
             case USE_SETTINGS:
                 // save settings
-                settings.setData(settingsChanged);
-                settings.write();
+                xu4.settings->setData(settingsChanged);
+                xu4.settings->write();
                 break;
             case CANCEL:
                 // discard settings
-                settingsChanged = settings;
+                settingsChanged = *xu4.settings;
                 break;
             default: break;
         }
@@ -1531,7 +1530,7 @@ void IntroController::initTitles()
     title = titles.begin();
 
     // speed up the timer while the intro titles are displayed
-    eventHandler->getTimer()->reset(settings.titleSpeedOther);
+    eventHandler->getTimer()->reset(xu4.settings->titleSpeedOther);
 }
 
 
@@ -1573,7 +1572,7 @@ void IntroController::getTitleSourceData()
     // will be scaled appropriately.
     ImageInfo *info = imageMgr->get(BKGD_INTRO, true);
     if (!info) {
-        errorFatal("ERROR 1007: Unable to load the image \"%s\".\t\n\nIs %s installed?\n\nVisit the XU4 website for additional information.\n\thttp://xu4.sourceforge.net/", BKGD_INTRO, settings.game.c_str());
+        errorFatal("ERROR 1007: Unable to load the image \"%s\".\t\n\nIs %s installed?\n\nVisit the XU4 website for additional information.\n\thttp://xu4.sourceforge.net/", BKGD_INTRO, xu4.settings->game.c_str());
     }
 
     if (info->width / info->prescale != 320 || info->height / info->prescale != 200)
@@ -1613,7 +1612,7 @@ void IntroController::getTitleSourceData()
             case SIGNATURE:
             {
                 // PLOT: "Lord British"
-                srcData = intro->getSigData();
+                srcData = getSigData();
 
                 RGBA color = info->image->setColor(0, 255, 255);    // cyan for EGA
                 int blue[16] = {255, 250, 226, 226, 210, 194, 161, 161,
@@ -1626,7 +1625,7 @@ void IntroController::getTitleSourceData()
                     x = srcData[titles[i].animStepMax] - 0x4C;
                     y = 0xC0 - srcData[titles[i].animStepMax+1];
 
-                    if (settings.videoType != "EGA")
+                    if (xu4.settings->videoType != "EGA")
                     {
                         // yellow gradient
                         color = info->image->setColor(255, (y == 2 ? 250 : 255), blue[y-1]);
@@ -1684,7 +1683,7 @@ void IntroController::getTitleSourceData()
                     transparentColor.b);
 
                 Image *scaled;      // the scaled and filtered image
-                scaled = screenScale(titles[i].srcImage, settings.scale / info->prescale, 1, 1);
+                scaled = screenScale(titles[i].srcImage, xu4.settings->scale / info->prescale, 1, 1);
                 if (transparentIndex >= 0)
                     scaled->setTransparentIndex(transparentIndex);
 
@@ -1712,7 +1711,7 @@ void IntroController::getTitleSourceData()
 
     // scale the original image now
     Image *scaled = screenScale(info->image,
-                                settings.scale / info->prescale,
+                                xu4.settings->scale / info->prescale,
                                 1, 1);
     delete info->image;
     info->image = scaled;
@@ -1955,7 +1954,7 @@ bool IntroController::updateTitle()
                 Image *screen = imageMgr->get("screen")->image;
 
                 // draw the updated map display
-                intro->drawMapStatic();
+                drawMapStatic();
 
                 screen->drawSubRectOn(
                     title->srcImage,
@@ -2008,15 +2007,15 @@ bool IntroController::updateTitle()
         {
             // assume this is "Ultima IV" and pre-load sound
 //            soundLoad(SOUND_TITLE_FADE);
-            eventHandler->getTimer()->reset(settings.titleSpeedRandom);
+            eventHandler->getTimer()->reset(xu4.settings->titleSpeedRandom);
         }
         else if (title->method == MAP)
         {
-            eventHandler->getTimer()->reset(settings.titleSpeedOther);
+            eventHandler->getTimer()->reset(xu4.settings->titleSpeedOther);
         }
         else
         {
-            eventHandler->getTimer()->reset(settings.titleSpeedOther);
+            eventHandler->getTimer()->reset(xu4.settings->titleSpeedOther);
         }
     }
 
@@ -2050,7 +2049,7 @@ void IntroController::drawTitle()
     if (title->prescaled)
         scaled = title->destImage;
     else
-        scaled = screenScale(title->destImage, settings.scale, 1, 1);
+        scaled = screenScale(title->destImage, xu4.settings->scale, 1, 1);
 
     scaled->setTransparentIndex(transparentIndex);
     scaled->drawSubRect(

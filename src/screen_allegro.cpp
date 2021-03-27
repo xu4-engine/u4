@@ -11,6 +11,7 @@
 #include "image.h"
 #include "settings.h"
 #include "screen.h"
+#include "xu4.h"
 
 extern bool verbose;
 
@@ -72,6 +73,7 @@ static ALLEGRO_MOUSE_CURSOR* screenInitCursor(ALLEGRO_BITMAP* bmp, const char * 
 
 
 void screenInit_sys() {
+    const Settings& settings = *xu4.settings;
     int format;
     int w = 320 * settings.scale;
     int h = 200 * settings.scale;

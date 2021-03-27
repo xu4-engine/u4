@@ -22,6 +22,7 @@
 #include "filesystem.h"
 #include "settings.h"
 #include "utils.h"
+#include "xu4.h"
 
 
 using std::vector;
@@ -142,7 +143,7 @@ Debug::Debug(const string &fn, const string &nm, bool append) : disabled(false),
  * the debug info in its own debug file.
  */
 void Debug::initGlobal(const string &filename) {
-    if (settings.logging.empty())
+    if (xu4.settings->logging.empty())
         return;
 
     if (global)
@@ -234,10 +235,10 @@ void Debug::trace(const string &msg, const string &fn, const string &func, const
  * Determines whether or not this debug element is enabled in our game settings.
  */
 bool Debug::loggingEnabled(const string &name) {
-    if (settings.logging == "all")
+    if (xu4.settings->logging == "all")
         return true;
 
-    vector<string> enabledLogs = split(settings.logging, ", ");
+    vector<string> enabledLogs = split(xu4.settings->logging, ", ");
     if (std::find(enabledLogs.begin(), enabledLogs.end(), name) != enabledLogs.end())
         return true;
 

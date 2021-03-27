@@ -9,6 +9,7 @@
 #include "image.h"
 #include "settings.h"
 #include "screen.h"
+#include "xu4.h"
 
 ProgressBar::ProgressBar(int x, int y, int width, int height, int _min, int _max) :
     View(x, y, width, height),

@@ -8,6 +8,7 @@
 #include "imagemgr.h"
 #include "settings.h"
 #include "view.h"
+#include "xu4.h"
 
 Image *View::screen = NULL;
 

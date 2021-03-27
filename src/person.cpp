@@ -30,6 +30,7 @@
 #include "u4file.h"
 #include "utils.h"
 #include "script.h"
+#include "xu4.h"
 
 #ifdef IOS
 #include "ios_helpers.h"
@@ -446,7 +447,7 @@ string Person::getResponse(Conversation *cnv, const char *inquiry) {
         reply = processResponse(cnv, kw->getResponse());
     }
 
-    else if (settings.debug && strncasecmp(inquiry, "dump", 4) == 0) {
+    else if (xu4.settings->debug && strncasecmp(inquiry, "dump", 4) == 0) {
         vector<string> words = split(inquiry, " \t");
         if (words.size() <= 1)
             reply = dialogue->dump("");

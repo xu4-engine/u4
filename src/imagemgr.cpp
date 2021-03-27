@@ -15,6 +15,7 @@
 #include "intro.h"
 #include "settings.h"
 #include "u4file.h"
+#include "xu4.h"
 
 using std::map;
 using std::string;
@@ -42,12 +43,12 @@ ImageMgr::ImageMgr() {
     logger = new Debug("debug/imagemgr.txt", "ImageMgr");
     TRACE(*logger, "creating ImageMgr");
 
-    settings.addObserver(this);
+    xu4.settings->addObserver(this);
     init();
 }
 
 ImageMgr::~ImageMgr() {
-    settings.deleteObserver(this);
+    xu4.settings->deleteObserver(this);
 
     for (std::map<string, ImageSet *>::iterator i = imageSets.begin(); i != imageSets.end(); i++)
         delete i->second;
@@ -97,7 +98,7 @@ void ImageMgr::init() {
     for (std::map<string, ImageSet *>::const_iterator set = imageSets.begin(); set != imageSets.end(); set++)
         imageSetNames.push_back(set->first);
 
-    update(&settings);
+    update(xu4.settings);
 }
 
 ImageSet *ImageMgr::loadImageSetFromConf(const ConfigElement &conf) {
@@ -198,9 +199,9 @@ void ImageMgr::fixupIntro(Image *im, int prescale) {
     bool alpha = im->isAlphaOn();
     RGBA color;
 
-    sigData = intro->getSigData();
+    sigData = xu4.intro->getSigData();
     im->alphaOff();
-    if (settings.videoType != "VGA-ALLPNG" && settings.videoType != "new") {
+    if (xu4.settings->videoType != "VGA-ALLPNG" && xu4.settings->videoType != "new") {
         /* ----------------------------
          * update the position of "and"
          * ---------------------------- */
@@ -320,12 +321,12 @@ void ImageMgr::fixupIntro(Image *im, int prescale) {
     /* -------------------------
      * update the colors for VGA
      * ------------------------- */
-    if (settings.videoType == "VGA")
+    if (xu4.settings->videoType == "VGA")
     {
         ImageInfo *borderInfo = ImageMgr::get(BKGD_BORDERS, true);
 //        ImageInfo *charsetInfo = ImageMgr::get(BKGD_CHARSET);
         if (!borderInfo)
-            errorFatal("ERROR 1001: Unable to load the \"%s\" data file.\t\n\nIs %s installed?\n\nVisit the XU4 website for additional information.\n\thttp://xu4.sourceforge.net/", BKGD_BORDERS, settings.game.c_str());
+            errorFatal("ERROR 1001: Unable to load the \"%s\" data file.\t\n\nIs %s installed?\n\nVisit the XU4 website for additional information.\n\thttp://xu4.sourceforge.net/", BKGD_BORDERS, xu4.settings->game.c_str());
 
         delete borderInfo->image;
         borderInfo->image = NULL;
@@ -368,7 +369,7 @@ void ImageMgr::fixupIntro(Image *im, int prescale) {
         x = sigData[i] + 0x14;
         y = 0xBF - sigData[i+1];
 
-        if (settings.videoType != "EGA")
+        if (xu4.settings->videoType != "EGA")
         {
             // yellow gradient
             color = im->setColor(255, (y == 1 ? 250 : 255), blue[y]);
@@ -384,7 +385,7 @@ void ImageMgr::fixupIntro(Image *im, int prescale) {
      * draw the red line between "Origin Systems, Inc." and "present"
      * -------------------------------------------------------------- */
     /* we're still working with an unscaled surface */
-    if (settings.videoType != "EGA")
+    if (xu4.settings->videoType != "EGA")
     {
         color = im->setColor(0, 0, 161);    // dark blue
     }
@@ -535,7 +536,7 @@ U4FILE * ImageMgr::getImageFile(ImageInfo *info)
      * and are not renamed in the upgrade installation process
      */
     if (u4isUpgradeInstalled() && getInfoFromSet(info->name, getSet("VGA"))->filename.find(".old") != string::npos) {
-        if (settings.videoType == "EGA")
+        if (xu4.settings->videoType == "EGA")
             filename = getInfoFromSet(info->name, getSet("VGA"))->filename;
         else
             filename = getInfoFromSet(info->name, getSet("EGA"))->filename;
@@ -637,11 +638,11 @@ ImageInfo *ImageMgr::get(const string &name, bool returnUnscaled) {
         Image *unscaled_original = unscaled;
         unscaled = Image::duplicate(unscaled);
         delete unscaled_original;
-        if (Settings::getInstance().enhancements &&
-            Settings::getInstance().enhancementsOptions.u4TileTransparencyHack)
+        if (xu4.settings->enhancements &&
+            xu4.settings->enhancementsOptions.u4TileTransparencyHack)
         {
-            int transparency_shadow_size =Settings::getInstance().enhancementsOptions.u4TrileTransparencyHackShadowBreadth;
-            int opacity = Settings::getInstance().enhancementsOptions.u4TileTransparencyHackPixelShadowOpacity;
+            int transparency_shadow_size =xu4.settings->enhancementsOptions.u4TrileTransparencyHackShadowBreadth;
+            int opacity = xu4.settings->enhancementsOptions.u4TileTransparencyHackPixelShadowOpacity;
 
             // NOTE: The first 16 tiles are landscape and must be fully opaque!
             int f = (name == "tiles") ? 16 : 0;
@@ -663,12 +664,12 @@ ImageInfo *ImageMgr::get(const string &name, bool returnUnscaled) {
         return info;
     }
 
-    int imageScale = settings.scale;
-    if ((settings.scale % info->prescale) != 0) {
-        int orig_scale = settings.scale;
-        settings.scale = info->prescale;
-        settings.write();
-        errorFatal("image %s is prescaled to an incompatible size: %d\nResetting the scale to %d. Sorry about the inconvenience, please restart.", info->filename.c_str(), orig_scale, settings.scale);
+    int imageScale = xu4.settings->scale;
+    if ((imageScale % info->prescale) != 0) {
+        int orig_scale = imageScale;
+        xu4.settings->scale = info->prescale;
+        xu4.settings->write();
+        errorFatal("image %s is prescaled to an incompatible size: %d\nResetting the scale to %d. Sorry about the inconvenience, please restart.", info->filename.c_str(), orig_scale, xu4.settings->scale);
     }
     imageScale /= info->prescale;
 

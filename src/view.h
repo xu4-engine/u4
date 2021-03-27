@@ -5,7 +5,7 @@
 #ifndef VIEW_H
 #define VIEW_H
 
-#define SCALED(n) ((n) * settings.scale)
+#define SCALED(n) ((n) * xu4.settings->scale)
 
 #ifdef IOS
 #include "ios_helpers.h"

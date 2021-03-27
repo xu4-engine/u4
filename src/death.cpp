@@ -22,6 +22,7 @@
 #include "screen.h"
 #include "settings.h"
 #include "stats.h"
+#include "xu4.h"
 
 #define REVIVE_WORLD_X 86
 #define REVIVE_WORLD_Y 107
@@ -62,7 +63,7 @@ void deathStart(int delay) {
     timerCount = 0;
     timerMsg = 0;
 
-    WaitController waitCtrl(delay * settings.gameCyclesPerSecond);
+    WaitController waitCtrl(delay * xu4.settings->gameCyclesPerSecond);
     eventHandler->pushController(&waitCtrl);
     waitCtrl.wait();
 
@@ -71,7 +72,7 @@ void deathStart(int delay) {
     eventHandler->pushKeyHandler(&KeyHandler::ignoreKeys);
     screenDisableCursor();
 
-    eventHandler->getTimer()->add(&deathTimer, settings.gameCyclesPerSecond);
+    eventHandler->getTimer()->add(&deathTimer, xu4.settings->gameCyclesPerSecond);
 }
 
 void deathTimer(void *data) {

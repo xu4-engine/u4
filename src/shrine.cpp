@@ -26,6 +26,7 @@
 #include "settings.h"
 #include "tileset.h"
 #include "types.h"
+#include "xu4.h"
 
 #ifdef IOS
 #include "ios_helpers.h"
@@ -93,7 +94,8 @@ void Shrine::enter() {
 #ifdef IOS
     U4IOS::IOSHideGameControllerHelper hideControllsHelper;
 #endif
-    if (settings.enhancements && settings.enhancementsOptions.u5shrines)
+    if (xu4.settings->enhancements &&
+        xu4.settings->enhancementsOptions.u5shrines)
         enhancedSequence();
     else
         screenMessage("You enter the ancient shrine and sit before the altar...");
@@ -152,7 +154,7 @@ void Shrine::enhancedSequence() {
 
     screenDisableCursor();
     screenMessage("You approach\nthe ancient\nshrine...\n");
-    gameUpdateScreen(); EventHandler::wait_cycles(settings.gameCyclesPerSecond);
+    gameUpdateScreen(); EventHandler::wait_cycles(xu4.settings->gameCyclesPerSecond);
 
     Object *obj = addCreature(creatureMgr->getById(BEGGAR_ID), Coords(5, 10, c->location->coords.z));
     obj->setTile(tileset->getByName("avatar")->getId());
@@ -166,13 +168,13 @@ void Shrine::enhancedSequence() {
     gameUpdateScreen();
 
     screenMessage("\n...and kneel before the altar.\n");
-    EventHandler::wait_cycles(settings.gameCyclesPerSecond);
+    EventHandler::wait_cycles(xu4.settings->gameCyclesPerSecond);
     screenEnableCursor();
 }
 
 void Shrine::meditationCycle() {
     /* find our interval for meditation */
-    int interval = (settings.shrineTime * 1000) / MEDITATION_MANTRAS_PER_CYCLE;
+    int interval = (xu4.settings->shrineTime * 1000) / MEDITATION_MANTRAS_PER_CYCLE;
     interval -= (interval % eventTimerGranularity);
     interval /= eventTimerGranularity;
     if (interval <= 0)

@@ -54,6 +54,7 @@
 #include "script.h"
 #include "weapon.h"
 #include "dungeonview.h"
+#include "xu4.h"
 
 #ifdef IOS
 #include "ios_helpers.h"
@@ -110,8 +111,6 @@ void gameCreatureAttack(Creature *obj);
 
 //extern Object *party[8];
 Context *c = NULL;
-
-Debug gameDbg("debug/game.txt", "Game");
 
 MouseArea mouseAreas[] = {
     { 3, { { 8, 8 }, { 8, 184 }, { 96, 96 } }, MC_WEST, { U4_ENTER, 0, U4_LEFT } },
@@ -207,7 +206,9 @@ void GameController::initScreenWithoutReloadingState()
 
 
 void GameController::init() {
+    Debug gameDbg("debug/game.txt", "Game");
     FILE *saveGameFile, *monstersFile;
+    const Settings& settings = *xu4.settings;
 
     TRACE(gameDbg, "gameInit() running.");
 
@@ -338,6 +339,7 @@ void GameController::init() {
  */
 int gameSave() {
     FILE *saveGameFile, *monstersFile, *dngMapFile;
+    const Settings& settings = *xu4.settings;
     SaveGame save = *c->saveGame;
 
     /*************************************************/
@@ -773,7 +775,7 @@ void gameSpellEffect(int spell, int player, Sound sound) {
     if (player >= 0)
         c->stats->highlightPlayer(player);
 
-    time = settings.spellEffectSpeed * 800 / settings.gameCyclesPerSecond;
+    time = xu4.settings->spellEffectSpeed * 800 / xu4.settings->gameCyclesPerSecond;
     soundPlay(sound, false, time);
 
     ///The following effect multipliers are not accurate
@@ -828,6 +830,7 @@ void gameCastSpell(unsigned int spell, int caster, int param) {
  * command - 'a' for attack, 't' for talk, etc.
  */
 bool GameController::keyPressed(int key) {
+    Settings& settings = *xu4.settings;
     bool valid = true;
     int endTurn = 1;
     Object *obj;
@@ -1399,14 +1402,14 @@ bool GameController::keyPressed(int key) {
                 eventHandler->setScreenUpdate(NULL);
                 eventHandler->popController();
 
-                eventHandler->pushController(intro);
+                eventHandler->pushController(xu4.intro);
 
                 // Fade out the music and hide the cursor
                 //before returning to the menu.
                 musicFadeOut(1000);
                 screenHideCursor();
 
-                intro->init();
+                xu4.intro->init();
                 eventHandler->run();
 
 
@@ -1416,7 +1419,7 @@ bool GameController::keyPressed(int key) {
                     eventHandler->pushController(this);
 
 
-                    if (intro->hasInitiatedNewGame())
+                    if (xu4.intro->hasInitiatedNewGame())
                     {
                         //Loads current savegame
                         init();
@@ -1430,7 +1433,7 @@ bool GameController::keyPressed(int key) {
 
                     this->mapArea.reinit();
 
-                    intro->deleteIntro();
+                    xu4.intro->deleteIntro();
                     eventHandler->run();
                 }
             }
@@ -2051,7 +2054,7 @@ bool getChestTrapHandler(int player) {
     int randNum = xu4_random(4);
 
     /* Do we use u4dos's way of trap-determination, or the original intended way? */
-    int passTest = (settings.enhancements && settings.enhancementsOptions.c64chestTraps) ?
+    int passTest = (xu4.settings->enhancements && xu4.settings->enhancementsOptions.c64chestTraps) ?
         (xu4_random(2) == 0) : /* xu4-enhanced */
         ((randNum & 1) == 0); /* u4dos original way (only allows even numbers through, so only acid and poison show) */
 
@@ -2234,7 +2237,7 @@ void GameController::avatarMoved(MoveEvent &event) {
     if (event.userEvent) {
 
         // is filterMoveMessages even used?  it doesn't look like the option is hooked up in the configuration menu
-        if (!settings.filterMoveMessages) {
+        if (!xu4.settings->filterMoveMessages) {
             switch (c->transportContext) {
                 case TRANSPORT_FOOT:
                 case TRANSPORT_HORSE:
@@ -2260,7 +2263,7 @@ void GameController::avatarMoved(MoveEvent &event) {
         if (event.result & MOVE_BLOCKED) {
 
             /* if shortcuts are enabled, try them! */
-            if (settings.shortcutCommands) {
+            if (xu4.settings->shortcutCommands) {
                 MapCoords new_coords = c->location->coords;
                 MapTile *tile;
 
@@ -2280,7 +2283,7 @@ void GameController::avatarMoved(MoveEvent &event) {
             }
 
             /* if we're still blocked */
-            if ((event.result & MOVE_BLOCKED) && !settings.filterMoveMessages) {
+            if ((event.result & MOVE_BLOCKED) && !xu4.settings->filterMoveMessages) {
                 soundPlay(SOUND_BLOCKED, false);
                 screenMessage("%cBlocked!%c\n", FG_GREY, FG_WHITE);
             }
@@ -2322,7 +2325,7 @@ void GameController::avatarMovedInDungeon(MoveEvent &event) {
     Dungeon *dungeon = dynamic_cast<Dungeon *>(c->location->map);
     Direction realDir = dirNormalize((Direction)c->saveGame->orientation, event.dir);
 
-    if (!settings.filterMoveMessages) {
+    if (!xu4.settings->filterMoveMessages) {
         if (event.userEvent) {
             if (event.result & MOVE_TURNED) {
                 if (dirRotateCCW((Direction)c->saveGame->orientation) == realDir)
@@ -2592,7 +2595,7 @@ void mixReagents() {
             c->stats->resetReagentsMenu();
 
             c->stats->setView(MIX_REAGENTS);
-            if (settings.enhancements && settings.enhancementsOptions.u5spellMixing)
+            if (xu4.settings->enhancements && xu4.settings->enhancementsOptions.u5spellMixing)
                 done = mixReagentsForSpellU5(spell);
             else
                 done = mixReagentsForSpellU4(spell);
@@ -2805,7 +2808,7 @@ bool talkAt(const Coords &coords) {
     }
 
     Conversation conv;
-    TRACE_LOCAL(gameDbg, "Setting up script information providers.");
+    //TRACE_LOCAL(gameDbg, "Setting up script information providers.");
     conv.script->addProvider("party", c->party);
     conv.script->addProvider("context", c);
 

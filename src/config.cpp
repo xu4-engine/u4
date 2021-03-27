@@ -28,6 +28,7 @@
 #include "settings.h"
 #include "sound.h"
 #include "u4file.h"
+#include "xu4.h"
 
 using namespace std;
 
@@ -121,7 +122,7 @@ Config::Config() {
 
     xmlXIncludeProcess(xcd.doc);
 
-    if (settings.validateXml && xcd.doc->intSubset) {
+    if (xu4.settings->validateXml && xcd.doc->intSubset) {
         string errorMessage;
         xmlValidCtxt cvp;
 
