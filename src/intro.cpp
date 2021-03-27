@@ -33,8 +33,6 @@
 
 using namespace std;
 
-extern bool useProfile;
-extern string profileName;
 extern bool quit;
 
 IntroController *intro = NULL;
@@ -630,8 +628,11 @@ void IntroController::updateScreen() {
         drawMap();
         drawBeasties();
         // display the profile name if a local profile is being used
-        if (useProfile)
-            screenTextAt(40-profileName.length(), 24, "%s", profileName.c_str());
+        {
+        const string& pname = settings.profile;
+        if (! pname.empty())
+            screenTextAt(40-pname.length(), 24, "%s", pname.c_str());
+        }
         break;
 
     case INTRO_MENU:

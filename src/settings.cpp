@@ -78,12 +78,17 @@ Settings::Settings() {
 /**
  * Initialize the settings.
  */
-void Settings::init(const bool useProfile, const string profileName) {
-    if (useProfile) {
+void Settings::init(const char* profileName) {
+    if (profileName && profileName[0]) {
         userPath = "./profiles/";
-        userPath += profileName.c_str();
+        userPath += profileName;
         userPath += "/";
+
+        profile = profileName;
+        if (profile.length() > 20)
+            errorFatal("Profile name must be no more than 20 characters.");
     } else {
+        profile.clear();
 
 #if defined(MACOSX)
             FSRef folder;

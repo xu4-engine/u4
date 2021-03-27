@@ -156,7 +156,7 @@ class Settings : public SettingsData, public Observable<Settings *> {
 
 public:
     /* Methods */
-    void init(const bool useProfile, const string profileName);
+    void init(const char* profileName);
     static Settings &getInstance();
     void setData(const SettingsData &data);
     bool read();
@@ -164,6 +164,8 @@ public:
 
     const string &getUserPath();
     const char** getBattleDiffs();
+
+    string profile;
 
 private:
     Settings();
