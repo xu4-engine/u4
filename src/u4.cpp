@@ -253,6 +253,9 @@ int main(int argc, char *argv[]) {
             eventHandler->run();
             eventHandler->popController();
             eventHandler->setControllerDone(false);
+
+            eventHandler->popMouseAreaSet();
+            screenSetMouseCursor(MC_DEFAULT);
         }
     }
 
