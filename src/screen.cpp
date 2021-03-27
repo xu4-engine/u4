@@ -18,13 +18,8 @@
 #include "dungeonview.h"
 #include "error.h"
 #include "event.h"
-#include "intro.h"
 #include "imagemgr.h"
-#include "location.h"
-#include "names.h"
 #include "object.h"
-#include "player.h"
-#include "savegame.h"
 #include "scale.h"
 #include "settings.h"
 #include "textcolor.h"
@@ -175,12 +170,10 @@ void screenDelete() {
  * Re-initializes the screen and implements any changes made in settings
  */
 void screenReInit() {
-    xu4.intro->deleteIntro();   /* delete intro stuff */
     Tileset::unloadAllImages(); /* unload tilesets, which will be reloaded lazily as needed */
     tileanims = NULL;
     screenDelete(); /* delete screen stuff */
     screenInit();   /* re-init screen stuff (loading new backgrounds, etc.) */
-    xu4.intro->init();  /* re-fix the backgrounds loaded and scale images, etc. */
 }
 
 void screenTextAt(int x, int y, const char *fmt, ...) {
@@ -1087,7 +1080,7 @@ int screenPointInMouseArea(int x, int y, MouseArea *area) {
 }
 
 void screenRedrawMapArea() {
-    game->mapArea.update();
+    xu4.game->mapArea.update();
 }
 
 void screenEraseMapArea() {

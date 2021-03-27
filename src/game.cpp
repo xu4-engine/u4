@@ -62,8 +62,6 @@
 
 using namespace std;
 
-GameController *game = NULL;
-
 /*-----------------*/
 /* Functions BEGIN */
 
@@ -490,19 +488,19 @@ void gameSetViewMode(ViewMode newMode) {
 void gameUpdateScreen() {
     switch (c->location->viewMode) {
     case VIEW_NORMAL:
-        screenUpdate(&game->mapArea, true, false);
+        screenUpdate(&xu4.game->mapArea, true, false);
         break;
     case VIEW_GEM:
         screenGemUpdate();
         break;
     case VIEW_RUNE:
-        screenUpdate(&game->mapArea, false, false);
+        screenUpdate(&xu4.game->mapArea, false, false);
         break;
     case VIEW_DUNGEON:
-        screenUpdate(&game->mapArea, true, false);
+        screenUpdate(&xu4.game->mapArea, true, false);
         break;
     case VIEW_DEAD:
-        screenUpdate(&game->mapArea, true, true);
+        screenUpdate(&xu4.game->mapArea, true, true);
         break;
     case VIEW_CODEX: /* the screen updates will be handled elsewhere */
         break;
@@ -706,12 +704,12 @@ void GameController::finishTurn() {
 void GameController::flashTile(const Coords &coords, MapTile tile, int frames) {
     c->location->map->annotations->add(coords, tile, true);
 
-    screenTileUpdate(&game->mapArea, coords);
+    screenTileUpdate(&xu4.game->mapArea, coords);
 
     screenWait(frames);
     c->location->map->annotations->remove(coords, tile);
 
-    screenTileUpdate(&game->mapArea, coords, false);
+    screenTileUpdate(&xu4.game->mapArea, coords, false);
 }
 
 void GameController::flashTile(const Coords &coords, const string &tilename, int timeFactor) {
@@ -799,9 +797,9 @@ void gameSpellEffect(int spell, int player, Sound sound) {
     case Spell::SFX_TREMOR:
     case Spell::SFX_INVERT:
         gameUpdateScreen();
-        game->mapArea.highlight(0, 0, VIEWPORT_W * TILE_WIDTH, VIEWPORT_H * TILE_HEIGHT);
+        xu4.game->mapArea.highlight(0, 0, VIEWPORT_W * TILE_WIDTH, VIEWPORT_H * TILE_HEIGHT);
         EventHandler::sleep(time);
-        game->mapArea.unhighlight();
+        xu4.game->mapArea.unhighlight();
 
         if (effect == Spell::SFX_TREMOR) {
             gameUpdateScreen();
@@ -1388,7 +1386,6 @@ bool GameController::keyPressed(int key) {
             {
                 // TODO - implement loop in main() and let quit fall back to there
                 // Quit to the main menu
-                extern bool quit;
                 endTurn = false;
 
                 screenMessage("Quit to menu?");
@@ -1400,42 +1397,14 @@ bool GameController::keyPressed(int key) {
                 }
 
                 eventHandler->setScreenUpdate(NULL);
-                eventHandler->popController();
-
-                eventHandler->pushController(xu4.intro);
 
                 // Fade out the music and hide the cursor
-                //before returning to the menu.
+                // before returning to the menu.
                 musicFadeOut(1000);
                 screenHideCursor();
 
-                xu4.intro->init();
-                eventHandler->run();
-
-
-                if (!quit) {
-                    eventHandler->setControllerDone(false);
-                    eventHandler->popController();
-                    eventHandler->pushController(this);
-
-
-                    if (xu4.intro->hasInitiatedNewGame())
-                    {
-                        //Loads current savegame
-                        init();
-                    }
-                    else
-                    {
-                        //Inits screen stuff without renewing game
-                        initScreen();
-                        initScreenWithoutReloadingState();
-                    }
-
-                    this->mapArea.reinit();
-
-                    xu4.intro->deleteIntro();
-                    eventHandler->run();
-                }
+                xu4.stage = StageIntro;
+                eventHandler->setControllerDone();
             }
             break;
 
@@ -1475,7 +1444,7 @@ bool GameController::keyPressed(int key) {
         }
 
     if (valid && endTurn) {
-        if (eventHandler->getController() == game)
+        if (eventHandler->getController() == xu4.game)
             c->location->turnCompleter->finishTurn();
     }
     else if (!endTurn) {
@@ -2716,10 +2685,10 @@ bool gamePeerCity(int city, void *data) {
     peerMap = mapMgr->get((MapId)(city+1));
 
     if (peerMap != NULL) {
-        game->setMap(peerMap, 1, NULL);
+        xu4.game->setMap(peerMap, 1, NULL);
         c->location->viewMode = VIEW_GEM;
-        game->paused = true;
-        game->pausedTimer = 0;
+        xu4.game->paused = true;
+        xu4.game->pausedTimer = 0;
 
         screenDisableCursor();
 #ifdef IOS
@@ -2729,9 +2698,9 @@ bool gamePeerCity(int city, void *data) {
 #endif
         ReadChoiceController::get("\015 \033");
 
-        game->exitToParentMap();
+        xu4.game->exitToParentMap();
         screenEnableCursor();
-        game->paused = false;
+        xu4.game->paused = false;
 
         return true;
     }
@@ -2753,8 +2722,8 @@ void peer(bool useGem) {
         screenMessage("Peer at a Gem!\n");
     }
 
-    game->paused = true;
-    game->pausedTimer = 0;
+    xu4.game->paused = true;
+    xu4.game->pausedTimer = 0;
     screenDisableCursor();
 
     c->location->viewMode = VIEW_GEM;
@@ -2767,7 +2736,7 @@ void peer(bool useGem) {
 
     screenEnableCursor();
     c->location->viewMode = VIEW_NORMAL;
-    game->paused = false;
+    xu4.game->paused = false;
 }
 
 /**
@@ -3030,7 +2999,8 @@ void GameController::timerFired() {
          * force pass if no commands within last 20 seconds
          */
         Controller *controller = eventHandler->getController();
-        if (controller != NULL && (eventHandler->getController() == game || dynamic_cast<CombatController *>(eventHandler->getController()) != NULL) &&
+        if (controller != NULL &&
+            (eventHandler->getController() == xu4.game || dynamic_cast<CombatController *>(eventHandler->getController()) != NULL) &&
              gameTimeSinceLastCommand() > 20) {
 
             /* pass the turn, and redraw the text area so the prompt is shown */
@@ -3685,7 +3655,7 @@ mixReagentsSuper() {
 
   int oldlocation = c->location->viewMode;
   c->location->viewMode = VIEW_MIXTURES;
-  screenUpdate(&game->mapArea, true, true);
+  screenUpdate(&xu4.game->mapArea, true, true);
 
   screenTextAt(16, 2, "%s", "<-Shops");
 

@@ -791,9 +791,9 @@ void IntroController::finishInitiateGame(const string &nameBuffer, SexType sex)
 
     // done: exit intro and let game begin
     questionArea.disableCursor();
-    EventHandler::setControllerDone();
 
-    return;
+    xu4.stage = StagePlay;
+    EventHandler::setControllerDone();
 }
 
 void IntroController::showStory() {
@@ -940,6 +940,7 @@ void IntroController::journeyOnward() {
         return;
     }
 
+    xu4.stage = StagePlay;
     EventHandler::setControllerDone();
 }
 
@@ -1128,7 +1129,9 @@ void IntroController::updateVideoMenu(MenuEvent &event) {
                 xu4.settings->write();
 
                 /* FIXME: resize images, etc. */
+                deleteIntro();  // delete intro stuff
                 screenReInit();
+                init();         // re-fix the backgrounds and scale images, etc.
 
                 // go back to menu mode
                 mode = INTRO_MENU;

@@ -95,10 +95,10 @@ void deathTimer(void *data) {
 
 void deathRevive() {
     while(!c->location->map->isWorldMap() && c->location->prev != NULL) {
-        game->exitToParentMap();
+        xu4.game->exitToParentMap();
     }
 
-    eventHandler->setController(game);
+    eventHandler->setController(xu4.game);
 
     deathSequenceRunning = 0;
     gameSetViewMode(VIEW_NORMAL);
@@ -108,7 +108,7 @@ void deathRevive() {
 
     /* Now, move the avatar into the castle and put him
        in front of Lord British */
-    game->setMap(mapMgr->get(100), 1, NULL);
+    xu4.game->setMap(mapMgr->get(100), 1, NULL);
     c->location->coords.x = REVIVE_CASTLE_X;
     c->location->coords.y = REVIVE_CASTLE_Y;
     c->location->coords.z = 0;

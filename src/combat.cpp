@@ -72,13 +72,13 @@ CombatController::CombatController() : map(NULL) {
 }
 
 CombatController::CombatController(CombatMap *m) : map(m) {
-    game->setMap(map, true, NULL, this);
+    xu4.game->setMap(map, true, NULL, this);
     c->party->addObserver(this);
 }
 
 CombatController::CombatController(MapId id) {
     map = getCombatMap(mapMgr->get(id));
-    game->setMap(map, true, NULL, this);
+    xu4.game->setMap(map, true, NULL, this);
     c->party->addObserver(this);
     forceStandardEncounterSize = false;
 }
@@ -266,7 +266,7 @@ void CombatController::end(bool adjustKarma) {
         /* need to get this here because when we exit to the parent map, all the monsters are cleared */
         bool won = isWon();
 
-        game->exitToParentMap();
+        xu4.game->exitToParentMap();
         musicPlayLocale();
 
         if (winOrLose) {

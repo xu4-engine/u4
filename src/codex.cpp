@@ -22,6 +22,7 @@
 #include "u4.h"
 #include "u4file.h"
 #include "utils.h"
+#include "xu4.h"
 #ifdef IOS
 #include "ios_helpers.h"
 #endif
@@ -87,7 +88,7 @@ void codexStart() {
     U4IOS::IOSHideGameControllerHelper hideControllsHelper;
 #endif
     screenDisableCursor();
-    screenUpdate(&game->mapArea, false, true);
+    screenUpdate(&xu4.game->mapArea, false, true);
 
     /**
      * make the avatar alone
@@ -195,7 +196,7 @@ void codexEject(CodexEjectCode code) {
 
     /* return view to normal and exit the Abyss */
     gameSetViewMode(VIEW_NORMAL);
-    game->exitToParentMap();
+    xu4.game->exitToParentMap();
     musicPlayLocale();
 
     /**
@@ -211,7 +212,7 @@ void codexEject(CodexEjectCode code) {
 
     /* finally, finish the turn */
     c->location->turnCompleter->finishTurn();
-    eventHandler->setController(game);
+    eventHandler->setController(xu4.game);
 }
 
 /**

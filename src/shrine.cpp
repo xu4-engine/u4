@@ -260,7 +260,7 @@ void Shrine::showVision(bool elevated) {
 }
 
 void Shrine::eject() {
-    game->exitToParentMap();
+    xu4.game->exitToParentMap();
     musicPlayLocale();
     c->location->turnCompleter->finishTurn();
 }

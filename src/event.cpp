@@ -27,7 +27,6 @@ int eventTimerGranularity = 300;
 int eventTimerGranularity = 250;
 #endif
 
-extern bool quit;
 bool EventHandler::controllerDone = false;
 bool EventHandler::ended = false;
 
@@ -78,7 +77,7 @@ bool EventHandler::getControllerDone() { return controllerDone; }
 /** Signals that the game should immediately exit. */
 void EventHandler::quitGame() {
     ended = true;
-    quit = true;
+    xu4.stage = StageExitGame;
 }
 
 TimedEventMgr* EventHandler::getTimer()  { return &timer;}

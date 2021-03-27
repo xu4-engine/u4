@@ -17,6 +17,7 @@
 #include "screen.h"
 #include "shrine.h"
 #include "tile.h"
+#include "xu4.h"
 
 /**
  * Creates a dungeon ladder portal based on the action given
@@ -127,7 +128,7 @@ int usePortalAt(Location *location, MapCoords coords, PortalTriggerAction action
 
     /* portal just exits to parent map */
     if (portal->exitPortal) {
-        game->exitToParentMap();
+        xu4.game->exitToParentMap();
         musicPlayLocale();
         return 1;
     }
@@ -135,7 +136,7 @@ int usePortalAt(Location *location, MapCoords coords, PortalTriggerAction action
         location->coords = portal->start;
 
     else {
-        game->setMap(destination, portal->saveLocation, portal);
+        xu4.game->setMap(destination, portal->saveLocation, portal);
         musicPlayLocale();
     }
 

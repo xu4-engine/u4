@@ -34,7 +34,6 @@
 #endif
 
 bool verbose = false;
-bool quit = false;
 
 
 enum OptionsFlag {
@@ -171,10 +170,7 @@ void servicesInit(XU4GameServices* gs, Options* opt) {
     Tileset::loadAll();
     creatureMgr->getInstance();
 
-    /*
-    if (! (opt.flags & OPT_NO_INTRO))
-        gs->intro = new IntroController();
-    */
+    gs->stage = (opt->flags & OPT_NO_INTRO) ? StagePlay : StageIntro;
 }
 
 void servicesFree(XU4GameServices* gs) {
@@ -191,8 +187,6 @@ XU4GameServices xu4;
 
 
 int main(int argc, char *argv[]) {
-    int skipIntro;
-
 #if defined(MACOSX)
     osxInit(argv[0]);
 #endif
@@ -207,8 +201,6 @@ int main(int argc, char *argv[]) {
 
     memset(&xu4, 0, sizeof xu4);
     servicesInit(&xu4, &opt);
-
-    skipIntro = opt.flags & OPT_NO_INTRO;
     }
 
 #if 1
@@ -224,31 +216,44 @@ int main(int argc, char *argv[]) {
     ++pb;
 #endif
 
-    if (! skipIntro)
+    while( xu4.stage != StageExitGame )
     {
-        if (! xu4.intro)
-            xu4.intro = new IntroController;
+        if( xu4.stage == StageIntro ) {
+            if (! xu4.intro)
+                xu4.intro = new IntroController;
 
-        /* do the intro */
-        xu4.intro->init();
-        xu4.intro->preloadMap();
+            /* Show the introduction */
+            xu4.intro->init();
+            xu4.intro->preloadMap();
 
-        eventHandler->pushController(xu4.intro);
-        eventHandler->run();
-        eventHandler->popController();
+            eventHandler->pushController(xu4.intro);
+            eventHandler->run();
+            eventHandler->popController();
+            eventHandler->setControllerDone(false);
 
-        xu4.intro->deleteIntro();
-    }
+            xu4.intro->deleteIntro();
+        } else {
 
-    eventHandler->setControllerDone(false);
-    if (! quit) {
-        /* play the game! */
-        game = new GameController();
-        game->init();
+            /* Play the game! */
 
-        eventHandler->pushController(game);
-        eventHandler->run();
-        eventHandler->popController();
+            if (! xu4.game) {
+                xu4.game = new GameController();
+                xu4.game->init();
+            } else if (xu4.intro && xu4.intro->hasInitiatedNewGame()) {
+                //Loads current savegame
+                xu4.game->init();
+            } else {
+                //Inits screen stuff without renewing game
+                xu4.game->initScreen();
+                xu4.game->initScreenWithoutReloadingState();
+                xu4.game->mapArea.reinit();
+            }
+
+            eventHandler->pushController(xu4.game);
+            eventHandler->run();
+            eventHandler->popController();
+            eventHandler->setControllerDone(false);
+        }
     }
 
     servicesFree(&xu4);

@@ -7,8 +7,8 @@
 #include <algorithm>
 
 #include "object.h"
-
 #include "map.h"
+#include "xu4.h"
 
 using namespace std;
 
@@ -42,7 +42,7 @@ void Object::remove() {
 void Object::animateMovement()
 {
     //TODO abstract movement - also make screen.h and game.h not required
-    screenTileUpdate(&game->mapArea, prevCoords, false);
-    if (screenTileUpdate(&game->mapArea, coords, false))
+    screenTileUpdate(&xu4.game->mapArea, prevCoords, false);
+    if (screenTileUpdate(&xu4.game->mapArea, coords, false))
         screenWait(1);
 }

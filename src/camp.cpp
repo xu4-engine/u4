@@ -53,7 +53,7 @@ CampController::CampController() {
         id = MAP_CAMP_CON;
 
     map = getCombatMap(mapMgr->get(id));
-    game->setMap(map, true, NULL, this);
+    xu4.game->setMap(map, true, NULL, this);
 }
 
 void CampController::init(Creature *m) {
@@ -108,7 +108,7 @@ void CampController::begin() {
         c->saveGame->lastcamp = (c->saveGame->moves / CAMP_HEAL_INTERVAL) & 0xffff;
 
         eventHandler->popController();
-        game->exitToParentMap();
+        xu4.game->exitToParentMap();
         musicFadeIn(CAMP_FADE_IN_TIME, true);
         delete this;
     }
@@ -266,7 +266,7 @@ void InnController::maybeAmbush()
         }
 
         map = getCombatMap(mapMgr->get(mapid));
-        game->setMap(map, true, NULL, this);
+        xu4.game->setMap(map, true, NULL, this);
 
         init(creature);
         showCombatMessage(showMessage);
