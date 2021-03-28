@@ -2,34 +2,23 @@
  * $Id$
  */
 
-#include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
-
-#include <ctime>
-#include <string>
+#include <cstring>
 #include "u4.h"
 
 #include "maploader.h"
 
 #include "city.h"
 #include "combat.h"
-#include "conversation.h"
 #include "dialogueloader.h"
 #include "debug.h"
 #include "dungeon.h"
 #include "error.h"
-#include "filesystem.h"
 #include "map.h"
 #include "maploader.h"
 #include "mapmgr.h"
-#include "object.h"
 #include "person.h"
-#include "portal.h"
 #include "tilemap.h"
-#include "tileset.h"
 #include "u4file.h"
-#include "utils.h"
-#include "image.h"
-#include "imagemgr.h"
 #include "xu4.h"
 
 std::map<Map::Type, MapLoader *> *MapLoader::loaderMap = NULL;
@@ -43,7 +32,7 @@ MapLoader *WorldMapLoader::instance = MapLoader::registerLoader(new WorldMapLoad
  * Gets a map loader for the given map type.
  */
 MapLoader *MapLoader::getLoader(Map::Type type) {
-    ASSERT(loaderMap != NULL, "ImageLoader::getLoader loaderMap not initialized");
+    ASSERT(loaderMap != NULL, "MapLoader::getLoader loaderMap not initialized");
     if (loaderMap->find(type) == loaderMap->end())
         return NULL;
     return (*loaderMap)[type];
@@ -77,11 +66,6 @@ bool MapLoader::loadData(Map *map, U4FILE *f) {
     if (map->chunk_width == 0)
         map->chunk_width = map->width;
 
-    clock_t total = 0;
-#ifndef NPERF
-    clock_t start = clock();
-#endif
-
     u4fseek(f, map->offset, SEEK_CUR);
 
     for(ych = 0; ych < (map->height / map->chunk_height); ++ych) {
@@ -101,25 +85,13 @@ bool MapLoader::loadData(Map *map, U4FILE *f) {
                         if (c == EOF)
                             return false;
 
-                        clock_t s = clock();
                         MapTile mt = map->translateFromRawTileIndex(c);
-                        total += clock() - s;
-
                         map->data[x + (y * map->width) + (xch * map->chunk_width) + (ych * map->chunk_height * map->width)] = mt;
                     }
                 }
             }
         }
     }
-
-#ifndef NPERF
-    clock_t end = clock();
-    FILE *file = FileSystem::openFile("debug/mapLoadData.txt", "wt");
-    if (file) {
-        fprintf(file, "%d msecs total\n%d msecs used by Tile::translate()", int(end - start), int(total));
-        fclose(file);
-    }
-#endif
 
     return true;
 }
