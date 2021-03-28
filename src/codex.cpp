@@ -212,7 +212,7 @@ void codexEject(CodexEjectCode code) {
 
     /* finally, finish the turn */
     c->location->turnCompleter->finishTurn();
-    eventHandler->setController(xu4.game);
+    xu4.eventHandler->setController(xu4.game);
 }
 
 /**
@@ -222,7 +222,7 @@ void codexHandleWOP(const string &word) {
     static int tries = 1;
     int i;
 
-    eventHandler->popKeyHandler();
+    xu4.eventHandler->popKeyHandler();
 
     /* slight pause before continuing */
     screenMessage("\n");
@@ -293,7 +293,7 @@ void codexHandleVirtues(const string &virtue) {
     static int current = 0;
     static int tries = 1;
 
-    eventHandler->popKeyHandler();
+    xu4.eventHandler->popKeyHandler();
 
     /* slight pause before continuing */
     screenMessage("\n");
@@ -358,7 +358,7 @@ void codexHandleVirtues(const string &virtue) {
             U4IOS::beginChoiceConversation();
             U4IOS::updateChoicesInDialog(" ", "", -1);
 #endif
-            eventHandler->pushKeyHandler(&codexHandleInfinityAnyKey);
+            xu4.eventHandler->pushKeyHandler(&codexHandleInfinityAnyKey);
         }
     }
 
@@ -382,7 +382,7 @@ void codexHandleVirtues(const string &virtue) {
 }
 
 bool codexHandleInfinityAnyKey(int key, void *data) {
-    eventHandler->popKeyHandler();
+    xu4.eventHandler->popKeyHandler();
 
     screenMessage("\n\nThen what is the one thing which encompasses and is the whole of all undeniable Truth, unending Love, and unyielding Courage?\n\n");
 #ifdef IOS
@@ -396,7 +396,7 @@ bool codexHandleInfinityAnyKey(int key, void *data) {
 void codexHandleInfinity(const string &answer) {
     static int tries = 1;
 
-    eventHandler->popKeyHandler();
+    xu4.eventHandler->popKeyHandler();
 #ifdef IOS
     U4IOS::IOSHideGameControllerHelper hideControllsHelper;
 #endif
@@ -418,12 +418,12 @@ void codexHandleInfinity(const string &answer) {
         U4IOS::updateChoicesInDialog(" ", "", -1);
         U4IOS::testFlightPassCheckPoint("Game won!");
 #endif
-        eventHandler->pushKeyHandler(&codexHandleEndgameAnyKey);
+        xu4.eventHandler->pushKeyHandler(&codexHandleEndgameAnyKey);
     }
     else if (tries++ < 3) {
         codexImpureThoughts();
         screenMessage("\nAbove the din, the voice asks:\n\nIf all eight virtues of the Avatar combine into and are derived from the Three Principles of Truth, Love and Courage...");
-        eventHandler->pushKeyHandler(&codexHandleInfinityAnyKey);
+        xu4.eventHandler->pushKeyHandler(&codexHandleInfinityAnyKey);
     }
     else codexEject(CODEX_EJECT_BAD_INFINITY);
 }
@@ -431,7 +431,7 @@ void codexHandleInfinity(const string &answer) {
 bool codexHandleEndgameAnyKey(int key, void *data) {
     static int index = 1;
 
-    eventHandler->popKeyHandler();
+    xu4.eventHandler->popKeyHandler();
 
     if (index < 10) {
 
@@ -451,7 +451,7 @@ bool codexHandleEndgameAnyKey(int key, void *data) {
             screenMessage("%s", codexEndgameText2[index-7].c_str());
 
         index++;
-        eventHandler->pushKeyHandler(&codexHandleEndgameAnyKey);
+        xu4.eventHandler->pushKeyHandler(&codexHandleEndgameAnyKey);
     }
     else {
         /* CONGRATULATIONS!... you have completed the game in x turns */
@@ -460,7 +460,7 @@ bool codexHandleEndgameAnyKey(int key, void *data) {
 #ifdef IOS
         U4IOS::endChoiceConversation();
 #endif
-        eventHandler->pushKeyHandler(&KeyHandler::ignoreKeys);
+        xu4.eventHandler->pushKeyHandler(&KeyHandler::ignoreKeys);
     }
 
     return true;

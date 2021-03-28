@@ -27,11 +27,11 @@ TextView::TextView(int x, int y, int columns, int rows) : View(x, y, columns * C
     this->cursorPhase = 0;
     if (charset == NULL)
         charset = imageMgr->get(BKGD_CHARSET)->image;
-    eventHandler->getTimer()->add(&cursorTimer, /*SCR_CYCLE_PER_SECOND*/4, this);
+    xu4.eventHandler->getTimer()->add(&cursorTimer, /*SCR_CYCLE_PER_SECOND*/4, this);
 }
 
 TextView::~TextView() {
-    eventHandler->getTimer()->remove(&cursorTimer, this);
+    xu4.eventHandler->getTimer()->remove(&cursorTimer, this);
 }
 
 void TextView::reinit() {

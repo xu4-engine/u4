@@ -14,8 +14,6 @@
 
 using std::string;
 
-#define eventHandler (EventHandler::getInstance())
-
 #define U4_UP           '['
 #define U4_DOWN         '/'
 #define U4_LEFT         ';'
@@ -277,13 +275,9 @@ public:
     EventHandler();
 
     /* Static functions */
-    static EventHandler *getInstance();
     static void sleep(unsigned int usec);
     static void wait_msecs(unsigned int msecs);
     static void wait_cycles(unsigned int cycles);
-    static void setControllerDone(bool exit = true);
-    static bool getControllerDone();
-    static void quitGame();
     static bool timerQueueEmpty();
     static int setKeyRepeat(int delay, int interval);
 
@@ -300,10 +294,14 @@ public:
 #endif
 
     /* Controller functions */
+    void runController(Controller*);
     Controller *pushController(Controller *c);
     Controller *popController();
     Controller *getController() const;
     void setController(Controller *c);
+    void setControllerDone(bool exit = true);
+    bool getControllerDone();
+    void quitGame();
 
     /* Key handler functions */
     void pushKeyHandler(KeyHandler kh);
@@ -318,15 +316,12 @@ public:
     _MouseArea* mouseAreaForPoint(int x, int y);
 
 protected:
-    static bool controllerDone;
-    static bool ended;
+    bool controllerDone;
+    bool ended;
     TimedEventMgr timer;
     std::vector<Controller *> controllers;
     MouseAreaList mouseAreaSets;
     updateScreenCallback updateScreen;
-
-private:
-    static EventHandler *instance;
 };
 
 #endif

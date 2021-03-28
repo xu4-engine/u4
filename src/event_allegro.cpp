@@ -62,13 +62,15 @@ void TimedEventMgr::start() {
  * Constructs an event handler object.
  */
 EventHandler::EventHandler() : timer(eventTimerGranularity), updateScreen(NULL) {
+    controllerDone = ended = false;
 }
+
 
 static void handleMouseMotionEvent(int x, int y) {
     if (!xu4.settings->mouseOptions.enabled)
         return;
 
-    MouseArea* area = eventHandler->mouseAreaForPoint(x, y);
+    MouseArea* area = xu4.eventHandler->mouseAreaForPoint(x, y);
     if (area)
         screenSetMouseCursor(area->cursor);
     else
@@ -87,14 +89,14 @@ static void handleActiveEvent(const ALLEGRO_EVENT* event, updateScreenCallback u
 }
 */
 
-static void handleMouseButtonDownEvent(const ALLEGRO_EVENT* event, Controller *controller, updateScreenCallback updateScreen) {
+static void handleMouseButtonDownEvent(EventHandler* handler, const ALLEGRO_EVENT* event, Controller *controller, updateScreenCallback updateScreen) {
     static const uint8_t buttonMap[4] = { 0, 0, 2, 1 };
 
     if (!xu4.settings->mouseOptions.enabled)
         return;
 
     int button = buttonMap[event->mouse.button & 3];
-    MouseArea *area = eventHandler->mouseAreaForPoint(event->mouse.x, event->mouse.y);
+    MouseArea *area = handler->mouseAreaForPoint(event->mouse.x, event->mouse.y);
     if (!area || area->command[button] == 0)
         return;
     controller->keyPressed(area->command[button]);
@@ -188,13 +190,13 @@ void EventHandler::sleep(unsigned int msec) {
                 if (event.timer.source == sa_refreshTimer) {
                     redraw = true;
                 } else {
-                    eventHandler->getTimer()->tick();
+                    xu4.eventHandler->getTimer()->tick();
                 }
                 if (getTicks() >= endTime)
                     sleeping = false;
                 break;
             case ALLEGRO_EVENT_DISPLAY_CLOSE:
-                EventHandler::quitGame();
+                xu4.eventHandler->quitGame();
                 sleeping = false;
                 break;
             }
@@ -231,7 +233,7 @@ void EventHandler::run() {
                 handleKeyDownEvent(&event, getController(), updateScreen);
                 break;
             case ALLEGRO_EVENT_MOUSE_BUTTON_DOWN:
-                handleMouseButtonDownEvent(&event, getController(), updateScreen);
+                handleMouseButtonDownEvent(this, &event, getController(), updateScreen);
                 break;
             case ALLEGRO_EVENT_MOUSE_AXES:
                 handleMouseMotionEvent(event.mouse.x, event.mouse.y);
@@ -240,7 +242,7 @@ void EventHandler::run() {
                 if (event.timer.source == sa_refreshTimer)
                     redraw = true;
                 else
-                    eventHandler->getTimer()->tick();
+                    getTimer()->tick();
                 break;
             /*
             case SDL_ACTIVEEVENT:
@@ -248,7 +250,7 @@ void EventHandler::run() {
                 break;
             */
             case ALLEGRO_EVENT_DISPLAY_CLOSE:
-                EventHandler::quitGame();
+                quitGame();
                 break;
 #if 0
             // For mobile devices...

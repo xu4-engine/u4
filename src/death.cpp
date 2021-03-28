@@ -64,15 +64,15 @@ void deathStart(int delay) {
     timerMsg = 0;
 
     WaitController waitCtrl(delay * xu4.settings->gameCyclesPerSecond);
-    eventHandler->pushController(&waitCtrl);
+    xu4.eventHandler->pushController(&waitCtrl);
     waitCtrl.wait();
 
     gameSetViewMode(VIEW_DEAD);
 
-    eventHandler->pushKeyHandler(&KeyHandler::ignoreKeys);
+    xu4.eventHandler->pushKeyHandler(&KeyHandler::ignoreKeys);
     screenDisableCursor();
 
-    eventHandler->getTimer()->add(&deathTimer, xu4.settings->gameCyclesPerSecond);
+    xu4.eventHandler->getTimer()->add(&deathTimer, xu4.settings->gameCyclesPerSecond);
 }
 
 void deathTimer(void *data) {
@@ -87,7 +87,7 @@ void deathTimer(void *data) {
         timerMsg++;
 
         if (timerMsg >= N_MSGS) {
-            eventHandler->getTimer()->remove(&deathTimer);
+            xu4.eventHandler->getTimer()->remove(&deathTimer);
             deathRevive();
         }
     }
@@ -98,7 +98,7 @@ void deathRevive() {
         xu4.game->exitToParentMap();
     }
 
-    eventHandler->setController(xu4.game);
+    xu4.eventHandler->setController(xu4.game);
 
     deathSequenceRunning = 0;
     gameSetViewMode(VIEW_NORMAL);

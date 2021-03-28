@@ -18,6 +18,7 @@
 #include "tileset.h"
 #include "utils.h"
 #include "weapon.h"
+#include "xu4.h"
 
 
 CheatMenuController::CheatMenuController(GameController *game) : game(game) {
@@ -136,7 +137,7 @@ bool CheatMenuController::keyPressed(int key) {
                       "(more)");
 
         ReadChoiceController pauseController("");
-        eventHandler->pushController(&pauseController);
+        xu4.eventHandler->pushController(&pauseController);
         pauseController.waitFor();
 
         screenMessage("\n"
@@ -153,7 +154,7 @@ bool CheatMenuController::keyPressed(int key) {
                       "y - Y-up\n"
                       "(more)");
 
-        eventHandler->pushController(&pauseController);
+        xu4.eventHandler->pushController(&pauseController);
         pauseController.waitFor();
 
         screenMessage("\n"
@@ -271,7 +272,7 @@ bool CheatMenuController::keyPressed(int key) {
                 screenMessage("%s\n", tile->getName().c_str());
 
                 // Get the direction in which to create the transport
-                eventHandler->pushController(&readDir);
+                xu4.eventHandler->pushController(&readDir);
 
                 screenMessage("Dir: ");
                 coords.move(readDir.waitFor(), c->location->map);
@@ -311,7 +312,7 @@ bool CheatMenuController::keyPressed(int key) {
     case 'w': {
         screenMessage("Wind Dir ('l' to lock):\n");
         WindCmdController ctrl;
-        eventHandler->pushController(&ctrl);
+        xu4.eventHandler->pushController(&ctrl);
         ctrl.waitFor();
         break;
     }

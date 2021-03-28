@@ -332,8 +332,7 @@ bool spellCast(unsigned int spell, int character, int param, SpellCastError *err
 }
 
 CombatController *spellCombatController() {
-    CombatController *cc = dynamic_cast<CombatController *>(eventHandler->getController());
-    return cc;
+    return dynamic_cast<CombatController *>(xu4.eventHandler->getController());
 }
 
 /**

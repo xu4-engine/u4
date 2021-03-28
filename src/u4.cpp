@@ -167,6 +167,8 @@ void servicesInit(XU4GameServices* gs, Options* opt) {
     if (! (opt->flags & OPT_NO_AUDIO))
         soundInit();
 
+    gs->eventHandler = new EventHandler;
+
     Tileset::loadAll();
     creatureMgr->getInstance();
 
@@ -176,6 +178,7 @@ void servicesInit(XU4GameServices* gs, Options* opt) {
 void servicesFree(XU4GameServices* gs) {
     delete gs->intro;
     Tileset::unloadAll();
+    delete gs->eventHandler;
     soundDelete();
     screenDelete();
     configFree();
@@ -226,10 +229,7 @@ int main(int argc, char *argv[]) {
             xu4.intro->init();
             xu4.intro->preloadMap();
 
-            eventHandler->pushController(xu4.intro);
-            eventHandler->run();
-            eventHandler->popController();
-            eventHandler->setControllerDone(false);
+            xu4.eventHandler->runController(xu4.intro);
 
             xu4.intro->deleteIntro();
         } else {
@@ -249,12 +249,9 @@ int main(int argc, char *argv[]) {
                 xu4.game->mapArea.reinit();
             }
 
-            eventHandler->pushController(xu4.game);
-            eventHandler->run();
-            eventHandler->popController();
-            eventHandler->setControllerDone(false);
+            xu4.eventHandler->runController(xu4.game);
 
-            eventHandler->popMouseAreaSet();
+            xu4.eventHandler->popMouseAreaSet();
             screenSetMouseCursor(MC_DEFAULT);
         }
     }

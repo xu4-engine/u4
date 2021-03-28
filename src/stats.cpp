@@ -20,6 +20,7 @@
 #include "spell.h"
 #include "tile.h"
 #include "weapon.h"
+#include "xu4.h"
 
 extern bool verbose;
 
@@ -468,12 +469,12 @@ bool ReagentsMenuController::keyPressed(int key) {
         }
         break;
     case U4_ENTER:
-        eventHandler->setControllerDone();
+        xu4.eventHandler->setControllerDone();
         break;
 
     case U4_ESC:
         ingredients->revert();
-        eventHandler->setControllerDone();
+        xu4.eventHandler->setControllerDone();
         break;
 
     default:

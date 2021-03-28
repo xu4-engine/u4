@@ -115,6 +115,7 @@ void TimedEventMgr::start() {
  * Constructs an event handler object.
  */
 EventHandler::EventHandler() : timer(eventTimerGranularity), updateScreen(NULL) {
+    controllerDone = ended = false;
 }
 
 static void handleMouseMotionEvent(const SDL_Event &event) {
@@ -243,13 +244,13 @@ void EventHandler::sleep(unsigned int msec) {
                 if (event.user.code == UC_ScreenRefresh) {
                     redraw = true;
                 } else if (event.user.code == UC_TimedEventMgr) {
-                    eventHandler->getTimer()->tick();
+                    xu4.eventHandler->getTimer()->tick();
                 }
                 if (getTicks() >= endTime)
                     sleeping = false;
                 break;
             case SDL_QUIT:
-                EventHandler::quitGame();
+                xu4.eventHandler->quitGame();
                 sleeping = false;
                 break;
             }
@@ -300,7 +301,7 @@ void EventHandler::run() {
                 break;
 
             case SDL_QUIT:
-                EventHandler::quitGame();
+                quitGame();
                 break;
             }
         } while (SDL_PollEvent(NULL));

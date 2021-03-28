@@ -171,7 +171,7 @@ bool AlphaActionController::keyPressed(int key) {
 
 int AlphaActionController::get(char lastValidLetter, const string &prompt, EventHandler *eh) {
     if (!eh)
-        eh = eventHandler;
+        eh = xu4.eventHandler;
 
     AlphaActionController ctrl(lastValidLetter, prompt);
     eh->pushController(&ctrl);
@@ -197,9 +197,9 @@ void GameController::initScreenWithoutReloadingState()
     screenMessage("Press Alt-h for help\n");
     screenPrompt();
 
-    eventHandler->pushMouseAreaSet(mouseAreas);
+    xu4.eventHandler->pushMouseAreaSet(mouseAreas);
 
-    eventHandler->setScreenUpdate(&gameUpdateScreen);
+    xu4.eventHandler->setScreenUpdate(&gameUpdateScreen);
 }
 
 
@@ -757,7 +757,7 @@ void GameController::update(Location *location, MoveEvent &event) {
         break;
     case Map::COMBAT:
         // FIXME: let the combat controller handle it
-        dynamic_cast<CombatController *>(eventHandler->getController())->movePartyMember(event);
+        dynamic_cast<CombatController *>(xu4.eventHandler->getController())->movePartyMember(event);
         break;
     default:
         avatarMoved(event);
@@ -986,7 +986,7 @@ bool GameController::keyPressed(int key) {
             if (settings.debug) {
                 screenMessage("Cmd (h = help):");
                 CheatMenuController cheatMenuController(this);
-                eventHandler->pushController(&cheatMenuController);
+                xu4.eventHandler->pushController(&cheatMenuController);
                 cheatMenuController.waitFor();
             }
             else valid = false;
@@ -1041,7 +1041,7 @@ bool GameController::keyPressed(int key) {
 
                 if (old_cycles != settings.gameCyclesPerSecond) {
                     eventTimerGranularity = (1000 / settings.gameCyclesPerSecond);
-                    eventHandler->getTimer()->reset(eventTimerGranularity);
+                    xu4.eventHandler->getTimer()->reset(eventTimerGranularity);
 
                     if (settings.gameCyclesPerSecond == DEFAULT_CYCLES_PER_SECOND)
                         screenMessage("Speed: Normal\n");
@@ -1328,7 +1328,7 @@ bool GameController::keyPressed(int key) {
                           "i: Ignite torch\n"
                           "(more)");
 
-            eventHandler->pushController(&pauseController);
+            xu4.eventHandler->pushController(&pauseController);
             pauseController.waitFor();
 
             screenMessage("\n"
@@ -1345,7 +1345,7 @@ bool GameController::keyPressed(int key) {
                           "t: Talk\n"
                           "(more)");
 
-            eventHandler->pushController(&pauseController);
+            xu4.eventHandler->pushController(&pauseController);
             pauseController.waitFor();
 
             screenMessage("\n"
@@ -1362,7 +1362,7 @@ bool GameController::keyPressed(int key) {
                           ">: + Sound Vol\n"
                           "(more)");
 
-            eventHandler->pushController(&pauseController);
+            xu4.eventHandler->pushController(&pauseController);
             pauseController.waitFor();
 
             screenMessage("\n"
@@ -1396,7 +1396,7 @@ bool GameController::keyPressed(int key) {
                     break;
                 }
 
-                eventHandler->setScreenUpdate(NULL);
+                xu4.eventHandler->setScreenUpdate(NULL);
 
                 // Fade out the music and hide the cursor
                 // before returning to the menu.
@@ -1404,7 +1404,7 @@ bool GameController::keyPressed(int key) {
                 screenHideCursor();
 
                 xu4.stage = StageIntro;
-                eventHandler->setControllerDone();
+                xu4.eventHandler->setControllerDone();
             }
             break;
 
@@ -1444,7 +1444,7 @@ bool GameController::keyPressed(int key) {
         }
 
     if (valid && endTurn) {
-        if (eventHandler->getController() == xu4.game)
+        if (xu4.eventHandler->getController() == xu4.game)
             c->location->turnCompleter->finishTurn();
     }
     else if (!endTurn) {
@@ -1481,7 +1481,7 @@ int gameGetPlayer(bool canBeDisabled, bool canBeActivePlayer) {
         else
         {
             ReadPlayerController readPlayerController;
-            eventHandler->pushController(&readPlayerController);
+            xu4.eventHandler->pushController(&readPlayerController);
             player = readPlayerController.waitFor();
         }
 
@@ -1516,7 +1516,7 @@ Direction gameGetDirection() {
     U4IOS::IOSDirectionHelper directionPopup;
 #endif
 
-    eventHandler->pushController(&dirController);
+    xu4.eventHandler->pushController(&dirController);
     Direction dir = dirController.waitFor();
 
     screenMessage("\b\b\b\b");
@@ -2625,7 +2625,7 @@ bool mixReagentsForSpellU5(int spell) {
 
     c->stats->getReagentsMenu()->reset(); // reset the menu, highlighting the first item
     ReagentsMenuController getReagentsController(c->stats->getReagentsMenu(), &ingredients, c->stats->getMainArea());
-    eventHandler->pushController(&getReagentsController);
+    xu4.eventHandler->pushController(&getReagentsController);
     getReagentsController.waitFor();
 
     c->stats->getMainArea()->disableCursor();
@@ -2959,7 +2959,7 @@ void ztatsFor(int player) {
     U4IOS::IOSHideActionKeysHelper hideExtraControls;
 #endif
     ZtatsController ctrl;
-    eventHandler->pushController(&ctrl);
+    xu4.eventHandler->pushController(&ctrl);
     ctrl.waitFor();
 }
 
@@ -2998,9 +2998,9 @@ void GameController::timerFired() {
         /*
          * force pass if no commands within last 20 seconds
          */
-        Controller *controller = eventHandler->getController();
+        Controller *controller = xu4.eventHandler->getController();
         if (controller != NULL &&
-            (eventHandler->getController() == xu4.game || dynamic_cast<CombatController *>(eventHandler->getController()) != NULL) &&
+            (xu4.eventHandler->getController() == xu4.game || dynamic_cast<CombatController *>(xu4.eventHandler->getController()) != NULL) &&
              gameTimeSinceLastCommand() > 20) {
 
             /* pass the turn, and redraw the text area so the prompt is shown */

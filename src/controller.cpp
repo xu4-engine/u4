@@ -6,6 +6,7 @@
 
 #include "controller.h"
 #include "event.h"
+#include "xu4.h"
 
 Controller::Controller(int timerInterval) {
     this->timerInterval = timerInterval;
@@ -49,11 +50,11 @@ void Controller::timerCallback(void *data) {
 }
 
 void Controller_startWait() {
-    eventHandler->run();
-    eventHandler->setControllerDone(false);
-    eventHandler->popController();
+    xu4.eventHandler->run();
+    xu4.eventHandler->setControllerDone(false);
+    xu4.eventHandler->popController();
 }
 
 void Controller_endWait() {
-    eventHandler->setControllerDone();
+    xu4.eventHandler->setControllerDone();
 }

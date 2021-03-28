@@ -185,7 +185,7 @@ void Shrine::meditationCycle() {
     screenDisableCursor();
     for (int i = 0; i < MEDITATION_MANTRAS_PER_CYCLE; i++) {
         WaitController controller(interval);
-        eventHandler->pushController(&controller);
+        xu4.eventHandler->pushController(&controller);
         controller.wait();
         screenMessage(".");
     }

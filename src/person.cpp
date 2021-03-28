@@ -218,7 +218,7 @@ list<string> Person::getConversationText(Conversation *cnv, const char *inquiry)
 
                     case Script::INPUT_PLAYER: {
                         ReadPlayerController getPlayerCtrl;
-                        eventHandler->pushController(&getPlayerCtrl);
+                        xu4.eventHandler->pushController(&getPlayerCtrl);
                         int player = getPlayerCtrl.waitFor();
                         if (player != -1) {
                             string player_str = xu4_to_string(player+1);

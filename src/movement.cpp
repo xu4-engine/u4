@@ -19,6 +19,7 @@
 #include "savegame.h"
 #include "tile.h"
 #include "utils.h"
+#include "xu4.h"
 
 bool collisionOverride = false;
 
@@ -320,7 +321,7 @@ int moveCombatObject(int act, Map *map, Creature *obj, MapCoords target) {
  * Moves a party member during combat screens
  */
 void movePartyMember(MoveEvent &event) {
-    CombatController *ct = dynamic_cast<CombatController *>(eventHandler->getController());
+    CombatController *ct = dynamic_cast<CombatController *>(xu4.eventHandler->getController());
     CombatMap *cm = getCombatMap();
     int member = ct->getFocus();
     MapCoords newCoords;

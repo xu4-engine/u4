@@ -405,7 +405,7 @@ bool IntroController::keyPressed(int key) {
             about();
             break;
         case 'q':
-            EventHandler::quitGame();
+            xu4.eventHandler->quitGame();
             break;
         case '1':
         case '2':
@@ -781,19 +781,19 @@ void IntroController::finishInitiateGame(const string &nameBuffer, SexType sex)
     U4IOS::switchU4IntroControllerToContinueButton();
 #endif
     ReadChoiceController pauseController("");
-    eventHandler->pushController(&pauseController);
+    xu4.eventHandler->pushController(&pauseController);
     pauseController.waitFor();
 
     showText(binData->introGypsy[GYP_SEGUE2]);
 
-    eventHandler->pushController(&pauseController);
+    xu4.eventHandler->pushController(&pauseController);
     pauseController.waitFor();
 
     // done: exit intro and let game begin
     questionArea.disableCursor();
 
     xu4.stage = StagePlay;
-    EventHandler::setControllerDone();
+    xu4.eventHandler->setControllerDone();
 }
 
 void IntroController::showStory() {
@@ -827,7 +827,7 @@ void IntroController::showStory() {
 
         showText(binData->introText[storyInd]);
 
-        eventHandler->pushController(&pauseController);
+        xu4.eventHandler->pushController(&pauseController);
         // enable the cursor here to avoid drawing in undesirable locations
         questionArea.enableCursor();
         pauseController.waitFor();
@@ -866,7 +866,7 @@ void IntroController::startQuestions() {
         U4IOS::switchU4IntroControllerToContinueButton();
 #endif
         // wait for a key
-        eventHandler->pushController(&pauseController);
+        xu4.eventHandler->pushController(&pauseController);
         pauseController.waitFor();
 
         screenEnableCursor();
@@ -877,7 +877,7 @@ void IntroController::startQuestions() {
         U4IOS::switchU4IntroControllerToABButtons();
 #endif
         // wait for an answer
-        eventHandler->pushController(&questionController);
+        xu4.eventHandler->pushController(&questionController);
         int choice = questionController.waitFor();
 
         // update the question tree
@@ -941,7 +941,7 @@ void IntroController::journeyOnward() {
     }
 
     xu4.stage = StagePlay;
-    EventHandler::setControllerDone();
+    xu4.eventHandler->setControllerDone();
 }
 
 /**
@@ -1002,7 +1002,7 @@ void IntroController::runMenu(Menu *menu, TextView *view, bool withBeasties) {
         drawBeasties();
 
     MenuController menuController(menu, view);
-    eventHandler->pushController(&menuController);
+    xu4.eventHandler->pushController(&menuController);
     menuController.waitFor();
 
     // enable the cursor here, after the menu has been established
@@ -1253,7 +1253,7 @@ void IntroController::updateSpeedMenu(MenuEvent &event) {
 
             // re-initialize events
             eventTimerGranularity = (1000 / xu4.settings->gameCyclesPerSecond);
-            eventHandler->getTimer()->reset(eventTimerGranularity);
+            xu4.eventHandler->getTimer()->reset(eventTimerGranularity);
 
             break;
         case CANCEL:
@@ -1533,7 +1533,7 @@ void IntroController::initTitles()
     title = titles.begin();
 
     // speed up the timer while the intro titles are displayed
-    eventHandler->getTimer()->reset(xu4.settings->titleSpeedOther);
+    xu4.eventHandler->getTimer()->reset(xu4.settings->titleSpeedOther);
 }
 
 
@@ -1998,7 +1998,7 @@ bool IntroController::updateTitle()
         if (title == titles.end())
         {
             // reset the timer to the pre-titles granularity
-            eventHandler->getTimer()->reset(eventTimerGranularity);
+            xu4.eventHandler->getTimer()->reset(eventTimerGranularity);
 
             // make sure the titles only appear when the app first loads
             bSkipTitles = true;
@@ -2010,15 +2010,15 @@ bool IntroController::updateTitle()
         {
             // assume this is "Ultima IV" and pre-load sound
 //            soundLoad(SOUND_TITLE_FADE);
-            eventHandler->getTimer()->reset(xu4.settings->titleSpeedRandom);
+            xu4.eventHandler->getTimer()->reset(xu4.settings->titleSpeedRandom);
         }
         else if (title->method == MAP)
         {
-            eventHandler->getTimer()->reset(xu4.settings->titleSpeedOther);
+            xu4.eventHandler->getTimer()->reset(xu4.settings->titleSpeedOther);
         }
         else
         {
-            eventHandler->getTimer()->reset(xu4.settings->titleSpeedOther);
+            xu4.eventHandler->getTimer()->reset(xu4.settings->titleSpeedOther);
         }
     }
 

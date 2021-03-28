@@ -27,14 +27,11 @@ int eventTimerGranularity = 300;
 int eventTimerGranularity = 250;
 #endif
 
-bool EventHandler::controllerDone = false;
-bool EventHandler::ended = false;
-
-EventHandler *EventHandler::instance = NULL;
-EventHandler *EventHandler::getInstance() {
-    if (instance == NULL)
-        instance = new EventHandler();
-    return instance;
+void EventHandler::runController(Controller* con) {
+    pushController(con);
+    run();
+    popController();
+    setControllerDone(false);
 }
 
 /**
@@ -46,7 +43,7 @@ void EventHandler::wait_msecs(unsigned int msecs) {
 
     if (cycles > 0) {
         WaitController waitCtrl(cycles);
-        getInstance()->pushController(&waitCtrl);
+        xu4.eventHandler->pushController(&waitCtrl);
         waitCtrl.wait();
     }
     // Sleep the rest of the msecs we can't wait for
@@ -58,7 +55,7 @@ void EventHandler::wait_msecs(unsigned int msecs) {
  */
 void EventHandler::wait_cycles(unsigned int cycles) {
     WaitController waitCtrl(cycles);
-    getInstance()->pushController(&waitCtrl);
+    xu4.eventHandler->pushController(&waitCtrl);
     waitCtrl.wait();
 }
 
@@ -72,7 +69,9 @@ void EventHandler::setControllerDone(bool done)
 }     /**< Sets the controller exit flag for the event handler */
 
 /** Returns the current value of the controller exit flag */
-bool EventHandler::getControllerDone() { return controllerDone; }
+bool EventHandler::getControllerDone() {
+    return controllerDone;
+}
 
 /** Signals that the game should immediately exit. */
 void EventHandler::quitGame() {
@@ -360,7 +359,7 @@ bool ReadStringController::keyPressed(int key) {
 
 string ReadStringController::get(int maxlen, int screenX, int screenY, EventHandler *eh) {
     if (!eh)
-        eh = eventHandler;
+        eh = xu4.eventHandler;
 
     ReadStringController ctrl(maxlen, screenX, screenY);
     eh->pushController(&ctrl);
@@ -369,7 +368,7 @@ string ReadStringController::get(int maxlen, int screenX, int screenY, EventHand
 
 string ReadStringController::get(int maxlen, TextView *view, EventHandler *eh) {
     if (!eh)
-        eh = eventHandler;
+        eh = xu4.eventHandler;
 
     ReadStringController ctrl(maxlen, view);
     eh->pushController(&ctrl);
@@ -380,7 +379,7 @@ ReadIntController::ReadIntController(int maxlen, int screenX, int screenY) : Rea
 
 int ReadIntController::get(int maxlen, int screenX, int screenY, EventHandler *eh) {
     if (!eh)
-        eh = eventHandler;
+        eh = xu4.eventHandler;
 
     ReadIntController ctrl(maxlen, screenX, screenY);
     eh->pushController(&ctrl);
@@ -417,7 +416,7 @@ bool ReadChoiceController::keyPressed(int key) {
 
 char ReadChoiceController::get(const string &choices, EventHandler *eh) {
     if (!eh)
-        eh = eventHandler;
+        eh = xu4.eventHandler;
 
     ReadChoiceController ctrl(choices);
     eh->pushController(&ctrl);
@@ -457,7 +456,7 @@ WaitController::WaitController(unsigned int c) : Controller(), cycles(c), curren
 void WaitController::timerFired() {
     if (++current >= cycles) {
         current = 0;
-        eventHandler->setControllerDone(true);
+        xu4.eventHandler->setControllerDone(true);
     }
 }
 
@@ -501,7 +500,7 @@ bool KeyHandler::globalHandler(int key) {
 #if defined(WIN32)
     case U4_ALT + U4_FKEY + 3:
 #endif
-        EventHandler::quitGame();
+        xu4.eventHandler->quitGame();
         return true;
     default: return false;
     }

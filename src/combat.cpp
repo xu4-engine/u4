@@ -246,11 +246,11 @@ void CombatController::begin() {
     if (!camping && !partyIsReadyToFight)
         c->location->turnCompleter->finishTurn();
 
-    eventHandler->pushController(this);
+    xu4.eventHandler->pushController(this);
 }
 
 void CombatController::end(bool adjustKarma) {
-    eventHandler->popController();
+    xu4.eventHandler->popController();
 
     /* The party is dead -- start the death sequence */
     if (c->party->isDead()) {
@@ -325,7 +325,7 @@ void CombatController::end(bool adjustKarma) {
             c->location->map->removeObject(creature);
 
         /* Make sure finishturn only happens if a new combat has not begun */
-        if (! eventHandler->getController()->isCombatController())
+        if (! xu4.eventHandler->getController()->isCombatController())
             c->location->turnCompleter->finishTurn();
     }
 
@@ -999,7 +999,7 @@ bool CombatController::keyPressed(int key) {
 
             screenMessage("Ztats\n");
             ZtatsController ctrl;
-            eventHandler->pushController(&ctrl);
+            xu4.eventHandler->pushController(&ctrl);
             ctrl.waitFor();
         }
         break;
@@ -1047,7 +1047,7 @@ bool CombatController::keyPressed(int key) {
 
     if (valid) {
         c->lastCommandTime = time(NULL);
-        if (endTurn && (eventHandler->getController() == this))
+        if (endTurn && (xu4.eventHandler->getController() == this))
             c->location->turnCompleter->finishTurn();
     }
 
@@ -1064,7 +1064,7 @@ void CombatController::attack() {
 #ifdef IOS
     U4IOS::IOSDirectionHelper directionPopup;
 #endif
-    eventHandler->pushController(&dirController);
+    xu4.eventHandler->pushController(&dirController);
     Direction dir = dirController.waitFor();
     if (dir == DIR_NONE)
         return;

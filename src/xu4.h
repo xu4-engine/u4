@@ -3,6 +3,7 @@
  */
 
 class Settings;
+class EventHandler;
 class IntroController;
 class GameController;
 
@@ -14,6 +15,7 @@ enum XU4GameStage {
 
 struct XU4GameServices {
     Settings* settings;
+    EventHandler* eventHandler;
     IntroController* intro;
     GameController* game;
     int stage;

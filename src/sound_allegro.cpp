@@ -128,7 +128,7 @@ int soundInit(void)
  * if it is supposed to be turned off.
  */
 static void music_callback(void *data) {
-    eventHandler->getTimer()->remove(&music_callback);
+    xu4.eventHandler->getTimer()->remove(&music_callback);
 
     bool mplaying = al_get_audio_stream_playing(musicStream);
     if (musicEnabled) {
@@ -153,7 +153,7 @@ void soundDelete(void)
         return;
 
 #ifndef UNIT_TEST
-    eventHandler->getTimer()->remove(&music_callback);
+    xu4.eventHandler->getTimer()->remove(&music_callback);
 #endif
 
     if (musicStream) {
@@ -361,7 +361,7 @@ bool musicToggle()
         return false;
 
 #ifndef UNIT_TEST
-    eventHandler->getTimer()->remove(&music_callback);
+    xu4.eventHandler->getTimer()->remove(&music_callback);
 #endif
 
     musicEnabled = !musicEnabled;
@@ -371,7 +371,7 @@ bool musicToggle()
         musicFadeOut(1000);
 
 #ifndef UNIT_TEST
-    eventHandler->getTimer()->add(&music_callback, xu4.settings->gameCyclesPerSecond);
+    xu4.eventHandler->getTimer()->add(&music_callback, xu4.settings->gameCyclesPerSecond);
 #endif
     return musicEnabled;
 }
