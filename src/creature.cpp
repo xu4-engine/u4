@@ -900,6 +900,13 @@ bool Creature::dealDamage(Creature *m, int damage) {
     return m->applyDamage(damage, isPartyMember(this));
 }
 
+
+CreatureMgr::~CreatureMgr() {
+    CreatureMap::iterator it;
+    for (it = creatures.begin(); it != creatures.end(); ++it)
+        delete it->second;
+}
+
 void CreatureMgr::loadAll() {
     vector<ConfigElement> creatureConfs = xu4.config->getElement("creatures").getChildren();
 

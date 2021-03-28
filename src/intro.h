@@ -76,6 +76,7 @@ private:
 class IntroController : public Controller, public Observer<Menu *, MenuEvent &> {
 public:
     IntroController();
+    ~IntroController();
 
     bool init();
     bool hasInitiatedNewGame();

@@ -48,6 +48,7 @@ class TileAnim;
 class Tile : private Uncopyable {
 public:
     Tile(Tileset *tileset);
+    ~Tile();
 
     void loadProperties(const ConfigElement &conf);
 

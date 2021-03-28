@@ -88,6 +88,8 @@ TimedEventMgr::~TimedEventMgr() {
 
     if (tem_instances > 0)
         tem_instances--;
+
+    cleanupLists();
 }
 
 /**

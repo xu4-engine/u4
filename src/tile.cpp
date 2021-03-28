@@ -44,6 +44,10 @@ Tile::Tile(Tileset *tileset)
     , animationRule("") {
 }
 
+Tile::~Tile() {
+    delete image;
+}
+
 /**
  * Loads tile information.
  */

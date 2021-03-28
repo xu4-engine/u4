@@ -278,6 +278,13 @@ IntroController::IntroController() :
     interfaceMenu.setClosesMenu(CANCEL);
 }
 
+IntroController::~IntroController() {
+    for (unsigned i=0; i < titles.size(); i++) {
+        delete titles[i].srcImage;
+        delete titles[i].destImage;
+    }
+}
+
 /**
  * Initializes intro state and loads in introduction graphics, text
  * and map data from title.exe.

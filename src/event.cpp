@@ -207,6 +207,15 @@ bool TimedEventMgr::isLocked() const {
     return locked;
 }
 
+void TimedEventMgr::cleanupLists() {
+    while(! events.empty()) {
+        delete events.front(), events.pop_front();
+    }
+    while(! deferredRemovals.empty()) {
+        delete deferredRemovals.front(), deferredRemovals.pop_front();
+    }
+}
+
 /**
  * Adds a timed event to the event queue.
  */

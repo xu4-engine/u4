@@ -187,7 +187,6 @@ private:
 class TimedEvent {
 public:
     /* Typedefs */
-    typedef std::list<TimedEvent*> List;
     typedef void (*Callback)(void *);
 
     /* Constructors */
@@ -223,7 +222,7 @@ typedef void *UIEvent;
 class TimedEventMgr {
 public:
     /* Typedefs */
-    typedef TimedEvent::List List;
+    typedef std::list<TimedEvent*> List;
 
     /* Constructors */
     TimedEventMgr(int baseInterval);
@@ -251,6 +250,8 @@ private:
 
     /* Properties */
 protected:
+    void cleanupLists();
+
 #if defined(IOS)
     TimedManagerHelper *m_helper;
 #else

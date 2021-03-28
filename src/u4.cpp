@@ -181,6 +181,7 @@ void servicesInit(XU4GameServices* gs, Options* opt) {
 }
 
 void servicesFree(XU4GameServices* gs) {
+    delete gs->game;
     delete gs->intro;
     delete gs->mapMgr;
     delete gs->creatureMgr;

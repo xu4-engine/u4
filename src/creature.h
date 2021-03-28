@@ -253,6 +253,7 @@ protected:
 class CreatureMgr {
 public:
     CreatureMgr() {}
+    ~CreatureMgr();
     void loadAll();
 
     Creature *getByTile(MapTile tile);

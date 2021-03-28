@@ -35,6 +35,7 @@ TimedEventMgr::TimedEventMgr(int msec) : baseInterval(msec) {
 TimedEventMgr::~TimedEventMgr() {
     al_destroy_timer(CTIMER(id));   // Automatically unregisters.
     id = NULL;
+    cleanupLists();
 }
 
 /**
