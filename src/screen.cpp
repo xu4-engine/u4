@@ -8,6 +8,7 @@
 #include <cstdarg>
 #include <cfloat>
 #include <cstring>
+#include <assert.h>
 #include "u4.h"
 
 #include "screen.h"
@@ -55,13 +56,12 @@ struct Layout {
 
 using std::vector;
 
-void screenLoadGraphicsFromConf(void);
-Layout *screenLoadLayoutFromConf(const ConfigElement &conf);
-void screenShowGemTile(Layout *layout, Map *map, MapTile &t, bool focus, int x, int y);
+static void screenLoadGraphicsFromConf(void);
+static Layout *screenLoadLayoutFromConf(const ConfigElement &conf);
+static void screenShowGemTile(Layout *layout, Map *map, MapTile &t, bool focus, int x, int y);
 
 static Scaler filterScaler;
 vector<Layout *> layouts;
-vector<TileAnimSet *> tileanimSets;
 vector<string> gemLayoutNames;
 Layout *gemlayout = NULL;
 std::map<string, int> dungeonTileChars;
@@ -106,29 +106,20 @@ void screenInit() {
     if (!charsetInfo)
         errorFatal("ERROR 1001: Unable to load the \"%s\" data file.\t\n\nIs %s installed?\n\nVisit the XU4 website for additional information.\n\thttp://xu4.sourceforge.net/", BKGD_CHARSET, settings.game.c_str());
 
-    gemTilesInfo = NULL;
-
-    screenLoadGraphicsFromConf();
-
-    if (verbose)
-        printf("using %s scaler\n", settings.filter.c_str());
-
     /* if we can't use vga, reset to default:ega */
     if (!u4isUpgradeAvailable() && settings.videoType == "VGA")
         settings.videoType = "EGA";
 
-
-    EventHandler::setKeyRepeat(settings.keydelay, settings.keyinterval);
-
-    /* find the tile animations for our tileset */
-    tileanims = NULL;
-    for (std::vector<TileAnimSet *>::const_iterator i = tileanimSets.begin(); i != tileanimSets.end(); i++) {
-        TileAnimSet *set = *i;
-        if (set->name == settings.videoType)
-            tileanims = set;
-    }
+    assert(tileanims == NULL);
+    gemTilesInfo = NULL;
+    screenLoadGraphicsFromConf();
     if (!tileanims)
         errorFatal("unable to find tile animations for \"%s\" video mode in graphics.xml", settings.videoType.c_str());
+
+    if (verbose)
+        printf("using %s scaler\n", settings.filter.c_str());
+
+    EventHandler::setKeyRepeat(settings.keydelay, settings.keyinterval);
 
     dungeonTileChars.clear();
     dungeonTileChars["brick_floor"] = CHARSET_FLOOR;
@@ -155,10 +146,14 @@ void screenInit() {
 }
 
 void screenDelete() {
+    delete tileanims;
+    tileanims = NULL;
+
     std::vector<Layout *>::const_iterator i;
     for (i = layouts.begin(); i != layouts.end(); i++)
         delete(*i);
     layouts.clear();
+
     screenDelete_sys();
 
     delete imageMgr;
@@ -171,7 +166,6 @@ void screenDelete() {
  */
 void screenReInit() {
     Tileset::unloadAllImages(); /* unload tilesets, which will be reloaded lazily as needed */
-    tileanims = NULL;
     screenDelete(); /* delete screen stuff */
     screenInit();   /* re-init screen stuff (loading new backgrounds, etc.) */
 }
@@ -301,14 +295,18 @@ const char** screenGetLineOfSightStyles() {
     return lineOfSightStyles;
 }
 
-void screenLoadGraphicsFromConf() {
+static void screenLoadGraphicsFromConf() {
     vector<ConfigElement> graphicsConf = xu4.config->getElement("graphics").getChildren();
     for (std::vector<ConfigElement>::iterator conf = graphicsConf.begin(); conf != graphicsConf.end(); conf++) {
 
-        if (conf->getName() == "layout")
+        if (conf->getName() == "layout") {
             layouts.push_back(screenLoadLayoutFromConf(*conf));
-        else if (conf->getName() == "tileanimset")
-            tileanimSets.push_back(new TileAnimSet(*conf));
+        }
+        else if (conf->getName() == "tileanimset") {
+            /* find the tile animations for our tileset */
+            if (conf->getString("name") == xu4.settings->videoType)
+                tileanims = new TileAnimSet(*conf);
+        }
     }
 
     gemLayoutNames.clear();
@@ -335,7 +333,7 @@ void screenLoadGraphicsFromConf() {
         errorFatal("no gem layout named %s found!\n", xu4.settings->gemLayout.c_str());
 }
 
-Layout *screenLoadLayoutFromConf(const ConfigElement &conf) {
+static Layout *screenLoadLayoutFromConf(const ConfigElement &conf) {
     Layout *layout;
     static const char *typeEnumStrings[] = { "standard", "gem", "dungeon_gem", NULL };
 
@@ -1142,7 +1140,7 @@ void screenShake(int iterations) {
 /**
  * Draw a tile graphic on the screen.
  */
-void screenShowGemTile(Layout *layout, Map *map, MapTile &t, bool focus, int x, int y) {
+static void screenShowGemTile(Layout *layout, Map *map, MapTile &t, bool focus, int x, int y) {
     unsigned int scale = xu4.settings->scale;
     // Make sure we account for tiles that look like other tiles (dungeon tiles, mainly)
     string looks_like = t.getTileType()->getLooksLike();
