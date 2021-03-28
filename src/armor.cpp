@@ -13,6 +13,7 @@
 #include "error.h"
 #include "names.h"
 #include "tile.h"
+#include "xu4.h"
 
 using std::vector;
 using std::string;
@@ -83,9 +84,7 @@ void Armor::loadConf() {
     else
         return;
 
-    const Config *config = Config::getInstance();
-
-    vector<ConfigElement> armorConfs = config->getElement("armors").getChildren();
+    vector<ConfigElement> armorConfs = xu4.config->getElement("armors").getChildren();
     for (std::vector<ConfigElement>::iterator i = armorConfs.begin(); i != armorConfs.end(); i++) {
         if (i->getName() != "armor")
             continue;

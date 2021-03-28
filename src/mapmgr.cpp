@@ -26,6 +26,7 @@
 #include "types.h"
 #include "u4file.h"
 #include "config.h"
+#include "xu4.h"
 
 using std::vector;
 using std::pair;
@@ -52,10 +53,9 @@ MapMgr::MapMgr() {
     logger = new Debug("debug/mapmgr.txt", "MapMgr");
     TRACE(*logger, "creating MapMgr");
 
-    const Config *config = Config::getInstance();
     Map *map;
 
-    vector<ConfigElement> maps = config->getElement("maps").getChildren();
+    vector<ConfigElement> maps = xu4.config->getElement("maps").getChildren();
     for (std::vector<ConfigElement>::iterator i = maps.begin(); i != maps.end(); i++) {
         map = initMapFromConf(*i);
 
@@ -73,8 +73,7 @@ MapMgr::~MapMgr() {
 
 void MapMgr::unloadMap(MapId id) {
     delete mapList[id];
-    const Config *config = Config::getInstance();
-    vector<ConfigElement> maps = config->getElement("maps").getChildren();
+    vector<ConfigElement> maps = xu4.config->getElement("maps").getChildren();
 
     for (std::vector<ConfigElement>::const_iterator i = maps.begin(); i != maps.end(); ++i) {
         if (id == static_cast<MapId>((*i).getInt("id"))) {

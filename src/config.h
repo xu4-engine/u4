@@ -30,7 +30,6 @@ public:
     // More to be added...
 
     // Deprecated methods for manually parsing a tree.
-    static const Config *getInstance();
     ConfigElement getElement(const std::string &name) const;
 };
 
@@ -63,8 +62,7 @@ private:
     std::string name;
 };
 
-extern Config* configService;
-bool configInit();
-void configFree();
+extern Config* configInit();
+extern void    configFree(Config*);
 
 #endif /* CONFIG_H */

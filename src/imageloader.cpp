@@ -7,6 +7,7 @@
 #include "config.h"
 #include "image.h"
 #include "imageloader.h"
+#include "xu4.h"
 
 extern bool screenFormatIsABGR;
 
@@ -65,11 +66,10 @@ static RGBA* loadBWPalette() {
 static RGBA* loadEgaPalette() {
     if (egaPalette == NULL) {
         int index = 0;
-        const Config *config = Config::getInstance();
 
         egaPalette = new RGBA[16];
 
-        std::vector<ConfigElement> paletteConf = config->getElement("egaPalette").getChildren();
+        std::vector<ConfigElement> paletteConf = xu4.config->getElement("egaPalette").getChildren();
         for (std::vector<ConfigElement>::iterator i = paletteConf.begin(); i != paletteConf.end(); i++) {
 
             if (i->getName() != "color")

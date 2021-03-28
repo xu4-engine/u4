@@ -13,6 +13,7 @@
 #include "debug.h"
 #include "error.h"
 #include "tileset.h"
+#include "xu4.h"
 
 using std::vector;
 
@@ -26,7 +27,6 @@ TileMap::TileIndexMapMap TileMap::tileMaps;
  */
 void TileMap::loadAll() {
     Debug dbg("debug/tilemap.txt", "TileMap");
-    const Config *config = Config::getInstance();
     vector<ConfigElement> conf;
 
     /* FIXME: make sure tilesets are loaded by now */
@@ -36,7 +36,7 @@ void TileMap::loadAll() {
 
     /* open the filename for the tileset and parse it! */
     TRACE_LOCAL(dbg, "Loading tilemaps from config");
-    conf = config->getElement("tilesets").getChildren();
+    conf = xu4.config->getElement("tilesets").getChildren();
 
     /* load all of the tilemaps */
     for (std::vector<ConfigElement>::iterator i = conf.begin(); i != conf.end(); i++) {

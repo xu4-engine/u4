@@ -50,8 +50,8 @@ const char* config_musicFile(int id) {
 #include "settings.h"
 #include "xu4.h"
 
-#define config_soundFile(id)    configService->soundFile(id)
-#define config_musicFile(id)    configService->musicFile(id)
+#define config_soundFile(id)    xu4.config->soundFile(id)
+#define config_musicFile(id)    xu4.config->musicFile(id)
 #endif
 
 

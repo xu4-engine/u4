@@ -302,9 +302,7 @@ const char** screenGetLineOfSightStyles() {
 }
 
 void screenLoadGraphicsFromConf() {
-    const Config *config = Config::getInstance();
-
-    vector<ConfigElement> graphicsConf = config->getElement("graphics").getChildren();
+    vector<ConfigElement> graphicsConf = xu4.config->getElement("graphics").getChildren();
     for (std::vector<ConfigElement>::iterator conf = graphicsConf.begin(); conf != graphicsConf.end(); conf++) {
 
         if (conf->getName() == "layout")

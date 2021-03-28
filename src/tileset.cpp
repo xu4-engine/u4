@@ -15,6 +15,7 @@
 #include "settings.h"
 #include "tile.h"
 #include "tilemap.h"
+#include "xu4.h"
 
 using std::vector;
 
@@ -37,8 +38,7 @@ TileRule *TileRule::findByName(const string &name) {
  * Load tile information from xml.
  */
 void TileRule::load() {
-    const Config *config = Config::getInstance();
-    vector<ConfigElement> rules = config->getElement("tileRules").getChildren();
+    vector<ConfigElement> rules = xu4.config->getElement("tileRules").getChildren();
 
     for (std::vector<ConfigElement>::iterator i = rules.begin(); i != rules.end(); i++) {
         TileRule *rule = new TileRule;
@@ -159,7 +159,6 @@ Tileset::TilesetMap Tileset::tilesets;
  */
 void Tileset::loadAll() {
     Debug dbg("debug/tileset.txt", "Tileset");
-    const Config *config = Config::getInstance();
     vector<ConfigElement> conf;
 
     TRACE(dbg, "Unloading all tilesets");
@@ -167,7 +166,7 @@ void Tileset::loadAll() {
 
     // get the config element for all tilesets
     TRACE_LOCAL(dbg, "Loading tilesets info from config");
-    conf = config->getElement("tilesets").getChildren();
+    conf = xu4.config->getElement("tilesets").getChildren();
 
     // load tile rules
     TRACE_LOCAL(dbg, "Loading tile rules");

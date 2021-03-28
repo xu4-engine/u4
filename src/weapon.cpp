@@ -12,6 +12,7 @@
 #include "config.h"
 #include "error.h"
 #include "names.h"
+#include "xu4.h"
 
 using std::string;
 using std::vector;
@@ -132,9 +133,8 @@ void Weapon::loadConf() {
         return;
 
     confLoaded = true;
-    const Config *config = Config::getInstance();
 
-    vector<ConfigElement> weaponConfs = config->getElement("weapons").getChildren();
+    vector<ConfigElement> weaponConfs = xu4.config->getElement("weapons").getChildren();
     for (std::vector<ConfigElement>::iterator i = weaponConfs.begin(); i != weaponConfs.end(); i++) {
         if (i->getName() != "weapon")
             continue;

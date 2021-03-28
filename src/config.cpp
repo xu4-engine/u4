@@ -34,12 +34,6 @@ using namespace std;
 
 extern bool verbose;
 
-Config* configService = NULL;
-
-const Config *Config::getInstance() {
-    return configService;
-}
-
 #if 0
 // For future expansion...
 const char** Config::getGames() {
@@ -302,14 +296,13 @@ const char* Config::soundFile( uint32_t id ) {
 // Config Service API
 
 // Create configService.
-bool configInit() {
+Config* configInit() {
     // Here's where we can compile the program with alternate back-ends
     // (e.g. SQL, JSON, ... or something better.)
 
-    configService = new Config;
-    return configService ? true : false;
+    return new Config;
 }
 
-void configFree() {
-    delete configService;
+void configFree(Config* conf) {
+    delete conf;
 }

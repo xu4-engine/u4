@@ -161,7 +161,7 @@ void servicesInit(XU4GameServices* gs, Options* opt) {
     Debug::initGlobal("debug/global.txt");
 
     xu4_srandom();
-    configInit();
+    gs->config = configInit();
     screenInit();
 
     if (! (opt->flags & OPT_NO_AUDIO))
@@ -181,7 +181,7 @@ void servicesFree(XU4GameServices* gs) {
     delete gs->eventHandler;
     soundDelete();
     screenDelete();
-    configFree();
+    configFree(gs->config);
     delete gs->settings;
     u4fcleanup();
 }

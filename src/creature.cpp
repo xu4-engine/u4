@@ -914,8 +914,7 @@ CreatureMgr *CreatureMgr::getInstance() {
 }
 
 void CreatureMgr::loadAll() {
-    const Config *config = Config::getInstance();
-    vector<ConfigElement> creatureConfs = config->getElement("creatures").getChildren();
+    vector<ConfigElement> creatureConfs = xu4.config->getElement("creatures").getChildren();
 
     for (std::vector<ConfigElement>::iterator i = creatureConfs.begin(); i != creatureConfs.end(); i++) {
         if (i->getName() != "creature")
