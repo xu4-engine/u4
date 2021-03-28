@@ -6,6 +6,7 @@ class Settings;
 class Config;
 class EventHandler;
 class CreatureMgr;
+class MapMgr;
 class IntroController;
 class GameController;
 
@@ -20,6 +21,7 @@ struct XU4GameServices {
     Config* config;
     EventHandler* eventHandler;
     CreatureMgr* creatureMgr;
+    MapMgr* mapMgr;
     IntroController* intro;
     GameController* game;
     int stage;

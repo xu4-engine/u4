@@ -52,7 +52,7 @@ CampController::CampController() {
     else
         id = MAP_CAMP_CON;
 
-    map = getCombatMap(mapMgr->get(id));
+    map = getCombatMap(xu4.mapMgr->get(id));
     xu4.game->setMap(map, true, NULL, this);
 }
 
@@ -265,7 +265,7 @@ void InnController::maybeAmbush()
             showMessage = false;
         }
 
-        map = getCombatMap(mapMgr->get(mapid));
+        map = getCombatMap(xu4.mapMgr->get(mapid));
         xu4.game->setMap(map, true, NULL, this);
 
         init(creature);

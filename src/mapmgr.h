@@ -86,17 +86,14 @@ class Shrine;
  */
 class MapMgr {
 public:
-    static MapMgr *getInstance();
-    static void destroy();
+    MapMgr();
+    ~MapMgr();
 
     Map *get(MapId id);
     Map *initMap(Map::Type type);
     void unloadMap(MapId id);
 
 private:
-    MapMgr();
-    ~MapMgr();
-
     void registerMap(Map *map);
 
     Map *initMapFromConf(const ConfigElement &mapConf);
@@ -114,7 +111,5 @@ private:
     std::vector<Map *> mapList;
     Debug *logger;
 };
-
-#define mapMgr (MapMgr::getInstance())
 
 #endif /* MAPMGR_H */

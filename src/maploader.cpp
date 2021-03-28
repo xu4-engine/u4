@@ -28,9 +28,9 @@
 #include "tileset.h"
 #include "u4file.h"
 #include "utils.h"
-
 #include "image.h"
 #include "imagemgr.h"
+#include "xu4.h"
 
 std::map<Map::Type, MapLoader *> *MapLoader::loaderMap = NULL;
 
@@ -447,7 +447,7 @@ bool DngMapLoader::load(Map *map) {
  * Loads a dungeon room into map->dungeon->room
  */
 void DngMapLoader::initDungeonRoom(Dungeon *dng, int room) {
-    dng->roomMaps[room] = dynamic_cast<CombatMap *>(mapMgr->initMap(Map::COMBAT));
+    dng->roomMaps[room] = dynamic_cast<CombatMap *>(xu4.mapMgr->initMap(Map::COMBAT));
 
     dng->roomMaps[room]->id = 0;
     dng->roomMaps[room]->border_behavior = Map::BORDER_FIXED;

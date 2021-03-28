@@ -254,13 +254,13 @@ void GameController::init() {
     c->party->addObserver(this);
 
     /* set the map to the world map by default */
-    setMap(mapMgr->get(MAP_WORLD), 0, NULL);
+    setMap(xu4.mapMgr->get(MAP_WORLD), 0, NULL);
     c->location->map->clearObjects();
 
     TRACE_LOCAL(gameDbg, "World map set."); ++pb;
 
     /* initialize our start location */
-    Map *map = mapMgr->get(MapId(c->saveGame->location));
+    Map *map = xu4.mapMgr->get(MapId(c->saveGame->location));
     TRACE_LOCAL(gameDbg, "Initializing start location.");
 
     /* if our map is not the world map, then load our map */
@@ -950,7 +950,7 @@ bool GameController::keyPressed(int key) {
 
         case U4_FKEY+8:
             if (settings.debug && (c->location->context & CTX_WORLDMAP)) {
-                setMap(mapMgr->get(MAP_DECEIT), 1, NULL);
+                setMap(xu4.mapMgr->get(MAP_DECEIT), 1, NULL);
                 c->location->coords = MapCoords(1, 0, 7);
                 c->saveGame->orientation = DIR_SOUTH;
             }
@@ -959,7 +959,7 @@ bool GameController::keyPressed(int key) {
 
         case U4_FKEY+9:
             if (settings.debug && (c->location->context & CTX_WORLDMAP)) {
-                setMap(mapMgr->get(MAP_DESPISE), 1, NULL);
+                setMap(xu4.mapMgr->get(MAP_DESPISE), 1, NULL);
                 c->location->coords = MapCoords(3, 2, 7);
                 c->saveGame->orientation = DIR_SOUTH;
             }
@@ -968,7 +968,7 @@ bool GameController::keyPressed(int key) {
 
         case U4_FKEY+10:
             if (settings.debug && (c->location->context & CTX_WORLDMAP)) {
-                setMap(mapMgr->get(MAP_DESTARD), 1, NULL);
+                setMap(xu4.mapMgr->get(MAP_DESTARD), 1, NULL);
                 c->location->coords = MapCoords(7, 6, 7);
                 c->saveGame->orientation = DIR_SOUTH;
             }
@@ -1006,7 +1006,7 @@ bool GameController::keyPressed(int key) {
                 screenPrompt();
 
                 /* Help! send me to Lord British (who conveniently is right around where you are)! */
-                setMap(mapMgr->get(100), 1, NULL);
+                setMap(xu4.mapMgr->get(100), 1, NULL);
                 c->location->coords.x = 19;
                 c->location->coords.y = 8;
                 c->location->coords.z = 0;
@@ -1115,7 +1115,7 @@ bool GameController::keyPressed(int key) {
                 else screenMessage("%cDescend what?%c\n", FG_GREY, FG_WHITE);
             } else {
                 if (cleanMap)
-                    mapMgr->unloadMap(100);
+                    xu4.mapMgr->unloadMap(100);
             }
             break;
         }
@@ -1302,7 +1302,7 @@ bool GameController::keyPressed(int key) {
                 /* first teleport to the abyss */
                 c->location->coords.x = 0xe9;
                 c->location->coords.y = 0xe9;
-                setMap(mapMgr->get(MAP_ABYSS), 1, NULL);
+                setMap(xu4.mapMgr->get(MAP_ABYSS), 1, NULL);
                 /* then to the final altar */
                 c->location->coords.x = 7;
                 c->location->coords.y = 7;
@@ -2683,7 +2683,7 @@ void newOrder() {
 bool gamePeerCity(int city, void *data) {
     Map *peerMap;
 
-    peerMap = mapMgr->get((MapId)(city+1));
+    peerMap = xu4.mapMgr->get((MapId)(city+1));
 
     if (peerMap != NULL) {
         xu4.game->setMap(peerMap, 1, NULL);
@@ -3116,7 +3116,7 @@ bool GameController::checkMoongates() {
         if (moongateIsEntryToShrineOfSpirituality(c->saveGame->trammelphase, c->saveGame->feluccaphase)) {
             Shrine *shrine_spirituality;
 
-            shrine_spirituality = dynamic_cast<Shrine*>(mapMgr->get(MAP_SHRINE_SPIRITUALITY));
+            shrine_spirituality = dynamic_cast<Shrine*>(xu4.mapMgr->get(MAP_SHRINE_SPIRITUALITY));
 
             if (!c->party->canEnterShrine(VIRT_SPIRITUALITY))
                 return true;

@@ -108,7 +108,7 @@ void deathRevive() {
 
     /* Now, move the avatar into the castle and put him
        in front of Lord British */
-    xu4.game->setMap(mapMgr->get(100), 1, NULL);
+    xu4.game->setMap(xu4.mapMgr->get(100), 1, NULL);
     c->location->coords.x = REVIVE_CASTLE_X;
     c->location->coords.y = REVIVE_CASTLE_Y;
     c->location->coords.z = 0;

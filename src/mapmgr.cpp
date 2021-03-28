@@ -31,23 +31,8 @@
 using std::vector;
 using std::pair;
 
-MapMgr *MapMgr::instance = NULL;
-
 extern bool isAbyssOpened(const Portal *p);
 extern bool shrineCanEnter(const Portal *p);
-
-MapMgr *MapMgr::getInstance() {
-    if (instance == NULL)
-        instance = new MapMgr();
-    return instance;
-}
-
-void MapMgr::destroy() {
-    if (instance != NULL) {
-        delete instance;
-        instance = NULL;
-    }
-}
 
 MapMgr::MapMgr() {
     logger = new Debug("debug/mapmgr.txt", "MapMgr");

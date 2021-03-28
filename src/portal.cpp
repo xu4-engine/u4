@@ -78,7 +78,7 @@ int usePortalAt(Location *location, MapCoords coords, PortalTriggerAction action
         return 1;
     }
 
-    destination = mapMgr->get(portal->destid);
+    destination = xu4.mapMgr->get(portal->destid);
 
     if (portal->message.empty()) {
 
@@ -147,7 +147,7 @@ int usePortalAt(Location *location, MapCoords coords, PortalTriggerAction action
      */
     if (portal->retroActiveDest && c->location->prev) {
         c->location->prev->coords = portal->retroActiveDest->coords;
-        c->location->prev->map = mapMgr->get(portal->retroActiveDest->mapid);
+        c->location->prev->map = xu4.mapMgr->get(portal->retroActiveDest->mapid);
     }
 
     if (destination->type == Map::SHRINE) {
