@@ -401,26 +401,27 @@ int gameSave() {
 
         typedef std::map<const Creature*, int> DngCreatureIdMap;
         static DngCreatureIdMap id_map;
+        CreatureMgr* cmgr = xu4.creatureMgr;
 
         /**
          * Map creatures to u4dos dungeon creature Ids
          */
         if (id_map.size() == 0) {
-            id_map[creatureMgr->getById(RAT_ID)]          = 1;
-            id_map[creatureMgr->getById(BAT_ID)]          = 2;
-            id_map[creatureMgr->getById(GIANT_SPIDER_ID)] = 3;
-            id_map[creatureMgr->getById(GHOST_ID)]        = 4;
-            id_map[creatureMgr->getById(SLIME_ID)]        = 5;
-            id_map[creatureMgr->getById(TROLL_ID)]        = 6;
-            id_map[creatureMgr->getById(GREMLIN_ID)]      = 7;
-            id_map[creatureMgr->getById(MIMIC_ID)]        = 8;
-            id_map[creatureMgr->getById(REAPER_ID)]       = 9;
-            id_map[creatureMgr->getById(INSECT_SWARM_ID)] = 10;
-            id_map[creatureMgr->getById(GAZER_ID)]        = 11;
-            id_map[creatureMgr->getById(PHANTOM_ID)]      = 12;
-            id_map[creatureMgr->getById(ORC_ID)]          = 13;
-            id_map[creatureMgr->getById(SKELETON_ID)]     = 14;
-            id_map[creatureMgr->getById(ROGUE_ID)]        = 15;
+            id_map[cmgr->getById(RAT_ID)]          = 1;
+            id_map[cmgr->getById(BAT_ID)]          = 2;
+            id_map[cmgr->getById(GIANT_SPIDER_ID)] = 3;
+            id_map[cmgr->getById(GHOST_ID)]        = 4;
+            id_map[cmgr->getById(SLIME_ID)]        = 5;
+            id_map[cmgr->getById(TROLL_ID)]        = 6;
+            id_map[cmgr->getById(GREMLIN_ID)]      = 7;
+            id_map[cmgr->getById(MIMIC_ID)]        = 8;
+            id_map[cmgr->getById(REAPER_ID)]       = 9;
+            id_map[cmgr->getById(INSECT_SWARM_ID)] = 10;
+            id_map[cmgr->getById(GAZER_ID)]        = 11;
+            id_map[cmgr->getById(PHANTOM_ID)]      = 12;
+            id_map[cmgr->getById(ORC_ID)]          = 13;
+            id_map[cmgr->getById(SKELETON_ID)]     = 14;
+            id_map[cmgr->getById(ROGUE_ID)]        = 15;
         }
 
         dngMapFile = fopen((settings.getUserPath() + "dngmap.sav").c_str(), "wb");
@@ -3077,7 +3078,7 @@ void GameController::checkSpecialCreatures(Direction dir) {
         c->location->coords.x == 0xdd &&
         c->location->coords.y == 0xe0) {
         for (i = 0; i < 8; i++) {
-            obj = c->location->map->addCreature(creatureMgr->getById(PIRATE_ID), MapCoords(pirateInfo[i].x, pirateInfo[i].y));
+            obj = c->location->map->addCreature(xu4.creatureMgr->getById(PIRATE_ID), MapCoords(pirateInfo[i].x, pirateInfo[i].y));
             obj->setDirection(pirateInfo[i].dir);
         }
     }
@@ -3093,7 +3094,7 @@ void GameController::checkSpecialCreatures(Direction dir) {
         c->location->coords.y < 217 &&
         *c->aura != Aura::HORN) {
         for (i = 0; i < 8; i++)
-            c->location->map->addCreature(creatureMgr->getById(DAEMON_ID), MapCoords(231, c->location->coords.y + 1, c->location->coords.z));
+            c->location->map->addCreature(xu4.creatureMgr->getById(DAEMON_ID), MapCoords(231, c->location->coords.y + 1, c->location->coords.z));
     }
 }
 
@@ -3151,7 +3152,7 @@ void gameFixupObjects(Map *map) {
                 oldTile = TileMap::get("base")->translate(monster->prevTile);
 
             if (i < MONSTERTABLE_CREATURES_SIZE) {
-                const Creature *creature = creatureMgr->getByTile(tile);
+                const Creature *creature = xu4.creatureMgr->getByTile(tile);
                 /* make sure we really have a creature */
                 if (creature)
                     obj = map->addCreature(creature, coords);
@@ -3422,7 +3423,7 @@ void GameController::checkBridgeTrolls() {
 
     screenMessage("\nBridge Trolls!\n");
 
-    Creature *m = c->location->map->addCreature(creatureMgr->getById(TROLL_ID), c->location->coords);
+    Creature *m = c->location->map->addCreature(xu4.creatureMgr->getById(TROLL_ID), c->location->coords);
     CombatController *cc = new CombatController(MAP_BRIDGE_CON);
     cc->init(m);
     cc->begin();
@@ -3530,9 +3531,9 @@ bool gameSpawnCreature(const Creature *m) {
     if (m)
         creature = m;
     else if (c->location->context & CTX_DUNGEON)
-        creature = creatureMgr->randomForDungeon(c->location->coords.z);
+        creature = xu4.creatureMgr->randomForDungeon(c->location->coords.z);
     else
-        creature = creatureMgr->randomForTile(c->location->map->tileTypeAt(coords, WITHOUT_OBJECTS));
+        creature = xu4.creatureMgr->randomForTile(c->location->map->tileTypeAt(coords, WITHOUT_OBJECTS));
 
     if (creature)
         c->location->map->addCreature(creature, coords);

@@ -252,8 +252,7 @@ protected:
  */
 class CreatureMgr {
 public:
-    static CreatureMgr *getInstance();
-
+    CreatureMgr() {}
     void loadAll();
 
     Creature *getByTile(MapTile tile);
@@ -264,19 +263,13 @@ public:
     Creature *randomAmbushing();
 
 private:
-    CreatureMgr() {}
-
     // disallow assignments, copy contruction
     CreatureMgr(const CreatureMgr&);
     const CreatureMgr &operator=(const CreatureMgr&);
-
-    static CreatureMgr *instance;
 
     CreatureMap creatures;
 };
 
 bool isCreature(Object *punknown);
-
-#define creatureMgr (CreatureMgr::getInstance())
 
 #endif

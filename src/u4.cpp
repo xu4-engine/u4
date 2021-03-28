@@ -170,13 +170,16 @@ void servicesInit(XU4GameServices* gs, Options* opt) {
     gs->eventHandler = new EventHandler;
 
     Tileset::loadAll();
-    creatureMgr->getInstance();
+
+    gs->creatureMgr = new CreatureMgr;
+    gs->creatureMgr->loadAll();
 
     gs->stage = (opt->flags & OPT_NO_INTRO) ? StagePlay : StageIntro;
 }
 
 void servicesFree(XU4GameServices* gs) {
     delete gs->intro;
+    delete gs->creatureMgr;
     Tileset::unloadAll();
     delete gs->eventHandler;
     soundDelete();

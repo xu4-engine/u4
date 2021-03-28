@@ -24,6 +24,7 @@
 #include "types.h"
 #include "utils.h"
 #include "settings.h"
+#include "xu4.h"
 
 /**
  * MapCoords Class Implementation
@@ -557,7 +558,7 @@ void Map::resetObjectAnimations() {
         Object *obj = *i;
 
         if (obj->getType() == Object::CREATURE)
-            obj->setPrevTile(creatureMgr->getByTile(obj->getTile())->getTile());
+            obj->setPrevTile(xu4.creatureMgr->getByTile(obj->getTile())->getTile());
     }
 }
 
@@ -597,7 +598,7 @@ int Map::getValidMoves(MapCoords from, MapTile transport) {
     MapCoords coords = from;
 
     // get the creature object, if it exists (the one that's moving)
-    m = creatureMgr->getByTile(transport);
+    m = xu4.creatureMgr->getByTile(transport);
 
     bool isAvatar = (c->location->coords == coords);
     if (m && m->canMoveOntoPlayer())
@@ -753,7 +754,7 @@ void Map::alertGuards() {
 
     /* switch all the guards to attack mode */
     for (i = objects.begin(); i != objects.end(); i++) {
-        m = creatureMgr->getByTile((*i)->getTile());
+        m = xu4.creatureMgr->getByTile((*i)->getTile());
         if (m && (m->getId() == GUARD_ID || m->getId() == LORDBRITISH_ID))
             (*i)->setMovementBehavior(MOVEMENT_ATTACK_AVATAR);
     }

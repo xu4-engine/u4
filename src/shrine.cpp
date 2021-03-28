@@ -156,7 +156,7 @@ void Shrine::enhancedSequence() {
     screenMessage("You approach\nthe ancient\nshrine...\n");
     gameUpdateScreen(); EventHandler::wait_cycles(xu4.settings->gameCyclesPerSecond);
 
-    Object *obj = addCreature(creatureMgr->getById(BEGGAR_ID), Coords(5, 10, c->location->coords.z));
+    Object *obj = addCreature(xu4.creatureMgr->getById(BEGGAR_ID), Coords(5, 10, c->location->coords.z));
     obj->setTile(tileset->getByName("avatar")->getId());
 
     gameUpdateScreen(); EventHandler::wait_msecs(400);
@@ -164,7 +164,7 @@ void Shrine::enhancedSequence() {
     c->location->map->move(obj, DIR_NORTH); gameUpdateScreen(); EventHandler::wait_msecs(400);
     c->location->map->move(obj, DIR_NORTH); gameUpdateScreen(); EventHandler::wait_msecs(400);
     c->location->map->move(obj, DIR_NORTH); gameUpdateScreen(); EventHandler::wait_msecs(800);
-    obj->setTile(creatureMgr->getById(BEGGAR_ID)->getTile());
+    obj->setTile(xu4.creatureMgr->getById(BEGGAR_ID)->getTile());
     gameUpdateScreen();
 
     screenMessage("\n...and kneel before the altar.\n");

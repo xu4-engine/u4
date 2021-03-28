@@ -24,8 +24,6 @@
 #include "utils.h"
 #include "xu4.h"
 
-CreatureMgr *CreatureMgr::instance = NULL;
-
 bool isCreature(Object *punknown) {
     Creature *m;
     if ((m = dynamic_cast<Creature*>(punknown)) != NULL)
@@ -39,7 +37,7 @@ bool isCreature(Object *punknown) {
  */
 Creature::Creature(MapTile tile) :
     Object(Object::CREATURE) {
-    const Creature *m = creatureMgr->getByTile(tile);
+    const Creature *m = xu4.creatureMgr->getByTile(tile);
     if (m)
         *this = *m;
 }
@@ -730,7 +728,7 @@ bool Creature::spawnOnDeath() {
     MapCoords coords(getCoords());
 
     /* create our new creature! */
-    map->addCreature(creatureMgr->getById(spawn), coords);
+    map->addCreature(xu4.creatureMgr->getById(spawn), coords);
     return true;
 }
 
@@ -900,17 +898,6 @@ bool Creature::applyDamage(int damage, bool byplayer) {
 
 bool Creature::dealDamage(Creature *m, int damage) {
     return m->applyDamage(damage, isPartyMember(this));
-}
-
-/**
- * CreatureMgr class implementation
- */
-CreatureMgr *CreatureMgr::getInstance() {
-    if (instance == NULL) {
-        instance = new CreatureMgr();
-        instance->loadAll();
-    }
-    return instance;
 }
 
 void CreatureMgr::loadAll() {
