@@ -84,12 +84,23 @@ void screenInit_sys() {
 
     {
     SDL_Surface* ss = SDL_GetVideoSurface();
-    screenFormatIsABGR = (ss->format->Rmask == 0x000000ff);
 #if 0
     printf( "SDL color masks: R:%08x G:%08x B:%08x A:%08x\n",
             ss->format->Rmask, ss->format->Gmask,
             ss->format->Bmask, ss->format->Amask );
 #endif
+    switch (ss->format->Rmask) {
+        default:
+            errorWarning("Unsupported SDL pixel format: %d:%08x",
+                         ss->format->BitsPerPixel, ss->format->Rmask);
+            // Fall through...
+        case 0x00ff0000:
+            screenFormatIsABGR = false;
+            break;
+        case 0x000000ff:
+            screenFormatIsABGR = true;
+            break;
+    }
     }
 
     frameDuration = 1000 / settings.screenAnimationFramesPerSecond;

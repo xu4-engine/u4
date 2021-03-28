@@ -72,6 +72,7 @@ static ALLEGRO_MOUSE_CURSOR* screenInitCursor(ALLEGRO_BITMAP* bmp, const char * 
 
 
 void screenInit_sys() {
+    int format;
     int w = 320 * settings.scale;
     int h = 200 * settings.scale;
 
@@ -92,15 +93,28 @@ void screenInit_sys() {
     if(!sa_disp)
         goto fatal;
 
-    // Can settings.gamma be applied?
-
-    // Default is ALLEGRO_PIXEL_FORMAT_ANY_WITH_ALPHA.
-    //printf("KR fmt %d\n", al_get_new_bitmap_format());
-    al_set_new_bitmap_format(ALLEGRO_PIXEL_FORMAT_ABGR_8888);
-    //al_set_new_bitmap_flags(ALLEGRO_VIDEO_BITMAP);
-
     al_set_window_title(sa_disp, "Ultima IV");  // configService->gameName()
     //al_set_display_icon(sa_disp, ALLEGRO_BITMAP*);  LoadBMP(ICON_FILE));
+
+    // Can settings.gamma be applied?
+
+    // Default bitmap format is ALLEGRO_PIXEL_FORMAT_ANY_WITH_ALPHA.
+    //printf("KR fmt %d\n", al_get_new_bitmap_format());
+    //al_set_new_bitmap_format(ALLEGRO_PIXEL_FORMAT_ABGR_8888);
+    //al_set_new_bitmap_flags(ALLEGRO_VIDEO_BITMAP);
+
+    format = al_get_display_format(sa_disp);
+    switch (format) {
+        default:
+            errorWarning("Unsupported Allegro pixel format: %d", format);
+            // Fall through...
+        case ALLEGRO_PIXEL_FORMAT_ARGB_8888:
+            screenFormatIsABGR = false;
+            break;
+        case ALLEGRO_PIXEL_FORMAT_ABGR_8888:
+            screenFormatIsABGR = true;
+            break;
+    }
 
     /* enable or disable the mouse cursor */
     if (settings.mouseOptions.enabled) {
@@ -110,7 +124,7 @@ void screenInit_sys() {
         al_register_event_source(sa_queue, al_get_mouse_event_source());
 
         // Create a temporary bitmap to build the cursor in.
-        al_set_new_bitmap_flags(ALLEGRO_VIDEO_BITMAP);
+        al_set_new_bitmap_flags(ALLEGRO_MEMORY_BITMAP);
         ALLEGRO_BITMAP* bm = al_create_bitmap(CURSORSIZE, CURSORSIZE);
         if (bm) {
             cursors[0] = NULL;
