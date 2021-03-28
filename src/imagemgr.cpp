@@ -246,6 +246,17 @@ void ImageMgr::fixupIntro(Image *im, int prescale) {
                           33 * prescale,
                           204 * prescale,
                           46 * prescale);
+#if 0
+        /*
+         * NOTE: This just tweaks the kerning by a few pixels.  With the Image
+         * rewrite for RGBA8-only images, "THE" disappears (dest. X must be
+         * less than source X when an image blits onto itself).
+         *
+         * If the goal is to preserve the original experience then the image
+         * should not be touched anyway, and a "recreated" experience will
+         * have correct input images.
+         */
+
         /* ---------------------------------------------
          * update the position of "Quest of the Avatar"
          * --------------------------------------------- */
@@ -284,6 +295,7 @@ void ImageMgr::fixupIntro(Image *im, int prescale) {
                           80 * prescale,
                           11 * prescale,
                           13 * prescale);
+#endif
     }
     /* -----------------------------------------------------------------------------
      * copy "present" to new location between "Origin Systems, Inc." and "Ultima IV"
@@ -577,6 +589,10 @@ ImageInfo *ImageMgr::get(const string &name, bool returnUnscaled) {
                 info->height = unscaled->height();
     // ###            info->depth = ???
             }
+#if 0
+            string out("/tmp/xu4/");
+            unscaled->save(out.append(name).append(".ppm").c_str());
+#endif
         }
         u4fclose(file);
     }
@@ -621,18 +637,25 @@ ImageInfo *ImageMgr::get(const string &name, bool returnUnscaled) {
         Image *unscaled_original = unscaled;
         unscaled = Image::duplicate(unscaled);
         delete unscaled_original;
-        if (Settings::getInstance().enhancements && Settings::getInstance().enhancementsOptions.u4TileTransparencyHack)
+        if (Settings::getInstance().enhancements &&
+            Settings::getInstance().enhancementsOptions.u4TileTransparencyHack)
         {
             int transparency_shadow_size =Settings::getInstance().enhancementsOptions.u4TrileTransparencyHackShadowBreadth;
-            int black_index = 0;
             int opacity = Settings::getInstance().enhancementsOptions.u4TileTransparencyHackPixelShadowOpacity;
 
+            // NOTE: The first 16 tiles are landscape and must be fully opaque!
+            int f = (name == "tiles") ? 16 : 0;
             int frames = info->tiles;
-            for (int f = 0; f < frames; ++f)
-                unscaled->performTransparencyHack(black_index, frames, f, transparency_shadow_size, opacity);
+            for ( ; f < frames; ++f)
+                unscaled->performTransparencyHack(0, frames, f, transparency_shadow_size, opacity);
         }
         break;
     }
+
+#if 0
+    string out2("/tmp/xu4/");
+    unscaled->save(out2.append(name).append("-fixup.ppm").c_str());
+#endif
 
     if (returnUnscaled)
     {
@@ -652,6 +675,11 @@ ImageInfo *ImageMgr::get(const string &name, bool returnUnscaled) {
     info->image = screenScale(unscaled, imageScale, info->tiles, 1);
 
     delete unscaled;
+
+#if 0
+    string out3("/tmp/xu4/");
+    info->image->save(out3.append(name).append("-scale.ppm").c_str());
+#endif
     return info;
 }
 

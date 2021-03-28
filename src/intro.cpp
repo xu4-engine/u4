@@ -541,14 +541,13 @@ void IntroController::drawMapAnimated() {
     int i;
 
     // draw animated objects
-    for (i = 0; i < IntroBinData::INTRO_BASETILE_TABLE_SIZE; i++)
-        if (objectStateTable[i].tile != 0)
-        {
-            std::vector<MapTile> tiles;
-            tiles.push_back(objectStateTable[i].tile);
-            tiles.push_back(binData->introMap[objectStateTable[i].x + (objectStateTable[i].y * INTRO_MAP_WIDTH)]);
-            mapArea.drawTile(tiles, false, objectStateTable[i].x, objectStateTable[i].y);
-        }
+    Image::enableBlend(1);
+    for (i = 0; i < IntroBinData::INTRO_BASETILE_TABLE_SIZE; i++) {
+        IntroObjectState& state = objectStateTable[i];
+        if (state.tile != 0)
+            mapArea.drawTile(state.tile, false, state.x, state.y);
+    }
+    Image::enableBlend(0);
 }
 
 /**
@@ -645,7 +644,6 @@ void IntroController::updateScreen() {
         {
             menuArea.textAt(6, 5, "%s", errorMessage.c_str());
             drawBeasties();
-            screenRedrawScreen();
             // wait for a couple seconds
             EventHandler::wait_msecs(2000);
             // clear the screen again
@@ -673,7 +671,6 @@ void IntroController::updateScreen() {
     }
 
     screenUpdateCursor();
-    screenRedrawScreen();
 }
 
 /**
@@ -699,7 +696,6 @@ void IntroController::initiateNewGame() {
     menuArea.enableCursor();
 
     drawBeasties();
-    screenRedrawScreen();
 
     string nameBuffer = ReadStringController::get(12, &menuArea);
     if (nameBuffer.length() == 0) {
@@ -941,7 +937,6 @@ void IntroController::journeyOnward() {
     if (!validSave) {
         errorMessage = "Initiate a new game first!";
         updateScreen();
-        screenRedrawScreen();
         return;
     }
 
@@ -1038,13 +1033,6 @@ void IntroController::timerFired() {
 
     if (beastiesVisible)
         drawBeasties();
-
-    /*
-     * refresh the screen only if the timer queue is empty --
-     * i.e. drop a frame if another timer event is about to be fired
-     */
-    if (EventHandler::timerQueueEmpty())
-        screenRedrawScreen();
 
     if (xu4_random(2) && ++beastie1Cycle >= IntroBinData::BEASTIE1_FRAMES)
         beastie1Cycle = 0;
@@ -1596,10 +1584,6 @@ void IntroController::getTitleSourceData()
     // get the transparent color
     transparentColor = info->image->getPaletteColor(transparentIndex);
 
-    // turn alpha off, if necessary
-    bool alpha = info->image->isAlphaOn();
-    info->image->alphaOff();
-
     // for each element, get the source data
     for (unsigned i=0; i < titles.size(); i++)
     {
@@ -1609,9 +1593,7 @@ void IntroController::getTitleSourceData()
             // create a place to store the source image
             titles[i].srcImage = Image::create(
                 titles[i].rw * info->prescale,
-                titles[i].rh * info->prescale, false);
-            if (titles[i].srcImage->isIndexed())
-                titles[i].srcImage->setPaletteFromImage(info->image);
+                titles[i].rh * info->prescale);
 
             // get the source image
             info->image->drawSubRectOn(
@@ -1672,7 +1654,9 @@ void IntroController::getTitleSourceData()
             {
                 for (int y=0; y < titles[i].rh; y++)
                 {
-                    for (int x=0; x < titles[i].rw ; x++)
+                    // Here x is set to exclude PRESENT at top of image.
+                    int x = (y < 6) ? 133 : 0;
+                    for ( ; x < titles[i].rw ; x++)
                     {
                         titles[i].srcImage->getPixel(x*info->prescale, y*info->prescale, r, g, b, a);
                         if (r || g || b)
@@ -1718,31 +1702,17 @@ void IntroController::getTitleSourceData()
             }
         }
 
-        // permanently disable alpha
-        if (titles[i].srcImage)
-            titles[i].srcImage->alphaOff();
-
-        bool indexed = info->image->isIndexed() && titles[i].method != MAP;
         // create the initial animation frame
         titles[i].destImage = Image::create(
             2 + (titles[i].prescaled ? SCALED(titles[i].rw) : titles[i].rw) * info->prescale ,
-            2 + (titles[i].prescaled ? SCALED(titles[i].rh) : titles[i].rh) * info->prescale,
-            indexed);
-        if (indexed)
-            titles[i].destImage->setPaletteFromImage(info->image);
-    }
-
-    // turn alpha back on
-    if (alpha)
-    {
-        info->image->alphaOn();
+            2 + (titles[i].prescaled ? SCALED(titles[i].rh) : titles[i].rh) * info->prescale);
+        titles[i].destImage->fill(RGBA(0, 0, 0, 255));
     }
 
     // scale the original image now
     Image *scaled = screenScale(info->image,
                                 settings.scale / info->prescale,
-                                info->image->isIndexed(),
-                                1);
+                                1, 1);
     delete info->image;
     info->image = scaled;
 }
@@ -1916,12 +1886,9 @@ bool IntroController::updateTitle()
                     title->plotData[i].a);
             }
 
-            // cover the "present" area with the transparent color
-            title->destImage->fillRect(
-                75, 1, 54, 5,
-                transparentColor.r,
-                transparentColor.g,
-                transparentColor.b);
+            // Re-draw the PRESENT area.
+            title->srcImage->drawSubRectOn(title->destImage, 73, 1,
+                72, 0, 58, 5);
             break;
         }
 

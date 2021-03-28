@@ -25,6 +25,7 @@
 #include "object.h"
 #include "player.h"
 #include "savegame.h"
+#include "scale.h"
 #include "settings.h"
 #include "textcolor.h"
 #include "tileanim.h"
@@ -62,6 +63,7 @@ void screenLoadGraphicsFromConf(void);
 Layout *screenLoadLayoutFromConf(const ConfigElement &conf);
 void screenShowGemTile(Layout *layout, Map *map, MapTile &t, bool focus, int x, int y);
 
+static Scaler filterScaler;
 vector<Layout *> layouts;
 vector<TileAnimSet *> tileanimSets;
 vector<string> gemLayoutNames;
@@ -94,6 +96,10 @@ extern void screenInit_sys();
 extern void screenDelete_sys();
 
 void screenInit() {
+    filterScaler = scalerGet(settings.filter);
+    if (!filterScaler)
+        errorFatal("%s is not a valid filter", settings.filter.c_str());
+
     screenInit_sys();
 
     imageMgr = new ImageMgr;
@@ -435,7 +441,7 @@ bool screenTileUpdate(TileView *view, const Coords &coords, bool redraw)
 void screenUpdate(TileView *view, bool showmap, bool blackout) {
     ASSERT(c != NULL, "context has not yet been initialized");
 
-    screenLock();
+    //screenLock();
 
     if (blackout)
     {
@@ -479,7 +485,7 @@ void screenUpdate(TileView *view, bool showmap, bool blackout) {
     screenUpdateMoons();
     screenUpdateWind();
 
-    screenUnlock();
+    //screenUnlock();
 }
 
 /**
@@ -578,14 +584,11 @@ void screenScrollMessageArea() {
                      TEXT_AREA_W * charsetInfo->image->width(),
                      CHAR_HEIGHT * settings.scale,
                      0, 0, 0);
-
-    screenRedrawScreen();
 }
 
 void screenCycle() {
     if (++screenCurrentCycle >= SCR_CYCLE_MAX)
         screenCurrentCycle = 0;
-    screenRedrawScreen();
 }
 
 void screenUpdateCursor() {
@@ -595,7 +598,6 @@ void screenUpdateCursor() {
 
     if (screenCursorStatus) {
         screenShowChar(31 - phase, screenCursorX, screenCursorY);
-        screenRedrawTextArea(screenCursorX, screenCursorY, 1, 1);
     }
 }
 
@@ -619,8 +621,6 @@ void screenUpdateMoons() {
         screenShowChar(trammelChar, 11, 0);
         screenShowChar(feluccaChar, 12, 0);
     }
-
-    screenRedrawTextArea(11, 0, 2, 1);
 }
 
 void screenUpdateWind() {
@@ -635,7 +635,6 @@ void screenUpdateWind() {
         screenEraseTextArea(WIND_AREA_X, WIND_AREA_Y, WIND_AREA_W, WIND_AREA_H);
         screenTextAt(WIND_AREA_X, WIND_AREA_Y, "Wind %5s", getDirectionName((Direction) c->windDirection));
     }
-    screenRedrawTextArea(WIND_AREA_X, WIND_AREA_Y, WIND_AREA_W, WIND_AREA_H);
 }
 
 void screenShowCursor() {
@@ -648,7 +647,6 @@ void screenShowCursor() {
 void screenHideCursor() {
     if (screenCursorStatus) {
         screenEraseTextArea(screenCursorX, screenCursorY, 1, 1);
-        screenRedrawTextArea(screenCursorX, screenCursorY, 1, 1);
     }
     screenCursorStatus = 0;
 }
@@ -1120,7 +1118,7 @@ void screenShake(int iterations) {
         // specify the size of the offset, and create a buffer
         // to store the offset row plus 1
         shakeOffset = 1;
-        bottom = Image::create(SCALED(320), SCALED(shakeOffset+1), false);
+        bottom = Image::create(SCALED(320), SCALED(shakeOffset+1));
 
         for (i = 0; i < iterations; i++) {
             // store the bottom row
@@ -1130,13 +1128,11 @@ void screenShake(int iterations) {
             screen->drawSubRectOn(screen, 0, SCALED(shakeOffset), 0, 0, SCALED(320), SCALED(200-(shakeOffset+1)));
             bottom->drawOn(screen, 0, SCALED(200-(shakeOffset)));
             screen->fillRect(0, 0, SCALED(320), SCALED(shakeOffset), 0, 0, 0);
-            screenRedrawScreen();
             EventHandler::sleep(settings.shakeInterval);
 
             // shift the screen back up, and replace the bottom row
             screen->drawOn(screen, 0, 0-SCALED(shakeOffset));
             bottom->drawOn(screen, 0, SCALED(200-(shakeOffset+1)));
-            screenRedrawScreen();
             EventHandler::sleep(settings.shakeInterval);
         }
         // free the bottom row image
@@ -1316,9 +1312,63 @@ void screenGemUpdate() {
     screenUpdateWind();
 }
 
+/**
+ * Scale an image up.  The resulting image will be scale * the
+ * original dimensions.  The original image is no longer deleted.
+ * n is the number of tiles in the image; each tile is filtered
+ * seperately. filter determines whether or not to filter the
+ * resulting image.
+ */
+Image *screenScale(Image *src, int scale, int n, int filter) {
+    Image *dest = NULL;
+
+    if (n == 0)
+        n = 1;
+
+    while (filter && filterScaler && (scale % 2 == 0)) {
+        dest = (*filterScaler)(src, 2, n);
+        src = dest;
+        scale /= 2;
+    }
+    if (scale == 3 && scaler3x(settings.filter)) {
+        dest = (*filterScaler)(src, 3, n);
+        src = dest;
+        scale /= 3;
+    }
+
+    if (scale != 1)
+        dest = (*scalerGet("point"))(src, scale, n);
+
+    if (!dest)
+        dest = Image::duplicate(src);
+
+    return dest;
+}
+
+/**
+ * Scale an image down.  The resulting image will be 1/scale * the
+ * original dimensions.  The original image is no longer deleted.
+ */
+Image *screenScaleDown(Image *src, int scale) {
+    int x, y;
+    Image *dest;
+
+    dest = Image::create(src->width() / scale, src->height() / scale);
+    if (!dest)
+        return NULL;
+
+    for (y = 0; y < src->height(); y+=scale) {
+        for (x = 0; x < src->width(); x+=scale) {
+            unsigned int index;
+            src->getPixelIndex(x, y, index);
+            dest->putPixelIndex(x / scale, y / scale, index);
+        }
+    }
+
+    return dest;
+}
+
 #ifdef IOS
 //Unsure if implementation required in iOS.
-void inline screenLock(){};
-void inline screenUnlock(){};
 void inline screenWait(int numberOfAnimationFrames){};
 #endif

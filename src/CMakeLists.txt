@@ -112,6 +112,7 @@ set(XU4_SRC
 	event.cpp
 	filesystem.cpp
 	game.cpp 
+	image.cpp
 	imageloader.cpp 
 	imageloader_fmtowns.cpp 
 	imageloader_png.cpp 
@@ -167,14 +168,12 @@ set(XU4_SDL
 	event_sdl.cpp 
 	screen_sdl.cpp
 	sound_sdl.cpp 
-	image_sdl.cpp 
 )
 
 set(XU4_SDL2
 	event_sdl2.cpp 
 	screen_sdl2.cpp
 	sound_sdl2.cpp 
-	image_sdl2.cpp 
 )
 
 

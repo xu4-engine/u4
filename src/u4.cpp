@@ -191,7 +191,6 @@ int main(int argc, char *argv[]) {
     pb.setBorderWidth(1);
 
     screenTextAt(15, 11, "Loading...");
-    screenRedrawScreen();
     PEND("screenInit")
     ++pb;
 

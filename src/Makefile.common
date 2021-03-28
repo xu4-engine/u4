@@ -38,7 +38,7 @@ CXXSRCS=\
         filesystem.cpp \
         game.cpp \
         io.cpp \
-        image_$(UI).cpp \
+        image.cpp \
         imageloader.cpp \
         imageloader_png.cpp \
         imageloader_u4.cpp \

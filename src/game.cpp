@@ -167,7 +167,6 @@ bool AlphaActionController::keyPressed(int key) {
         doneWaiting();
     } else {
         screenMessage("\n%s", prompt.c_str());
-        screenRedrawScreen();
         return KeyHandler::defaultHandler(key, NULL);
     }
     return true;
@@ -190,7 +189,6 @@ void GameController::initScreen()
     Image *screen = imageMgr->get("screen")->image;
 
     screen->fillRect(0, 0, screen->width(), screen->height(), 0, 0, 0);
-    screenRedrawScreen();
 }
 
 void GameController::initScreenWithoutReloadingState()
@@ -696,7 +694,6 @@ void GameController::finishTurn() {
 
     /* draw a prompt */
     screenPrompt();
-    //screenRedrawTextArea(TEXT_AREA_X, TEXT_AREA_Y, TEXT_AREA_W, TEXT_AREA_H);
 }
 
 /**
@@ -803,7 +800,6 @@ void gameSpellEffect(int spell, int player, Sound sound) {
         game->mapArea.highlight(0, 0, VIEWPORT_W * TILE_WIDTH, VIEWPORT_H * TILE_HEIGHT);
         EventHandler::sleep(time);
         game->mapArea.unhighlight();
-        screenRedrawScreen();
 
         if (effect == Spell::SFX_TREMOR) {
             gameUpdateScreen();
@@ -3025,12 +3021,7 @@ void GameController::timerFired() {
 
         screenCycle();
 
-        /*
-         * refresh the screen only if the timer queue is empty --
-         * i.e. drop a frame if another timer event is about to be fired
-         */
-        if (eventHandler->timerQueueEmpty())
-            gameUpdateScreen();
+        gameUpdateScreen();
 
         /*
          * force pass if no commands within last 20 seconds
@@ -3041,7 +3032,6 @@ void GameController::timerFired() {
 
             /* pass the turn, and redraw the text area so the prompt is shown */
             controller->keyPressed(U4_SPACE);
-            screenRedrawTextArea(TEXT_AREA_X, TEXT_AREA_Y, TEXT_AREA_W, TEXT_AREA_H);
         }
     }
 
@@ -3080,7 +3070,6 @@ void gameCheckHullIntegrity() {
             c->party->member(i)->setStatus(STAT_DEAD);
         }
 
-        screenRedrawScreen();
         deathStart(5);
     }
 }

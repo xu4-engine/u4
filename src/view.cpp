@@ -1,8 +1,6 @@
 #include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
 
-#ifndef IOS
-#include <SDL.h>
-#else
+#ifdef IOS
 #include "ios_helpers.h"
 #endif
 
@@ -79,7 +77,7 @@ void View::unhighlight() {
 void View::drawHighlighted() {
     Image *screen = imageMgr->get("screen")->image;
 
-    Image *tmp = Image::createMem(SCALED(highlightW), SCALED(highlightH), false);
+    Image *tmp = Image::create(SCALED(highlightW), SCALED(highlightH));
     if (!tmp)
         return;
 

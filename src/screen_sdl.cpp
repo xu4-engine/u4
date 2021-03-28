@@ -1,17 +1,16 @@
 /*
- * $Id$
+ * screen_sdl.cpp
  */
 
-#include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
-
-#include <algorithm>
-#include <functional>
-#include <vector>
-#include <map>
 #include <SDL.h>
 
 #include "config.h"
 #include "context.h"
+#include "debug.h"
+#include "error.h"
+#include "image.h"
+#include "settings.h"
+#include "screen.h"
 
 #if defined(MACOSX)
 #include "macosx/cursors.h"
@@ -19,31 +18,17 @@
 #include "cursors.h"
 #endif
 
-#include "debug.h"
-#include "dungeonview.h"
-#include "error.h"
-#include "event.h"
-#include "image.h"
-#include "imagemgr.h"
-#include "intro.h"
-#include "savegame.h"
-#include "settings.h"
-#include "scale.h"
-#include "screen.h"
-#include "tileanim.h"
-#include "tileset.h"
-#include "u4.h"
-#include "u4file.h"
-#include "utils.h"
+extern bool verbose;
+extern Image* screenImage;
+extern unsigned int refresh_callback(unsigned int, void*);
 
-using std::vector;
+bool screenFormatIsABGR = true;
 
-SDL_Cursor *cursors[5];
-Scaler filterScaler;
+static SDL_Cursor *cursors[5];
+static SDL_TimerID refreshTimer = NULL;
+static int frameDuration = 0;
 
 SDL_Cursor *screenInitCursor(const char * const xpm[]);
-
-extern bool verbose;
 
 
 int u4_SDL_InitSubSystem(Uint32 flags) {
@@ -64,12 +49,9 @@ void u4_SDL_QuitSubSystem(Uint32 flags) {
         SDL_QuitSubSystem(flags);
 }
 
-void screenRefreshThreadInit();
-void screenRefreshThreadEnd();
-
 void screenInit_sys() {
     /* start SDL */
-    if (u4_SDL_InitSubSystem(SDL_INIT_VIDEO) < 0)
+    if (u4_SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_TIMER) < 0)
         errorFatal("unable to init SDL: %s", SDL_GetError());
     SDL_EnableUNICODE(1);
     SDL_SetGamma(settings.gamma / 100.0f, settings.gamma / 100.0f, settings.gamma / 100.0f);
@@ -80,7 +62,7 @@ void screenInit_sys() {
     SDL_WM_SetIcon(SDL_LoadBMP(ICON_FILE), NULL);
 #endif
 
-    if (!SDL_SetVideoMode(320 * settings.scale, 200 * settings.scale, 0, SDL_HWSURFACE | SDL_ANYFORMAT | (settings.fullscreen ? SDL_FULLSCREEN : 0)))
+    if (!SDL_SetVideoMode(320 * settings.scale, 200 * settings.scale, 32, SDL_HWSURFACE | (settings.fullscreen ? SDL_FULLSCREEN : 0)))
         errorFatal("unable to set video: %s", SDL_GetError());
 
     if (verbose) {
@@ -100,20 +82,41 @@ void screenInit_sys() {
         SDL_ShowCursor(SDL_DISABLE);
     }
 
-    filterScaler = scalerGet(settings.filter);
-    if (!filterScaler)
-        errorFatal("%s is not a valid filter", settings.filter.c_str());
+    {
+    SDL_Surface* ss = SDL_GetVideoSurface();
+#if 0
+    printf( "SDL color masks: R:%08x G:%08x B:%08x A:%08x\n",
+            ss->format->Rmask, ss->format->Gmask,
+            ss->format->Bmask, ss->format->Amask );
+#endif
+    switch (ss->format->Rmask) {
+        default:
+            errorWarning("Unsupported SDL pixel format: %d:%08x",
+                         ss->format->BitsPerPixel, ss->format->Rmask);
+            // Fall through...
+        case 0x00ff0000:
+            screenFormatIsABGR = false;
+            break;
+        case 0x000000ff:
+            screenFormatIsABGR = true;
+            break;
+    }
+    }
 
-    screenRefreshThreadInit();
+    frameDuration = 1000 / settings.screenAnimationFramesPerSecond;
+    refreshTimer = SDL_AddTimer(frameDuration, &refresh_callback, NULL);
 }
 
 void screenDelete_sys() {
-    screenRefreshThreadEnd();
+    SDL_RemoveTimer(refreshTimer);
+    refreshTimer = NULL;
+
     SDL_FreeCursor(cursors[1]);
     SDL_FreeCursor(cursors[2]);
     SDL_FreeCursor(cursors[3]);
     SDL_FreeCursor(cursors[4]);
-    u4_SDL_QuitSubSystem(SDL_INIT_VIDEO);
+
+    u4_SDL_QuitSubSystem(SDL_INIT_VIDEO | SDL_INIT_TIMER);
 }
 
 /**
@@ -218,166 +221,63 @@ int screenLoadImageCga(Image **image, int width, int height, U4FILE *file, Compr
 }
 #endif
 
-/**
- * Force a redraw.
+/*
+ * Show screenImage on the display.
+ * If w is zero then the entire display is updated.
  */
+// This would be static but its an Image friend to access screenImage->pixels.
+void updateDisplay( int x, int y, int w, int h ) {
+    SDL_Surface* ss = SDL_GetVideoSurface();
+    if (ss) {
+        uint32_t* dp;
+        uint32_t* drow;
+        const uint32_t* sp;
+        const uint32_t* send;
+        const uint32_t* srow;
+        int dpitch = ss->pitch / sizeof(uint32_t);
+        int cr;
 
-SDL_mutex *screenLockMutex = NULL;
-int frameDuration = 0;
+#if 0
+        printf( "KR redraw format:(%d %08x %08x %d,%d pitch:%d\n",
+                ss->format->BitsPerPixel,
+                ss->format->Rmask, ss->format->Amask,
+                ss->w, ss->h, ss->pitch );
+#endif
 
-void screenLock() {
-    SDL_mutexP(screenLockMutex);
-}
+        if (w == 0) {
+            w = ss->w;
+            h = ss->h;
+        }
 
-void screenUnlock() {
-    SDL_mutexV(screenLockMutex);
+        SDL_LockSurface(ss);
+        srow = screenImage->pixels + y*screenImage->w + x;
+        drow = ((uint32_t*) ss->pixels) + y*dpitch + x;
+        for (cr = 0; cr < h; ++cr) {
+            dp = drow;
+            sp = srow;
+            send = srow + screenImage->w;
+            while (sp != send)
+                *dp++ = *sp++;
+            srow += screenImage->w;
+            drow += dpitch;
+        }
+        SDL_UnlockSurface(ss);
+
+        SDL_UpdateRect(ss, 0, 0, 0, 0);
+    }
 }
 
 //#define CPU_TEST
 #include "support/cpuCounter.h"
 
-void screenRedrawScreen() {
+void screenSwapBuffers() {
     CPU_START()
-
-    screenLock();
-    SDL_UpdateRect(SDL_GetVideoSurface(), 0, 0, 0, 0);
-    screenUnlock();
-
+    updateDisplay(0, 0, 0, 0);
     CPU_END("ut:")
-}
-
-void screenRedrawTextArea(int x, int y, int width, int height) {
-    screenLock();
-    SDL_UpdateRect(SDL_GetVideoSurface(), x * CHAR_WIDTH * settings.scale, y * CHAR_HEIGHT * settings.scale, width * CHAR_WIDTH * settings.scale, height * CHAR_HEIGHT * settings.scale);
-    screenUnlock();
 }
 
 void screenWait(int numberOfAnimationFrames) {
     SDL_Delay(numberOfAnimationFrames * frameDuration);
-}
-
-bool continueScreenRefresh = true;
-SDL_Thread *screenRefreshThread = NULL;
-
-int screenRefreshThreadFunction(void *unused) {
-
-    while (continueScreenRefresh) {
-        SDL_Delay(frameDuration);
-        screenRedrawScreen();
-    }
-    return 0;
-}
-
-void screenRefreshThreadInit() {
-    screenLockMutex = SDL_CreateMutex();;
-
-    frameDuration = 1000 / settings.screenAnimationFramesPerSecond;
-
-    continueScreenRefresh = true;
-    if (screenRefreshThread) {
-        errorWarning("Screen refresh thread already exists.");
-        return;
-    }
-
-    screenRefreshThread = SDL_CreateThread(screenRefreshThreadFunction, NULL);
-    if (!screenRefreshThread) {
-        errorWarning(SDL_GetError());
-        return;
-    }
-}
-
-void screenRefreshThreadEnd() {
-    continueScreenRefresh = false;
-    SDL_WaitThread(screenRefreshThread, NULL);
-    screenRefreshThread = NULL;
-}
-
-
-/**
- * Scale an image up.  The resulting image will be scale * the
- * original dimensions.  The original image is no longer deleted.
- * n is the number of tiles in the image; each tile is filtered
- * seperately. filter determines whether or not to filter the
- * resulting image.
- */
-Image *screenScale(Image *src, int scale, int n, int filter) {
-    Image *dest = NULL;
-    bool isTransparent;
-    unsigned int transparentIndex;
-    bool alpha = src->isAlphaOn();
-
-    if (n == 0)
-        n = 1;
-
-    isTransparent = src->getTransparentIndex(transparentIndex);
-    src->alphaOff();
-
-    while (filter && filterScaler && (scale % 2 == 0)) {
-        dest = (*filterScaler)(src, 2, n);
-        src = dest;
-        scale /= 2;
-    }
-    if (scale == 3 && scaler3x(settings.filter)) {
-        dest = (*filterScaler)(src, 3, n);
-        src = dest;
-        scale /= 3;
-    }
-
-    if (scale != 1)
-        dest = (*scalerGet("point"))(src, scale, n);
-
-    if (!dest)
-        dest = Image::duplicate(src);
-
-    if (isTransparent)
-        dest->setTransparentIndex(transparentIndex);
-
-    if (alpha)
-        src->alphaOn();
-
-
-
-
-    return dest;
-}
-
-/**
- * Scale an image down.  The resulting image will be 1/scale * the
- * original dimensions.  The original image is no longer deleted.
- */
-Image *screenScaleDown(Image *src, int scale) {
-    int x, y;
-    Image *dest;
-    bool isTransparent;
-    unsigned int transparentIndex;
-    bool alpha = src->isAlphaOn();
-
-    isTransparent = src->getTransparentIndex(transparentIndex);
-
-    src->alphaOff();
-
-    dest = Image::create(src->width() / scale, src->height() / scale, src->isIndexed());
-    if (!dest)
-        return NULL;
-
-    if (dest->isIndexed())
-        dest->setPaletteFromImage(src);
-
-    for (y = 0; y < src->height(); y+=scale) {
-        for (x = 0; x < src->width(); x+=scale) {
-            unsigned int index;
-            src->getPixelIndex(x, y, index);
-            dest->putPixelIndex(x / scale, y / scale, index);
-        }
-    }
-
-    if (isTransparent)
-        dest->setTransparentIndex(transparentIndex);
-
-    if (alpha)
-        src->alphaOn();
-
-    return dest;
 }
 
 /**

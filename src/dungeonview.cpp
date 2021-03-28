@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * dungeonview.cpp
  */
 
 #include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
@@ -33,61 +33,57 @@ DungeonView * DungeonView::getInstance()
 
 void DungeonView::display(Context * c, TileView *view)
 {
+    static const int8_t wallSides[3] = { -1, 1, 0 };
+    vector<MapTile> tiles;
     int x,y;
+    Tileset* tileset = c->location->map->tileset;
 
     /* 1st-person perspective */
     if (screen3dDungeonViewEnabled) {
         //Note: This shouldn't go above 4, unless we check opaque tiles each step of the way.
         const int farthest_non_wall_tile_visibility = 4;
 
-        vector<MapTile> tiles;
-
         screenEraseMapArea();
         if (c->party->getTorchDuration() > 0) {
             for (y = 3; y >= 0; y--) {
                 DungeonGraphicType type;
+                Direction dir = (Direction) c->saveGame->orientation;
 
-                //FIXME: Maybe this should be in a loop
-                tiles = getTiles(y, -1);
-                type = tilesToGraphic(tiles);
-                drawWall(-1, y, (Direction)c->saveGame->orientation, type);
-
-                tiles = getTiles(y, 1);
-                type = tilesToGraphic(tiles);
-                drawWall(1, y, (Direction)c->saveGame->orientation, type);
-
-                tiles = getTiles(y, 0);
-                type = tilesToGraphic(tiles);
-                drawWall(0, y, (Direction)c->saveGame->orientation, type);
+                // Draw walls player can see.
+                for (x = 0; x < 3; ++x) {
+                    tiles = getTiles(y, wallSides[x]);
+                    type = tilesToGraphic(tiles);
+                    drawWall(wallSides[x], y, dir, type);
+                }
 
                 //This only checks that the tile at y==3 is opaque
                 if (y == 3 && !tiles.front().getTileType()->isOpaque())
                 {
                     for (int y_obj = farthest_non_wall_tile_visibility; y_obj > y; y_obj--)
                     {
-                    vector<MapTile> distant_tiles = getTiles(y_obj     , 0);
+                    vector<MapTile> distant_tiles = getTiles(y_obj, 0);
                     DungeonGraphicType distant_type = tilesToGraphic(distant_tiles);
 
-                    if ((distant_type == DNGGRAPHIC_DNGTILE) || (distant_type == DNGGRAPHIC_BASETILE))
-                        drawTile(c->location->map->tileset->get(distant_tiles.front().getId()),0, y_obj, Direction(c->saveGame->orientation));
+                    if ((distant_type == DNGGRAPHIC_DNGTILE) ||
+                        (distant_type == DNGGRAPHIC_BASETILE))
+                        drawTile(tileset->get(distant_tiles.front().getId()), 0, y_obj, dir);
                     }
                 }
-                if ((type == DNGGRAPHIC_DNGTILE) || (type == DNGGRAPHIC_BASETILE))
-                    drawTile(c->location->map->tileset->get(tiles.front().getId()), 0, y, Direction(c->saveGame->orientation));
+                if ((type == DNGGRAPHIC_DNGTILE) ||
+                    (type == DNGGRAPHIC_BASETILE))
+                    drawTile(tileset->get(tiles.front().getId()), 0, y, dir);
             }
         }
     }
 
     /* 3rd-person perspective */
     else {
-        vector<MapTile> tiles;
-
-        static MapTile black = c->location->map->tileset->getByName("black")->getId();
-        static MapTile avatar = c->location->map->tileset->getByName("avatar")->getId();
+        static MapTile black  = tileset->getByName("black")->getId();
+        static MapTile avatar = tileset->getByName("avatar")->getId();
 
         for (y = 0; y < VIEWPORT_H; y++) {
             for (x = 0; x < VIEWPORT_W; x++) {
-                    tiles = getTiles((VIEWPORT_H / 2) - y, x - (VIEWPORT_W / 2));
+                tiles = getTiles((VIEWPORT_H / 2) - y, x - (VIEWPORT_W / 2));
 
                 /* Only show blackness if there is no light */
                 if (c->party->getTorchDuration() <= 0)
@@ -102,8 +98,6 @@ void DungeonView::display(Context * c, TileView *view)
 }
 
 void DungeonView::drawInDungeon(Tile *tile, int x_offset, int distance, Direction orientation, bool tiledWall) {
-    Image *scaled;
-
     const static int nscale_vga[] = { 12, 8, 4, 2, 1};
     const static int nscale_ega[] = { 8, 4, 2, 1, 0};
 
@@ -129,10 +123,12 @@ void DungeonView::drawInDungeon(Tile *tile, int x_offset, int distance, Directio
         offset_multiplier = 4;
     }
 
-    const int *dscale = tiledWall ? lscale : nscale;
-
+#if 0
     //Clear scratchpad and set a background color
-    animated->initializeToBackgroundColor();
+    RGBA darkGray(14, 15, 16, 0);
+    animated->fill(darkGray);
+#endif
+
     //Put tile on animated scratchpad
     if (tile->getAnim()) {
         MapTile mt = tile->getId();
@@ -142,19 +138,22 @@ void DungeonView::drawInDungeon(Tile *tile, int x_offset, int distance, Directio
     {
         tile->getImage()->drawOn(animated, 0, 0);
     }
-    animated->makeBackgroundColorTransparent();
+
+#if 0
+    animated->makeColorTransparent(darkGray);
     //This process involving the background color is only required for drawing in the dungeon.
-    //It will not play well with semi-transparent graphics.
+#endif
 
     /* scale is based on distance; 1 means half size, 2 regular, 4 means scale by 2x, etc. */
+    const int *dscale = tiledWall ? lscale : nscale;
+    Image *scaled;
+
     if (dscale[distance] == 0)
         return;
     else if (dscale[distance] == 1)
         scaled = screenScaleDown(animated, 2);
     else
-    {
         scaled = screenScale(animated, dscale[distance] / 2, 1, 0);
-    }
 
     if (tiledWall) {
         int i_x = SCALED((VIEWPORT_W * tileWidth  / 2) + this->x) - (scaled->width() / 2);
@@ -164,29 +163,19 @@ void DungeonView::drawInDungeon(Tile *tile, int x_offset, int distance, Directio
         int d_x = animated->width();
         int d_y = animated->height();
 
-        for (int x = i_x; x < f_x; x+=d_x)
+        for (int x = i_x; x < f_x; x+=d_x) {
             for (int y = i_y; y < f_y; y+=d_y)
-                animated->drawSubRectOn(this->screen,
-                        x,
-                        y,
-                        0,
-                        0,
-                        f_x - x,
-                        f_y - y
-                );
+                animated->drawSubRectOn(screen, x, y, 0, 0, f_x - x, f_y - y);
+        }
     }
     else {
         int y_offset = std::max(0,(dscale[distance] - offset_adj) * offset_multiplier);
         int x = SCALED((VIEWPORT_W * tileWidth / 2) + this->x) - (scaled->width() / 2);
         int y = SCALED((VIEWPORT_H * tileHeight / 2) + this->y + y_offset) - (scaled->height() / 8);
 
-        scaled->drawSubRectOn(  this->screen,
-                                x,
-                                y,
-                                0,
-                                0,
-                                SCALED(tileWidth * VIEWPORT_W + this->x) - x ,
-                                SCALED(tileHeight * VIEWPORT_H + this->y) - y );
+        Image::enableBlend(1);
+        scaled->drawOn(screen, x, y);
+        Image::enableBlend(0);
     }
 
     delete scaled;
@@ -230,8 +219,7 @@ int DungeonView::graphicIndex(int xoffset, int distance, Direction orientation, 
 }
 
 void DungeonView::drawTile(Tile *tile, int x_offset, int distance, Direction orientation) {
-    // Draw the tile to the screen
-    DungeonViewer.drawInDungeon(tile, x_offset, distance, orientation, tile->isTiledInDungeon());
+    drawInDungeon(tile, x_offset, distance, orientation, tile->isTiledInDungeon());
 }
 
 std::vector<MapTile> DungeonView::getTiles(int fwd, int side) {

@@ -1,10 +1,34 @@
+options [
+	os_api: 'allegro	"Platform Hardware API ('allegro 'sdl)"
+]
+
 exe %u4 [
 	include_from [
 		%src
-		%/usr/include/SDL
 		%/usr/include/libxml2
 	]
-	libs [%SDL %SDL_mixer %xml2 %png %z]
+
+	switch os_api [
+		allegro [
+			libs [%allegro_acodec %allegro_audio %allegro]
+			sources_from %src [
+				%event_allegro.cpp
+				%screen_allegro.cpp
+				%sound_allegro.cpp
+			]
+		]
+		sdl [
+			include_from %/usr/include/SDL
+			libs [%SDL %SDL_mixer]
+			sources_from %src [
+				%event_sdl.cpp
+				%screen_sdl.cpp
+				%sound_sdl.cpp
+			]
+		]
+	]
+
+	libs [%xml2 %png %z]
 	unix [cflags "-Wno-unused-parameter"]
 	cflags {-DVERSION=\"KR-1.0\"}
 
@@ -35,6 +59,7 @@ exe %u4 [
 		%event.cpp
 		%filesystem.cpp
 		%game.cpp
+		%image.cpp
 		%imageloader.cpp
 		%imageloader_fmtowns.cpp
 		%imageloader_png.cpp
@@ -80,18 +105,11 @@ exe %u4 [
 		%unzip.c
 		%view.cpp
 		%weapon.cpp
-
 		%xml.cpp
 
 		%lzw/hash.c
 		%lzw/lzw.c
 		%lzw/u6decode.cpp
 		%lzw/u4decode.cpp
-
-		; SDL
-		%event_sdl.cpp
-		%screen_sdl.cpp
-		%sound_sdl.cpp
-		%image_sdl.cpp
 	]
 ]

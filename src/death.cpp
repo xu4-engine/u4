@@ -122,5 +122,4 @@ void deathRevive() {
     screenEnableCursor();
     screenShowCursor();
     c->stats->setView(STATS_PARTY_OVERVIEW);
-    screenRedrawScreen();
 }

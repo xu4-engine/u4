@@ -147,16 +147,17 @@ void Tile::loadImage() {
                 frames = 4;
         }
 
-
-        if (info->image)
-            info->image->alphaOff();
-
         if (info) {
             w = (subimage ? subimage->width * scale : info->width * scale / info->prescale);
             h = (subimage ? (subimage->height * scale) / frames : (info->height * scale / info->prescale) / frames);
-            image = Image::create(w, h * frames, false);
+            image = Image::create(w, h * frames);
 
-            //info->image->alphaOff();
+            // NOTE: Blending should be off by default, but TileView::drawTile
+            // is loading images on the fly from inside the draw loop.
+            // Therefore, we must ensure blending is disabled and drawTile
+            // must reset it.
+            // TODO: All image loading should be done outside the draw loop.
+            Image::enableBlend(0);
 
             /* draw the tile from the image we found to our tile image */
             if (subimage) {
@@ -175,12 +176,6 @@ void Tile::loadImage() {
             if (anim == NULL)
                 errorWarning("Warning: animation style '%s' not found", animationRule.c_str());
         }
-
-        /* if we have animations, we always used 'animated' to draw from */
-        //if (anim)
-        //    image->alphaOff();
-
-
     }
 }
 

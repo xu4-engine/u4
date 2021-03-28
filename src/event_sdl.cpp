@@ -22,9 +22,22 @@ extern int u4_SDL_InitSubSystem(Uint32 flags);
 extern void u4_SDL_QuitSubSystem(Uint32 flags);
 
 enum UserEventCode {
+    UC_ScreenRefresh,
     UC_TimedEventMgr,
     UC_Sleep
 };
+
+unsigned int refresh_callback(unsigned int interval, void *param) {
+    SDL_Event event;
+
+    event.type = SDL_USEREVENT;
+    event.user.code = UC_ScreenRefresh;
+    event.user.data1 = param;
+    event.user.data2 = NULL;
+    SDL_PushEvent(&event);
+
+    return interval;
+}
 
 /**
  * Adds an SDL timer event to the message queue.
@@ -122,7 +135,6 @@ static void handleActiveEvent(const SDL_Event &event, updateScreenCallback updat
         if (event.active.gain) {
             if (updateScreen)
                 (*updateScreen)();
-            screenRedrawScreen();
         }
     }
 }
@@ -141,7 +153,6 @@ static void handleMouseButtonDownEvent(const SDL_Event &event, Controller *contr
     controller->keyPressed(area->command[button]);
     if (updateScreen)
         (*updateScreen)();
-    screenRedrawScreen();
 }
 
 static void handleKeyDownEvent(const SDL_Event &event, Controller *controller, updateScreenCallback updateScreen) {
@@ -193,7 +204,6 @@ static void handleKeyDownEvent(const SDL_Event &event, Controller *controller, u
     if (processed) {
         if (updateScreen)
             (*updateScreen)();
-        screenRedrawScreen();
     }
 
 }
@@ -216,99 +226,105 @@ static Uint32 sleepTimerCallback(Uint32 interval, void *) {
 void EventHandler::sleep(unsigned int usec) {
     // Start a timer for the amount of time we want to sleep from user input.
     static bool stopUserInput = true; // Make this static so that all instance stop. (e.g., sleep calling sleep).
+    SDL_Event event;
     SDL_TimerID sleepingTimer = SDL_AddTimer(usec, sleepTimerCallback, 0);
+    bool redraw = false;
 
     stopUserInput = true;
     while (stopUserInput) {
-        SDL_Event event;
-        SDL_WaitEvent(&event);
-        switch (event.type) {
-        default:
-            break;
-        case SDL_KEYDOWN:
-        case SDL_KEYUP:
-        case SDL_MOUSEBUTTONDOWN:
-        case SDL_MOUSEBUTTONUP:
-            // Discard the event.
-            break;
-        case SDL_MOUSEMOTION:
-            handleMouseMotionEvent(event);
-            break;
-        case SDL_ACTIVEEVENT:
-            handleActiveEvent(event, eventHandler->updateScreen);
-            break;
-        case SDL_USEREVENT:
-            if (event.user.code == UC_TimedEventMgr) {
-                eventHandler->getTimer()->tick();
-            } else if (event.user.code == UC_Sleep) {
-                SDL_RemoveTimer(sleepingTimer);
-                stopUserInput = false;
+        do {
+            SDL_WaitEvent(&event);
+            switch (event.type) {
+            default:
+                break;
+            case SDL_KEYDOWN:
+            case SDL_KEYUP:
+            case SDL_MOUSEBUTTONDOWN:
+            case SDL_MOUSEBUTTONUP:
+                // Discard the event.
+                break;
+            case SDL_MOUSEMOTION:
+                handleMouseMotionEvent(event);
+                break;
+            case SDL_ACTIVEEVENT:
+                handleActiveEvent(event, eventHandler->updateScreen);
+                break;
+            case SDL_USEREVENT:
+                if (event.user.code == UC_ScreenRefresh) {
+                    redraw = true;
+                } else if (event.user.code == UC_TimedEventMgr) {
+                    eventHandler->getTimer()->tick();
+                } else if (event.user.code == UC_Sleep) {
+                    SDL_RemoveTimer(sleepingTimer);
+                    stopUserInput = false;
+                }
+                break;
+            case SDL_QUIT:
+                EventHandler::quitGame();
+                break;
             }
-            break;
-        case SDL_QUIT:
-            EventHandler::quitGame();
-            break;
+        } while (SDL_PollEvent(NULL));
+
+        if (redraw) {
+            redraw = false;
+            screenSwapBuffers();
         }
     }
 }
 
 void EventHandler::run() {
+    SDL_Event event;
+    bool redraw = false;
+
     if (updateScreen)
         (*updateScreen)();
-    screenRedrawScreen();
+    screenSwapBuffers();
 
     while (!ended && !controllerDone) {
-        SDL_Event event;
+        do {
+            SDL_WaitEvent(&event);
+            switch (event.type) {
+            default:
+                break;
+            case SDL_KEYDOWN:
+                handleKeyDownEvent(event, getController(), updateScreen);
+                break;
 
-        SDL_WaitEvent(&event);
+            case SDL_MOUSEBUTTONDOWN:
+                handleMouseButtonDownEvent(event, getController(), updateScreen);
+                break;
 
-        switch (event.type) {
-        default:
-            break;
-        case SDL_KEYDOWN:
-            handleKeyDownEvent(event, getController(), updateScreen);
-            break;
+            case SDL_MOUSEMOTION:
+                handleMouseMotionEvent(event);
+                break;
 
-        case SDL_MOUSEBUTTONDOWN:
-            handleMouseButtonDownEvent(event, getController(), updateScreen);
-            break;
+            case SDL_USEREVENT:
+                if (event.user.code == UC_ScreenRefresh)
+                    redraw = true;
+                else
+                    eventHandler->getTimer()->tick();
+                break;
 
-        case SDL_MOUSEMOTION:
-            handleMouseMotionEvent(event);
-            break;
+            case SDL_ACTIVEEVENT:
+                handleActiveEvent(event, updateScreen);
+                break;
 
-        case SDL_USEREVENT:
-            eventHandler->getTimer()->tick();
-            break;
+            case SDL_QUIT:
+                EventHandler::quitGame();
+                break;
+            }
+        } while (SDL_PollEvent(NULL));
 
-        case SDL_ACTIVEEVENT:
-            handleActiveEvent(event, updateScreen);
-            break;
-
-        case SDL_QUIT:
-            EventHandler::quitGame();
-            break;
+        if (redraw) {
+            redraw = false;
+            screenSwapBuffers();
         }
     }
-
 }
 
 void EventHandler::setScreenUpdate(void (*updateScreen)(void)) {
     this->updateScreen = updateScreen;
 }
-
-/**
- * Returns true if the queue is empty of events that match 'mask'.
- */
- bool EventHandler::timerQueueEmpty() {
-    SDL_Event event;
-
-    if (SDL_PeepEvents(&event, 1, SDL_PEEKEVENT, SDL_EVENTMASK(SDL_USEREVENT)))
-        return false;
-    else
-        return true;
-}
-
 
 /**
  * Sets the key-repeat characteristics of the keyboard.
