@@ -162,7 +162,7 @@ void Tile::loadImage() {
             // Therefore, we must ensure blending is disabled and drawTile
             // must reset it.
             // TODO: All image loading should be done outside the draw loop.
-            Image::enableBlend(0);
+            int wasBlending = Image::enableBlend(0);
 
             /* draw the tile from the image we found to our tile image */
             if (subimage) {
@@ -170,6 +170,9 @@ void Tile::loadImage() {
                 tiles->drawSubRectOn(image, 0, 0, subimage->x * scale, subimage->y * scale, subimage->width * scale, subimage->height * scale);
             }
             else info->image->drawOn(image, 0, 0);
+
+            if (wasBlending)
+                Image::enableBlend(1);
         }
 
         if (animationRule.size() > 0) {

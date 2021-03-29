@@ -148,11 +148,6 @@ void TileView::drawTile(vector<MapTile> &tiles, bool focus, int x, int y) {
             if (!image)
                 return; //This is a problem //FIXME, error message it.
 
-            // FIXME: This extra enableBlend can go away when getImage above
-            // is moved outside this function.  All image loading should be
-            // done up front before any rendering.
-            Image::enableBlend(layer != 0);
-
             image->drawSubRectOn(animated,
                                 0, 0,
                                 0, SCALED(tileHeight * frontTile.frame),

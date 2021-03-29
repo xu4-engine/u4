@@ -35,9 +35,12 @@ static int imageBlending = 0;
 
 /**
  * Enable blending (use alpha channel) for drawOn & drawSubRectOn.
+ * Returns previous blending state.
  */
-void Image::enableBlend(int on) {
+int Image::enableBlend(int on) {
+    int prev = imageBlending;
     imageBlending = on ? 1 : 0;
+    return prev;
 }
 
 Image::Image() {}

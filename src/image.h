@@ -46,7 +46,7 @@ struct SubImage {
  */
 class Image {
 public:
-    static void enableBlend(int on);
+    static int enableBlend(int on);
     static Image *create(int w, int h);
     static Image *createScreenImage();
     static Image *duplicate(const Image *image);
