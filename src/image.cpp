@@ -1,18 +1,14 @@
 /*
- * $Id$
+ * image.cpp
  */
 
 #include <assert.h>
 #include <memory>
 #include <list>
-#include <utility>
-#include "debug.h"
 #include "image.h"
 #include "settings.h"
-#include "error.h"
 #include "xu4.h"
 
-//#define REPORT_PAL
 
 #define CHANNEL_REMAP
 #ifdef CHANNEL_REMAP
@@ -98,96 +94,13 @@ Image::~Image() {
     delete[] pixels;
 }
 
-/**
- * Sets the palette
- */
-void Image::setPalette(const RGBA *colors, unsigned n_colors) {
-#ifdef REPORT_PAL
-    printf( "KR setPalette %d\n", n_colors );
-#endif
-#if 0
-    ASSERT(indexed, "imageSetPalette called on non-indexed image");
-
-    SDL_Color *sdlcolors = new SDL_Color[n_colors];
-    for (unsigned i = 0; i < n_colors; i++) {
-        sdlcolors[i].r = colors[i].r;
-        sdlcolors[i].g = colors[i].g;
-        sdlcolors[i].b = colors[i].b;
-    }
-
-    SDL_SetColors(CSURF, sdlcolors, 0, n_colors);
-
-    delete [] sdlcolors;
-#endif
-}
-
-/**
- * Copies the palette from another image.
- */
-void Image::setPaletteFromImage(const Image *src) {
-#ifdef REPORT_PAL
-    printf("KR setPaletteFromImage\n");
-#endif
-#if 0
-    ASSERT(indexed && src->indexed, "imageSetPaletteFromImage called on non-indexed image");
-    const SDL_PixelFormat* df = CSURF->format;
-    const SDL_PixelFormat* sf = ((SDL_Surface*) src->surface)->format;
-    memcpy(df->palette->colors, sf->palette->colors,
-           sizeof(SDL_Color) * sf->palette->ncolors);
-#endif
-}
-
-// returns the color of the specified palette index
-RGBA Image::getPaletteColor(int index) {
-    RGBA color = RGBA(0, 0, 0, 0);
-#if 0
-    if (indexed)
-    {
-        const SDL_PixelFormat* pf = CSURF->format;
-        color.r = pf->palette->colors[index].r;
-        color.g = pf->palette->colors[index].g;
-        color.b = pf->palette->colors[index].b;
-        color.a = IM_OPAQUE;
-    }
-#endif
-    return color;
-}
-
-/* returns the palette index of the specified RGB color */
-int Image::getPaletteIndex(RGBA color) {
-#if 0
-    if (!indexed)
-        return -1;
-
-    const SDL_PixelFormat* pf = CSURF->format;
-    for (int i = 0; i < pf->palette->ncolors; i++)
-    {
-        if ( (pf->palette->colors[i].r == color.r)
-          && (pf->palette->colors[i].g == color.g)
-          && (pf->palette->colors[i].b == color.b) )
-        {
-            return i;
-        }
-
-    }
-#endif
-    // return the proper palette index for the specified color
-    return -1;
-}
-
 RGBA Image::setColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
     return RGBA(r, g, b, a);
 }
 
 /* sets the specified font colors */
-bool Image::setFontColor(ColorFG fg, ColorBG bg) {
-    if (!setFontColorFG(fg)) return false;
-    if (!setFontColorBG(bg)) return false;
-    return true;
-}
-
-/* sets the specified font colors */
 bool Image::setFontColorFG(ColorFG fg) {
+#if 0
     switch (fg) {
         case FG_GREY:
             if (!setPaletteIndex(TEXT_FG_PRIMARY_INDEX,   setColor(153,153,153))) return false;
@@ -224,11 +137,13 @@ bool Image::setFontColorFG(ColorFG fg) {
             if (!setPaletteIndex(TEXT_FG_SECONDARY_INDEX, setColor(204,204,204))) return false;
             if (!setPaletteIndex(TEXT_FG_SHADOW_INDEX,    setColor(68,68,68))) return false;
     }
+#endif
     return true;
 }
 
 /* sets the specified font colors */
 bool Image::setFontColorBG(ColorBG bg) {
+#if 0
     switch (bg) {
         case BG_BRIGHT:
             if (!setPaletteIndex(TEXT_BG_INDEX, setColor(0,0,102)))
@@ -238,71 +153,8 @@ bool Image::setFontColorBG(ColorBG bg) {
             if (!setPaletteIndex(TEXT_BG_INDEX, setColor(0,0,0)))
                 return false;
     }
+#endif
     return true;
-}
-
-/* sets the specified palette index to the specified RGB color */
-bool Image::setPaletteIndex(unsigned int index, RGBA color) {
-#ifdef REPORT_PAL
-    printf( "KR setPaletteIndex\n" );
-#endif
-#if 0
-    if (!indexed)
-        return false;
-
-    const SDL_PixelFormat* pf = CSURF->format;
-    pf->palette->colors[index].r = color.r;
-    pf->palette->colors[index].g = color.g;
-    pf->palette->colors[index].b = color.b;
-
-    // success
-    return true;
-#else
-    return false;
-#endif
-}
-
-bool Image::getTransparentIndex(unsigned int &index) const {
-#ifdef REPORT_PAL
-    printf( "KR getTransparentIndex\n" );
-#endif
-#if 0
-    if (!indexed || (CSURF->flags & SDL_SRCCOLORKEY) == 0)
-        return false;
-
-    index = CSURF->format->colorkey;
-    return true;
-#else
-    return false;
-#endif
-}
-
-bool Image::isAlphaOn() const
-{
-#if 0
-    return CSURF->flags & SDL_SRCALPHA;
-#else
-#ifdef REPORT_PAL
-    printf( "KR isAlphaOn\n" );
-#endif
-    return false;
-#endif
-}
-
-void Image::alphaOn()
-{
-#ifdef REPORT_PAL
-    printf( "KR alphaOn\n" );
-#endif
-    //CSURF->flags |= SDL_SRCALPHA;
-}
-
-void Image::alphaOff()
-{
-#ifdef REPORT_PAL
-    printf( "KR alphaOff\n" );
-#endif
-    //CSURF->flags &= ~SDL_SRCALPHA;
 }
 
 void Image::putPixel(int x, int y, int r, int g, int b, int a) {
@@ -377,17 +229,6 @@ void Image::performTransparencyHack(unsigned int colorValue, unsigned int numFra
             }
         }
     }
-}
-
-void Image::setTransparentIndex(unsigned int index)//, unsigned int numFrames, unsigned int currentFrameIndex, int shadowOutlineWidth, int shadowOpacityOverride)
-{
-#if 0
-    if (indexed) {
-        SDL_SetColorKey(CSURF, SDL_SRCCOLORKEY, index);
-    } else {
-        //errorWarning("Setting transparent index for non indexed");
-    }
-#endif
 }
 
 /**
@@ -675,10 +516,7 @@ void Image::drawSubRectInvertedOn(Image *dest, int x, int y, int rx, int ry, int
 /**
  * Dumps the image to a file in PPM format. This is mainly used for debugging.
  */
-void Image::save(const string &filename) {
-#if 0
-    SDL_SaveBMP(CSURF, filename.c_str());
-#else
+void Image::save(const char *filename) {
     uint8_t* row;
     uint8_t* rowEnd;
     uint8_t* cp;
@@ -687,9 +525,9 @@ void Image::save(const string &filename) {
     RGBA color;
     FILE* fp;
 
-    fp = fopen(filename.c_str(), "w");
+    fp = fopen(filename, "w");
     if (! fp) {
-        fprintf(stderr, "Image::save cannot open file %s\n", filename.c_str());
+        fprintf(stderr, "Image::save cannot open file %s\n", filename);
         return;
     }
     fprintf(fp, "P6 %d %d 255\n", w, h);
@@ -724,7 +562,6 @@ void Image::save(const string &filename) {
         row += rowBytes;
     }
     fclose(fp);
-#endif
 }
 
 

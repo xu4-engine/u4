@@ -169,8 +169,6 @@ IntroController::IntroController() :
     binData(NULL),
     titles(),                   // element list
     title(titles.begin()),      // element iterator
-    transparentIndex(13),       // palette index for transparency
-    transparentColor(),         // palette color for transparency
     bSkipTitles(false)
 {
     // initialize menus
@@ -1591,9 +1589,6 @@ void IntroController::getTitleSourceData()
         errorWarning("ERROR 1008: The title image (\"%s\") has been scaled too early!\t\n\nVisit the XU4 website for additional information.\n\thttp://xu4.sourceforge.net/", BKGD_INTRO);
     }
 
-    // get the transparent color
-    transparentColor = info->image->getPaletteColor(transparentIndex);
-
     // for each element, get the source data
     for (unsigned i=0; i < titles.size(); i++)
     {
@@ -1686,16 +1681,10 @@ void IntroController::getTitleSourceData()
             case MAP:
             {
                 // fill the map area with the transparent color
-                titles[i].srcImage->fillRect(
-                    8, 8, 304, 80,
-                    transparentColor.r,
-                    transparentColor.g,
-                    transparentColor.b);
+                titles[i].srcImage->fillRect(8, 8, 304, 80, 0, 0, 0, 0);
 
                 Image *scaled;      // the scaled and filtered image
                 scaled = screenScale(titles[i].srcImage, xu4.settings->scale / info->prescale, 1, 1);
-                if (transparentIndex >= 0)
-                    scaled->setTransparentIndex(transparentIndex);
 
                 titles[i].prescaled = true;
                 delete titles[i].srcImage;
@@ -2061,7 +2050,6 @@ void IntroController::drawTitle()
     else
         scaled = screenScale(title->destImage, xu4.settings->scale, 1, 1);
 
-    scaled->setTransparentIndex(transparentIndex);
     scaled->drawSubRect(
         SCALED(title->rx),    // dest x, y
         SCALED(title->ry),

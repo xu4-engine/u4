@@ -488,7 +488,6 @@ void screenUpdate(TileView *view, bool showmap, bool blackout) {
 void screenDrawImage(const string &name, int x, int y) {
     ImageInfo *info = imageMgr->get(name);
     if (info) {
-        info->image->alphaOn();
         info->image->draw(x, y);
         return;
     }
@@ -498,8 +497,6 @@ void screenDrawImage(const string &name, int x, int y) {
         info = imageMgr->get(subimage->srcImageName);
 
     if (info) {
-        info->image->alphaOn();
-
         if (info) {
             unsigned int scale = xu4.settings->scale;
             info->image->drawSubRect(x, y,

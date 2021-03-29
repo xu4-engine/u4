@@ -278,9 +278,6 @@ private:
     std::vector<AnimElement> titles;            // list of title elements
     std::vector<AnimElement>::iterator title;   // current title element
 
-    int transparentIndex;           // palette index for transparency
-    RGBA transparentColor;     // palette color for transparency
-
     int  introMusic;
     bool bSkipTitles;
 };

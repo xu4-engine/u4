@@ -7,6 +7,7 @@
 
 #include <map>
 #include "image.h"
+#include "u4file.h"
 
 class U4FILE;
 

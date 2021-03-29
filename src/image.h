@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * image.h
  */
 
 #ifndef IMAGE_H
@@ -7,16 +7,12 @@
 
 #include <string>
 #include <stdint.h>
-#include "types.h"
-#include "u4file.h"
 #include "textcolor.h"
 
 #if defined(IOS)
 typedef struct CGImage *CGImageRef;
 typedef struct CGLayer *CGLayerRef;
 #endif
-
-using std::string;
 
 
 struct RGBA {
@@ -25,11 +21,9 @@ struct RGBA {
     uint8_t r, g, b, a;
 };
 
-class Image;
-
 struct SubImage {
-    string name;
-    string srcImageName;
+    std::string name;
+    std::string srcImageName;
     int x, y, width, height;
 };
 
@@ -52,15 +46,8 @@ public:
     static Image *duplicate(const Image *image);
     ~Image();
 
-    /* palette handling */
-    void setPalette(const RGBA *colors, unsigned n_colors);
-    void setPaletteFromImage(const Image *src);
-    bool getTransparentIndex(unsigned int &index) const;
     void performTransparencyHack(unsigned int colorValue, unsigned int numFrames, unsigned int currentFrameIndex, unsigned int haloWidth, unsigned int haloOpacityIncrementByPixelDistance);
-    void setTransparentIndex(unsigned int index);
-//    void invokeTransparencyHack(ImageInfo * info);
 
-    bool setFontColor(ColorFG fg, ColorBG bg);
     bool setFontColorFG(ColorFG fg);
     bool setFontColorBG(ColorBG bg);
 
@@ -70,26 +57,12 @@ public:
     RGBA setColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a = IM_OPAQUE);
 
 
-    /* alpha handling */
-    bool isAlphaOn() const;
-    void alphaOn();
-    void alphaOff();
-
-
     /* Will make the pixels that match the color disappear, with a blur halo */
     void makeColorTransparent(const RGBA& bgColor, int haloSize = 0, int shadowOpacity = 2);
 
     /* writing to image */
-
-    /**
-     * Sets the color of a single pixel.
-     */
-    void putPixel(int x, int y, int r, int g, int b, int a); //TODO Consider using &
-
-
+    void putPixel(int x, int y, int r, int g, int b, int a);
     void putPixelIndex(int x, int y, uint32_t index);
-
-
     void fill(const RGBA& col);
     void fillRect(int x, int y, int w, int h, int r, int g, int b, int a=IM_OPAQUE);
 
@@ -131,25 +104,26 @@ public:
 
     int width() const { return w; }
     int height() const { return h; }
-    void save(const string &filename);
+    void save(const char* filename);
+    void drawHighlighted();
+
 #ifdef IOS
     CGLayerRef getSurface() { return surface; }
     void initWithImage(CGImageRef image);
     void clearImageContents();
-#endif
-    void drawHighlighted();
-
 
 private:
-    unsigned int w, h;
-    uint32_t* pixels;
-#ifdef IOS
     mutable char *cachedImageData;
     CGLayerRef surface;
     void clearCachedImageData() const;
     void createCachedImage() const;
     friend Image *screenScale(Image *src, int scale, int n, int filter);
 #endif
+
+private:
+    unsigned int w, h;
+    uint32_t* pixels;
+
     Image();                    /* use create method to construct images */
 
     // disallow assignments, copy contruction

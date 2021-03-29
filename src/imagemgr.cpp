@@ -195,11 +195,9 @@ SubImage *ImageMgr::loadSubImageFromConf(const ImageInfo *info, const ConfigElem
 void ImageMgr::fixupIntro(Image *im, int prescale) {
     const unsigned char *sigData;
     int i, x, y;
-    bool alpha = im->isAlphaOn();
     RGBA color;
 
     sigData = xu4.intro->getSigData();
-    im->alphaOff();
     if (xu4.settings->videoType != "VGA-ALLPNG" && xu4.settings->videoType != "new") {
         /* ----------------------------
          * update the position of "and"
@@ -307,11 +305,6 @@ void ImageMgr::fixupIntro(Image *im, int prescale) {
                       56 * prescale,
                       5 * prescale);
 
-    if (alpha)
-    {
-        im->alphaOn();
-    }
-
     /* ----------------------------
      * erase the original "present"
      * ---------------------------- */
@@ -331,18 +324,9 @@ void ImageMgr::fixupIntro(Image *im, int prescale) {
         borderInfo->image = NULL;
         borderInfo = ImageMgr::get(BKGD_BORDERS, true);
 
-        im->setPaletteFromImage(borderInfo->image);
-
-        // update the color of "and" and "present"
-        im->setPaletteIndex(15, im->setColor(226, 226, 255));
-
-        // update the color of "Origin Systems, Inc."
-        im->setPaletteIndex(9, im->setColor(129, 129, 255));
-
         //borderInfo->image->save("border.png");
 
         // update the border appearance
-        borderInfo->image->alphaOff();
         borderInfo->image->drawSubRectOn(im, 0, 96, 0, 0, 16, 56);
         for (int i=0; i < 9; i++)
         {
@@ -350,7 +334,6 @@ void ImageMgr::fixupIntro(Image *im, int prescale) {
         }
         im->drawSubRectInvertedOn(im, 0, 144, 0, 104, 320, 40);
         im->drawSubRectOn(im, 0, 184, 0, 96, 320, 8);
-        borderInfo->image->alphaOn();
 
         delete borderInfo->image;
         borderInfo->image = NULL;
@@ -604,9 +587,6 @@ ImageInfo *ImageMgr::get(const string &name, bool returnUnscaled) {
 
     if (unscaled == NULL)
         return NULL;
-
-    if (info->transparentIndex != -1)
-        unscaled->setTransparentIndex(info->transparentIndex);
 
     if (info->prescale == 0)
         info->prescale = 1;

@@ -11,6 +11,7 @@
 
 #include "image.h"
 #include "observer.h"
+#include "u4file.h"
 
 class ConfigElement;
 class Debug;
@@ -120,9 +121,9 @@ private:
 
     ImageSet *getSet(const std::string &setname);
     ImageInfo *getInfo(const std::string &name);
-    ImageInfo *getInfoFromSet(const string &name, ImageSet *set);
+    ImageInfo *getInfoFromSet(const std::string &name, ImageSet *set);
 
-    std::string guessFileType(const string &filename);
+    std::string guessFileType(const std::string &filename);
 
     void fixupIntro(Image *im, int prescale);
     void fixupAbyssVision(Image *im, int prescale);
