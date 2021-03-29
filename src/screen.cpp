@@ -88,17 +88,13 @@ ImageMgr* imageMgr = NULL;
 extern bool verbose;
 
 // Just extern the system functions here. That way people aren't tempted to call them as part of the public API.
-extern void screenInit_sys();
+extern void screenInit_sys(const Settings*, int reset);
 extern void screenDelete_sys();
 
-void screenInit() {
-    Settings& settings = *xu4.settings;
-
+static void screenInit_data(Settings& settings) {
     filterScaler = scalerGet(settings.filter);
     if (!filterScaler)
         errorFatal("%s is not a valid filter", settings.filter.c_str());
-
-    screenInit_sys();
 
     imageMgr = new ImageMgr;
 
@@ -145,7 +141,7 @@ void screenInit() {
     dungeonTileChars["sleep_field"] = '^';
 }
 
-void screenDelete() {
+static void screenDelete_data() {
     delete tileanims;
     tileanims = NULL;
 
@@ -154,20 +150,33 @@ void screenDelete() {
         delete(*i);
     layouts.clear();
 
-    screenDelete_sys();
-
     delete imageMgr;
     imageMgr = NULL;
 }
 
+enum ScreenSystemStage {
+    SYS_CLEAN = 0,  // Initial screen setup.
+    SYS_RESET = 1   // Reconfigure screen settings.
+};
+
+void screenInit() {
+    screenInit_sys(xu4.settings, SYS_CLEAN);
+    screenInit_data(*xu4.settings);
+}
+
+void screenDelete() {
+    screenDelete_data();
+    screenDelete_sys();
+}
 
 /**
  * Re-initializes the screen and implements any changes made in settings
  */
 void screenReInit() {
-    Tileset::unloadAllImages(); /* unload tilesets, which will be reloaded lazily as needed */
-    screenDelete(); /* delete screen stuff */
-    screenInit();   /* re-init screen stuff (loading new backgrounds, etc.) */
+    Tileset::unloadAllImages();     // unload tilesets, which will be reloaded lazily as needed
+    screenDelete_data();
+    screenInit_sys(xu4.settings, SYS_RESET);
+    screenInit_data(*xu4.settings); // Load new backgrounds, etc.
 }
 
 void screenTextAt(int x, int y, const char *fmt, ...) {

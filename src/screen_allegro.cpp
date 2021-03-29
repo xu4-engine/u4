@@ -11,7 +11,6 @@
 #include "image.h"
 #include "settings.h"
 #include "screen.h"
-#include "xu4.h"
 
 extern bool verbose;
 
@@ -21,7 +20,7 @@ ALLEGRO_DISPLAY* sa_disp = NULL;
 ALLEGRO_TIMER* sa_refreshTimer = NULL;
 bool screenFormatIsABGR = true;
 
-static ALLEGRO_MOUSE_CURSOR* cursors[5];
+static ALLEGRO_MOUSE_CURSOR* cursors[5] = {NULL, NULL, NULL, NULL, NULL};
 static int frameDuration = 0;
 
 
@@ -72,33 +71,46 @@ static ALLEGRO_MOUSE_CURSOR* screenInitCursor(ALLEGRO_BITMAP* bmp, const char * 
 }
 
 
-void screenInit_sys() {
-    const Settings& settings = *xu4.settings;
+void screenInit_sys(const Settings* settings, int reset) {
     int format;
-    int w = 320 * settings.scale;
-    int h = 200 * settings.scale;
+    double refreshRate = 1.0 / settings->screenAnimationFramesPerSecond;
 
-    if (! al_init())
-        goto fatal;
+    if (reset) {
+        // On reset sa_queue is not touched as the TimedEventMgr has a timer
+        // registered and that needs to keep running.
 
-    if (!al_install_keyboard())
-        goto fatal;
+        // Halt refresh timer as display re-creation may take a moment.
+        al_stop_timer(sa_refreshTimer);
 
-    sa_queue = al_create_event_queue();
-    if (!sa_queue)
-        goto fatal;
+        al_unregister_event_source(sa_queue, al_get_display_event_source(sa_disp));
+        al_destroy_display(sa_disp);
+        sa_disp = NULL;
 
-    if (settings.fullscreen)
-        al_set_new_display_flags(ALLEGRO_FULLSCREEN);
+        ALLEGRO_EVENT_SOURCE* source = al_get_mouse_event_source();
+        if (source)
+            al_unregister_event_source(sa_queue, source);
+    } else {
+        if (! al_init())
+            goto fatal;
 
-    sa_disp = al_create_display(w, h);
+        if (!al_install_keyboard())
+            goto fatal;
+
+        sa_queue = al_create_event_queue();
+        if (!sa_queue)
+            goto fatal;
+    }
+
+    al_set_new_display_flags(settings->fullscreen ? ALLEGRO_FULLSCREEN : 0);
+
+    sa_disp = al_create_display(320 * settings->scale, 200 * settings->scale);
     if(!sa_disp)
         goto fatal;
 
     al_set_window_title(sa_disp, "Ultima IV");  // configService->gameName()
     //al_set_display_icon(sa_disp, ALLEGRO_BITMAP*);  LoadBMP(ICON_FILE));
 
-    // Can settings.gamma be applied?
+    // Can settings->gamma be applied?
 
     // Default bitmap format is ALLEGRO_PIXEL_FORMAT_ANY_WITH_ALPHA.
     //printf("KR fmt %d\n", al_get_new_bitmap_format());
@@ -119,34 +131,41 @@ void screenInit_sys() {
     }
 
     /* enable or disable the mouse cursor */
-    if (settings.mouseOptions.enabled) {
+    if (settings->mouseOptions.enabled) {
         if (!al_install_mouse())
             goto fatal;
 
-        al_register_event_source(sa_queue, al_get_mouse_event_source());
+        if (cursors[1] == NULL) {
+            // Create a temporary bitmap to build the cursor in.
+            al_set_new_bitmap_flags(ALLEGRO_MEMORY_BITMAP);
+            ALLEGRO_BITMAP* bm = al_create_bitmap(CURSORSIZE, CURSORSIZE);
+            if (bm) {
+                cursors[0] = NULL;
+                cursors[1] = screenInitCursor(bm, w_xpm);
+                cursors[2] = screenInitCursor(bm, n_xpm);
+                cursors[3] = screenInitCursor(bm, e_xpm);
+                cursors[4] = screenInitCursor(bm, s_xpm);
 
-        // Create a temporary bitmap to build the cursor in.
-        al_set_new_bitmap_flags(ALLEGRO_MEMORY_BITMAP);
-        ALLEGRO_BITMAP* bm = al_create_bitmap(CURSORSIZE, CURSORSIZE);
-        if (bm) {
-            cursors[0] = NULL;
-            cursors[1] = screenInitCursor(bm, w_xpm);
-            cursors[2] = screenInitCursor(bm, n_xpm);
-            cursors[3] = screenInitCursor(bm, e_xpm);
-            cursors[4] = screenInitCursor(bm, s_xpm);
-
-            al_destroy_bitmap(bm);
-            al_show_mouse_cursor(sa_disp);
+                al_destroy_bitmap(bm);
+            }
         }
+
+        al_register_event_source(sa_queue, al_get_mouse_event_source());
+        al_show_mouse_cursor(sa_disp);
     } else {
         al_hide_mouse_cursor(sa_disp);
     }
 
-    sa_refreshTimer = al_create_timer(1.0 / settings.screenAnimationFramesPerSecond);
+    if (reset) {
+        al_set_timer_speed(sa_refreshTimer, refreshRate);
+    } else {
+        sa_refreshTimer = al_create_timer(refreshRate);
 
-    al_register_event_source(sa_queue, al_get_keyboard_event_source());
+        al_register_event_source(sa_queue, al_get_timer_event_source(sa_refreshTimer));
+        al_register_event_source(sa_queue, al_get_keyboard_event_source());
+    }
+
     al_register_event_source(sa_queue, al_get_display_event_source(sa_disp));
-    al_register_event_source(sa_queue, al_get_timer_event_source(sa_refreshTimer));
     al_start_timer(sa_refreshTimer);
     return;
 
@@ -161,11 +180,11 @@ void screenDelete_sys() {
     for( int i = 1; i < 5; ++i )
         al_destroy_mouse_cursor(cursors[i]);
 
-    al_destroy_display(sa_disp);
-    sa_disp = NULL;
-
     al_destroy_event_queue(sa_queue);
     sa_queue = NULL;
+
+    al_destroy_display(sa_disp);
+    sa_disp = NULL;
 }
 
 /**

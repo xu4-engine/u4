@@ -24,7 +24,7 @@ extern unsigned int refresh_callback(unsigned int, void*);
 
 bool screenFormatIsABGR = true;
 
-static SDL_Cursor *cursors[5];
+static SDL_Cursor *cursors[5] = {NULL, NULL, NULL, NULL, NULL};
 static SDL_TimerID refreshTimer = NULL;
 static int frameDuration = 0;
 
@@ -49,20 +49,26 @@ void u4_SDL_QuitSubSystem(Uint32 flags) {
         SDL_QuitSubSystem(flags);
 }
 
-void screenInit_sys() {
-    /* start SDL */
-    if (u4_SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_TIMER) < 0)
-        errorFatal("unable to init SDL: %s", SDL_GetError());
-    SDL_EnableUNICODE(1);
-    SDL_SetGamma(settings.gamma / 100.0f, settings.gamma / 100.0f, settings.gamma / 100.0f);
-    atexit(SDL_Quit);
+void screenInit_sys(const Settings* settings, int reset) {
+    if (reset) {
+        SDL_RemoveTimer(refreshTimer);
+        refreshTimer = NULL;
+    } else {
+        /* start SDL */
+        if (u4_SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_TIMER) < 0)
+            errorFatal("unable to init SDL: %s", SDL_GetError());
+        SDL_EnableUNICODE(1);
+        atexit(SDL_Quit);
 
-    SDL_WM_SetCaption("Ultima IV", NULL);
+        SDL_WM_SetCaption("Ultima IV", NULL);
 #ifdef ICON_FILE
-    SDL_WM_SetIcon(SDL_LoadBMP(ICON_FILE), NULL);
+        SDL_WM_SetIcon(SDL_LoadBMP(ICON_FILE), NULL);
 #endif
+    }
 
-    if (!SDL_SetVideoMode(320 * settings.scale, 200 * settings.scale, 32, SDL_HWSURFACE | (settings.fullscreen ? SDL_FULLSCREEN : 0)))
+    SDL_SetGamma(settings->gamma / 100.0f, settings->gamma / 100.0f, settings->gamma / 100.0f);
+
+    if (!SDL_SetVideoMode(320 * settings->scale, 200 * settings->scale, 32, SDL_HWSURFACE | (settings->fullscreen ? SDL_FULLSCREEN : 0)))
         errorFatal("unable to set video: %s", SDL_GetError());
 
     if (verbose) {
@@ -71,13 +77,15 @@ void screenInit_sys() {
     }
 
     /* enable or disable the mouse cursor */
-    if (settings.mouseOptions.enabled) {
+    if (settings->mouseOptions.enabled) {
         SDL_ShowCursor(SDL_ENABLE);
-        cursors[0] = SDL_GetCursor();
-        cursors[1] = screenInitCursor(w_xpm);
-        cursors[2] = screenInitCursor(n_xpm);
-        cursors[3] = screenInitCursor(e_xpm);
-        cursors[4] = screenInitCursor(s_xpm);
+        if (cursors[0] == NULL) {
+            cursors[0] = SDL_GetCursor();
+            cursors[1] = screenInitCursor(w_xpm);
+            cursors[2] = screenInitCursor(n_xpm);
+            cursors[3] = screenInitCursor(e_xpm);
+            cursors[4] = screenInitCursor(s_xpm);
+        }
     } else {
         SDL_ShowCursor(SDL_DISABLE);
     }
@@ -103,7 +111,7 @@ void screenInit_sys() {
     }
     }
 
-    frameDuration = 1000 / settings.screenAnimationFramesPerSecond;
+    frameDuration = 1000 / settings->screenAnimationFramesPerSecond;
     refreshTimer = SDL_AddTimer(frameDuration, &refresh_callback, NULL);
 }
 
