@@ -14,6 +14,7 @@
 #include "error.h"
 #include "screen.h"
 #include "settings.h"
+#include "xu4.h"
 
 extern bool verbose, quit;
 extern int eventTimerGranularity;
@@ -121,11 +122,11 @@ EventHandler::EventHandler() : timer(eventTimerGranularity), updateScreen(NULL) 
 }
 
 static void handleMouseMotionEvent(const SDL_Event &event) {
-    if (!settings.mouseOptions.enabled)
+    if (!xu4.settings->mouseOptions.enabled)
         return;
 
     MouseArea *area;
-    area = eventHandler->mouseAreaForPoint(event.button.x, event.button.y);
+    area = xu4.eventHandler->mouseAreaForPoint(event.button.x, event.button.y);
     if (area)
         screenSetMouseCursor(area->cursor);
     else
@@ -145,12 +146,12 @@ static void handleActiveEvent(const SDL_Event &event, updateScreenCallback updat
 static void handleMouseButtonDownEvent(const SDL_Event &event, Controller *controller, updateScreenCallback updateScreen) {
     int button = event.button.button - 1;
 
-    if (!settings.mouseOptions.enabled)
+    if (!xu4.settings->mouseOptions.enabled)
         return;
 
     if (button > 2)
         button = 0;
-    MouseArea *area = eventHandler->mouseAreaForPoint(event.button.x, event.button.y);
+    MouseArea *area = xu4.eventHandler->mouseAreaForPoint(event.button.x, event.button.y);
     if (!area || area->command[button] == 0)
         return;
     controller->keyPressed(area->command[button]);
@@ -240,7 +241,7 @@ void EventHandler::sleep(unsigned int msec) {
                 handleMouseMotionEvent(event);
                 break;
             case SDL_ACTIVEEVENT:
-                handleActiveEvent(event, eventHandler->updateScreen);
+                handleActiveEvent(event, xu4.eventHandler->updateScreen);
                 break;
             case SDL_USEREVENT:
                 if (event.user.code == UC_ScreenRefresh) {
@@ -295,7 +296,7 @@ void EventHandler::run() {
                 if (event.user.code == UC_ScreenRefresh)
                     redraw = true;
                 else
-                    eventHandler->getTimer()->tick();
+                    xu4.eventHandler->getTimer()->tick();
                 break;
 
             case SDL_ACTIVEEVENT:

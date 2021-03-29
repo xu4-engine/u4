@@ -12,6 +12,7 @@
 #include "error.h"
 #include "event.h"
 #include "settings.h"
+#include "xu4.h"
 
 extern int u4_SDL_InitSubSystem(Uint32 flags);
 extern void u4_SDL_QuitSubSystem(Uint32 flags);
@@ -59,9 +60,9 @@ int soundInit(void)
     Mix_AllocateChannels(16);
 
     // Set up the volume.
-    musicEnabled = settings.musicVol;
-    musicSetVolume(settings.musicVol);
-    soundSetVolume(settings.soundVol);
+    musicEnabled = xu4.settings->musicVol;
+    musicSetVolume(xu4.settings->musicVol);
+    soundSetVolume(xu4.settings->soundVol);
     //TRACE(*logger, string("Music initialized: volume is ") + (musicEnabled ? "on" : "off"));
 
     soundChunk.resize(SOUND_MAX, NULL);
@@ -78,7 +79,7 @@ int soundInit(void)
  * if it is supposed to be turned off.
  */
 static void music_callback(void *data) {
-    eventHandler->getTimer()->remove(&music_callback);
+    xu4.eventHandler->getTimer()->remove(&music_callback);
 
     bool mplaying = Mix_PlayingMusic();
     if (musicEnabled) {
@@ -96,7 +97,7 @@ void soundDelete(void)
         return;
 
     //TRACE(*logger, "Uninitializing sound");
-    eventHandler->getTimer()->remove(&music_callback);
+    xu4.eventHandler->getTimer()->remove(&music_callback);
 
     if (playing) {
         Mix_FreeMusic(playing);
@@ -113,7 +114,7 @@ void soundDelete(void)
 
 static bool sound_load(Sound sound) {
     if (soundChunk[sound] == NULL) {
-        const char* pathname = configService->soundFile(sound);
+        const char* pathname = xu4.config->soundFile(sound);
         if (pathname) {
             soundChunk[sound] = Mix_LoadWAV(pathname);
             if (!soundChunk[sound]) {
@@ -130,7 +131,7 @@ void soundPlay(Sound sound, bool onlyOnce, int specificDurationInTicks) {
     ASSERT(sound < SOUND_MAX, "Attempted to play an invalid sound in soundPlay()");
 
     // If music didn't initialize correctly, then we can't play it anyway
-    if (!audioFunctional || !settings.soundVol)
+    if (!audioFunctional || !xu4.settings->soundVol)
         return;
 
     if (soundChunk[sound] == NULL)
@@ -153,7 +154,7 @@ void soundPlay(Sound sound, bool onlyOnce, int specificDurationInTicks) {
  */
 void soundStop() {
     // If music didn't initialize correctly, then we shouldn't try to stop it
-    if (!audioFunctional || !settings.soundVol)
+    if (!audioFunctional || !xu4.settings->soundVol)
         return;
 
     if (Mix_Playing(FX_CHANNEL))
@@ -173,7 +174,7 @@ static bool music_load(int music) {
             return true;
     }
 
-    const char* pathname = configService->musicFile(music);
+    const char* pathname = xu4.config->musicFile(music);
     if (! pathname)
         return false;
 
@@ -219,7 +220,7 @@ void musicFadeOut(int msec)
         return;
 
     if (Mix_PlayingMusic()) {
-        if (settings.volumeFades) {
+        if (xu4.settings->volumeFades) {
             if (Mix_FadeOutMusic(msec) == -1)
                 errorWarning("Mix_FadeOutMusic: %s\n", Mix_GetError());
         } else
@@ -237,7 +238,7 @@ void musicFadeIn(int msec, bool loadFromMap)
         if (loadFromMap || !playing)
             music_load(c->location->map->music);
 
-        if (settings.volumeFades) {
+        if (xu4.settings->volumeFades) {
             if (Mix_FadeInMusic(playing, NLOOPS, msec) == -1)
                 errorWarning("Mix_FadeInMusic: %s\n", Mix_GetError());
         } else
@@ -253,16 +254,16 @@ void musicSetVolume(int volume)
 
 int musicVolumeDec()
 {
-    if (settings.musicVol > 0)
-        musicSetVolume(--settings.musicVol);
-    return (settings.musicVol * 100 / MAX_VOLUME);  // percentage
+    if (xu4.settings->musicVol > 0)
+        musicSetVolume(--xu4.settings->musicVol);
+    return (xu4.settings->musicVol * 100 / MAX_VOLUME);  // percentage
 }
 
 int musicVolumeInc()
 {
-    if (settings.musicVol < MAX_VOLUME)
-        musicSetVolume(++settings.musicVol);
-    return (settings.musicVol * 100 / MAX_VOLUME);  // percentage
+    if (xu4.settings->musicVol < MAX_VOLUME)
+        musicSetVolume(++xu4.settings->musicVol);
+    return (xu4.settings->musicVol * 100 / MAX_VOLUME);  // percentage
 }
 
 /**
@@ -273,7 +274,7 @@ bool musicToggle()
     if (! audioFunctional)
         return false;
 
-    eventHandler->getTimer()->remove(&music_callback);
+    xu4.eventHandler->getTimer()->remove(&music_callback);
 
     musicEnabled = !musicEnabled;
     if (musicEnabled)
@@ -281,7 +282,7 @@ bool musicToggle()
     else
         musicFadeOut(1000);
 
-    eventHandler->getTimer()->add(&music_callback, settings.gameCyclesPerSecond);
+    xu4.eventHandler->getTimer()->add(&music_callback, xu4.settings->gameCyclesPerSecond);
     return musicEnabled;
 }
 
@@ -292,14 +293,14 @@ void soundSetVolume(int volume) {
 
 int soundVolumeDec()
 {
-    if (settings.soundVol > 0)
-        soundSetVolume(--settings.soundVol);
-    return (settings.soundVol * 100 / MAX_VOLUME);  // percentage
+    if (xu4.settings->soundVol > 0)
+        soundSetVolume(--xu4.settings->soundVol);
+    return (xu4.settings->soundVol * 100 / MAX_VOLUME);  // percentage
 }
 
 int soundVolumeInc()
 {
-    if (settings.soundVol < MAX_VOLUME)
-        soundSetVolume(++settings.soundVol);
-    return (settings.soundVol * 100 / MAX_VOLUME);  // percentage
+    if (xu4.settings->soundVol < MAX_VOLUME)
+        soundSetVolume(++xu4.settings->soundVol);
+    return (xu4.settings->soundVol * 100 / MAX_VOLUME);  // percentage
 }
