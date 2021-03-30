@@ -96,22 +96,6 @@ const vector<ResponsePart> &DynamicResponse::getParts() const {
 }
 
 /*
- * Dialogue::Question class
- */
-Dialogue::Question::Question(const string &txt, Response *yes, Response *no) :
-    text(txt), yesresp(yes->addref()), noresp(no->addref()) {}
-
-string Dialogue::Question::getText() {
-    return text;
-}
-
-Response *Dialogue::Question::getResponse(bool yes) {
-    if (yes)
-        return yesresp;
-    return noresp;
-}
-
-/*
  * Dialogue::Keyword class
  */
 Dialogue::Keyword::Keyword(const string &kw, Response *resp) :
@@ -150,14 +134,16 @@ bool Dialogue::Keyword::operator==(const string &kw) const {
 Dialogue::Dialogue()
     : intro(NULL)
     , longIntro(NULL)
-    , defaultAnswer(NULL)
-    , question(NULL) {
+    , defaultAnswer(NULL) {
 }
 
 Dialogue::~Dialogue() {
     for (KeywordMap::iterator i = keywords.begin(); i != keywords.end(); i++) {
         delete i->second;
     }
+    delete intro;
+    delete longIntro;
+    delete defaultAnswer;
 }
 
 void Dialogue::addKeyword(const string &kw, Response *response) {

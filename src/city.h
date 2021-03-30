@@ -42,6 +42,7 @@ public:
     PersonList persons;
     string tlk_fname;
     PersonRoleList personroles;
+    std::vector<Dialogue *> dialogueStore;  // Only used to delete Dialogues.
     std::vector<Dialogue *> extraDialogues;
 };
 

@@ -28,6 +28,7 @@
 #include "sound.h"
 #include "tileset.h"
 #include "utils.h"
+#include "weapon.h"
 
 #if defined(MACOSX)
 #include "macosx/osxinit.h"
@@ -261,6 +262,7 @@ int main(int argc, char *argv[]) {
 
             xu4.eventHandler->popMouseAreaSet();
             screenSetMouseCursor(MC_DEFAULT);
+            Weapon::cleanup();
         }
     }
 

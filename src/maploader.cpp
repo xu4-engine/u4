@@ -189,9 +189,10 @@ bool CityMapLoader::load(Map *map) {
          * to the city; Isaac the ghost in Skara Brae is handled like
          * this
          */
-        if (!found) {
+        if (!found)
             city->extraDialogues.push_back(dialogues[i]);
-        }
+        else
+            city->dialogueStore.push_back(dialogues[i]);
     }
 
     /*

@@ -27,7 +27,11 @@ City::~City() {
         delete *i;
     for (PersonRoleList::iterator j = personroles.begin(); j != personroles.end(); j++)
         delete *j;
-    for (std::vector<Dialogue *>::iterator k = extraDialogues.begin(); k != extraDialogues.end(); k++)
+
+    std::vector<Dialogue *>::iterator k;
+    for (k = dialogueStore.begin(); k != dialogueStore.end(); k++)
+        delete *k;
+    for (k = extraDialogues.begin(); k != extraDialogues.end(); k++)
         delete *k;
 }
 

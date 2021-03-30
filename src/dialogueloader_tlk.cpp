@@ -92,7 +92,7 @@ Dialogue* U4TlkDialogueLoader::load(void *source) {
         yes->add(ResponsePart::BRAGGED);
         no->add(ResponsePart::HUMBLE);
     }
-    dlg->setQuestion(new Dialogue::Question(strings[7], yes, no));
+    dlg->setQuestion(strings[7], yes, no);
 
     // one of the following four keywords triggers the speaker's question
     Response *job = new Response(string("\n") + strings[3]);

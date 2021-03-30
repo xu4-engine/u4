@@ -468,7 +468,7 @@ string Person::talkerGetQuestionResponse(Conversation *cnv, const char *answer) 
 
     if (ans == 'y' || ans == 'n') {
         valid = true;
-        yes = ans == 'y';
+        yes = (ans == 'y');
     }
 
     if (!valid) {
@@ -522,7 +522,7 @@ string Person::lordBritishGetQuestionResponse(Conversation *cnv, const char *ans
 }
 
 string Person::getQuestion(Conversation *cnv) {
-    return "\n" + cnv->question->getText() + "\n\nYou say: ";
+    return "\n" + cnv->question->text + "\n\nYou say: ";
 }
 
 /**

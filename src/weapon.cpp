@@ -21,6 +21,13 @@ using std::vector;
 bool Weapon::confLoaded = false;
 vector<Weapon *> Weapon::weapons;
 
+void Weapon::cleanup() {
+    vector<Weapon *>::iterator it;
+    for (it = weapons.begin(); it != weapons.end(); ++it)
+        delete *it;
+    weapons.clear();
+}
+
 /**
  * Returns weapon by WeaponType.
  */

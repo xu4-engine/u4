@@ -31,6 +31,7 @@ public:
 
     static const Weapon *get(WeaponType w);
     static const Weapon *get(const string &name);
+    static void cleanup();
 
     WeaponType getType() const          {return type;}
     const string &getName() const       {return name;}

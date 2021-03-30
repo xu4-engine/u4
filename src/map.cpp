@@ -259,6 +259,7 @@ Map::Map() {
 Map::~Map() {
     for (PortalList::iterator i = portals.begin(); i != portals.end(); i++)
         delete *i;
+    clearObjects();
     delete annotations;
 }
 
@@ -566,6 +567,8 @@ void Map::resetObjectAnimations() {
  * Removes all objects from the given map
  */
 void Map::clearObjects() {
+    for (ObjectDeque::iterator o = objects.begin(); o != objects.end(); o++)
+        delete *o;
     objects.clear();
 }
 

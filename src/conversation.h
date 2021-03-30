@@ -107,14 +107,24 @@ public:
      */
     class Question {
     public:
-        Question(const string &txt, Response *yes, Response *no);
+        Question() : yes(NULL), no(NULL) {}
+        ~Question() {
+            delete yes;
+            delete no;
+        }
+        void assign(const string &txt, Response *resYes, Response *resNo) {
+            text = txt;
+            yes  = resYes;
+            no   = resNo;
+        }
+        Response* getResponse(bool getYes) const {
+            return getYes ? yes : no;
+        }
 
-        string getText();
-        Response *getResponse(bool yes);
+        string text;
 
     private:
-        string text;
-        Response *yesresp, *noresp;
+        Response *yes, *no;
     };
 
     /**
@@ -161,10 +171,10 @@ public:
     Response *getIntro(bool familiar = false)       {return intro;}
     Response *getLongIntro(bool familiar = false)   {return longIntro;}
     Response *getDefaultAnswer()                    {return defaultAnswer;}
-    Dialogue::Question *getQuestion()               {return question;}
+    const Dialogue::Question* getQuestion() const   {return &question;}
 
     /*
-     * Getters
+     * Setters
      */
     void setName(const string &n)       {name           = n;}
     void setPronoun(const string &pn)   {pronoun        = pn;}
@@ -173,7 +183,9 @@ public:
     void setLongIntro(Response *i)      {longIntro      = i;}
     void setDefaultAnswer(Response *a)  {defaultAnswer  = a;}
     void setTurnAwayProb(int prob)      {turnAwayProb   = prob;}
-    void setQuestion(Question *q)       {question       = q;}
+    void setQuestion(const string &txt, Response *yes, Response *no) {
+        question.assign(txt, yes, no);
+    }
     void addKeyword(const string &kw, Response *response);
 
     const ResponsePart &getAction() const;
@@ -196,7 +208,7 @@ private:
         int turnAwayProb;
         int attackProb;
     };
-    Question *question;
+    Question question;
 };
 
 /**
@@ -253,7 +265,7 @@ public:
     string playerInput;         /**< A string holding the text the player inputs */
     list<string> reply;         /**< What the talker says */
     class Script *script;       /**< A script that this person follows during the conversation (may be NULL) */
-    Dialogue::Question *question; /**< The current question the player is being asked */
+    const Dialogue::Question *question; /**< The current question the player is being asked */
     int quant;                  /**< For vendor transactions */
     int player;                 /**< For vendor transactions */
     int price;                  /**< For vendor transactions */
