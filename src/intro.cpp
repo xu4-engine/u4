@@ -588,6 +588,8 @@ void IntroController::drawBeastie(int beast, int vertoffset, int frame) {
  * over the image.  If frame is "items", the second overlay is
  * painted: the circle without the moongate, but with a small white
  * dot representing the anhk and history book.
+ *
+ * TODO: Animate the moongate opening & closing to match the actual game.
  */
 void IntroController::animateTree(const string &frame) {
     backgroundArea.draw(frame, 72, 68);
@@ -1901,12 +1903,17 @@ bool IntroController::updateTitle()
                 title->timeDelay = getTicks() - title->timeBase + 100;
             }
 
-            // blit src to the canvas one row at a time, center out
-            int y = int(title->rh / 2) - title->animStep + 1;
-            int h = 1 + ((title->animStep - 1) * 2);
-            if (h <= title->srcImage->height()) {
-                title->srcImage->drawSubRectOn(title->destImage, 1, y+1,
-                    0, y, title->srcImage->width(), h);
+            // Blit src top & bottom halves so it expands horiz. center out.
+            Image* src = title->srcImage;
+            int h = src->height();
+            int drawH = title->animStep;
+            if (drawH <= h) {
+                int y = int(title->rh / 2) + 2;
+                int w = src->width();
+                int botH = drawH / 2;
+                int topH = drawH - botH;    // If odd, top gets extra row.
+                src->drawSubRectOn(title->destImage, 1, y-topH, 0, 0, w, topH);
+                src->drawSubRectOn(title->destImage, 1, y, 0, h-botH, w, botH);
             }
         }
             break;
