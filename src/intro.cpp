@@ -1903,16 +1903,13 @@ bool IntroController::updateTitle()
 
             // blit src to the canvas one row at a time, center out
             int y = int(title->rh / 2) - title->animStep + 1;
-            title->srcImage->drawSubRectOn(
-                title->destImage,
-                1,
-                y+1,
-                0,
-                y,
-                title->srcImage->width(),
-                1 + ((title->animStep - 1) * 2));
-            break;
+            int h = 1 + ((title->animStep - 1) * 2);
+            if (h <= title->srcImage->height()) {
+                title->srcImage->drawSubRectOn(title->destImage, 1, y+1,
+                    0, y, title->srcImage->width(), h);
+            }
         }
+            break;
 
         case MAP:
         {
