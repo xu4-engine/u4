@@ -745,9 +745,13 @@ void IntroController::finishInitiateGame(const string &nameBuffer, SexType sex)
 
     // show the lead up story
     showStory();
+    if (xu4.stage != StageIntro)
+        return;
 
     // ask questions that determine character class
     startQuestions();
+    if (xu4.stage != StageIntro)
+        return;
 
     // write out save game an segue into game
     SaveGame saveGame;
@@ -838,6 +842,8 @@ void IntroController::showStory() {
         // enable the cursor here to avoid drawing in undesirable locations
         questionArea.enableCursor();
         pauseController.waitFor();
+        if (xu4.stage != StageIntro)
+            break;
     }
 }
 
