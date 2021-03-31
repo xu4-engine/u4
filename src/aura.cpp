@@ -2,8 +2,6 @@
  * $Id$
  */
 
-#include "vc6.h"
-
 #include "aura.h"
 
 Aura::Aura() : type(NONE), duration(0) {}

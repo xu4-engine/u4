@@ -3,14 +3,22 @@ options [
 ]
 
 exe %u4 [
-	include_from [
-		%src
-		%/usr/include/libxml2
+	include_from %src
+	unix [
+		include_from %/usr/include/libxml2
+	]
+	win32 [
+		include_from %../usr/include
 	]
 
 	switch os_api [
 		allegro [
-			libs [%allegro_acodec %allegro_audio %allegro]
+			unix [
+				libs [%allegro_acodec %allegro_audio %allegro]
+			]
+			win32 [
+				libs_from %../usr/lib [%allegro_acodec %allegro_audio %allegro]
+			]
 			sources_from %src [
 				%event_allegro.cpp
 				%screen_allegro.cpp
@@ -28,8 +36,15 @@ exe %u4 [
 		]
 	]
 
-	libs [%xml2 %png %z]
-	unix [cflags "-Wno-unused-parameter"]
+	unix [
+		cflags "-Wno-unused-parameter"
+		libs [%xml2 %png %z]
+	]
+	win32 [
+		cflags "/DLIBXML_STATIC"
+		libs_from %../usr/lib [%libxml2_a %libpng16 %zlib]
+		libs [%User32]
+	]
 	cflags {-DVERSION=\"KR-1.0\"}
 
 	sources_from %src [

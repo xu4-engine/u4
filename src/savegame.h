@@ -9,6 +9,13 @@
 #include <deque>
 #include <string>
 
+#ifdef _MSC_VER
+#if _MSC_VER > 1600
+#define strcasecmp  _stricmp
+#define strncasecmp _strnicmp
+#endif
+#endif
+
 #define PARTY_SAV_BASE_FILENAME         "party.sav"
 #define MONSTERS_SAV_BASE_FILENAME      "monsters.sav"
 #define OUTMONST_SAV_BASE_FILENAME      "outmonst.sav"

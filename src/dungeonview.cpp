@@ -2,8 +2,6 @@
  * dungeonview.cpp
  */
 
-#include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
-
 #include "debug.h"
 #include "dungeonview.h"
 #include "image.h"

@@ -2,8 +2,6 @@
  * $Id$
  */
 
-#include "vc6.h" // Fixes things if you're using VC6, does nothing if otherwise
-
 #include <cctype>
 #include <cstring>
 #include <stdint.h>
@@ -122,24 +120,12 @@ void Settings::init(const char* profileName) {
         } else
             userPath = "./";
 #elif defined(_WIN32) || defined(__CYGWIN__)
-        userPath = "./";
-        LPMALLOC pMalloc = NULL;
-        if (SHGetMalloc(&pMalloc) == S_OK) {
-            LPITEMIDLIST pItemIDList = NULL;
-            if (SHGetSpecialFolderLocation(NULL, CSIDL_APPDATA, &pItemIDList) == S_OK &&
-                pItemIDList != NULL) {
-                LPSTR pBuffer = NULL;
-                if ((pBuffer = (LPSTR) pMalloc->Alloc(MAX_PATH + 2)) != NULL) {
-                    if (SHGetPathFromIDList(pItemIDList, pBuffer) == TRUE) {
-                        userPath = pBuffer;
-                        userPath += "/xu4/";
-                    }
-                    pMalloc->Free(pBuffer);
-                }
-                pMalloc->Free(pItemIDList);
-            }
-            pMalloc->Release();
-        }
+        char* appdata = getenv("APPDATA");
+        if (appdata) {
+            userPath = appdata;
+            userPath += "\\xu4\\";
+        } else
+            userPath = ".\\";
 #else
         userPath = "./";
 #endif

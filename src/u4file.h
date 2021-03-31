@@ -5,7 +5,6 @@
 #ifndef U4FILE_H
 #define U4FILE_H
 
-#include "vc6.h"
 #include <map>
 #include <string>
 #include <vector>
