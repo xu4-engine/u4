@@ -1,0 +1,116 @@
+		XU4 Change Log
+
+v1.0beta4 - 2011-01-25
+ - many bug fixes
+ - text colorization
+ - enchanced line-of-sight algorithm
+ - more sound effects
+ - support for multiple profiles/saved games
+ - the traditional title sequence was implemented
+ - tracker-based music files have been generated to replace the midi
+ - spell/combat animations and sound effect timings have been tweaked
+ - dungeon rendering improved
+ - tile stacks and effects display transparencies
+
+v1.0beta3 - 2005-10-06
+ - more bug fixes
+ - stability improvements
+ - lots more changes under the hood
+
+v1.0beta1 - 2004-11-29
+ - lots of fixes for dungeons and combat
+ - now fully playable from start to finish
+ - stability improvements
+ - lots of changes under the hood: xu4 is now written in C++, new
+   vendor scripting system
+
+New in v0.9
+ - dungeon altars and codex sequence (the game is now completeable)
+ - added context-sensitive default action to "Enter" key
+ - completed first person dungeon view
+ - sounds effects
+ - a few crasher bugs from 0.8 are now fixed
+ - as usual, lots of bugs fixes and code reorganization
+
+New in v0.8
+ - dungeon rooms
+ - first person view in dungeons
+ - improved config menus
+ - config menu navigation with arrow keys
+ - can now switch between VGA/EGA versions of the game
+ - ranged monster attacks
+ - implemented hole up & camp command
+ - implemented inn ghost
+ - xu4 can now load the Ultima IV data files straight out of
+   ultima4.zip and u4upgrad.zip
+ - all music can be previewed at the intro screen with the number keys
+ - many spells now work: awaken, blink, cure, dispel, gate, heal,
+   light, negate, tremor, resurrect, xit
+ - The bell, book, candle and skull now work
+ - better error reporting under MacOS X
+ - bug fixes galore
+ - lots of code cleanup
+
+New in v0.7
+ - ranged combat
+ - long responses now pause before scrolling off screen
+ - the telescope in the Lycaeum now works
+ - the silver horn now works
+ - monsters now initiate combat
+ - wind now influences ship movement
+ - fields, lava and poison now work in combat
+ - added player highlighting in stats display during combat
+ - added options to filter move messages and automatically open doors
+ - certain people now "turn away" in conversations
+ - lots more bugs squashed
+
+New in v0.6
+ - many bug fixes
+ - lots of code reorganization
+ - better pathfinding code
+ - all vendors, healers, taverns and inns now work
+
+New in v0.5
+ - lots of combat refinements, random monsters
+ - lots of fixes to vendor code (weapon, armor and food fully
+   implemented)
+ - Lord British nows heals party when asked about health
+ - "Mix Reagents" command works
+ - the "Yell" command now controls horse speed
+ - lots of the game mechanics that were guessed before now match the
+   original Ultima IV
+ - two new utility programs are provided for encoding and decoding the
+   graphics files used in the introduction (lzwenc & lzwdec)
+ - the usual bug fixes
+
+New in v0.09:
+ - first go at combat; still need to figure out true U4
+   combat algorithms
+ - food vendors now work and buggy weapons/armor vendors are fixed
+ - AdvanceMAME scaler (now the default), handles x2, x3, x4
+ - configuration menu at startup, settings saved in .xu4rc file
+ - drops frames when needed to better handle slow computers or X displays
+ - lots of code cleanup and bug fixes
+
+New in v0.08:
+ - 2xSaI scaler (now the default)
+ - fullscreen mode (-f on the command line)
+ - skip intro mode (-i on the command line)
+ - shrines and meditation, more actions affect karma
+ - sleep fields and poison now work
+ - if the party dies, they are now resurrected by Lord British
+ - spell casting improvements: Awaken, Cure, Heal, Dispel, Resurrect work
+
+New in v0.07:
+ - items searchable (runes, white & black stones, bell, book, candle,
+   etc.)
+ - city residents now move and have animated tiles
+ - gem viewing (tiles aren't quite right)
+ - getting chests
+ - some actions now affect your virtues (stealing chests, talking to
+   hawkwind, finding runes and stones)
+ - companions will now join the party if asked
+ - added filtering to the scaled images, like exult (2xBilinear only,
+   for now); the -scale parameter now accepts a number or "2xBi" for
+   filtered scaling (2 is still the default, 2xBi looks bad without
+   the VGA upgrade)
