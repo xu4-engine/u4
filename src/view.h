@@ -11,8 +11,6 @@
 #include "ios_helpers.h"
 #endif
 
-class Image;
-
 /**
  * Generic base class for reflecting the state of a game object onto
  * the screen.
@@ -37,7 +35,6 @@ protected:
 #ifdef IOS
     friend void U4IOS::updateScreenView();
 #endif
-    static Image *screen;
 };
 
 #endif /* VIEW_H */

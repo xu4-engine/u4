@@ -5,25 +5,19 @@
 #endif
 
 #include "image.h"
-#include "imagemgr.h"
 #include "settings.h"
 #include "view.h"
 #include "xu4.h"
 
-Image *View::screen = NULL;
-
 View::View(int x, int y, int width, int height)
 : x(x), y(y), width(width), height(height), highlighted(false), highlightX(0), highlightY(0), highlightW(0), highlightH(0)
 {
-    if (screen == NULL)
-        screen = imageMgr->get("screen")->image;
 }
 
 /**
  * Hook for reinitializing when graphics reloaded.
  */
 void View::reinit() {
-    screen = imageMgr->get("screen")->image;
 }
 
 /**
@@ -31,7 +25,7 @@ void View::reinit() {
  */
 void View::clear() {
     unhighlight();
-    screen->fillRect(SCALED(x), SCALED(y), SCALED(width), SCALED(height), 0, 0, 0);
+    xu4.screenImage->fillRect(SCALED(x), SCALED(y), SCALED(width), SCALED(height), 0, 0, 0);
 }
 
 /**
@@ -76,13 +70,11 @@ void View::unhighlight() {
 }
 
 void View::drawHighlighted() {
-    Image *screen = imageMgr->get("screen")->image;
-
     Image *tmp = Image::create(SCALED(highlightW), SCALED(highlightH));
     if (!tmp)
         return;
 
-    screen->drawSubRectOn(tmp, 0, 0, SCALED(this->x + highlightX), SCALED(this->y + highlightY), SCALED(highlightW), SCALED(highlightH));
+    xu4.screenImage->drawSubRectOn(tmp, 0, 0, SCALED(this->x + highlightX), SCALED(this->y + highlightY), SCALED(highlightW), SCALED(highlightH));
     tmp->drawHighlighted();
     tmp->draw(SCALED(this->x + highlightX), SCALED(this->y + highlightY));
     delete tmp;

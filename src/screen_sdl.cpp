@@ -11,6 +11,7 @@
 #include "image.h"
 #include "settings.h"
 #include "screen.h"
+#include "xu4.h"
 
 #if defined(MACOSX)
 #include "macosx/cursors.h"
@@ -19,7 +20,6 @@
 #endif
 
 extern bool verbose;
-extern Image* screenImage;
 extern unsigned int refresh_callback(unsigned int, void*);
 
 bool screenFormatIsABGR = true;
@@ -258,15 +258,15 @@ void updateDisplay( int x, int y, int w, int h ) {
         }
 
         SDL_LockSurface(ss);
-        srow = screenImage->pixels + y*screenImage->w + x;
+        srow = xu4.screenImage->pixels + y*xu4.screenImage->w + x;
         drow = ((uint32_t*) ss->pixels) + y*dpitch + x;
         for (cr = 0; cr < h; ++cr) {
             dp = drow;
             sp = srow;
-            send = srow + screenImage->w;
+            send = srow + xu4.screenImage->w;
             while (sp != send)
                 *dp++ = *sp++;
-            srow += screenImage->w;
+            srow += xu4.screenImage->w;
             drow += dpitch;
         }
         SDL_UnlockSurface(ss);

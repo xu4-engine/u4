@@ -56,26 +56,6 @@ Image *Image::create(int w, int h) {
     return im;
 }
 
-// Third copy of screen image pointer.  TODO: Consolidate these.
-Image* screenImage = NULL;
-
-/**
- * Create a special purpose image that represents the whole screen.
- *
- * NOTE: The returned pointer is unfortunately stored in two places,
- * View::screen & imageMgr->get("screen")->image (which gets the
- * ImageInfo from ImageMgr::baseSet).  It also needs to be accessed by the
- * Image::draw*On(NULL, ...) methods.
- *
- * On iOS it's even more complicated as those pointers are written over by
- * pushU4View & popU4View in U4AppDelegate.mm.
- */
-Image *Image::createScreenImage() {
-    screenImage = create(320 * xu4.settings->scale, 200 * xu4.settings->scale);
-    screenImage->fill(RGBA(0, 0, 0, 255));
-    return screenImage;
-}
-
 /**
  * Creates a duplicate of another image
  */
@@ -342,7 +322,7 @@ void Image::drawOn(Image *dest, int x, int y) const {
     int blitW, blitH;
 
     if (dest == NULL)
-        dest = screenImage;
+        dest = xu4.screenImage;
 
     drow = dest->pixels + dest->w * y + x;
 
@@ -432,7 +412,7 @@ void Image::drawSubRectOn(Image *dest, int x, int y, int rx, int ry, int rw, int
     const uint32_t* srow;
 
     if (dest == NULL)
-        dest = screenImage;
+        dest = xu4.screenImage;
 
     // Clip position and source rect to positive values.
     CLIP_SUB(x, rx, rw, dest->w)
@@ -492,7 +472,7 @@ void Image::drawSubRectInvertedOn(Image *dest, int x, int y, int rx, int ry, int
     const uint32_t* srow;
 
     if (dest == NULL)
-        dest = screenImage;
+        dest = xu4.screenImage;
 
     // Clip position and source rect to positive values.
     CLIP_SUB(x, rx, rw, dest->w)

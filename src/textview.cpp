@@ -63,11 +63,10 @@ void TextView::drawCharMasked(int chr, int x, int y, unsigned char mask) {
     drawChar(chr, x, y);
     for (int i = 0; i < 8; i++) {
         if (mask & (1 << i)) {
-            screen->fillRect(SCALED(this->x + (x * CHAR_WIDTH)),
-                             SCALED(this->y + (y * CHAR_HEIGHT) + i),
-                             SCALED(CHAR_WIDTH),
-                             SCALED(1),
-                             0, 0, 0);
+            xu4.screenImage->fillRect(SCALED(this->x + (x * CHAR_WIDTH)),
+                                      SCALED(this->y + (y * CHAR_HEIGHT) + i),
+                                      SCALED(CHAR_WIDTH), SCALED(1),
+                                      0, 0, 0);
         }
     }
 }
@@ -195,6 +194,7 @@ void TextView::textAt(int x, int y, const char *fmt, ...) {
 }
 
 void TextView::scroll() {
+    Image* screen = xu4.screenImage;
     screen->drawSubRectOn(screen,
                           SCALED(x),
                           SCALED(y),

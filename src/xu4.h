@@ -4,6 +4,7 @@
 
 class Settings;
 class Config;
+class Image;
 class EventHandler;
 class CreatureMgr;
 class MapMgr;
@@ -19,6 +20,7 @@ enum XU4GameStage {
 struct XU4GameServices {
     Settings* settings;
     Config* config;
+    Image* screenImage;
     EventHandler* eventHandler;
     CreatureMgr* creatureMgr;
     MapMgr* mapMgr;

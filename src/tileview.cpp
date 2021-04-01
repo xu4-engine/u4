@@ -177,6 +177,7 @@ void TileView::drawTile(vector<MapTile> &tiles, bool focus, int x, int y) {
 void TileView::drawFocus(int x, int y) {
     ASSERT(x < columns, "x value of %d out of range", x);
     ASSERT(y < rows, "y value of %d out of range", y);
+    Image* screen = xu4.screenImage;
 
     /*
      * draw the focus rectangle around the tile

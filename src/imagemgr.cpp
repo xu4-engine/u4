@@ -60,26 +60,6 @@ void ImageMgr::init() {
     TRACE(*logger, "initializing ImageMgr");
 
     /*
-     * register the "screen" image representing the entire screen
-     */
-    Image *screen = Image::createScreenImage();
-    ImageInfo *screenInfo = new ImageInfo;
-
-    screenInfo->name = "screen";
-    screenInfo->filename = "";
-    screenInfo->width = screen->width();
-    screenInfo->height = screen->height();
-    screenInfo->depth = 0;
-    screenInfo->prescale = 0;
-    screenInfo->filetype = "";
-    screenInfo->tiles = 0;
-    screenInfo->introOnly = false;
-    screenInfo->transparentIndex = -1;
-    screenInfo->xu4Graphic = false;
-    screenInfo->fixup = FIXUP_NONE;
-    screenInfo->image = screen;
-
-    /*
      * register all the images declared in the config files
      */
     vector<ConfigElement> graphicsConf = xu4.config->getElement("graphics").getChildren();
@@ -87,9 +67,6 @@ void ImageMgr::init() {
         if (conf->getName() == "imageset") {
             ImageSet *set = loadImageSetFromConf(*conf);
             imageSets[set->name] = set;
-
-            // all image sets include the "screen" image
-            set->info[screenInfo->name] = screenInfo;
         }
     }
 
@@ -720,9 +697,7 @@ void ImageMgr::update(Settings *newSettings) {
 
 ImageSet::~ImageSet() {
     for (std::map<string, ImageInfo *>::iterator i = info.begin(); i != info.end(); i++) {
-        ImageInfo *imageInfo = i->second;
-        if (imageInfo->name != "screen")
-            delete imageInfo;
+        delete i->second;
     }
 }
 

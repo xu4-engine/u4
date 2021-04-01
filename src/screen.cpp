@@ -96,6 +96,10 @@ static void screenInit_data(Settings& settings) {
     if (!filterScaler)
         errorFatal("%s is not a valid filter", settings.filter.c_str());
 
+    // Create a special purpose image that represents the whole screen.
+    xu4.screenImage = Image::create(320 * settings.scale, 200 * settings.scale);
+    xu4.screenImage->fill(RGBA(0, 0, 0, 255));
+
     imageMgr = new ImageMgr;
 
     charsetInfo = imageMgr->get(BKGD_CHARSET);
@@ -152,7 +156,11 @@ static void screenDelete_data() {
 
     delete imageMgr;
     imageMgr = NULL;
+
+    delete xu4.screenImage;
+    xu4.screenImage = NULL;
 }
+
 
 enum ScreenSystemStage {
     SYS_CLEAN = 0,  // Initial screen setup.
@@ -571,7 +579,7 @@ void screenScrollMessageArea() {
     ASSERT(charsetInfo != NULL && charsetInfo->image != NULL, "charset not initialized!");
 
     unsigned int scale = xu4.settings->scale;
-    Image *screen = imageMgr->get("screen")->image;
+    Image* screen = xu4.screenImage;
 
     screen->drawSubRectOn(screen,
                           TEXT_AREA_X * charsetInfo->image->width(),
@@ -1087,22 +1095,18 @@ void screenRedrawMapArea() {
 
 void screenEraseMapArea() {
     unsigned int scale = xu4.settings->scale;
-    Image *screen = imageMgr->get("screen")->image;
-    screen->fillRect(BORDER_WIDTH * scale,
-                     BORDER_WIDTH * scale,
-                     VIEWPORT_W * TILE_WIDTH * scale,
-                     VIEWPORT_H * TILE_HEIGHT * scale,
-                     0, 0, 0);
+    xu4.screenImage->fillRect(BORDER_WIDTH * scale, BORDER_HEIGHT * scale,
+                              VIEWPORT_W * TILE_WIDTH * scale,
+                              VIEWPORT_H * TILE_HEIGHT * scale,
+                              0, 0, 0);
 }
 
 void screenEraseTextArea(int x, int y, int width, int height) {
     unsigned int scale = xu4.settings->scale;
-    Image *screen = imageMgr->get("screen")->image;
-    screen->fillRect(x * CHAR_WIDTH * scale,
-                     y * CHAR_HEIGHT * scale,
-                     width * CHAR_WIDTH * scale,
-                     height * CHAR_HEIGHT * scale,
-                     0, 0, 0);
+    xu4.screenImage->fillRect(x * CHAR_WIDTH * scale, y * CHAR_HEIGHT * scale,
+                              width * CHAR_WIDTH * scale,
+                              height * CHAR_HEIGHT * scale,
+                              0, 0, 0);
 }
 
 /**
@@ -1111,7 +1115,7 @@ void screenEraseTextArea(int x, int y, int width, int height) {
 void screenShake(int iterations) {
     int shakeOffset;
     unsigned short i;
-    Image *screen = imageMgr->get("screen")->image;
+    Image *screen = xu4.screenImage;
     Image *bottom;
 
     // the MSVC8 binary was generating a Access Violation when using
@@ -1185,8 +1189,7 @@ static void screenShowGemTile(Layout *layout, Map *map, MapTile &t, bool focus, 
                                              layout->tileshape.width * scale,
                                              layout->tileshape.height * scale);
         } else {
-            Image *screen = imageMgr->get("screen")->image;
-            screen->fillRect((layout->viewport.x + (x * layout->tileshape.width)) * scale,
+            xu4.screenImage->fillRect((layout->viewport.x + (x * layout->tileshape.width)) * scale,
                              (layout->viewport.y + (y * layout->tileshape.height)) * scale,
                              layout->tileshape.width * scale,
                              layout->tileshape.height * scale,
@@ -1216,13 +1219,12 @@ void screenGemUpdate() {
     MapTile tile;
     int x, y;
     unsigned int scale = xu4.settings->scale;
-    Image *screen = imageMgr->get("screen")->image;
 
-    screen->fillRect(BORDER_WIDTH * scale,
-                     BORDER_HEIGHT * scale,
-                     VIEWPORT_W * TILE_WIDTH * scale,
-                     VIEWPORT_H * TILE_HEIGHT * scale,
-                     0, 0, 0);
+    xu4.screenImage->fillRect(BORDER_WIDTH * scale,
+                              BORDER_HEIGHT * scale,
+                              VIEWPORT_W * TILE_WIDTH * scale,
+                              VIEWPORT_H * TILE_HEIGHT * scale,
+                              0, 0, 0);
 
     Layout *layout = screenGetGemLayout(c->location->map);
 

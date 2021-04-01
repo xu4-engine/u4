@@ -166,7 +166,7 @@ void DungeonView::drawInDungeon(Tile *tile, int x_offset, int distance, Directio
 
         for (int x = i_x; x < f_x; x+=d_x) {
             for (int y = i_y; y < f_y; y+=d_y)
-                animated->drawSubRectOn(screen, x, y, 0, 0, f_x - x, f_y - y);
+                animated->drawSubRect(x, y, 0, 0, f_x - x, f_y - y);
         }
     }
     else {
@@ -175,7 +175,7 @@ void DungeonView::drawInDungeon(Tile *tile, int x_offset, int distance, Directio
         int y = SCALED((VIEWPORT_H * tileHeight / 2) + this->y + y_offset) - (scaled->height() / 8);
 
         Image::enableBlend(1);
-        scaled->drawOn(screen, x, y);
+        scaled->draw(x, y);
         Image::enableBlend(0);
     }
 

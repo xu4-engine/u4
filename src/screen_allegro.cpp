@@ -11,6 +11,7 @@
 #include "image.h"
 #include "settings.h"
 #include "screen.h"
+#include "xu4.h"
 
 extern bool verbose;
 
@@ -194,7 +195,6 @@ void screenIconify() {
     //SDL_WM_IconifyWindow();
 }
 
-extern Image* screenImage;
 //extern uint32_t getTicks();
 
 //#define CPU_TEST
@@ -224,8 +224,8 @@ void updateDisplay(int x, int y, int w, int h) {
     CPU_START()
 
     if (w == 0) {
-        w = screenImage->w;
-        h = screenImage->h;
+        w = xu4.screenImage->w;
+        h = xu4.screenImage->h;
     }
 
     ALLEGRO_BITMAP* backBuf = al_get_backbuffer(sa_disp);
@@ -239,7 +239,7 @@ void updateDisplay(int x, int y, int w, int h) {
 #endif
     dpitch = lr->pitch / sizeof(uint32_t);
     drow = ((uint32_t*) lr->data) + y*dpitch + x;
-    srow = screenImage->pixels + y*screenImage->w + x;
+    srow = xu4.screenImage->pixels + y*xu4.screenImage->w + x;
 
     for (cr = 0; cr < h; ++cr) {
         dp = drow;
@@ -249,7 +249,7 @@ void updateDisplay(int x, int y, int w, int h) {
             *dp++ = *sp++;
         }
         drow += dpitch;
-        srow += screenImage->w;
+        srow += xu4.screenImage->w;
     }
     al_unlock_bitmap(backBuf);
 

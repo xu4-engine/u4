@@ -1748,8 +1748,7 @@ bool IntroController::updateTitle()
         if (title == titles.begin())
         {
             // clear the screen
-            Image *screen = imageMgr->get("screen")->image;
-            screen->fillRect(0, 0, screen->width(), screen->height(), 0, 0, 0);
+            xu4.screenImage->fill(RGBA(0, 0, 0, 255));
         }
         if (title->method == TITLE)
         {
@@ -1959,20 +1958,13 @@ bool IntroController::updateTitle()
             int newtime = getTicks();
             if (newtime > title->timeDuration + 250/4)
             {
-                // grab the map from the screen
-                Image *screen = imageMgr->get("screen")->image;
-
                 // draw the updated map display
                 drawMapStatic();
 
-                screen->drawSubRectOn(
-                    title->srcImage,
-                    SCALED(8),
-                    SCALED(8),
-                    SCALED(8),
-                    SCALED(13*8),
-                    SCALED(38*8),
-                    SCALED(10*8));
+                xu4.screenImage->drawSubRectOn(title->srcImage,
+                    SCALED(8), SCALED(8),
+                    SCALED(8), SCALED(13*8),
+                    SCALED(38*8), SCALED(10*8));
 
                 title->timeDuration = newtime + 250/4;
             }
