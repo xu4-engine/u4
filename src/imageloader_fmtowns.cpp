@@ -1,23 +1,17 @@
 /*
- * $Id: imageloader_u4.cpp 2885 2011-04-03 19:18:32Z andrewtaylor $
+ * imageloader_fmtowns.cpp
  */
 
-#include "config.h"
-#include "debug.h"
 #include "error.h"
 #include "image.h"
-#include "imageloader.h"
-#include "imageloader_fmtowns.h"
-#include "imageloader_u4.h"
-#include "lzw/u4decode.h"
-
-//ImageLoader *FMTOWNSImageLoader::instance_pic = ImageLoader::registerLoader(new FMTOWNSImageLoader(0), "image/fmtowns-pic"); Doesn't work so easily, different graphics format.
-ImageLoader *FMTOWNSImageLoader::instance_tif = ImageLoader::registerLoader(new FMTOWNSImageLoader(510), "image/fmtowns-tif");
 
 /**
  * Loads in an FM TOWNS files, which we assume is 16 bits.
+ * Only TIF format is implemented, PIC is not handled.
  */
-Image *FMTOWNSImageLoader::load(U4FILE *file, int width, int height, int bpp) {
+Image *loadImage_fmTowns(U4FILE *file, int width, int height, int bpp) {
+    const int offset = 510;     // 510 for TIF.
+
     if (width == -1 || height == -1 || bpp == -1) {
           errorFatal("dimensions not set for fmtowns image");
     }
@@ -97,6 +91,5 @@ Image *FMTOWNSImageLoader::load(U4FILE *file, int width, int height, int bpp) {
     }
 
     free(raw);
-
     return image;
 }

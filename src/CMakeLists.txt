@@ -31,10 +31,6 @@ set(XU4_INC
 	game.h
 	image.h
 	imageloader.h
-	imageloader_fmtowns.h
-	imageloader_png.h
-	imageloader_u4.h
-	imageloader_u5.h
 	imagemgr.h
 	imageview.h
 	intro.h
@@ -113,10 +109,6 @@ set(XU4_SRC
 	game.cpp 
 	image.cpp
 	imageloader.cpp 
-	imageloader_fmtowns.cpp 
-	imageloader_png.cpp 
-	imageloader_u4.cpp
-	imageloader_u5.cpp 
 	imagemgr.cpp
 	imageview.cpp 
 	intro.cpp 

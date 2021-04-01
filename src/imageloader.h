@@ -1,38 +1,25 @@
 /*
- * $Id$
+ * imageloader.h
  */
 
 #ifndef IMAGELOADER_H
 #define IMAGELOADER_H
 
-#include <map>
 #include "image.h"
 #include "u4file.h"
 
-class U4FILE;
-
-/**
- * The generic image loader interface.  Image loaders should override
- * the load method to load an image from a U4FILE and register
- * themselves with registerLoader.  By convention, the type parameter
- * of load and registerLoader is the standard mime type of the image
- * file (e.g. image/png) or an xu4 specific mime type
- * (e.g. image/x-u4...).
- */
-class ImageLoader {
-public:
-    ImageLoader() {}
-    virtual ~ImageLoader() {}
-    virtual Image *load(U4FILE *file, int width, int height, int bpp) = 0;
-    static ImageLoader *getLoader(const std::string &fileType);
-
-protected:
-    static ImageLoader *registerLoader(ImageLoader *loader, const std::string &type);
-    static void setFromRawData(Image *image, int width, int height, int bpp, unsigned char *rawData, RGBA *palette);
-
-    RGBA* stdPalette(int bpp);
-private:
-    static std::map<std::string, ImageLoader *> *loaderMap;
+enum ImageFiletype {
+    FTYPE_UNKNOWN,
+    FTYPE_PNG,
+    FTYPE_U4RAW,
+    FTYPE_U4RLE,
+    FTYPE_U4LZW,
+    FTYPE_U5LZW,
+    FTYPE_FMTOWNS,
+    FTYPE_FMTOWNS_PIC,
+    FTYPE_FMTOWNS_TIF
 };
+
+Image* loadImage(U4FILE *file, int ftype, int width, int height, int bpp);
 
 #endif /* IMAGELOADER_H */

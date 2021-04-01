@@ -129,7 +129,7 @@ private:
     Image(const Image&);
     const Image &operator=(const Image&);
 
-    friend class ImageLoader;
+    friend void setFromRawData(Image*, int, int, int, unsigned char*, RGBA*);
     friend void updateDisplay(int, int, int, int);
 };
 

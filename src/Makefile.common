@@ -40,10 +40,6 @@ CXXSRCS=\
         io.cpp \
         image.cpp \
         imageloader.cpp \
-        imageloader_png.cpp \
-        imageloader_u4.cpp \
-        imageloader_u5.cpp \
-        imageloader_fmtowns.cpp \
         imagemgr.cpp \
         imageview.cpp \
         intro.cpp \

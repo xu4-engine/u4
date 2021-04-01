@@ -76,10 +76,6 @@ exe %u4 [
 		%game.cpp
 		%image.cpp
 		%imageloader.cpp
-		%imageloader_fmtowns.cpp
-		%imageloader_png.cpp
-		%imageloader_u4.cpp
-		%imageloader_u5.cpp
 		%imagemgr.cpp
 		%imageview.cpp
 		%intro.cpp

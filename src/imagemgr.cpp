@@ -21,11 +21,6 @@ using std::vector;
 
 Image *screenScale(Image *src, int scale, int n, int filter);
 
-bool ImageInfo::hasBlackBackground()
-{
-    return this->filetype == "image/x-u4raw";
-}
-
 
 class ImageSet {
 public:
@@ -101,6 +96,35 @@ ImageSet *ImageMgr::loadImageSetFromConf(const ConfigElement &conf) {
     return set;
 }
 
+static uint8_t mapFiletype(const string& str, const string& file) {
+    if (! str.empty()) {
+        if (str == "image/x-u4raw")
+            return FTYPE_U4RAW;
+        if (str == "image/x-u4rle")
+            return FTYPE_U4RLE;
+        if (str == "image/x-u4lzw")
+            return FTYPE_U4LZW;
+        if (str == "image/x-u5lzw")
+            return FTYPE_U5LZW;
+        if (str == "image/png")
+            return FTYPE_PNG;
+        if (str == "image/fmtowns")
+            return FTYPE_FMTOWNS;
+        if (str == "image/fmtowns-pic")
+            return FTYPE_FMTOWNS_PIC;
+        if (str == "image/fmtowns-tif")
+            return FTYPE_FMTOWNS_TIF;
+    }
+
+    // Guess at type based on filename.
+    size_t length = file.length();
+    if (length >= 4 && file.compare(length - 4, 4, ".png") == 0)
+        return FTYPE_PNG;
+
+    errorWarning("Unknown image filetype %s", str.c_str());
+    return FTYPE_UNKNOWN;
+}
+
 ImageInfo *ImageMgr::loadImageInfoFromConf(const ConfigElement &conf) {
     ImageInfo *info;
     static const char *fixupEnumStrings[] = { "none", "intro", "abyss", "abacus", "dungns", "blackTransparencyHack", "fmtownsscreen", NULL };
@@ -112,7 +136,7 @@ ImageInfo *ImageMgr::loadImageInfoFromConf(const ConfigElement &conf) {
     info->height = conf.getInt("height", -1);
     info->depth = conf.getInt("depth", -1);
     info->prescale = conf.getInt("prescale");
-    info->filetype = conf.getString("filetype");
+    info->filetype = mapFiletype(conf.getString("filetype"), info->filename);
     info->tiles = conf.getInt("tiles");
     info->introOnly = conf.getBool("introOnly");
     info->transparentIndex = conf.getInt("transparentIndex", -1);
@@ -473,14 +497,6 @@ ImageInfo *ImageMgr::getInfoFromSet(const string &name, ImageSet *imageset) {
     return NULL;
 }
 
-std::string ImageMgr::guessFileType(const string &filename) {
-    if (filename.length() >= 4 && filename.compare(filename.length() - 4, 4, ".png") == 0) {
-        return "image/png";
-    } else {
-        return "";
-    }
-}
-
 U4FILE * ImageMgr::getImageFile(ImageInfo *info)
 {
     string filename = info->filename;
@@ -532,27 +548,25 @@ ImageInfo *ImageMgr::get(const string &name, bool returnUnscaled) {
     if (file) {
         TRACE(*logger, string("loading image from file '") + info->filename + string("'"));
 
-        if (info->filetype.empty())
-            info->filetype = guessFileType(info->filename);
-        string filetype = info->filetype;
-        ImageLoader *loader = ImageLoader::getLoader(filetype);
-        if (loader == NULL)
-            errorWarning("can't find loader to load image \"%s\" with type \"%s\"", info->filename.c_str(), filetype.c_str());
-        else
-        {
-            unscaled = loader->load(file, info->width, info->height, info->depth);
-            if (info->width == -1) {
-                // Write in the values for later use.
-                info->width = unscaled->width();
-                info->height = unscaled->height();
-    // ###            info->depth = ???
-            }
-#if 0
-            string out("/tmp/xu4/");
-            unscaled->save(out.append(name).append(".ppm").c_str());
-#endif
-        }
+        unscaled = loadImage(file, info->filetype, info->width, info->height,
+                             info->depth);
         u4fclose(file);
+
+        if (! unscaled) {
+            errorWarning("Can't load image \"%s\" with type %d",
+                         info->filename.c_str(), info->filetype);
+            return info;
+        }
+
+        if (info->width == -1) {
+            // Write in the values for later use.
+            info->width  = unscaled->width();
+            info->height = unscaled->height();
+        }
+#if 0
+        string out("/tmp/xu4/");
+        unscaled->save(out.append(name).append(".ppm").c_str());
+#endif
     }
     else
     {

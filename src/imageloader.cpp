@@ -1,46 +1,22 @@
 /*
- * $Id$
+ * imageloader.cpp
  */
 
 #include <assert.h>
-#include "debug.h"
 #include "config.h"
-#include "image.h"
+#include "debug.h"
+#include "error.h"
 #include "imageloader.h"
+#include "u4file.h"
 #include "xu4.h"
 
 extern bool screenFormatIsABGR;
-
-std::map<std::string, ImageLoader *> *ImageLoader::loaderMap = NULL;
 
 // TODO: Delete these on program exit!
 static RGBA* bwPalette = NULL;
 static RGBA* egaPalette = NULL;
 static RGBA* vgaPalette = NULL;
 
-/**
- * This class method returns the registered concrete subclass
- * appropriate for loading images of a type given by fileType.
- */
-ImageLoader *ImageLoader::getLoader(const std::string &fileType) {
-    ASSERT(loaderMap != NULL, "ImageLoader::getLoader loaderMap not initialized");
-    if (loaderMap->find(fileType) == loaderMap->end())
-        return NULL;
-    return (*loaderMap)[fileType];
-}
-
-/**
- * Register an image loader.  Concrete subclasses should register an
- * instance at startup.  This method is safe to call from a global
- * object constructor or static initializer.
- */
-ImageLoader *ImageLoader::registerLoader(ImageLoader *loader, const std::string &type) {
-    if (loaderMap == NULL) {
-        loaderMap = new std::map<std::string, ImageLoader *>;
-    }
-    (*loaderMap)[type] = loader;
-    return loader;
-}
 
 /**
  * Loads a simple black & white palette
@@ -106,7 +82,7 @@ static RGBA* loadVgaPalette() {
     return vgaPalette;
 }
 
-RGBA* ImageLoader::stdPalette(int bpp)
+static RGBA* stdPalette(int bpp)
 {
     switch(bpp) {
         case 8:
@@ -126,7 +102,8 @@ RGBA* ImageLoader::stdPalette(int bpp)
  * If bpp is 1, 4, or 8, then palette must not be NULL and must have enough
  * entries for that depth (i.e. 2, 16, and 256 respectively).
  */
-void ImageLoader::setFromRawData(Image *image, int width, int height, int bpp, unsigned char *rawData, RGBA *palette) {
+// This would be static but is a friend of Image.
+void setFromRawData(Image *image, int width, int height, int bpp, unsigned char *rawData, RGBA *palette) {
     const RGBA* col;
     uint32_t* row;
     uint32_t* rowEnd;
@@ -293,4 +270,29 @@ void ImageLoader::setFromRawData(Image *image, int width, int height, int bpp, u
     default:
         ASSERT(0, "Invalid rawData bits-per-pixel (bpp): %d", bpp);
     }
+}
+
+
+#include "imageloader_fmtowns.cpp"
+#include "imageloader_png.cpp"
+#include "imageloader_u4.cpp"
+
+
+Image* loadImage(U4FILE *file, int ftype, int width, int height, int bpp) {
+    switch(ftype) {
+    case FTYPE_PNG:
+        return loadImage_png(file);
+
+    case FTYPE_U4RAW:
+    case FTYPE_U4RLE:
+    case FTYPE_U4LZW:
+    case FTYPE_U5LZW:
+        return loadImage_u4(file, ftype, width, height, bpp);
+
+    case FTYPE_FMTOWNS:
+    case FTYPE_FMTOWNS_PIC:
+    case FTYPE_FMTOWNS_TIF:
+        return loadImage_fmTowns(file, width, height, bpp);
+    }
+    return NULL;
 }

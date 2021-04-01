@@ -86,7 +86,7 @@ public:
     std::string filename;
     int width, height, depth;
     int prescale;
-    std::string filetype;
+    int filetype;
     int tiles;                  /**< used to scale the without bleeding colors between adjacent tiles */
     bool introOnly;             /**< whether can be freed after the intro */
     int transparentIndex;       /**< color index to consider transparent */
@@ -94,8 +94,6 @@ public:
     ImageFixup fixup;           /**< a routine to do miscellaneous fixes to the image */
     Image *image;               /**< the image we're describing */
     std::map<std::string, SubImage *> subImages;
-
-    bool hasBlackBackground();
 };
 
 /**
@@ -122,8 +120,6 @@ private:
     ImageSet *getSet(const std::string &setname);
     ImageInfo *getInfo(const std::string &name);
     ImageInfo *getInfoFromSet(const std::string &name, ImageSet *set);
-
-    std::string guessFileType(const std::string &filename);
 
     void fixupIntro(Image *im, int prescale);
     void fixupAbyssVision(Image *im, int prescale);

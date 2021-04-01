@@ -1,18 +1,8 @@
 /*
- * $Id$
+ * imageloader_png.cpp
  */
 
-#include <stdio.h>
-#include <stdlib.h>
 #include <png.h>
-
-#include "debug.h"
-#include "error.h"
-#include "image.h"
-#include "imageloader.h"
-#include "imageloader_png.h"
-
-ImageLoader *PngImageLoader::instance = ImageLoader::registerLoader(new PngImageLoader, "image/png");
 
 static void png_read_xu4(png_structp png_ptr, png_bytep data, png_size_t length) {
    png_size_t check;
@@ -28,12 +18,12 @@ static void png_read_xu4(png_structp png_ptr, png_bytep data, png_size_t length)
 /**
  * Loads in the PNG with the libpng library.
  */
-Image *PngImageLoader::load(U4FILE *file, int width, int height, int bpp) {
-    if (width != -1 || height != -1 || bpp != -1) {
-          errorWarning("dimensions set for PNG image, will be ignored");
-    }
-
+Image* loadImage_png(U4FILE *file) {
     char header[8];
+    png_uint_32 width, height;
+    int bit_depth, color_type, interlace_type, compression_type, filter_method;
+    int bpp;
+
     file->read(header, 1, sizeof(header));
     if (png_sig_cmp((png_byte*)header, 0, sizeof(header)) != 0)
         return NULL;
@@ -60,17 +50,10 @@ Image *PngImageLoader::load(U4FILE *file, int width, int height, int bpp) {
     }
 
     png_set_read_fn(png_ptr, file, &png_read_xu4);
-
     png_set_sig_bytes(png_ptr, sizeof(header));
-
     png_read_png(png_ptr, info_ptr, PNG_TRANSFORM_IDENTITY, NULL);
 
-    png_uint_32 pwidth, pheight;
-    int bit_depth, color_type, interlace_type, compression_type, filter_method;
-    png_get_IHDR(png_ptr, info_ptr, &pwidth, &pheight, &bit_depth, &color_type, &interlace_type, &compression_type, &filter_method);
-
-    width = pwidth;
-    height = pheight;
+    png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type, &interlace_type, &compression_type, &filter_method);
 
     if (color_type == PNG_COLOR_TYPE_PALETTE)
         bpp = bit_depth;
@@ -84,8 +67,8 @@ Image *PngImageLoader::load(U4FILE *file, int width, int height, int bpp) {
     unsigned char *raw = new unsigned char[width * height * bpp / 8];
 
     unsigned char *p = raw;
-    for (int i = 0; i < height; i++) {
-        for (int j = 0; j < width * bpp / 8; j++) {
+    for (unsigned int i = 0; i < height; i++) {
+        for (unsigned int j = 0; j < width * bpp / 8; j++) {
             *p++ = row_pointers[i][j];
         }
     }
