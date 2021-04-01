@@ -21,12 +21,6 @@ struct RGBA {
     uint8_t r, g, b, a;
 };
 
-struct SubImage {
-    std::string name;
-    std::string srcImageName;
-    int x, y, width, height;
-};
-
 #define IM_OPAQUE       255
 #define IM_TRANSPARENT  0
 

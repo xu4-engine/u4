@@ -65,6 +65,12 @@ class Settings;
 #define BKGD_SHRINE_HUM "rune8"
 #define BKGD_GEMTILES "gemtiles"
 
+struct SubImage {
+    std::string name;
+    std::string srcImageName;
+    int16_t x, y, width, height;
+};
+
 enum ImageFixup {
     FIXUP_NONE,
     FIXUP_INTRO,
@@ -84,14 +90,15 @@ public:
 
     std::string name;
     std::string filename;
-    int width, height, depth;
-    int prescale;
-    int filetype;
-    int tiles;                  /**< used to scale the without bleeding colors between adjacent tiles */
+    uint16_t tiles;             /**< used to scale the without bleeding colors between adjacent tiles */
+    int16_t width, height;
+    uint8_t depth;
+    uint8_t prescale;
+    uint8_t filetype;
     bool introOnly;             /**< whether can be freed after the intro */
-    int transparentIndex;       /**< color index to consider transparent */
     bool xu4Graphic;            /**< an original xu4 graphic not part of u4dos or the VGA upgrade */
-    ImageFixup fixup;           /**< a routine to do miscellaneous fixes to the image */
+    uint8_t transparentIndex;   /**< color index to consider transparent */
+    uint8_t fixup;              /**< a routine to do miscellaneous fixes to the image */
     Image *image;               /**< the image we're describing */
     std::map<std::string, SubImage *> subImages;
 };
