@@ -1,0 +1,35 @@
+#!/bin/bash
+
+if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
+  echo "Configuration Options:"
+  echo "  -h, --help        Display this help and exit"
+  echo "  --allegro         Use Allegro 5.2 as the platform API (default)"
+  echo "  --sdl             Use SDL 1.2 as the platform API"
+  echo "  --prefix <dir>    Set install directory root"
+  exit
+fi
+
+PLATFORM=allegro
+PREFIX=/usr/local
+
+while [ "$1" != "" ]; do
+  case $1 in
+    --allegro )
+      PLATFORM=allegro ;;
+    --sdl)
+      PLATFORM=sdl ;;
+    --prefix)
+      shift
+      PREFIX=$1 ;;
+    *)
+      echo "Invalid option $opt"
+      exit 1
+      ;;
+  esac
+  shift
+done
+
+echo "Generating make.config & project.config"
+printf "os_api: \'${PLATFORM}\n" >project.config
+printf "PREFIX=${PREFIX}\nUI=${PLATFORM}\n" >make.config
+echo "Now type make (or copr) to build."

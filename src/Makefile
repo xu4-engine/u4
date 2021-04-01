@@ -1,14 +1,15 @@
 #
-# $Id$
+# Makefile for Linux
 #
 
-prefix=/usr/local
-bindir=$(prefix)/bin
-libdir=$(prefix)/lib
-datadir=$(prefix)/share
+-include ../make.config
 
-UI=sdl
-#UI=allegro
+PREFIX ?= /usr/local
+UI ?= allegro
+
+bindir=$(PREFIX)/bin
+libdir=$(PREFIX)/lib
+datadir=$(PREFIX)/share
 
 ifeq ($(UI), sdl)
 UILIBS=$(shell sdl-config --libs) -lSDL_mixer

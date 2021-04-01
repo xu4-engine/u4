@@ -175,6 +175,11 @@ Some thoughts for possible improvements:
 COMPILING
 ---------
 
+To build on Linux and macOS use these commands:
+
+    ./configure
+    make
+
 Note that you need libxml2, SDL, the SDL development libraries &
 headers, and the SDL_mixer library to compile.  TiMidity++ may be
 necessary on some platforms, too.  Assuming they are present, type
