@@ -127,11 +127,11 @@ void Tile::loadImage() {
 
         SubImage *subimage = NULL;
 
-        ImageInfo *info = imageMgr->get(imageName);
+        ImageInfo *info = xu4.imageMgr->get(imageName);
         if (!info) {
-            subimage = imageMgr->getSubImage(imageName);
+            subimage = xu4.imageMgr->getSubImage(imageName);
             if (subimage)
-                info = imageMgr->get(subimage->srcImageName);
+                info = xu4.imageMgr->get(subimage->srcImageName);
         }
         if (!info) //IF still no info loaded
         {

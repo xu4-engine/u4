@@ -24,7 +24,7 @@ TextView::TextView(int x, int y, int columns, int rows) : View(x, y, columns * C
     this->cursorY = 0;
     this->cursorPhase = 0;
     if (charset == NULL)
-        charset = imageMgr->get(BKGD_CHARSET)->image;
+        charset = xu4.imageMgr->get(BKGD_CHARSET)->image;
     xu4.eventHandler->getTimer()->add(&cursorTimer, /*SCR_CYCLE_PER_SECOND*/4, this);
 }
 
@@ -34,7 +34,7 @@ TextView::~TextView() {
 
 void TextView::reinit() {
     View::reinit();
-    charset = imageMgr->get(BKGD_CHARSET)->image;
+    charset = xu4.imageMgr->get(BKGD_CHARSET)->image;
 }
 
 /**

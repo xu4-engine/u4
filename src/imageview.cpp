@@ -20,15 +20,15 @@ ImageView::~ImageView() {
  * Draw the image at the optionally specified offset.
  */
 void ImageView::draw(const string &imageName, int x, int y) {
-    ImageInfo *info = imageMgr->get(imageName);
+    ImageInfo *info = xu4.imageMgr->get(imageName);
     if (info) {
         info->image->draw(SCALED(this->x + x), SCALED(this->y + y));
         return;
     }
 
-    SubImage *subimage = imageMgr->getSubImage(imageName);
+    SubImage *subimage = xu4.imageMgr->getSubImage(imageName);
     if (subimage) {
-        info = imageMgr->get(subimage->srcImageName);
+        info = xu4.imageMgr->get(subimage->srcImageName);
 
         if (info) {
             info->image->drawSubRect(SCALED(this->x + x), SCALED(this->y + y),

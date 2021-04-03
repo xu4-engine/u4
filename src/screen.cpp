@@ -81,8 +81,6 @@ int screenLos[VIEWPORT_W][VIEWPORT_H];
 
 static const int BufferSize = 1024;
 
-ImageMgr* imageMgr = NULL;
-
 extern bool verbose;
 
 // Just extern the system functions here. That way people aren't tempted to call them as part of the public API.
@@ -98,9 +96,7 @@ static void screenInit_data(Settings& settings) {
     xu4.screenImage = Image::create(320 * settings.scale, 200 * settings.scale);
     xu4.screenImage->fill(RGBA(0, 0, 0, 255));
 
-    imageMgr = new ImageMgr;
-
-    charsetInfo = imageMgr->get(BKGD_CHARSET);
+    charsetInfo = xu4.imageMgr->get(BKGD_CHARSET);
     if (!charsetInfo)
         errorFatal("ERROR 1001: Unable to load the \"%s\" data file.\t\n\nIs %s installed?\n\nVisit the XU4 website for additional information.\n\thttp://xu4.sourceforge.net/", BKGD_CHARSET, settings.game.c_str());
 
@@ -151,9 +147,6 @@ static void screenDelete_data() {
     for (i = layouts.begin(); i != layouts.end(); i++)
         delete(*i);
     layouts.clear();
-
-    delete imageMgr;
-    imageMgr = NULL;
 
     delete xu4.screenImage;
     xu4.screenImage = NULL;
@@ -499,15 +492,15 @@ void screenUpdate(TileView *view, bool showmap, bool blackout) {
  * Draw an image or subimage on the screen.
  */
 void screenDrawImage(const string &name, int x, int y) {
-    ImageInfo *info = imageMgr->get(name);
+    ImageInfo *info = xu4.imageMgr->get(name);
     if (info) {
         info->image->draw(x, y);
         return;
     }
 
-    SubImage *subimage = imageMgr->getSubImage(name);
+    SubImage *subimage = xu4.imageMgr->getSubImage(name);
     if (subimage)
-        info = imageMgr->get(subimage->srcImageName);
+        info = xu4.imageMgr->get(subimage->srcImageName);
 
     if (info) {
         if (info) {
@@ -526,7 +519,7 @@ void screenDrawImage(const string &name, int x, int y) {
 void screenDrawImageInMapArea(const string &name) {
     ImageInfo *info;
 
-    info = imageMgr->get(name);
+    info = xu4.imageMgr->get(name);
     if (!info)
         errorFatal("ERROR 1004: Unable to load data files.\t\n\nIs %s installed?\n\nVisit the XU4 website for additional information.\n\thttp://xu4.sourceforge.net/", xu4.settings->game.c_str());
 
@@ -1174,7 +1167,7 @@ static void screenShowGemTile(Layout *layout, Map *map, MapTile &t, bool focus, 
     }
     else {
         if (gemTilesInfo == NULL) {
-            gemTilesInfo = imageMgr->get(BKGD_GEMTILES);
+            gemTilesInfo = xu4.imageMgr->get(BKGD_GEMTILES);
             if (!gemTilesInfo)
                 errorFatal("ERROR 1002: Unable to load the \"%s\" data file.\t\n\nIs %s installed?\n\nVisit the XU4 website for additional information.\n\thttp://xu4.sourceforge.net/", BKGD_GEMTILES, xu4.settings->game.c_str());
         }

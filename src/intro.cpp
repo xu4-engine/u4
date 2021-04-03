@@ -354,7 +354,7 @@ void IntroController::deleteIntro() {
     delete [] objectStateTable;
     objectStateTable = NULL;
 
-    imageMgr->freeIntroBackgrounds();
+    xu4.imageMgr->freeIntroBackgrounds();
 }
 
 unsigned char *IntroController::getSigData() {
@@ -1585,7 +1585,7 @@ void IntroController::getTitleSourceData()
     // here, and elements of the image will be stored
     // individually.  Afterward, the BKGD_INTRO image
     // will be scaled appropriately.
-    ImageInfo *info = imageMgr->get(BKGD_INTRO, true);
+    ImageInfo *info = xu4.imageMgr->get(BKGD_INTRO, true);
     if (!info) {
         errorFatal("ERROR 1007: Unable to load the image \"%s\".\t\n\nIs %s installed?\n\nVisit the XU4 website for additional information.\n\thttp://xu4.sourceforge.net/", BKGD_INTRO, xu4.settings->game.c_str());
     }
