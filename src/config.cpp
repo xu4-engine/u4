@@ -25,6 +25,8 @@
 
 #include "config.h"
 #include "error.h"
+#include "imageloader.h"
+#include "imagemgr.h"
 #include "settings.h"
 #include "sound.h"
 #include "u4file.h"
@@ -51,8 +53,10 @@ struct XMLConfig
 {
     xmlDocPtr doc;
     string sbuf;        // Temporary buffer for const char* return values.
+    vector<const char*> sarray;   // Temp. buffer for const char** values.
     vector<string> musicFiles;
     vector<string> soundFiles;
+    vector<string> schemeNames;
 };
 
 static const char* configXmlPath = "config.xml";
@@ -156,6 +160,24 @@ Config::Config() {
     for (; it != end; ++it) {
         if (it->getName() == "track") {
             xcd.soundFiles.push_back(it->getString("file"));
+        }
+    }
+    }
+
+    // schemeNames
+    {
+    vector<ConfigElement> ce = getElement("graphics").getChildren();
+    vector<ConfigElement>::const_iterator it  = ce.begin();
+    vector<ConfigElement>::const_iterator end = ce.end();
+    for (; it != end; ++it) {
+        if (it->getName() == "imageset") {
+            xcd.schemeNames.push_back(it->getString("name"));
+
+            /*
+            // register all the images declared in the config files
+            ImageSet *set = loadImageSet(ce);
+            imageSets[set->name] = set;
+            */
         }
     }
     }
@@ -288,6 +310,159 @@ const char* Config::soundFile( uint32_t id ) {
     if (id < xcd.soundFiles.size()) {
         xcd.sbuf = u4find_sound(xcd.soundFiles[id]);
         return xcd.sbuf.c_str();
+    }
+    return NULL;
+}
+
+/*
+ * Return a C string pointer array for the available Image scheme names.
+ */
+const char** Config::schemeNames() {
+    xcd.sarray.clear();
+    vector<string>::iterator it;
+    for (it = xcd.schemeNames.begin(); it != xcd.schemeNames.end(); ++it)
+        xcd.sarray.push_back( (*it).c_str() );
+    xcd.sarray.push_back(NULL);
+    return &xcd.sarray.front();
+}
+
+//--------------------------------------
+// Graphics config
+
+static SubImage* loadSubImage(const ImageInfo *info, const ConfigElement &conf) {
+    SubImage *subimage;
+    static int x = 0,
+               y = 0,
+               last_width = 0,
+               last_height = 0;
+
+    subimage = new SubImage;
+    subimage->name = conf.getString("name");
+    subimage->width = conf.getInt("width");
+    subimage->height = conf.getInt("height");
+    subimage->srcImageName = info->name;
+    if (conf.exists("x") && conf.exists("y")) {
+        x = subimage->x = conf.getInt("x");
+        y = subimage->y = conf.getInt("y");
+    }
+    else {
+        // Automatically increment our position through the base image
+        x += last_width;
+        if (x >= last_width) {
+            x = 0;
+            y += last_height;
+        }
+
+        subimage->x = x;
+        subimage->y = y;
+    }
+
+    // "remember" the width and height of this subimage
+    last_width = subimage->width;
+    last_height = subimage->height;
+
+    return subimage;
+}
+
+static uint8_t mapFiletype(const string& str, const string& file) {
+    if (! str.empty()) {
+        if (str == "image/x-u4raw")
+            return FTYPE_U4RAW;
+        if (str == "image/x-u4rle")
+            return FTYPE_U4RLE;
+        if (str == "image/x-u4lzw")
+            return FTYPE_U4LZW;
+        if (str == "image/x-u5lzw")
+            return FTYPE_U5LZW;
+        if (str == "image/png")
+            return FTYPE_PNG;
+        if (str == "image/fmtowns")
+            return FTYPE_FMTOWNS;
+        if (str == "image/fmtowns-pic")
+            return FTYPE_FMTOWNS_PIC;
+        if (str == "image/fmtowns-tif")
+            return FTYPE_FMTOWNS_TIF;
+    }
+
+    // Guess at type based on filename.
+    size_t length = file.length();
+    if (length >= 4 && file.compare(length - 4, 4, ".png") == 0)
+        return FTYPE_PNG;
+
+    errorWarning("Unknown image filetype %s", str.c_str());
+    return FTYPE_UNKNOWN;
+}
+
+static ImageInfo* loadImageInfo(const ConfigElement &conf) {
+    ImageInfo *info;
+    static const char *fixupEnumStrings[] = { "none", "intro", "abyss", "abacus", "dungns", "blackTransparencyHack", "fmtownsscreen", NULL };
+
+    info = new ImageInfo;
+    info->name = conf.getString("name");
+    info->filename = conf.getString("filename");
+    info->width = conf.getInt("width", -1);
+    info->height = conf.getInt("height", -1);
+    info->depth = conf.getInt("depth", -1);
+    info->prescale = conf.getInt("prescale");
+    info->filetype = mapFiletype(conf.getString("filetype"), info->filename);
+    info->tiles = conf.getInt("tiles");
+    info->introOnly = conf.getBool("introOnly");
+    info->transparentIndex = conf.getInt("transparentIndex", -1);
+
+    info->xu4Graphic = conf.getBool("xu4Graphic");
+    info->fixup = static_cast<ImageFixup>(conf.getEnum("fixup", fixupEnumStrings));
+    info->image = NULL;
+
+    vector<ConfigElement> children = conf.getChildren();
+    for (std::vector<ConfigElement>::iterator i = children.begin(); i != children.end(); i++) {
+        if (i->getName() == "subimage") {
+            SubImage *subimage = loadSubImage(info, *i);
+            info->subImages[subimage->name] = subimage;
+        }
+    }
+
+    return info;
+}
+
+static ImageSet* loadImageSet(const ConfigElement &conf) {
+    ImageSet *set = new ImageSet;
+
+    set->name    = conf.getString("name");
+    set->extends = conf.getString("extends");
+
+    std::vector<ConfigElement>::iterator it;
+    std::map<string, ImageInfo *>::iterator dup;
+    vector<ConfigElement> children = conf.getChildren();
+
+    foreach (it, children) {
+        if (it->getName() == "image") {
+            ImageInfo *info = loadImageInfo(*it);
+            dup = set->info.find(info->name);
+            if (dup != set->info.end()) {
+                delete dup->second;
+                set->info.erase(dup);
+            }
+            set->info[info->name] = info;
+        }
+    }
+
+    return set;
+}
+
+/*
+ * Return ImageSet pointer which caller must delete.
+ */
+ImageSet* Config::newScheme( uint32_t id ) {
+    uint32_t n = 0;
+    vector<ConfigElement> ce = getElement("graphics").getChildren();
+    vector<ConfigElement>::const_iterator it  = ce.begin();
+    vector<ConfigElement>::const_iterator end = ce.end();
+    for (; it != end; ++it) {
+        if (it->getName() == "imageset") {
+            if( n == id )
+                return loadImageSet(*it);
+            ++n;
+        }
     }
     return NULL;
 }

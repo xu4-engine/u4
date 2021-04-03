@@ -13,11 +13,6 @@
 #include "observer.h"
 #include "u4file.h"
 
-class ConfigElement;
-class Debug;
-class ImageSet;
-class Settings;
-
 /*
  * The image manager is responsible for loading and keeping track of
  * the various images.
@@ -103,6 +98,18 @@ public:
     std::map<std::string, SubImage *> subImages;
 };
 
+class Debug;
+class Settings;
+
+class ImageSet {
+public:
+    ~ImageSet();
+
+    std::string name;
+    std::string extends;
+    std::map<std::string, ImageInfo *> info;
+};
+
 /**
  * The image manager singleton that keeps track of all the images.
  */
@@ -114,19 +121,11 @@ public:
     ImageInfo *get(const std::string &name, bool returnUnscaled=false);
     SubImage *getSubImage(const std::string &name);
     void freeIntroBackgrounds();
-    const std::vector<std::string> &getSetNames();
     U4FILE * getImageFile(ImageInfo *info);
 
 private:
-    void init();
-
-    ImageSet *loadImageSetFromConf(const ConfigElement &conf);
-    ImageInfo *loadImageInfoFromConf(const ConfigElement &conf);
-    SubImage *loadSubImageFromConf(const ImageInfo *info, const ConfigElement &conf);
-
-    ImageSet *getSet(const std::string &setname);
-    ImageInfo *getInfo(const std::string &name);
-    ImageInfo *getInfoFromSet(const std::string &name, ImageSet *set);
+    ImageSet* scheme(const std::string &setname);
+    ImageInfo* getInfoFromSet(const std::string &name, ImageSet *set);
 
     void fixupIntro(Image *im, int prescale);
     void fixupAbyssVision(Image *im, int prescale);
@@ -137,9 +136,7 @@ private:
     void update(Settings *newSettings);
 
     std::map<std::string, ImageSet *> imageSets;
-    std::vector<std::string> imageSetNames;
     ImageSet *baseSet;
-
     Debug *logger;
 };
 

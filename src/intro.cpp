@@ -9,6 +9,7 @@
 
 #include "intro.h"
 
+#include "config.h"
 #include "debug.h"
 #include "error.h"
 #include "event.h"
@@ -199,7 +200,7 @@ IntroController::IntroController() :
     videoMenu.setClosesMenu(CANCEL);
 
     gfxMenu.setTitle("Game Graphics Options", 0,0);
-    gfxMenu.add(MI_GFX_SCHEME,                        new StringMenuItem("Graphics Scheme    %s", 2,  2,/*'G'*/ 0, &settingsChanged.videoType, imageMgr->getSetNames()));
+    gfxMenu.add(MI_GFX_SCHEME,                        new StringMenuItem("Graphics Scheme    %s", 2,  2,/*'G'*/ 0, &settingsChanged.videoType, xu4.config->schemeNames()));
     gfxMenu.add(MI_GFX_TILE_TRANSPARENCY,               new BoolMenuItem("Transparency Hack  %s", 2,  4,/*'t'*/ 0, &settingsChanged.enhancementsOptions.u4TileTransparencyHack));
     gfxMenu.add(MI_GFX_TILE_TRANSPARENCY_SHADOW_SIZE,    new IntMenuItem("  Shadow Size:     %d", 2,  5,/*'s'*/ 9, &settingsChanged.enhancementsOptions.u4TrileTransparencyHackShadowBreadth, 0, 16, 1));
     gfxMenu.add(MI_GFX_TILE_TRANSPARENCY_SHADOW_OPACITY, new IntMenuItem("  Shadow Opacity:  %d", 2,  6,/*'o'*/ 9, &settingsChanged.enhancementsOptions.u4TileTransparencyHackPixelShadowOpacity, 8, 256, 8));

@@ -22,173 +22,22 @@ using std::vector;
 Image *screenScale(Image *src, int scale, int n, int filter);
 
 
-class ImageSet {
-public:
-    ~ImageSet();
-
-    string name;
-    string location;
-    string extends;
-    map<string, ImageInfo *> info;
-};
-
 ImageMgr::ImageMgr() {
     logger = new Debug("debug/imagemgr.txt", "ImageMgr");
     TRACE(*logger, "creating ImageMgr");
 
+    update(xu4.settings);
     xu4.settings->addObserver(this);
-    init();
 }
 
 ImageMgr::~ImageMgr() {
     xu4.settings->deleteObserver(this);
 
-    for (std::map<string, ImageSet *>::iterator i = imageSets.begin(); i != imageSets.end(); i++)
-        delete i->second;
+    std::map<string, ImageSet *>::iterator it;
+    foreach (it, imageSets)
+        delete it->second;
 
     delete logger;
-}
-
-void ImageMgr::init() {
-    TRACE(*logger, "initializing ImageMgr");
-
-    /*
-     * register all the images declared in the config files
-     */
-    vector<ConfigElement> graphicsConf = xu4.config->getElement("graphics").getChildren();
-    for (std::vector<ConfigElement>::iterator conf = graphicsConf.begin(); conf != graphicsConf.end(); conf++) {
-        if (conf->getName() == "imageset") {
-            ImageSet *set = loadImageSetFromConf(*conf);
-            imageSets[set->name] = set;
-        }
-    }
-
-    imageSetNames.clear();
-    for (std::map<string, ImageSet *>::const_iterator set = imageSets.begin(); set != imageSets.end(); set++)
-        imageSetNames.push_back(set->first);
-
-    update(xu4.settings);
-}
-
-ImageSet *ImageMgr::loadImageSetFromConf(const ConfigElement &conf) {
-    ImageSet *set;
-
-    set = new ImageSet;
-    set->name = conf.getString("name");
-    set->location = conf.getString("location");
-    set->extends = conf.getString("extends");
-
-    TRACE(*logger, string("loading image set ") + set->name);
-
-    vector<ConfigElement> children = conf.getChildren();
-    for (std::vector<ConfigElement>::iterator i = children.begin(); i != children.end(); i++) {
-        if (i->getName() == "image") {
-            ImageInfo *info = loadImageInfoFromConf(*i);
-            std::map<string, ImageInfo *>::iterator dup = set->info.find(info->name);
-            if (dup != set->info.end()) {
-                delete dup->second;
-                set->info.erase(dup);
-            }
-            set->info[info->name] = info;
-        }
-    }
-
-    return set;
-}
-
-static uint8_t mapFiletype(const string& str, const string& file) {
-    if (! str.empty()) {
-        if (str == "image/x-u4raw")
-            return FTYPE_U4RAW;
-        if (str == "image/x-u4rle")
-            return FTYPE_U4RLE;
-        if (str == "image/x-u4lzw")
-            return FTYPE_U4LZW;
-        if (str == "image/x-u5lzw")
-            return FTYPE_U5LZW;
-        if (str == "image/png")
-            return FTYPE_PNG;
-        if (str == "image/fmtowns")
-            return FTYPE_FMTOWNS;
-        if (str == "image/fmtowns-pic")
-            return FTYPE_FMTOWNS_PIC;
-        if (str == "image/fmtowns-tif")
-            return FTYPE_FMTOWNS_TIF;
-    }
-
-    // Guess at type based on filename.
-    size_t length = file.length();
-    if (length >= 4 && file.compare(length - 4, 4, ".png") == 0)
-        return FTYPE_PNG;
-
-    errorWarning("Unknown image filetype %s", str.c_str());
-    return FTYPE_UNKNOWN;
-}
-
-ImageInfo *ImageMgr::loadImageInfoFromConf(const ConfigElement &conf) {
-    ImageInfo *info;
-    static const char *fixupEnumStrings[] = { "none", "intro", "abyss", "abacus", "dungns", "blackTransparencyHack", "fmtownsscreen", NULL };
-
-    info = new ImageInfo;
-    info->name = conf.getString("name");
-    info->filename = conf.getString("filename");
-    info->width = conf.getInt("width", -1);
-    info->height = conf.getInt("height", -1);
-    info->depth = conf.getInt("depth", -1);
-    info->prescale = conf.getInt("prescale");
-    info->filetype = mapFiletype(conf.getString("filetype"), info->filename);
-    info->tiles = conf.getInt("tiles");
-    info->introOnly = conf.getBool("introOnly");
-    info->transparentIndex = conf.getInt("transparentIndex", -1);
-
-    info->xu4Graphic = conf.getBool("xu4Graphic");
-    info->fixup = static_cast<ImageFixup>(conf.getEnum("fixup", fixupEnumStrings));
-    info->image = NULL;
-
-    vector<ConfigElement> children = conf.getChildren();
-    for (std::vector<ConfigElement>::iterator i = children.begin(); i != children.end(); i++) {
-        if (i->getName() == "subimage") {
-            SubImage *subimage = loadSubImageFromConf(info, *i);
-            info->subImages[subimage->name] = subimage;
-        }
-    }
-
-    return info;
-}
-
-SubImage *ImageMgr::loadSubImageFromConf(const ImageInfo *info, const ConfigElement &conf) {
-    SubImage *subimage;
-    static int x = 0,
-               y = 0,
-               last_width = 0,
-               last_height = 0;
-
-    subimage = new SubImage;
-    subimage->name = conf.getString("name");
-    subimage->width = conf.getInt("width");
-    subimage->height = conf.getInt("height");
-    subimage->srcImageName = info->name;
-    if (conf.exists("x") && conf.exists("y")) {
-        x = subimage->x = conf.getInt("x");
-        y = subimage->y = conf.getInt("y");
-    }
-    else {
-        // Automatically increment our position through the base image
-        x += last_width;
-        if (x >= last_width) {
-            x = 0;
-            y += last_height;
-        }
-
-        subimage->x = x;
-        subimage->y = y;
-    }
-
-    // "remember" the width and height of this subimage
-    last_width = subimage->width;
-    last_height = subimage->height;
-
-    return subimage;
 }
 
 void ImageMgr::fixupIntro(Image *im, int prescale) {
@@ -461,19 +310,25 @@ void ImageMgr::fixupFMTowns(Image *im, int prescale) {
 /**
  * Returns information for the given image set.
  */
-ImageSet *ImageMgr::getSet(const string &setname) {
-    std::map<string, ImageSet *>::iterator i = imageSets.find(setname);
-    if (i != imageSets.end())
-        return i->second;
-    else
-        return NULL;
-}
+ImageSet *ImageMgr::scheme(const string& name) {
+    std::map<string, ImageSet *>::iterator it = imageSets.find(name);
+    if (it != imageSets.end())
+        return it->second;
 
-/**
- * Returns image information for the current image set.
- */
-ImageInfo *ImageMgr::getInfo(const string &name) {
-    return getInfoFromSet(name, baseSet);
+    // The ImageSet has not been cached yet, so get it from the Config.
+    const char** names = xu4.config->schemeNames();
+    const char** nit = names;
+    while (*nit) {
+        if (name == *nit) {
+            ImageSet* sp = xu4.config->newScheme(nit - names);
+            if (! sp)
+                break;
+            imageSets[sp->name] = sp;
+            return sp;
+        }
+        ++nit;
+    }
+    return NULL;
 }
 
 /**
@@ -490,7 +345,7 @@ ImageInfo *ImageMgr::getInfoFromSet(const string &name, ImageSet *imageset) {
 
     /* otherwise if this image set extends another, check the base image set */
     while (imageset->extends != "") {
-        imageset = getSet(imageset->extends);
+        imageset = scheme(imageset->extends);
         return getInfoFromSet(name, imageset);
     }
 
@@ -508,11 +363,14 @@ U4FILE * ImageMgr::getImageFile(ImageInfo *info)
      * .old extention.  The charset and tiles have a .vga extention
      * and are not renamed in the upgrade installation process
      */
-    if (u4isUpgradeInstalled() && getInfoFromSet(info->name, getSet("VGA"))->filename.find(".old") != string::npos) {
-        if (xu4.settings->videoType == "EGA")
-            filename = getInfoFromSet(info->name, getSet("VGA"))->filename;
-        else
-            filename = getInfoFromSet(info->name, getSet("EGA"))->filename;
+    if (u4isUpgradeInstalled()) {
+        string& vgaFile = getInfoFromSet(info->name, scheme("VGA"))->filename;
+        if (vgaFile.find(".old") != string::npos) {
+            if (xu4.settings->videoType == "EGA")
+                filename = vgaFile;
+            else
+                filename = getInfoFromSet(info->name, scheme("EGA"))->filename;
+        }
     }
 
     if (filename == "")
@@ -521,7 +379,6 @@ U4FILE * ImageMgr::getImageFile(ImageInfo *info)
     U4FILE *file = NULL;
     if (info->xu4Graphic) {
         string pathname(u4find_graphics(filename));
-
         if (!pathname.empty())
             file = u4fopen_stdio(pathname);
     }
@@ -535,7 +392,7 @@ U4FILE * ImageMgr::getImageFile(ImageInfo *info)
  * Load in a background image from a ".ega" file.
  */
 ImageInfo *ImageMgr::get(const string &name, bool returnUnscaled) {
-    ImageInfo *info = getInfo(name);
+    ImageInfo *info = getInfoFromSet(name, baseSet);
     if (!info)
         return NULL;
 
@@ -656,19 +513,17 @@ ImageInfo *ImageMgr::get(const string &name, bool returnUnscaled) {
  * Returns information for the given image set.
  */
 SubImage *ImageMgr::getSubImage(const string &name) {
-    string setname;
-
+    std::map<string, ImageInfo *>::iterator it;
     ImageSet *set = baseSet;
 
     while (set != NULL) {
-        for (std::map<string, ImageInfo *>::iterator i = set->info.begin(); i != set->info.end(); i++) {
-            ImageInfo *info = (ImageInfo *) i->second;
+        foreach (it, set->info) {
+            ImageInfo *info = (ImageInfo *) it->second;
             std::map<string, SubImage *>::iterator j = info->subImages.find(name);
             if (j != info->subImages.end())
                 return j->second;
         }
-
-        set = getSet(set->extends);
+        set = scheme(set->extends);
     }
 
     return NULL;
@@ -678,9 +533,11 @@ SubImage *ImageMgr::getSubImage(const string &name) {
  * Free up any background images used only in the animations.
  */
 void ImageMgr::freeIntroBackgrounds() {
-    for (std::map<string, ImageSet *>::iterator i = imageSets.begin(); i != imageSets.end(); i++) {
-        ImageSet *set = i->second;
-        for (std::map<string, ImageInfo *>::iterator j = set->info.begin(); j != set->info.end(); j++) {
+    std::map<string, ImageSet *>::iterator si;
+    std::map<string, ImageInfo *>::iterator j;
+
+    foreach (si, imageSets) {
+        foreach (j, si->second->info) {
             ImageInfo *info = j->second;
             if (info->image != NULL && info->introOnly) {
                 delete info->image;
@@ -690,32 +547,25 @@ void ImageMgr::freeIntroBackgrounds() {
     }
 }
 
-const vector<string> &ImageMgr::getSetNames() {
-    return imageSetNames;
-}
-
 /**
  * Find the new base image set when settings have changed.
  */
 void ImageMgr::update(Settings *newSettings) {
-    string setname;
-
-    setname = newSettings->videoType;
-
+    string setname = newSettings->videoType;
     TRACE(*logger, string("base image set is '") + setname + string("'"));
-
-    baseSet = getSet(setname);
+    baseSet = scheme(setname);
 }
 
 ImageSet::~ImageSet() {
-    for (std::map<string, ImageInfo *>::iterator i = info.begin(); i != info.end(); i++) {
-        delete i->second;
-    }
+    std::map<string, ImageInfo *>::iterator it;
+    foreach (it, info)
+        delete it->second;
 }
 
 ImageInfo::~ImageInfo() {
-    for (std::map<string, SubImage *>::iterator i = subImages.begin(); i != subImages.end(); i++)
-        delete i->second;
-    if (image != NULL)
-        delete image;
+    std::map<string, SubImage *>::iterator it;
+    foreach (it, subImages)
+        delete it->second;
+
+    delete image;
 }

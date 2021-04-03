@@ -9,6 +9,7 @@
 #include <vector>
 #include <libxml/xmlmemory.h>
 
+class ImageSet;
 class ConfigElement;
 
 /**
@@ -27,6 +28,8 @@ public:
     // Primary configurable elements.
     const char* musicFile( uint32_t id );
     const char* soundFile( uint32_t id );
+    const char** schemeNames();
+    ImageSet* newScheme( uint32_t id );
     // More to be added...
 
     // Deprecated methods for manually parsing a tree.
@@ -64,5 +67,7 @@ private:
 
 extern Config* configInit();
 extern void    configFree(Config*);
+
+#define foreach(it, col)    for(it = col.begin(); it != col.end(); ++it)
 
 #endif /* CONFIG_H */
