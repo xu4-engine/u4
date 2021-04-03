@@ -7,7 +7,6 @@
 #include <string>
 #include "script.h"
 
-#include "armor.h"
 #include "camp.h"
 #include "context.h"
 #include "conversation.h"

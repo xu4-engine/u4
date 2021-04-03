@@ -5,8 +5,8 @@
 #include "player.h"
 
 #include "annotation.h"
-#include "armor.h"
 #include "combat.h"
+#include "config.h"
 #include "context.h"
 #include "debug.h"
 #include "game.h"
@@ -18,6 +18,7 @@
 #include "types.h"
 #include "utils.h"
 #include "weapon.h"
+#include "xu4.h"
 
 #ifdef IOS
 #include "ios_helpers.h"
@@ -41,7 +42,7 @@ PartyMember::PartyMember(Party *p, SaveGamePlayerRecord *pr) :
 {
     /* FIXME: we need to rename movement behaviors */
     setMovementBehavior(MOVEMENT_ATTACK_AVATAR);
-    this->ranged = Weapon::get(pr->weapon)->getRange() ? 1 : 0;
+    this->ranged = xu4.config->weapon(pr->weapon)->getRange() ? 1 : 0;
     setStatus(pr->status);
 }
 
@@ -162,8 +163,14 @@ int PartyMember::getMaxMp() const {
     return max_mp;
 }
 
-const Weapon *PartyMember::getWeapon() const { return Weapon::get(player->weapon); }
-const Armor *PartyMember::getArmor() const   { return Armor::get(player->armor); }
+const Weapon *PartyMember::getWeapon() const {
+    return xu4.config->weapon(player->weapon);
+}
+
+const Armor *PartyMember::getArmor() const {
+    return xu4.config->armor(player->armor);
+}
+
 string PartyMember::getName() const          { return player->name; }
 SexType PartyMember::getSex() const          { return player->sex; }
 ClassType PartyMember::getClass() const      { return player->klass; }
@@ -454,13 +461,13 @@ bool PartyMember::applyDamage(int damage, bool) {
 }
 
 int PartyMember::getAttackBonus() const {
-    if (Weapon::get(player->weapon)->alwaysHits() || player->dex >= 40)
+    if (xu4.config->weapon(player->weapon)->alwaysHits() || player->dex >= 40)
     return 255;
     return player->dex;
 }
 
 int PartyMember::getDefense() const {
-    return Armor::get(player->armor)->getDefense();
+    return xu4.config->armor(player->armor)->getDefense();
 }
 
 bool PartyMember::dealDamage(Creature *m, int damage) {
@@ -482,7 +489,7 @@ bool PartyMember::dealDamage(Creature *m, int damage) {
 int PartyMember::getDamage() {
     int maxDamage;
 
-    maxDamage = Weapon::get(player->weapon)->getDamage();
+    maxDamage = xu4.config->weapon(player->weapon)->getDamage();
     maxDamage += player->str;
     if (maxDamage > 255)
         maxDamage = 255;
@@ -677,14 +684,14 @@ string Party::translate(std::vector<string>& parts) {
 
         else if (parts.size() == 2) {
             if (parts[0] == "weapon") {
-                const Weapon *w = Weapon::get(parts[1]);
-                if (w)
-                    return xu4_to_string(saveGame->weapons[w->getType()]);
+                int type = xu4.config->weaponType(parts[1].c_str());
+                if (type >= 0)
+                    return xu4_to_string(saveGame->weapons[type]);
             }
             else if (parts[0] == "armor") {
-                const Armor *a = Armor::get(parts[1]);
-                if (a)
-                    return xu4_to_string(saveGame->armor[a->getType()]);
+                int type = xu4.config->armorType(parts[1].c_str());
+                if (type >= 0)
+                    return xu4_to_string(saveGame->armor[type]);
             }
         }
     }

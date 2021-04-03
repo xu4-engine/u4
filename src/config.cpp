@@ -5,6 +5,7 @@
 #include <cstdio>
 #include <cstdarg>
 #include <cstdlib>
+#include <cstring>
 #include <cctype>
 
 #include <libxml/xmlmemory.h>
@@ -27,8 +28,11 @@
 #include "error.h"
 #include "imageloader.h"
 #include "imagemgr.h"
+#include "names.h"
+#include "savegame.h"
 #include "settings.h"
 #include "sound.h"
+#include "weapon.h"
 #include "u4file.h"
 #include "xu4.h"
 
@@ -57,6 +61,8 @@ struct XMLConfig
     vector<string> musicFiles;
     vector<string> soundFiles;
     vector<string> schemeNames;
+    vector<Armor*> armors;
+    vector<Weapon*> weapons;
 };
 
 static const char* configXmlPath = "config.xml";
@@ -108,6 +114,9 @@ static void conf_accumError(void *l, const char *fmt, ...) {
 
     errorMessage->append(buffer);
 }
+
+static Armor*  conf_armor(const ConfigElement&);
+static Weapon* conf_weapon(const ConfigElement&);
 
 Config::Config() {
     xmlRegisterInputCallbacks(&xmlFileMatch, &conf_fileOpen, xmlFileRead, xmlFileClose);
@@ -181,10 +190,37 @@ Config::Config() {
         }
     }
     }
+
+    {
+    vector<ConfigElement> ce;
+    vector<ConfigElement>::const_iterator it;
+
+    // armors
+    ce = getElement("armors").getChildren();
+    foreach (it, ce) {
+        if (it->getName() == "armor")
+            xcd.armors.push_back(conf_armor(*it));
+    }
+
+    // weapons
+    ce = getElement("weapons").getChildren();
+    foreach (it, ce) {
+        if (it->getName() == "weapon")
+            xcd.weapons.push_back(conf_weapon(*it));
+    }
+    }
 }
 
 Config::~Config() {
     xmlFreeDoc(xcd.doc);
+
+    vector<Armor *>::iterator ait;
+    foreach (ait, xcd.armors)
+        delete *ait;
+
+    vector<Weapon *>::iterator wit;
+    foreach (wit, xcd.weapons)
+        delete *wit;
 }
 
 ConfigElement::ConfigElement(xmlNodePtr xmlNode) :
@@ -326,6 +362,42 @@ const char** Config::schemeNames() {
     return &xcd.sarray.front();
 }
 
+/*
+ * Return an Armor pointer for the given ArmorType id (see savegame.h)
+ */
+const Armor* Config::armor( uint32_t id ) {
+    if (id < xcd.armors.size())
+        return xcd.armors[id];
+    return NULL;
+}
+
+/*
+ * Return a Weapon pointer for the given WeaponType id (see savegame.h)
+ */
+const Weapon* Config::weapon( uint32_t id ) {
+    if (id < xcd.weapons.size())
+        return xcd.weapons[id];
+    return NULL;
+}
+
+int Config::armorType( const char* name ) {
+    vector<Armor*>::const_iterator it;
+    foreach (it, xcd.armors) {
+        if ((*it)->name == name)
+            return it - xcd.armors.begin();
+    }
+    return -1;
+}
+
+int Config::weaponType( const char* name ) {
+    vector<Weapon*>::const_iterator it;
+    foreach (it, xcd.weapons) {
+        if ((*it)->name == name)
+            return it - xcd.weapons.begin();
+    }
+    return -1;
+}
+
 //--------------------------------------
 // Graphics config
 
@@ -465,6 +537,126 @@ ImageSet* Config::newScheme( uint32_t id ) {
         }
     }
     return NULL;
+}
+
+//--------------------------------------
+// Items (weapons & armor)
+
+static Armor* conf_armor(const ConfigElement& conf) {
+    Armor* arm = new Armor;
+
+    arm->type    = static_cast<ArmorType>(xcd.armors.size());
+    arm->name    = conf.getString("name");
+    arm->canuse  = 0xFF;
+    arm->defense = conf.getInt("defense");
+    arm->mask    = 0;
+
+    vector<ConfigElement> contraintConfs = conf.getChildren();
+    std::vector<ConfigElement>::iterator it;
+    foreach (it, contraintConfs) {
+        if (it->getName() != "constraint")
+            continue;
+
+        unsigned char mask = 0;
+        for (int cl = 0; cl < 8; cl++) {
+            if (strcasecmp(it->getString("class").c_str(), getClassName(static_cast<ClassType>(cl))) == 0)
+                mask = (1 << cl);
+        }
+        if (mask == 0 && strcasecmp(it->getString("class").c_str(), "all") == 0)
+            mask = 0xFF;
+        if (mask == 0) {
+            errorFatal("malformed armor.xml file: constraint has unknown class %s",
+                       it->getString("class").c_str());
+        }
+        if (it->getBool("canuse"))
+            arm->canuse |= mask;
+        else
+            arm->canuse &= ~mask;
+    }
+    return arm;
+}
+
+static Weapon* conf_weapon(const ConfigElement& conf) {
+    static const struct {
+        const char *name;
+        unsigned int flag;
+    } booleanAttributes[] = {
+        { "lose", WEAP_LOSE },
+        { "losewhenranged", WEAP_LOSEWHENRANGED },
+        { "choosedistance", WEAP_CHOOSEDISTANCE },
+        { "alwayshits", WEAP_ALWAYSHITS },
+        { "magic", WEAP_MAGIC },
+        { "attackthroughobjects", WEAP_ATTACKTHROUGHOBJECTS },
+        { "returns", WEAP_RETURNS },
+        { "dontshowtravel", WEAP_DONTSHOWTRAVEL }
+    };
+    Weapon* wpn = new Weapon;
+
+    wpn->type   = static_cast<WeaponType>(xcd.weapons.size());
+    wpn->name   = conf.getString("name");
+    wpn->abbr   = conf.getString("abbr");
+    wpn->canuse = 0xFF;
+    wpn->range  = 0;
+    wpn->damage = conf.getInt("damage");
+    wpn->hittile   = "hit_flash";
+    wpn->misstile  = "miss_flash";
+    //wpn->leavetile = "";
+    wpn->flags = 0;
+
+
+    /* Get the range of the weapon, whether it is absolute or normal range */
+    string _range = conf.getString("range");
+    if (_range.empty()) {
+        _range = conf.getString("absolute_range");
+        if (!_range.empty())
+            wpn->flags |= WEAP_ABSOLUTERANGE;
+    }
+    if (_range.empty())
+        errorFatal("malformed weapons.xml file: range or absolute_range not found for weapon %s", wpn->name.c_str());
+
+    wpn->range = atoi(_range.c_str());
+
+    /* Load weapon attributes */
+    for (unsigned at = 0; at < sizeof(booleanAttributes) / sizeof(booleanAttributes[0]); at++) {
+        if (conf.getBool(booleanAttributes[at].name))
+            wpn->flags |= booleanAttributes[at].flag;
+    }
+
+    /* Load hit tiles */
+    if (conf.exists("hittile"))
+        wpn->hittile = conf.getString("hittile");
+
+    /* Load miss tiles */
+    if (conf.exists("misstile"))
+        wpn->misstile = conf.getString("misstile");
+
+    /* Load leave tiles */
+    if (conf.exists("leavetile"))
+        wpn->leavetile = conf.getString("leavetile");
+
+    vector<ConfigElement> contraintConfs = conf.getChildren();
+    for (std::vector<ConfigElement>::iterator i = contraintConfs.begin(); i != contraintConfs.end(); i++) {
+        unsigned char mask = 0;
+
+        if (i->getName() != "constraint")
+            continue;
+
+        for (int cl = 0; cl < 8; cl++) {
+            if (strcasecmp(i->getString("class").c_str(), getClassName(static_cast<ClassType>(cl))) == 0)
+                mask = (1 << cl);
+        }
+        if (mask == 0 && strcasecmp(i->getString("class").c_str(), "all") == 0)
+            mask = 0xFF;
+        if (mask == 0) {
+            errorFatal("malformed weapons.xml file: constraint has unknown class %s",
+                       i->getString("class").c_str());
+        }
+        if (i->getBool("canuse"))
+            wpn->canuse |= mask;
+        else
+            wpn->canuse &= ~mask;
+    }
+    return wpn;
 }
 
 //--------------------------------------

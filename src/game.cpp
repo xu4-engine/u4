@@ -11,10 +11,10 @@
 #include "game.h"
 
 #include "annotation.h"
-#include "armor.h"
 #include "camp.h"
 #include "cheat.h"
 #include "city.h"
+#include "config.h"
 #include "conversation.h"
 #include "debug.h"
 #include "dungeon.h"
@@ -2450,7 +2450,7 @@ void readyWeapon(int player) {
         return;
 
     PartyMember *p = c->party->member(player);
-    const Weapon *w = Weapon::get(weapon);
+    const Weapon *w = xu4.config->weapon(weapon);
 
 
     if (!w) {
@@ -2914,7 +2914,7 @@ void wearArmor(int player) {
     if (armor == -1)
         return;
 
-    const Armor *a = Armor::get(armor);
+    const Armor *a = xu4.config->armor(armor);
     PartyMember *p = c->party->member(player);
 
     if (!a) {

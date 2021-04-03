@@ -5,6 +5,7 @@
 #include "cheat.h"
 #include "location.h"
 #include "map.h"
+#include "config.h"
 #include "context.h"
 #include "game.h"
 #include "mapmgr.h"
@@ -67,7 +68,7 @@ bool CheatMenuController::keyPressed(int key) {
         for (i = ARMR_NONE + 1; i < ARMR_MAX; i++)
             c->saveGame->armor[i] = 8;
         for (i = WEAP_HANDS + 1; i < WEAP_MAX; i++) {
-            const Weapon *weapon = Weapon::get(static_cast<WeaponType>(i));
+            const Weapon *weapon = xu4.config->weapon(static_cast<WeaponType>(i));
             if (weapon->loseWhenUsed() || weapon->loseWhenRanged())
                 c->saveGame->weapons[i] = 99;
             else

@@ -2,7 +2,6 @@
 set(XU4_INC
 	annotation.h
 	area.h
-	armor.h
 	aura.h
 	camp.h
 	cheat.h
@@ -82,7 +81,6 @@ set(XU4_INC
 
 set(XU4_SRC
 	annotation.cpp
-	armor.cpp
 	aura.cpp
 	camp.cpp
 	cheat.cpp
@@ -148,7 +146,6 @@ set(XU4_SRC
 	utils.cpp 
 	unzip.c 
 	view.cpp 
-	weapon.cpp
 	xml.cpp lzw/hash.c 
 	lzw/lzw.c 
 	lzw/u6decode.cpp 

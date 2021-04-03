@@ -10,6 +10,8 @@
 #include <libxml/xmlmemory.h>
 
 class ImageSet;
+class Armor;
+class Weapon;
 class ConfigElement;
 
 /**
@@ -30,6 +32,10 @@ public:
     const char* soundFile( uint32_t id );
     const char** schemeNames();
     ImageSet* newScheme( uint32_t id );
+    const Armor*  armor( uint32_t id );
+    const Weapon* weapon( uint32_t id );
+    int armorType( const char* name );
+    int weaponType( const char* name );
     // More to be added...
 
     // Deprecated methods for manually parsing a tree.

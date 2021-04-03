@@ -11,7 +11,6 @@ CSRCS=\
 
 CXXSRCS=\
         annotation.cpp \
-        armor.cpp \
         aura.cpp \
         camp.cpp \
         cheat.cpp \
@@ -79,7 +78,6 @@ CXXSRCS=\
         u4file.cpp \
         utils.cpp \
         view.cpp \
-        weapon.cpp \
         xml.cpp \
         lzw/u4decode.cpp \
         lzw/u6decode.cpp \

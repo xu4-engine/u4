@@ -49,7 +49,6 @@ exe %u4 [
 
 	sources_from %src [
 		%annotation.cpp
-		%armor.cpp
 		%aura.cpp
 		%camp.cpp
 		%cheat.cpp
@@ -115,7 +114,6 @@ exe %u4 [
 		%utils.cpp
 		%unzip.c
 		%view.cpp
-		%weapon.cpp
 		%xml.cpp
 
 		%lzw/hash.c

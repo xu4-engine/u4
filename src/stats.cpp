@@ -8,7 +8,7 @@
 
 #include <cstring>
 
-#include "armor.h"
+#include "config.h"
 #include "context.h"
 #include "debug.h"
 #include "menu.h"
@@ -249,7 +249,7 @@ void StatsArea::showWeapons() {
 
     int line = 0;
     int col = 0;
-    mainArea.textAt(0, line++, "A-%s", Weapon::get(WEAP_HANDS)->getName().c_str());
+    mainArea.textAt(0, line++, "A-%s", xu4.config->weapon(WEAP_HANDS)->getName().c_str());
     for (int w = WEAP_HANDS + 1; w < WEAP_MAX; w++) {
         int n = c->saveGame->weapons[w];
         if (n >= 100)
@@ -257,7 +257,7 @@ void StatsArea::showWeapons() {
         if (n >= 1) {
             const char *format = (n >= 10) ? "%c%d-%s" : "%c-%d-%s";
 
-            mainArea.textAt(col, line++, format, w - WEAP_HANDS + 'A', n, Weapon::get((WeaponType) w)->getAbbrev().c_str());
+            mainArea.textAt(col, line++, format, w - WEAP_HANDS + 'A', n, xu4.config->weapon((WeaponType) w)->getAbbrev().c_str());
             if (line >= (STATS_AREA_HEIGHT)) {
                 line = 0;
                 col += 8;
@@ -278,7 +278,9 @@ void StatsArea::showArmor() {
         if (c->saveGame->armor[a] > 0) {
             const char *format = (c->saveGame->armor[a] >= 10) ? "%c%d-%s" : "%c-%d-%s";
 
-            mainArea.textAt(0, line++, format, a - ARMR_NONE + 'A', c->saveGame->armor[a], Armor::get((ArmorType) a)->getName().c_str());
+            mainArea.textAt(0, line++, format, a - ARMR_NONE + 'A',
+                    c->saveGame->armor[a],
+                    xu4.config->armor((ArmorType) a)->getName().c_str());
         }
     }
 }
