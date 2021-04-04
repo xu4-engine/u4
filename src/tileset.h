@@ -14,22 +14,13 @@ using std::string;
 class ConfigElement;
 class Tile;
 
-typedef std::map<string, class TileRule *> TileRuleMap;
-
 /**
- * TileRule class
+ * TileRule struct
  */
-class TileRule {
-public:
-    static TileRule *findByName(const string &name);
-    static void load();
-    static TileRuleMap rules;   // A map of rule names to rules
-
-    bool initFromConf(const ConfigElement &tileRuleConf);
-
-    string name;
-    unsigned short mask;
-    unsigned short movementMask;
+struct TileRule {
+    Symbol name;
+    uint16_t mask;
+    uint16_t movementMask;
     TileSpeed speed;
     TileEffect effect;
     int walkonDirs;

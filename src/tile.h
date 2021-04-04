@@ -124,7 +124,7 @@ private:
     bool foreground;    /**< As a maptile, is a foreground that will search neighbour maptiles for a land-based background replacement. ex: chests */
     bool waterForeground;/**< As a maptile, is a foreground that will search neighbour maptiles for a water-based background replacement. ex: chests */
 
-    TileRule *rule;     /**< The rules that govern the behavior of this tile */
+    const TileRule *rule; /**< The rules that govern the behavior of this tile */
     string imageName;   /**< The name of the image that belongs to this tile */
 
     Image *image;       /**< The original image for this tile (with all of its frames) */

@@ -147,6 +147,7 @@ set(XU4_SRC
 	lzw/lzw.c 
 	lzw/u6decode.cpp 
 	lzw/u4decode.cpp
+	support/SymbolTable.cpp
 )
 
 set(XU4_SDL
@@ -161,9 +162,9 @@ set(XU4_SDL2
 	sound_sdl2.cpp 
 )
 
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 include_directories (
-	# ${UXU4_SOURCE_DIR}/src
 	${SDL_INCLUDE_DIR}
 	${SDLMIXER_INCLUDE_DIR}
 	${SDL_MIXER_INCLUDE_DIR} #Latest verified CMake 3.0
@@ -172,6 +173,7 @@ include_directories (
 	${PNG_PNG_INCLUDE_DIR}
 	${ZLIB_INCLUDE_DIR}
 )
+
 add_executable (u4 
 	${XU4_SRC}
 	${XU4_INC}
@@ -187,7 +189,6 @@ set(xu4_required_libraries
 	${PNG_LIBRARY_RELEASE} #Latest verified CMake 3.0
 	${ZLIB_LIBRARY_RELEASE}
 )
-
 
 target_link_libraries (
 	u4

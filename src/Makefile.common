@@ -80,6 +80,7 @@ CXXSRCS=\
         xml.cpp \
         lzw/u4decode.cpp \
         lzw/u6decode.cpp \
+        support/SymbolTable.cpp \
         $(NULL)
 
 OBJS += $(CSRCS:.c=.o) $(CXXSRCS:.cpp=.o)

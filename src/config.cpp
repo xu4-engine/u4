@@ -32,13 +32,17 @@
 #include "savegame.h"
 #include "settings.h"
 #include "sound.h"
+#include "tile.h"
 #include "weapon.h"
 #include "u4file.h"
 #include "xu4.h"
+#include "support/SymbolTable.h"
 
 using namespace std;
 
 extern bool verbose;
+
+Config::~Config() {}
 
 #if 0
 // For future expansion...
@@ -55,6 +59,7 @@ void Config::setGame(const char* name) {
 
 struct XMLConfig
 {
+    SymbolTable sym;
     xmlDocPtr doc;
     string sbuf;        // Temporary buffer for const char* return values.
     vector<const char*> sarray;   // Temp. buffer for const char** values.
@@ -64,17 +69,29 @@ struct XMLConfig
     vector<string> schemeNames;
     vector<Armor*> armors;
     vector<Weapon*> weapons;
+
+    TileRule* tileRules;
+    uint16_t tileRuleCount;
+    int16_t  tileRuleDefault;
 };
 
+struct ConfigXML : public Config {
+    ConfigXML();
+    ~ConfigXML();
+
+    XMLConfig xcd;
+};
+
+#define CB  static_cast<XMLConfig*>(backend)
+
 static const char* configXmlPath = "config.xml";
-static XMLConfig xcd;
 
 ConfigElement Config::getElement(const string &name) const {
     xmlXPathContextPtr context;
     xmlXPathObjectPtr result;
 
     string path = "/config/" + name;
-    context = xmlXPathNewContext(xcd.doc);
+    context = xmlXPathNewContext(CB->doc);
     result = xmlXPathEvalExpression(reinterpret_cast<const xmlChar *>(path.c_str()), context);
     if(xmlXPathNodeSetIsEmpty(result->nodesetval))
         errorFatal("no match for xpath %s\n", path.c_str());
@@ -88,6 +105,20 @@ ConfigElement Config::getElement(const string &name) const {
     xmlXPathFreeObject(result);
 
     return ConfigElement(node);
+}
+
+static Symbol propertySymbol(SymbolTable& sym, const ConfigElement& ce, const char* name) {
+    Symbol ns;
+    xmlChar* prop = xmlGetProp(ce.getNode(), (const xmlChar*) name);
+    if (! prop)
+        return SYM_UNSET;
+    ns = sym.intern((const char*) prop);
+    xmlFree(prop);
+    return ns;
+}
+
+Symbol Config::propSymbol(const ConfigElement& ce, const char* name) const {
+    return propertySymbol(CB->sym, ce, name);
 }
 
 static void *conf_fileOpen(const char *filename) {
@@ -116,10 +147,109 @@ static void conf_accumError(void *l, const char *fmt, ...) {
     errorMessage->append(buffer);
 }
 
-static Armor*  conf_armor(const ConfigElement&);
-static Weapon* conf_weapon(const ConfigElement&);
+//--------------------------------------
+// Tiles
 
-Config::Config() {
+static void conf_tileRule(SymbolTable& sym, TileRule* rule, const ConfigElement &conf) {
+    unsigned int i;
+
+    static const struct {
+        const char *name;
+        unsigned int mask;
+    } booleanAttributes[] = {
+        { "dispel", MASK_DISPEL },
+        { "talkover", MASK_TALKOVER },
+        { "door", MASK_DOOR },
+        { "lockeddoor", MASK_LOCKEDDOOR },
+        { "chest", MASK_CHEST },
+        { "ship", MASK_SHIP },
+        { "horse", MASK_HORSE },
+        { "balloon", MASK_BALLOON },
+        { "canattackover", MASK_ATTACKOVER },
+        { "canlandballoon", MASK_CANLANDBALLOON },
+        { "replacement", MASK_REPLACEMENT },
+        { "foreground", MASK_FOREGROUND },
+        { "onWaterOnlyReplacement", MASK_WATER_REPLACEMENT},
+        { "livingthing", MASK_LIVING_THING }
+
+    };
+
+    static const struct {
+        const char *name;
+        unsigned int mask;
+    } movementBooleanAttr[] = {
+        { "swimable", MASK_SWIMABLE },
+        { "sailable", MASK_SAILABLE },
+        { "unflyable", MASK_UNFLYABLE },
+        { "creatureunwalkable", MASK_CREATURE_UNWALKABLE }
+    };
+    static const char *speedEnumStrings[] = { "fast", "slow", "vslow", "vvslow", NULL };
+    static const char *effectsEnumStrings[] = { "none", "fire", "sleep", "poison", "poisonField", "electricity", "lava", NULL };
+
+    rule->mask = 0;
+    rule->movementMask = 0;
+    rule->speed = FAST;
+    rule->effect = EFFECT_NONE;
+    rule->walkonDirs = MASK_DIR_ALL;
+    rule->walkoffDirs = MASK_DIR_ALL;
+    rule->name = propertySymbol(sym, conf, "name");
+
+    for (i = 0; i < sizeof(booleanAttributes) / sizeof(booleanAttributes[0]); i++) {
+        if (conf.getBool(booleanAttributes[i].name))
+            rule->mask |= booleanAttributes[i].mask;
+    }
+
+    for (i = 0; i < sizeof(movementBooleanAttr) / sizeof(movementBooleanAttr[0]); i++) {
+        if (conf.getBool(movementBooleanAttr[i].name))
+            rule->movementMask |= movementBooleanAttr[i].mask;
+    }
+
+    string cantwalkon = conf.getString("cantwalkon");
+    if (cantwalkon == "all")
+        rule->walkonDirs = 0;
+    else if (cantwalkon == "west")
+        rule->walkonDirs = DIR_REMOVE_FROM_MASK(DIR_WEST, rule->walkonDirs);
+    else if (cantwalkon == "north")
+        rule->walkonDirs = DIR_REMOVE_FROM_MASK(DIR_NORTH, rule->walkonDirs);
+    else if (cantwalkon == "east")
+        rule->walkonDirs = DIR_REMOVE_FROM_MASK(DIR_EAST, rule->walkonDirs);
+    else if (cantwalkon == "south")
+        rule->walkonDirs = DIR_REMOVE_FROM_MASK(DIR_SOUTH, rule->walkonDirs);
+    else if (cantwalkon == "advance")
+        rule->walkonDirs = DIR_REMOVE_FROM_MASK(DIR_ADVANCE, rule->walkonDirs);
+    else if (cantwalkon == "retreat")
+        rule->walkonDirs = DIR_REMOVE_FROM_MASK(DIR_RETREAT, rule->walkonDirs);
+
+    string cantwalkoff = conf.getString("cantwalkoff");
+    if (cantwalkoff == "all")
+        rule->walkoffDirs = 0;
+    else if (cantwalkoff == "west")
+        rule->walkoffDirs = DIR_REMOVE_FROM_MASK(DIR_WEST, rule->walkoffDirs);
+    else if (cantwalkoff == "north")
+        rule->walkoffDirs = DIR_REMOVE_FROM_MASK(DIR_NORTH, rule->walkoffDirs);
+    else if (cantwalkoff == "east")
+        rule->walkoffDirs = DIR_REMOVE_FROM_MASK(DIR_EAST, rule->walkoffDirs);
+    else if (cantwalkoff == "south")
+        rule->walkoffDirs = DIR_REMOVE_FROM_MASK(DIR_SOUTH, rule->walkoffDirs);
+    else if (cantwalkoff == "advance")
+        rule->walkoffDirs = DIR_REMOVE_FROM_MASK(DIR_ADVANCE, rule->walkoffDirs);
+    else if (cantwalkoff == "retreat")
+        rule->walkoffDirs = DIR_REMOVE_FROM_MASK(DIR_RETREAT, rule->walkoffDirs);
+
+    rule->speed = static_cast<TileSpeed>(conf.getEnum("speed", speedEnumStrings));
+    rule->effect = static_cast<TileEffect>(conf.getEnum("effect", effectsEnumStrings));
+}
+
+//--------------------------------------
+
+static Armor*  conf_armor(int type, const ConfigElement&);
+static Weapon* conf_weapon(int type, const ConfigElement&);
+
+ConfigXML::ConfigXML() {
+    backend = &xcd;
+
+    xcd.sym.intern("unset!");   // Symbol 0 can be used as nil/unset/unknown.
+
     xmlRegisterInputCallbacks(&xmlFileMatch, &conf_fileOpen, xmlFileRead, xmlFileClose);
 
     xcd.doc = xmlParseFile(configXmlPath);
@@ -203,19 +333,38 @@ Config::Config() {
     ce = getElement("armors").getChildren();
     foreach (it, ce) {
         if (it->getName() == "armor")
-            xcd.armors.push_back(conf_armor(*it));
+            xcd.armors.push_back(conf_armor(xcd.armors.size(), *it));
     }
 
     // weapons
     ce = getElement("weapons").getChildren();
     foreach (it, ce) {
         if (it->getName() == "weapon")
-            xcd.weapons.push_back(conf_weapon(*it));
+            xcd.weapons.push_back(conf_weapon(xcd.weapons.size(), *it));
+    }
+
+    // tileRules
+    {
+    TileRule* rule;
+    Symbol symDefault = xcd.sym.intern("default");
+
+    ce = getElement("tileRules").getChildren();
+    xcd.tileRuleCount = ce.size();
+    xcd.tileRuleDefault = -1;
+    rule = xcd.tileRules = new TileRule[ xcd.tileRuleCount ];
+    foreach (it, ce) {
+        conf_tileRule(xcd.sym, rule, *it);
+        if (rule->name == symDefault )
+            xcd.tileRuleDefault = rule - xcd.tileRules;
+        ++rule;
+    }
+    if (xcd.tileRuleDefault < 0)
+        errorFatal("no 'default' rule found in tile rules");
     }
     }
 }
 
-Config::~Config() {
+ConfigXML::~ConfigXML() {
     xmlFreeDoc(xcd.doc);
 
     delete[] xcd.egaColors;
@@ -227,7 +376,11 @@ Config::~Config() {
     vector<Weapon *>::iterator wit;
     foreach (wit, xcd.weapons)
         delete *wit;
+
+    delete[] xcd.tileRules;
 }
+
+//--------------------------------------
 
 ConfigElement::ConfigElement(xmlNodePtr xmlNode) :
     node(xmlNode), name(reinterpret_cast<const char *>(xmlNode->name)) {
@@ -330,12 +483,18 @@ vector<ConfigElement> ConfigElement::getChildren() const {
     return result;
 }
 
+//--------------------------------------
+
+const char* Config::symbolName( Symbol s ) const {
+    return CB->sym.name(s);
+}
+
 /*
  * Return pointer to 16 RGBA values.
  */
 const RGBA* Config::egaPalette() {
-    if (! xcd.egaColors) {
-        RGBA* col = xcd.egaColors = new RGBA[16];
+    if (! CB->egaColors) {
+        RGBA* col = CB->egaColors = new RGBA[16];
         RGBA* end = col + 16;
 
         vector<ConfigElement> ce = getElement("egaPalette").getChildren();
@@ -351,7 +510,7 @@ const RGBA* Config::egaPalette() {
                 break;
         }
     }
-    return xcd.egaColors;
+    return CB->egaColors;
 }
 
 /*
@@ -360,9 +519,9 @@ const RGBA* Config::egaPalette() {
  * The pointer is valid until the next musicFile or soundFile call.
  */
 const char* Config::musicFile( uint32_t id ) {
-    if (id < xcd.musicFiles.size()) {
-        xcd.sbuf = u4find_music(xcd.musicFiles[id]);
-        return xcd.sbuf.c_str();
+    if (id < CB->musicFiles.size()) {
+        CB->sbuf = u4find_music(CB->musicFiles[id]);
+        return CB->sbuf.c_str();
     }
     return NULL;
 }
@@ -373,9 +532,9 @@ const char* Config::musicFile( uint32_t id ) {
  * The pointer is valid until the next musicFile or soundFile call.
  */
 const char* Config::soundFile( uint32_t id ) {
-    if (id < xcd.soundFiles.size()) {
-        xcd.sbuf = u4find_sound(xcd.soundFiles[id]);
-        return xcd.sbuf.c_str();
+    if (id < CB->soundFiles.size()) {
+        CB->sbuf = u4find_sound(CB->soundFiles[id]);
+        return CB->sbuf.c_str();
     }
     return NULL;
 }
@@ -384,20 +543,21 @@ const char* Config::soundFile( uint32_t id ) {
  * Return a C string pointer array for the available Image scheme names.
  */
 const char** Config::schemeNames() {
-    xcd.sarray.clear();
+    vector<const char*>& sarray = CB->sarray;
+    sarray.clear();
     vector<string>::iterator it;
-    for (it = xcd.schemeNames.begin(); it != xcd.schemeNames.end(); ++it)
-        xcd.sarray.push_back( (*it).c_str() );
-    xcd.sarray.push_back(NULL);
-    return &xcd.sarray.front();
+    for (it = CB->schemeNames.begin(); it != CB->schemeNames.end(); ++it)
+        sarray.push_back( (*it).c_str() );
+    sarray.push_back(NULL);
+    return &sarray.front();
 }
 
 /*
  * Return an Armor pointer for the given ArmorType id (see savegame.h)
  */
 const Armor* Config::armor( uint32_t id ) {
-    if (id < xcd.armors.size())
-        return xcd.armors[id];
+    if (id < CB->armors.size())
+        return CB->armors[id];
     return NULL;
 }
 
@@ -405,27 +565,41 @@ const Armor* Config::armor( uint32_t id ) {
  * Return a Weapon pointer for the given WeaponType id (see savegame.h)
  */
 const Weapon* Config::weapon( uint32_t id ) {
-    if (id < xcd.weapons.size())
-        return xcd.weapons[id];
+    if (id < CB->weapons.size())
+        return CB->weapons[id];
     return NULL;
 }
 
 int Config::armorType( const char* name ) {
     vector<Armor*>::const_iterator it;
-    foreach (it, xcd.armors) {
+    foreach (it, CB->armors) {
         if ((*it)->name == name)
-            return it - xcd.armors.begin();
+            return it - CB->armors.begin();
     }
     return -1;
 }
 
 int Config::weaponType( const char* name ) {
     vector<Weapon*>::const_iterator it;
-    foreach (it, xcd.weapons) {
+    foreach (it, CB->weapons) {
         if ((*it)->name == name)
-            return it - xcd.weapons.begin();
+            return it - CB->weapons.begin();
     }
     return -1;
+}
+
+/*
+ * Get rule by name.  If there is no such named rule, then the "default" rule
+ * is returned.
+ */
+const TileRule* Config::tileRule( Symbol name ) {
+    const TileRule* it = CB->tileRules;
+    const TileRule* end = it + CB->tileRuleCount;
+    for (; it != end; ++it) {
+        if (it->name == name)
+            return it;
+    }
+    return CB->tileRules + CB->tileRuleDefault;
 }
 
 //--------------------------------------
@@ -570,10 +744,10 @@ ImageSet* Config::newScheme( uint32_t id ) {
 //--------------------------------------
 // Items (weapons & armor)
 
-static Armor* conf_armor(const ConfigElement& conf) {
+static Armor* conf_armor(int type, const ConfigElement& conf) {
     Armor* arm = new Armor;
 
-    arm->type    = static_cast<ArmorType>(xcd.armors.size());
+    arm->type    = (ArmorType) type;
     arm->name    = conf.getString("name");
     arm->canuse  = 0xFF;
     arm->defense = conf.getInt("defense");
@@ -604,7 +778,7 @@ static Armor* conf_armor(const ConfigElement& conf) {
     return arm;
 }
 
-static Weapon* conf_weapon(const ConfigElement& conf) {
+static Weapon* conf_weapon(int type, const ConfigElement& conf) {
     static const struct {
         const char *name;
         unsigned int flag;
@@ -620,7 +794,7 @@ static Weapon* conf_weapon(const ConfigElement& conf) {
     };
     Weapon* wpn = new Weapon;
 
-    wpn->type   = static_cast<WeaponType>(xcd.weapons.size());
+    wpn->type   = (WeaponType) type;
     wpn->name   = conf.getString("name");
     wpn->abbr   = conf.getString("abbr");
     wpn->canuse = 0xFF;
@@ -695,7 +869,7 @@ Config* configInit() {
     // Here's where we can compile the program with alternate back-ends
     // (e.g. SQL, JSON, ... or something better.)
 
-    return new Config;
+    return new ConfigXML;
 }
 
 void configFree(Config* conf) {

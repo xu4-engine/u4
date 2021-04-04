@@ -8,10 +8,12 @@
 #include <string>
 #include <vector>
 #include <libxml/xmlmemory.h>
+#include "types.h"
 
 class ImageSet;
 class Armor;
 class Weapon;
+struct TileRule;
 class ConfigElement;
 struct RGBA;
 
@@ -22,11 +24,12 @@ struct RGBA;
  */
 class Config {
 public:
-    Config();
-    ~Config();
+    virtual ~Config();
 
     //const char** getGames();
     //void setGame(const char* name);
+
+    const char* symbolName( Symbol s ) const;
 
     // Primary configurable elements.
     const RGBA* egaPalette();
@@ -38,10 +41,15 @@ public:
     const Weapon* weapon( uint32_t id );
     int armorType( const char* name );
     int weaponType( const char* name );
+    const TileRule* tileRule( Symbol name );
     // More to be added...
 
     // Deprecated methods for manually parsing a tree.
     ConfigElement getElement(const std::string &name) const;
+    Symbol propSymbol(const ConfigElement& ce, const char* name) const;
+
+protected:
+    void* backend;
 };
 
 /**

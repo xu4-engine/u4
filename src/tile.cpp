@@ -65,14 +65,11 @@ void Tile::loadProperties(const ConfigElement &conf) {
     foreground = conf.getBool("usesReplacementTileAsBackground");
     waterForeground = conf.getBool("usesWaterReplacementTileAsBackground");
 
-    /* find the rule that applies to the current tile, if there is one.
-       if there is no rule specified, it defaults to the "default" rule */
-    if (conf.exists("rule")) {
-        rule = TileRule::findByName(conf.getString("rule"));
-        if (rule == NULL)
-            rule = TileRule::findByName("default");
-    }
-    else rule = TileRule::findByName("default");
+    /* Get the rule that applies to the current tile (or "default") */
+    Symbol sym = SYM_UNSET;
+    if (conf.exists("rule"))
+        sym = xu4.config->propSymbol(conf, "rule");
+    rule = xu4.config->tileRule(sym);
 
     /* get the number of frames the tile has */
     frames = conf.getInt("frames", 1);

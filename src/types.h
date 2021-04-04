@@ -19,6 +19,9 @@ class Tile;
 typedef uint16_t TileId;
 typedef uint16_t VisualId;
 typedef uint8_t  MapId;
+typedef uint16_t Symbol;
+
+#define SYM_UNSET   0
 
 // VisualId macros
 #define MAKE_VID(bank,idx)  ((bank << 12) | (idx))
