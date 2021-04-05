@@ -45,7 +45,7 @@ class TileAnim;
  * A Tile object represents a specific tile type.  Every tile is a
  * member of a Tileset.
  */
-class Tile : private Uncopyable {
+class Tile {
 public:
     Tile(Tileset *tileset);
     ~Tile();
@@ -136,8 +136,11 @@ private:
 
     string animationRule;
 
-
     static TileId nextId;
+
+    // Prevent copying.
+    Tile(const Tile&);
+    const Tile &operator=(const Tile&);
 };
 
 
