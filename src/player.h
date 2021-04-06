@@ -20,9 +20,9 @@
 #include "ios_helpers.h"
 #endif
 
-class Armor;
 class Party;
-class Weapon;
+struct Weapon;
+struct Armor;
 
 using std::string;
 

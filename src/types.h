@@ -19,6 +19,9 @@ class Tile;
 typedef uint16_t TileId;
 typedef uint16_t VisualId;
 typedef uint8_t  MapId;
+
+// StringId and Symbol are similar, but symbol names do not allow whitespace.
+typedef uint32_t StringId;
 typedef uint16_t Symbol;
 
 #define SYM_UNSET   0

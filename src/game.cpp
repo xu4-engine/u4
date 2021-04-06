@@ -2420,7 +2420,7 @@ void readyWeapon(int player) {
     }
     switch (p->setWeapon(w)) {
     case EQUIP_SUCCEEDED:
-        screenMessage("%s\n", w->getName().c_str());
+        screenMessage("%s\n", w->getName());
         break;
     case EQUIP_NONE_LEFT:
         screenMessage("%cNone left!%c\n", FG_GREY, FG_WHITE);
@@ -2437,7 +2437,7 @@ void readyWeapon(int player) {
         }
 
         screenMessage("\n%cA %s may NOT use %s %s%c\n", FG_GREY, getClassName(p->getClass()),
-                      indef_article.c_str(), w->getName().c_str(), FG_WHITE);
+                      indef_article.c_str(), w->getName(), FG_WHITE);
         break;
     }
     }
@@ -2884,13 +2884,13 @@ void wearArmor(int player) {
     }
     switch (p->setArmor(a)) {
     case EQUIP_SUCCEEDED:
-        screenMessage("%s\n", a->getName().c_str());
+        screenMessage("%s\n", a->getName());
         break;
     case EQUIP_NONE_LEFT:
         screenMessage("%cNone left!%c\n", FG_GREY, FG_WHITE);
         break;
     case EQUIP_CLASS_RESTRICTED:
-        screenMessage("\n%cA %s may NOT use %s%c\n", FG_GREY, getClassName(p->getClass()), a->getName().c_str(), FG_WHITE);
+        screenMessage("\n%cA %s may NOT use %s%c\n", FG_GREY, getClassName(p->getClass()), a->getName(), FG_WHITE);
         break;
     }
 }

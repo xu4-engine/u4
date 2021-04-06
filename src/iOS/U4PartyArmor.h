@@ -6,7 +6,7 @@
 
 #import <Foundation/Foundation.h>
 
-class Armor;
+struct Armor;
 
 @interface U4PartyArmor : NSObject {
 @private

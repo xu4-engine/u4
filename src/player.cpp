@@ -41,7 +41,7 @@ PartyMember::PartyMember(Party *p, SaveGamePlayerRecord *pr) :
 {
     /* FIXME: we need to rename movement behaviors */
     setMovementBehavior(MOVEMENT_ATTACK_AVATAR);
-    this->ranged = xu4.config->weapon(pr->weapon)->getRange() ? 1 : 0;
+    this->ranged = xu4.config->weapon(pr->weapon)->range ? 1 : 0;
     setStatus(pr->status);
 }
 
@@ -377,14 +377,14 @@ void PartyMember::setMp(int mp) {
 }
 
 EquipError PartyMember::setArmor(const Armor *a) {
-    ArmorType type = a->getType();
+    ArmorType type = (ArmorType) a->type;
 
     if (type != ARMR_NONE && party->saveGame->armor[type] < 1)
         return EQUIP_NONE_LEFT;
     if (!a->canWear(getClass()))
         return EQUIP_CLASS_RESTRICTED;
 
-    ArmorType oldArmorType = getArmor()->getType();
+    ArmorType oldArmorType = (ArmorType) getArmor()->type;
     if (oldArmorType != ARMR_NONE)
         party->saveGame->armor[oldArmorType]++;
     if (type != ARMR_NONE)
@@ -397,14 +397,14 @@ EquipError PartyMember::setArmor(const Armor *a) {
 }
 
 EquipError PartyMember::setWeapon(const Weapon *w) {
-    WeaponType type = w->getType();
+    WeaponType type = (WeaponType) w->type;
 
     if (type != WEAP_HANDS && party->saveGame->weapons[type] < 1)
         return EQUIP_NONE_LEFT;
     if (!w->canReady(getClass()))
         return EQUIP_CLASS_RESTRICTED;
 
-    WeaponType old = getWeapon()->getType();
+    WeaponType old = (WeaponType) getWeapon()->type;
     if (old != WEAP_HANDS)
         party->saveGame->weapons[old]++;
     if (type != WEAP_HANDS)
@@ -467,7 +467,7 @@ int PartyMember::getAttackBonus() const {
 }
 
 int PartyMember::getDefense() const {
-    return xu4.config->armor(player->armor)->getDefense();
+    return xu4.config->armor(player->armor)->defense;
 }
 
 bool PartyMember::dealDamage(Creature *m, int damage) {
@@ -489,7 +489,7 @@ bool PartyMember::dealDamage(Creature *m, int damage) {
 int PartyMember::getDamage() {
     int maxDamage;
 
-    maxDamage = xu4.config->weapon(player->weapon)->getDamage();
+    maxDamage = xu4.config->weapon(player->weapon)->damage;
     maxDamage += player->str;
     if (maxDamage > 255)
         maxDamage = 255;

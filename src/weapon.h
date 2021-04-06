@@ -1,12 +1,11 @@
 /*
- * $Id$
+ * weapon.h
  */
 
 #ifndef WEAPON_H
 #define WEAPON_H
 
-#include <string>
-#include "savegame.h"
+#include "types.h"
 
 /**< Flags affecting weapon's behavior. */
 enum WeaponFlags {
@@ -21,15 +20,13 @@ enum WeaponFlags {
     WEAP_DONTSHOWTRAVEL         = 0x0200    /**< do not show animations when attacking */
 };
 
-class Weapon {
-public:
-    WeaponType getType() const          {return type;}
-    const std::string &getName() const  {return name;}
-    const std::string &getAbbrev() const{return abbr;}
-    bool canReady(ClassType klass) const{return (canuse & (1 << klass)) != 0;}
-    int getRange() const                {return range;}
-    int getDamage() const               {return damage;}
-    unsigned short getFlags() const     {return flags;}
+struct Weapon {
+    const char* getName() const;
+    const char* getAbbrev() const;
+
+    bool canReady(ClassType klass) const {
+        return (canuse & (1 << klass)) != 0;
+    }
 
     bool loseWhenUsed() const           {return flags & WEAP_LOSE;}
     bool loseWhenRanged() const         {return flags & WEAP_LOSEWHENRANGED;}
@@ -42,33 +39,29 @@ public:
     bool showTravel() const             {return !(flags & WEAP_DONTSHOWTRAVEL);}
 
 
-    WeaponType type;
-    std::string name;
-    std::string abbr;       /**< abbreviation for the weapon */
+    StringId name;
+    StringId abbr;          /**< abbreviation for the weapon */
     Symbol hitTile;         /**< tile to display a hit */
     Symbol missTile;        /**< tile to display a miss */
     Symbol leaveTile;       /**< if the weapon leaves a tile, the tile #, zero otherwise */
+    uint16_t type;          /**< WeaponType */
     uint16_t canuse;        /**< bitmask of classes that can use weapon */
     uint16_t range;         /**< range of weapon */
     uint16_t damage;        /**< damage of weapon */
     uint16_t flags;
 };
 
-class Armor {
-public:
-    // Getters
-    ArmorType getType() const       {return type;   } /**< Returns the ArmorType of the armor */
-    const std::string &getName() const   {return name;   } /**< Returns the name of the armor */
-    int getDefense() const          {return defense;} /**< Returns the defense value of the armor */
-                                                      /** Returns true if the class given can wear the armor */
-    bool canWear(ClassType klass) const {return canuse & (1 << klass);}
+struct Armor {
+    StringId  name;
+    uint16_t  type;         // ArmorType
+    uint16_t  canuse;
+    int16_t   defense;
 
+    /** Returns the name of the armor */
+    const char* getName() const;
 
-    ArmorType type;
-    std::string name;
-    unsigned char canuse;
-    int defense;
-    unsigned short mask;
+    /** Returns true if the class given can wear the armor */
+    bool canWear(ClassType klass) const { return canuse & (1 << klass); }
 };
 
 #endif

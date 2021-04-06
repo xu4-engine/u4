@@ -574,7 +574,7 @@ bool isWeaponInInventory(int weapon) {
         return true;
     else {
         for (int i = 0; i < c->party->size(); i++) {
-            if (c->party->member(i)->getWeapon()->getType() == weapon)
+            if (c->party->member(i)->getWeapon()->type == weapon)
                 return true;
         }
     }

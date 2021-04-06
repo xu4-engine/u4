@@ -9,8 +9,8 @@
 
 class ImageSet;
 struct Layout;
-class Armor;
-class Weapon;
+struct Armor;
+struct Weapon;
 class Creature;
 class Map;
 struct TileRule;
@@ -35,6 +35,7 @@ public:
     const char* symbolName( Symbol s ) const;
     Symbol intern( const char* name );
     void internSymbols( Symbol* table, uint16_t count, const char* name );
+    const char* confString( StringId id ) const;
 
     // Primary configurable elements.
     const RGBA* egaPalette();

@@ -6,7 +6,7 @@
 
 #import <Foundation/Foundation.h>
 
-class Weapon;
+struct Weapon;
 
 @interface U4PartyWeapon : NSObject {
 @private

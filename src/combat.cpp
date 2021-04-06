@@ -490,7 +490,7 @@ bool CombatController::setActivePlayer(int player) {
         p->setFocus();
         focus = player;
 
-        screenMessage("\n%s with %s\n\020", p->getName().c_str(), p->getWeapon()->getName().c_str());
+        screenMessage("\n%s with %s\n\020", p->getName().c_str(), p->getWeapon()->getName());
         c->stats->highlightPlayer(focus);
         return true;
     }
@@ -1072,11 +1072,11 @@ void CombatController::attack() {
     PartyMember *attacker = getCurrentPlayer();
 
     const Weapon *weapon = attacker->getWeapon();
-    int range = weapon->getRange();
+    int range = weapon->range;
     if (weapon->canChooseDistance()) {
         screenMessage("Range: ");
         int choice = ReadChoiceController::get("123456789");
-        if ((choice - '0') >= 1 && (choice - '0') <= weapon->getRange()) {
+        if ((choice - '0') >= 1 && (choice - '0') <= weapon->range) {
             range = choice - '0';
             screenMessage("%d\n", range);
         } else {

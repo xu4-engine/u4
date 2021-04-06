@@ -813,8 +813,8 @@ static void conf_creatureLoad(ConfigXML* cfg, Creature* cr, Tileset* ts, const C
 
 //--------------------------------------
 
-static Armor*  conf_armor(int type, const ConfigElement&);
-static Weapon* conf_weapon(ConfigXML*, int type, const ConfigElement& conf);
+static Armor*  conf_armor(ConfigXML*, int type, const ConfigElement&);
+static Weapon* conf_weapon(ConfigXML*, int type, const ConfigElement&);
 
 ConfigXML::ConfigXML() {
     backend = &xcd;
@@ -914,7 +914,7 @@ ConfigXML::ConfigXML() {
     ce = getElement("armors").getChildren();
     foreach (it, ce) {
         if (it->getName() == "armor")
-            xcd.armors.push_back(conf_armor(xcd.armors.size(), *it));
+            xcd.armors.push_back(conf_armor(this, xcd.armors.size(), *it));
     }
 
     // weapons
@@ -1138,6 +1138,15 @@ void Config::internSymbols(Symbol* table, uint16_t count, const char* names) {
 }
 
 /*
+ * Return string of configuration StringId.
+ */
+const char* Config::confString( StringId id ) const {
+    // NOTE: ConfigXML treats StringId the same as Symbol.  For other backends
+    // the implementation may differ.
+    return CB->sym.name((symbol_t) id);
+}
+
+/*
  * Return pointer to 16 RGBA values.
  */
 const RGBA* Config::egaPalette() {
@@ -1226,7 +1235,7 @@ const Weapon* Config::weapon( uint32_t id ) {
 int Config::armorType( const char* name ) {
     vector<Armor*>::const_iterator it;
     foreach (it, CB->armors) {
-        if ((*it)->name == name)
+        if (strcasecmp(confString((*it)->name), name) == 0)
             return it - CB->armors.begin();
     }
     return -1;
@@ -1235,7 +1244,7 @@ int Config::armorType( const char* name ) {
 int Config::weaponType( const char* name ) {
     vector<Weapon*>::const_iterator it;
     foreach (it, CB->weapons) {
-        if ((*it)->name == name)
+        if (strcasecmp(confString((*it)->name), name) == 0)
             return it - CB->weapons.begin();
     }
     return -1;
@@ -1648,14 +1657,25 @@ TileAnimSet* Config::newTileAnims(const char* name) const {
 //--------------------------------------
 // Items (weapons & armor)
 
-static Armor* conf_armor(int type, const ConfigElement& conf) {
+const char* Armor::getName() const {
+    return xu4.config->confString(name);
+}
+
+const char* Weapon::getName() const {
+    return xu4.config->confString(name);
+}
+
+const char* Weapon::getAbbrev() const {
+    return xu4.config->confString(abbr);
+}
+
+static Armor* conf_armor(ConfigXML* cfg, int type, const ConfigElement& conf) {
     Armor* arm = new Armor;
 
     arm->type    = (ArmorType) type;
-    arm->name    = conf.getString("name");
+    arm->name    = cfg->propSymbol(conf, "name");
     arm->canuse  = 0xFF;
     arm->defense = conf.getInt("defense");
-    arm->mask    = 0;
 
     vector<ConfigElement> contraintConfs = conf.getChildren();
     std::vector<ConfigElement>::iterator it;
@@ -1699,8 +1719,8 @@ static Weapon* conf_weapon(ConfigXML* cfg, int type, const ConfigElement& conf) 
     Weapon* wpn = new Weapon;
 
     wpn->type   = (WeaponType) type;
-    wpn->name   = conf.getString("name");
-    wpn->abbr   = conf.getString("abbr");
+    wpn->name   = cfg->propSymbol(conf, "name");
+    wpn->abbr   = cfg->propSymbol(conf, "abbr");
     wpn->canuse = 0xFF;
     wpn->range  = 0;
     wpn->damage = conf.getInt("damage");
@@ -1715,7 +1735,7 @@ static Weapon* conf_weapon(ConfigXML* cfg, int type, const ConfigElement& conf) 
             wpn->flags |= WEAP_ABSOLUTERANGE;
     }
     if (_range.empty())
-        errorFatal("malformed weapons.xml file: range or absolute_range not found for weapon %s", wpn->name.c_str());
+        errorFatal("malformed weapons.xml file: range or absolute_range not found for weapon %s", cfg->symbolName(wpn->name));
 
     wpn->range = atoi(_range.c_str());
 
