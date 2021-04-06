@@ -4,34 +4,8 @@
 
 #include "debug.h"
 #include "image.h"
+#include "screen.h"
 #include "scale.h"
-
-using std::string;
-
-Image *scalePoint(Image *src, int scale, int n);
-Image *scale2xBilinear(Image *src, int scale, int n);
-Image *scale2xSaI(Image *src, int scale, int N);
-Image *scaleScale2x(Image *src, int scale, int N);
-
-Scaler scalerGet(const string &filter) {
-    if (filter == "point")
-        return &scalePoint;
-    else if (filter == "2xBi")
-        return &scale2xBilinear;
-    else if (filter == "2xSaI")
-        return &scale2xSaI;
-    else if (filter == "Scale2x")
-        return &scaleScale2x;
-    else
-        return NULL;
-}
-
-/**
- * Returns true if the given scaler can scale by 3 (as well as by 2).
- */
-int scaler3x(const string &filter) {
-    return filter == "Scale2x";
-}
 
 /**
  * A simple row and column duplicating scaler.
@@ -428,4 +402,25 @@ Image *scaleScale2x(Image *src, int scale, int n) {
     }
 
     return dest;
+}
+
+Scaler scalerGet(int filter) {
+    switch (filter) {
+        case ScreenFilter_point:
+            return &scalePoint;
+        case ScreenFilter_2xBi:
+            return &scale2xBilinear;
+        case ScreenFilter_2xSaI:
+            return &scale2xSaI;
+        case ScreenFilter_Scale2x:
+            return &scaleScale2x;
+    }
+    return NULL;
+}
+
+/**
+ * Returns true if the given scaler can scale by 3 (as well as by 2).
+ */
+int scaler3x(int filter) {
+    return filter == ScreenFilter_Scale2x;
 }

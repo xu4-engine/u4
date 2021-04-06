@@ -191,7 +191,7 @@ IntroController::IntroController() :
     videoMenu.add(MI_VIDEO_CONF_GFX,              "\010 Game Graphics Options",  2,  2,/*'g'*/  2);
     videoMenu.add(MI_VIDEO_04,    new IntMenuItem("Scale                x%d", 2,  4,/*'s'*/  0, reinterpret_cast<int *>(&settingsChanged.scale), 1, 5, 1));
     videoMenu.add(MI_VIDEO_05,  (new BoolMenuItem("Mode                 %s",  2,  5,/*'m'*/  0, &settingsChanged.fullscreen))->setValueStrings("Fullscreen", "Window"));
-    videoMenu.add(MI_VIDEO_06, new StringMenuItem("Filter               %s",  2,  6,/*'f'*/  0, &settingsChanged.filter, screenGetFilterNames()));
+    videoMenu.add(MI_VIDEO_06,   new EnumMenuItem("Filter               %s",  2,  6,/*'f'*/  0, &settingsChanged.filter, screenGetFilterNames()));
     videoMenu.add(MI_VIDEO_08,    new IntMenuItem("Gamma                %s",  2,  7,/*'a'*/  1, &settingsChanged.gamma, 50, 150, 10, MENU_OUTPUT_GAMMA));
     videoMenu.add(USE_SETTINGS,                   "\010 Use These Settings",  2, 11,/*'u'*/  2);
     videoMenu.add(CANCEL,                         "\010 Cancel",              2, 12,/*'c'*/  2);
@@ -205,7 +205,7 @@ IntroController::IntroController() :
     gfxMenu.add(MI_GFX_TILE_TRANSPARENCY_SHADOW_SIZE,    new IntMenuItem("  Shadow Size:     %d", 2,  5,/*'s'*/ 9, &settingsChanged.enhancementsOptions.u4TrileTransparencyHackShadowBreadth, 0, 16, 1));
     gfxMenu.add(MI_GFX_TILE_TRANSPARENCY_SHADOW_OPACITY, new IntMenuItem("  Shadow Opacity:  %d", 2,  6,/*'o'*/ 9, &settingsChanged.enhancementsOptions.u4TileTransparencyHackPixelShadowOpacity, 8, 256, 8));
     gfxMenu.add(MI_VIDEO_02,                          new StringMenuItem("Gem Layout         %s", 2,  8,/*'e'*/ 1, &settingsChanged.gemLayout, screenGetGemLayoutNames()));
-    gfxMenu.add(MI_VIDEO_03,                          new StringMenuItem("Line Of Sight      %s", 2,  9,/*'l'*/ 0, &settingsChanged.lineOfSight, screenGetLineOfSightStyles()));
+    gfxMenu.add(MI_VIDEO_03,                            new EnumMenuItem("Line Of Sight      %s", 2,  9,/*'l'*/ 0, &settingsChanged.lineOfSight, screenGetLineOfSightStyles()));
     gfxMenu.add(MI_VIDEO_07,                            new BoolMenuItem("Screen Shaking     %s", 2, 10,/*'k'*/ 8, &settingsChanged.screenShakes));
     gfxMenu.add(MI_GFX_RETURN,               "\010 Return to Video Options",              2,  12,/*'r'*/  2);
     gfxMenu.setClosesMenu(MI_GFX_RETURN);
@@ -248,7 +248,7 @@ IntroController::IntroController() :
 
     /* move the BATTLE DIFFICULTY, DEBUG, and AUTOMATIC ACTIONS settings to "enhancementsOptions" */
     gameplayMenu.setTitle                              ("Enhanced Gameplay Options:", 0, 0);
-    gameplayMenu.add(MI_GAMEPLAY_01, new StringMenuItem("Battle Difficulty          %s", 2,  2,/*'b'*/  0, &settingsChanged.battleDiff, xu4.settings->getBattleDiffs()));
+    gameplayMenu.add(MI_GAMEPLAY_01,   new EnumMenuItem("Battle Difficulty          %s", 2,  2,/*'b'*/  0, &settingsChanged.battleDiff, Settings::battleDiffStrings()));
     gameplayMenu.add(MI_GAMEPLAY_02,   new BoolMenuItem("Fixed Chest Traps          %s", 2,  3,/*'t'*/ 12, &settingsChanged.enhancementsOptions.c64chestTraps));
     gameplayMenu.add(MI_GAMEPLAY_03,   new BoolMenuItem("Gazer Spawns Insects       %s", 2,  4,/*'g'*/  0, &settingsChanged.enhancementsOptions.gazerSpawnsInsects));
     gameplayMenu.add(MI_GAMEPLAY_04,   new BoolMenuItem("Gem View Shows Objects     %s", 2,  5,/*'e'*/  1, &settingsChanged.enhancementsOptions.peerShowsObjects));

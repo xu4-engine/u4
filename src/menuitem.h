@@ -90,6 +90,23 @@ protected:
 };
 
 /**
+ * A menu item that cycles through a list of possible enumerated values, and
+ * displays the current setting as part of the text.
+ */
+class EnumMenuItem : public MenuItem {
+public:
+    EnumMenuItem(string text, short x, short y, int shortcutKey, uint8_t *val, const char** valueNames);
+
+    virtual void activate(MenuEvent &event);
+    virtual string getText() const;
+
+protected:
+    uint8_t *val;
+    const char** stringList;
+    int count;
+};
+
+/**
  * A menu item that cycles through a list of possible string values, and
  * displays the current setting as part of the text.
  */

@@ -5,6 +5,7 @@
 #ifndef TYPEDEFS_H
 #define TYPEDEFS_H
 
+#include <stdint.h>
 #include "direction.h"
 
 class Tile;

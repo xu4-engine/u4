@@ -90,7 +90,7 @@ extern void screenDelete_sys();
 static void screenInit_data(Settings& settings) {
     filterScaler = scalerGet(settings.filter);
     if (!filterScaler)
-        errorFatal("%s is not a valid filter", settings.filter.c_str());
+        errorFatal("Invalid filter %d", settings.filter);
 
     // Create a special purpose image that represents the whole screen.
     xu4.screenImage = Image::create(320 * settings.scale, 200 * settings.scale);
@@ -111,7 +111,7 @@ static void screenInit_data(Settings& settings) {
         errorFatal("unable to find tile animations for \"%s\" video mode in graphics.xml", settings.videoType.c_str());
 
     if (verbose)
-        printf("using %s scaler\n", settings.filter.c_str());
+        printf("using %s scaler\n", screenGetFilterNames()[ settings.filter ]);
 
     EventHandler::setKeyRepeat(settings.keydelay, settings.keyinterval);
 
@@ -698,12 +698,10 @@ void screenFindLineOfSight(vector <MapTile> viewportTiles[VIEWPORT_W][VIEWPORT_H
         }
     }
 
-    if (xu4.settings->lineOfSight == "DOS")
+    if (xu4.settings->lineOfSight == 0)
         screenFindLineOfSightDOS(viewportTiles);
-    else if (xu4.settings->lineOfSight == "Enhanced")
-        screenFindLineOfSightEnhanced(viewportTiles);
     else
-        errorFatal("unknown line of sight style %s!\n", xu4.settings->lineOfSight.c_str());
+        screenFindLineOfSightEnhanced(viewportTiles);
 }
 
 
@@ -1338,7 +1336,7 @@ Image *screenScale(Image *src, int scale, int n, int filter) {
     }
 
     if (scale != 1)
-        dest = (*scalerGet("point"))(src, scale, n);
+        dest = (*scalerGet(ScreenFilter_point))(src, scale, n);
 
     if (!dest)
         dest = Image::duplicate(src);

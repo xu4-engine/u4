@@ -47,7 +47,7 @@ struct Options {
     uint16_t flags;
     uint16_t used;
     uint32_t scale;
-    const char* filter;
+    uint8_t  filter;
     const char* profile;
 };
 
@@ -64,7 +64,7 @@ int parseOptions(Options* opt, int argc, char** argv) {
         {
             if (++i >= argc)
                 goto missing_value;
-            opt->filter = argv[i];
+            opt->filter = Settings::settingEnum(screenGetFilterNames(),argv[i]);
         }
         else if (strEqualAlt(argv[i], "-s", "--scale"))
         {

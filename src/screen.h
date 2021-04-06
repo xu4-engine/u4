@@ -61,6 +61,13 @@ class Coords;
 #define _NVC_ 0x86
 #define _NV__ 0x84
 
+enum ScreenFilter {
+    ScreenFilter_point,
+    ScreenFilter_2xBi,
+    ScreenFilter_2xSaI,
+    ScreenFilter_Scale2x
+};
+
 typedef enum {
     MC_DEFAULT,
     MC_WEST,

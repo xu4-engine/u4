@@ -4,7 +4,6 @@
 
 #include <cctype>
 #include <cstring>
-#include <stdint.h>
 
 #include "settings.h"
 
@@ -12,11 +11,13 @@
 #include "error.h"
 #include "event.h"
 #include "filesystem.h"
+#include "screen.h"
 #include "utils.h"
 
 #if defined(_WIN32) || defined(__CYGWIN__)
 #include <windows.h>
 #include <shlobj.h>
+#define strcasecmp  _stricmp
 #elif defined(MACOSX)
 #include <CoreServices/CoreServices.h>
 #elif defined(IOS)
@@ -38,15 +39,9 @@ bool SettingsData::operator==(const SettingsData &s) const {
     if (memcmp(this, &s, offset) != 0)
         return false;
 
-    if (filter != s.filter)
-        return false;
     if (gemLayout != s.gemLayout)
         return false;
-    if (lineOfSight != s.lineOfSight)
-        return false;
     if (videoType != s.videoType)
-        return false;
-    if (battleDiff != s.battleDiff)
         return false;
     if (logging != s.logging)
         return false;
@@ -143,6 +138,20 @@ void Settings::setData(const SettingsData &data) {
     *(SettingsData *)this = data;
 }
 
+/*
+ * Return index of value in the names string list, or zero (the first name) if
+ * there is no matching name.
+ */
+uint8_t Settings::settingEnum(const char** names, const char* value) {
+    const char** it = names;
+    while (*it) {
+        if (strcasecmp(*it, value) == 0)
+            return it - names;
+        ++it;
+    }
+    return 0;
+}
+
 /**
  * Read settings in from the settings file.
  */
@@ -182,8 +191,10 @@ bool Settings::read() {
     titleSpeedRandom      = DEFAULT_TITLE_SPEED_RANDOM;
     titleSpeedOther       = DEFAULT_TITLE_SPEED_OTHER;
 
+#if 0
     pauseForEachMovement  = DEFAULT_PAUSE_FOR_EACH_MOVEMENT;
     pauseForEachTurn      = DEFAULT_PAUSE_FOR_EACH_TURN;
+#endif
 
     /* all specific minor enhancements default to "on", any major enhancements default to "off" */
     enhancementsOptions.activePlayer     = true;
@@ -222,13 +233,15 @@ bool Settings::read() {
         else if (strstr(buffer, "fullscreen=") == buffer)
             fullscreen = (int) strtoul(buffer + strlen("fullscreen="), NULL, 0);
         else if (strstr(buffer, "filter=") == buffer)
-            filter = buffer + strlen("filter=");
+            filter = settingEnum(screenGetFilterNames(),
+                               buffer + strlen("filter="));
+        else if (strstr(buffer, "lineOfSight=") == buffer)
+            lineOfSight = settingEnum(screenGetLineOfSightStyles(),
+                                      buffer + strlen("lineOfSight="));
         else if (strstr(buffer, "video=") == buffer)
             videoType = buffer + strlen("video=");
         else if (strstr(buffer, "gemLayout=") == buffer)
             gemLayout = buffer + strlen("gemLayout=");
-        else if (strstr(buffer, "lineOfSight=") == buffer)
-            lineOfSight = buffer + strlen("lineOfSight=");
         else if (strstr(buffer, "screenShakes=") == buffer)
             screenShakes = (int) strtoul(buffer + strlen("screenShakes="), NULL, 0);
         else if (strstr(buffer, "gamma=") == buffer)
@@ -256,7 +269,8 @@ bool Settings::read() {
         else if (strstr(buffer, "debug=") == buffer)
             debug = (int) strtoul(buffer + strlen("debug="), NULL, 0);
         else if (strstr(buffer, "battleDiff=") == buffer)
-            battleDiff = buffer + strlen("battleDiff=");
+            battleDiff = settingEnum(battleDiffStrings(),
+                                     buffer + strlen("battleDiff="));
         else if (strstr(buffer, "validateXml=") == buffer)
             validateXml = (int) strtoul(buffer + strlen("validateXml="), NULL, 0);
         else if (strstr(buffer, "spellEffectSpeed=") == buffer)
@@ -388,7 +402,38 @@ bool Settings::write() {
             "shrineTime=%d\n"
             "shakeInterval=%d\n"
             "titleSpeedRandom=%d\n"
-            "titleSpeedOther=%d\n"
+            "titleSpeedOther=%d\n",
+            scale,
+            fullscreen,
+            screenGetFilterNames()[ filter ],
+            videoType.c_str(),
+            gemLayout.c_str(),
+            screenGetLineOfSightStyles()[ lineOfSight ],
+            screenShakes,
+            gamma,
+            musicVol,
+            soundVol,
+            volumeFades,
+            shortcutCommands,
+            keydelay,
+            keyinterval,
+            filterMoveMessages,
+            battleSpeed,
+            enhancements,
+            gameCyclesPerSecond,
+            debug,
+            battleDiffStrings()[ battleDiff ],
+            validateXml,
+            spellEffectSpeed,
+            campTime,
+            innTime,
+            shrineTime,
+            shakeInterval,
+            titleSpeedRandom,
+            titleSpeedOther);
+
+    // Enhancements Options
+    fprintf(settingsFile,
             "activePlayer=%d\n"
             "u5spellMixing=%d\n"
             "u5shrines=%d\n"
@@ -407,34 +452,6 @@ bool Settings::write() {
             "renderTileTransparency=%d\n"
             "transparentTilePixelShadowOpacity=%d\n"
             "transparentTileShadowSize=%d\n",
-            scale,
-            fullscreen,
-            filter.c_str(),
-            videoType.c_str(),
-            gemLayout.c_str(),
-            lineOfSight.c_str(),
-            screenShakes,
-            gamma,
-            musicVol,
-            soundVol,
-            volumeFades,
-            shortcutCommands,
-            keydelay,
-            keyinterval,
-            filterMoveMessages,
-            battleSpeed,
-            enhancements,
-            gameCyclesPerSecond,
-            debug,
-            battleDiff.c_str(),
-            validateXml,
-            spellEffectSpeed,
-            campTime,
-            innTime,
-            shrineTime,
-            shakeInterval,
-            titleSpeedRandom,
-            titleSpeedOther,
             enhancementsOptions.activePlayer,
             enhancementsOptions.u5spellMixing,
             enhancementsOptions.u5shrines,
@@ -462,7 +479,7 @@ bool Settings::write() {
     return true;
 }
 
-const char** Settings::getBattleDiffs() const {
+const char** Settings::battleDiffStrings() {
     static const char* difficulty[] = {"Normal", "Hard", "Expert", NULL};
     return difficulty;
 }

@@ -74,6 +74,8 @@ void MenuItem::setClosesMenu(bool closesMenu) {
     this->closesMenu = closesMenu;
 }
 
+//--------------------------------------
+
 BoolMenuItem::BoolMenuItem(string text, short x, short y, int shortcutKey, bool *val) :
     MenuItem(text, x, y, shortcutKey),
     val(val),
@@ -100,6 +102,49 @@ void BoolMenuItem::activate(MenuEvent &event) {
         event.getType() == MenuEvent::ACTIVATE)
         *val = !(*val);
 }
+
+//--------------------------------------
+
+EnumMenuItem::EnumMenuItem(string text, short x, short y, int shortcutKey, uint8_t *val, const char** valueNames) :
+    MenuItem(text, x, y, shortcutKey),
+    val(val), stringList(valueNames)
+{
+    const char** it = valueNames;
+    count = 0;
+    while (*it) {
+        ++count;
+        ++it;
+    }
+}
+
+string EnumMenuItem::getText() const {
+    char buffer[64];
+    snprintf(buffer, sizeof(buffer), text.c_str(), stringList[ *val ]);
+    return buffer;
+}
+
+void EnumMenuItem::activate(MenuEvent &event) {
+    int current = *val;
+    if (current >= count)
+        errorFatal("Error: menu enum '%d' not a valid choice", current);
+
+    if (event.getType() == MenuEvent::INCREMENT ||
+        event.getType() == MenuEvent::ACTIVATE) {
+        /* move to the next valid choice, wrapping if necessary */
+        current++;
+        if (current == count)
+            current = 0;
+        *val = current;
+    } else if (event.getType() == MenuEvent::DECREMENT) {
+        /* move back one, wrapping if necessary */
+        if (current == 0)
+            current = count;
+        --current;
+        *val = current;
+    }
+}
+
+//--------------------------------------
 
 StringMenuItem::StringMenuItem(string text, short x, short y, int shortcutKey, string *val, const vector<string> &validSettings) :
     MenuItem(text, x, y, shortcutKey),
@@ -143,6 +188,8 @@ void StringMenuItem::activate(MenuEvent &event) {
         *val = *current;
     }
 }
+
+//--------------------------------------
 
 IntMenuItem::IntMenuItem(string text, short x, short y, int shortcutKey, int *val, int min, int max, int increment, menuOutputType output) :
     MenuItem(text, x, y, shortcutKey),

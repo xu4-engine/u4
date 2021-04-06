@@ -5,12 +5,9 @@
 #ifndef SETTINGS_H
 #define SETTINGS_H
 
-#include <map>
 #include <string>
 #include "observable.h"
 #include "types.h"
-
-using std::string;
 
 #define MIN_SHAKE_INTERVAL              50
 
@@ -27,14 +24,18 @@ using std::string;
 
 #define DEFAULT_SCALE                   2
 #define DEFAULT_FULLSCREEN              0
-#define DEFAULT_FILTER                  "Scale2x"
+
+// 3 = Scale2x
+#define DEFAULT_FILTER                  3
+// 0 = DOS
+#define DEFAULT_LINEOFSIGHT             0
+
 #ifndef IOS
 #define DEFAULT_VIDEO_TYPE              "VGA"
 #else
 #define DEFAULT_VIDEO_TYPE              "new"
 #endif
 #define DEFAULT_GEM_LAYOUT              "Standard"
-#define DEFAULT_LINEOFSIGHT             "DOS"
 #define DEFAULT_SCREEN_SHAKES           1
 #define DEFAULT_GAMMA                   100
 #define DEFAULT_MUSIC_VOLUME            10
@@ -55,7 +56,7 @@ using std::string;
 #define DEFAULT_INN_TIME                8
 #define DEFAULT_SHRINE_TIME             16
 #define DEFAULT_SHAKE_INTERVAL          100
-#define DEFAULT_BATTLE_DIFFICULTY       "Normal"
+#define DEFAULT_BATTLE_DIFFICULTY       BattleDiff_Normal
 #define DEFAULT_LOGGING                 ""
 #define DEFAULT_TITLE_SPEED_RANDOM      150
 #define DEFAULT_TITLE_SPEED_OTHER       30
@@ -66,6 +67,12 @@ using std::string;
 //--Tile transparency stuff
 #define DEFAULT_SHADOW_PIXEL_OPACITY    64
 #define DEFAULT_SHADOW_PIXEL_SIZE       2
+
+enum BattleDifficulty {
+    BattleDiff_Normal,
+    BattleDiff_Hard,
+    BattleDiff_Expert
+};
 
 struct SettingsEnhancementOptions {
     bool activePlayer;
@@ -81,7 +88,6 @@ struct SettingsEnhancementOptions {
     bool u4TileTransparencyHack;
     int  u4TileTransparencyHackPixelShadowOpacity;
     int  u4TrileTransparencyHackShadowBreadth;
-
 };
 
 struct MouseOptions {
@@ -124,10 +130,15 @@ public:
     bool                volumeFades;
     int                 titleSpeedRandom;
     int                 titleSpeedOther;
+    uint8_t             battleDiff;     // Used by Creature
+    uint8_t             filter;         // Defined by screen
+    uint8_t             lineOfSight;    // Defined by screen
 
+#if 0
     //Settings that aren't in file yet
     int                 pauseForEachTurn;
     int                 pauseForEachMovement;
+#endif
 
     /**
      * Strings, classes, and other objects that cannot
@@ -137,13 +148,10 @@ public:
      */
     long                end_of_bitwise_comparators;
 
-    string              filter;
-    string              gemLayout;
-    string              lineOfSight;
-    string              videoType;
-    string              battleDiff;
-    string              logging;
-    string              game;
+    std::string         gemLayout;      // Defined by Config
+    std::string         videoType;      // Defined by Config
+    std::string         logging;        // Used by Debug
+    std::string         game;
 };
 
 /**
@@ -151,21 +159,21 @@ public:
  * information.
  */
 class Settings : public SettingsData, public Observable<Settings *> {
-    typedef std::map<string, int, std::less<string> > SettingsMap;
-
 public:
+    static uint8_t settingEnum(const char** names, const char* value);
+    static const char** battleDiffStrings();
+
     void init(const char* profileName);
     void setData(const SettingsData &data);
     bool read();
     bool write();
-    const string &getUserPath() const { return userPath; }
-    const char** getBattleDiffs() const;
+    const std::string &getUserPath() const { return userPath; }
 
-    string profile;
+    std::string profile;
 
 private:
-    string userPath;
-    string filename;
+    std::string userPath;
+    std::string filename;
 };
 
 #endif
