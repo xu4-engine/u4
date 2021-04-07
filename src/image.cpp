@@ -388,7 +388,7 @@ void Image::drawOn(Image *dest, int x, int y) const {
     }
 }
 
-#define CLIP_SUB(x, rx, rw, DD) \
+#define CLIP_SUB(x, rx, rw, SD, DD) \
     if (rx < 0) { \
         x -= rx; \
         rw += rx; \
@@ -401,6 +401,8 @@ void Image::drawOn(Image *dest, int x, int y) const {
     } \
     if ((rw + x) > int(DD)) \
         rw = DD - x; \
+    if ((rw + rx) > int(SD)) \
+        rw = SD - rx; \
     if (rw < 1) \
         return;
 
@@ -415,8 +417,8 @@ void Image::drawSubRectOn(Image *dest, int x, int y, int rx, int ry, int rw, int
         dest = xu4.screenImage;
 
     // Clip position and source rect to positive values.
-    CLIP_SUB(x, rx, rw, dest->w)
-    CLIP_SUB(y, ry, rh, dest->h)
+    CLIP_SUB(x, rx, rw, w, dest->w)
+    CLIP_SUB(y, ry, rh, h, dest->h)
 
     srow = pixels + w * ry + rx;
     drow = dest->pixels + dest->w * y + x;
@@ -475,8 +477,8 @@ void Image::drawSubRectInvertedOn(Image *dest, int x, int y, int rx, int ry, int
         dest = xu4.screenImage;
 
     // Clip position and source rect to positive values.
-    CLIP_SUB(x, rx, rw, dest->w)
-    CLIP_SUB(y, ry, rh, dest->h)
+    CLIP_SUB(x, rx, rw, w, dest->w)
+    CLIP_SUB(y, ry, rh, h, dest->h)
 
     srow = pixels + w * ry + rx;
     drow = dest->pixels + dest->w * y + x;
