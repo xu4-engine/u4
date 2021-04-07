@@ -2,6 +2,7 @@
  * image.cpp
  */
 
+#include <string.h>
 #include <assert.h>
 #include <memory>
 #include <list>
@@ -61,9 +62,8 @@ Image *Image::create(int w, int h) {
  */
 Image *Image::duplicate(const Image *image) {
     Image *im = create(image->w, image->h);
-    if (im) {
-        image->drawOn(im, 0, 0);
-    }
+    if (im)
+        memcpy(im->pixels, image->pixels, im->w * im->h * sizeof(uint32_t));
     return im;
 }
 
@@ -144,67 +144,56 @@ void Image::putPixel(int x, int y, int r, int g, int b, int a) {
 
 void Image::makeColorTransparent(const RGBA& bgColor, int haloSize, int shadowOpacity)
 {
-    uint32_t icol = *((uint32_t*) &bgColor);
-    performTransparencyHack(icol, 1, 0, haloSize,shadowOpacity);
+    performTransparencyHack(bgColor, 1, 0, haloSize,shadowOpacity);
 }
 
-//TODO Separate functionalities found in here
-void Image::performTransparencyHack(unsigned int colorValue, unsigned int numFrames, unsigned int currentFrameIndex, unsigned int haloWidth, unsigned int haloOpacityIncrementByPixelDistance)
+void Image::performTransparencyHack(const RGBA& transColor,
+        unsigned int numFrames,
+        unsigned int currentFrameIndex,
+        unsigned int haloWidth,
+        unsigned int haloOpacityIncrementByPixelDistance)
 {
     std::list<std::pair<unsigned int,unsigned int> > opaqueXYs;
+    RGBA* cp;
     unsigned int x, y;
-    uint8_t t_r, t_g, t_b;
-
-    {
-    RGBA* col = (RGBA*) &colorValue;
-    t_r = col->r;
-    t_g = col->g;
-    t_b = col->b;
-    }
-
     unsigned int frameHeight = h / numFrames;
-    //Min'd so that they never go out of range (>=h)
-    unsigned int top = std::min(h, currentFrameIndex * frameHeight);
-    unsigned int bottom = std::min(h, top + frameHeight);
+    unsigned int top = currentFrameIndex * frameHeight;
+    unsigned int bottom = top + frameHeight;
+
+    if (bottom > h)
+        bottom = h;     // Keep bottom <= height.
 
     for (y = top; y < bottom; y++) {
-
-        for (x = 0; x < w; x++) {
-            unsigned int r, g, b, a;
-            getPixel(x, y, r, g, b, a);
-            if (r == t_r &&
-                g == t_g &&
-                b == t_b) {
-                putPixel(x, y, r, g, b, IM_TRANSPARENT);
+        cp = (RGBA*) (pixels + y*w);
+        for (x = 0; x < w; ++x, ++cp) {
+            if (cp->r == transColor.r &&
+                cp->g == transColor.g &&
+                cp->b == transColor.b) {
+                cp->a = IM_TRANSPARENT;
             } else {
-                putPixel(x, y, r, g, b, a);
                 if (haloWidth)
                     opaqueXYs.push_back(std::pair<int,int>(x,y));
             }
         }
     }
-    int ox, oy;
-    for (std::list<std::pair<unsigned int,unsigned int> >::iterator xy = opaqueXYs.begin();
-            xy != opaqueXYs.end();
-            ++xy)
-    {
-        ox = xy->first;
-        oy = xy->second;
-        int span = int(haloWidth);
-        unsigned int x_start = std::max(0,ox - span);
+
+    int ox, oy, alpha;
+    int span = int(haloWidth);
+    std::list<std::pair<unsigned int,unsigned int> >::iterator it;
+    for (it = opaqueXYs.begin(); it != opaqueXYs.end(); ++it) {
+        ox = it->first;
+        oy = it->second;
+        unsigned int x_start  = std::max(0, ox - span);
         unsigned int x_finish = std::min(int(w), ox + span + 1);
-        for (x = x_start; x < x_finish; ++x)
-        {
-            unsigned int y_start = std::max(int(top),oy - span);
+        for (x = x_start; x < x_finish; ++x) {
+            unsigned int y_start  = std::max(int(top),oy - span);
             unsigned int y_finish = std::min(int(bottom), oy + span + 1);
             for (y = y_start; y < y_finish; ++y) {
-
-                int divisor = 1 + span * 2 - abs(int(ox - x)) - abs(int(oy - y));
-
-                unsigned int r, g, b, a;
-                getPixel(x, y, r, g, b, a);
-                if (a != IM_OPAQUE) {
-                    putPixel(x, y, r, g, b, std::min((unsigned int)IM_OPAQUE, a + haloOpacityIncrementByPixelDistance / divisor));
+                int divisor = 1 + span*2 - abs(int(ox - x)) - abs(int(oy - y));
+                cp = (RGBA*) (pixels + y*w + x);
+                if (cp->a != IM_OPAQUE) {
+                    alpha = cp->a + haloOpacityIncrementByPixelDistance / divisor;
+                    cp->a = uint8_t((alpha > IM_OPAQUE) ? IM_OPAQUE : alpha);
                 }
             }
         }

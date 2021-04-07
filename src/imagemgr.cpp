@@ -460,9 +460,6 @@ ImageInfo *ImageMgr::get(const string &name, bool returnUnscaled) {
         break;
     case FIXUP_BLACKTRANSPARENCYHACK:
         //Apply transparency shadow hack to ultima4 ega and vga upgrade classic graphics.
-        Image *unscaled_original = unscaled;
-        unscaled = Image::duplicate(unscaled);
-        delete unscaled_original;
         if (xu4.settings->enhancements &&
             xu4.settings->enhancementsOptions.u4TileTransparencyHack)
         {
@@ -472,8 +469,9 @@ ImageInfo *ImageMgr::get(const string &name, bool returnUnscaled) {
             // NOTE: The first 16 tiles are landscape and must be fully opaque!
             int f = (name == "tiles") ? 16 : 0;
             int frames = info->tiles;
+            RGBA bgCol(0, 0, 0, 0);
             for ( ; f < frames; ++f)
-                unscaled->performTransparencyHack(0, frames, f, transparency_shadow_size, opacity);
+                unscaled->performTransparencyHack(bgCol, frames, f, transparency_shadow_size, opacity);
         }
         break;
     }

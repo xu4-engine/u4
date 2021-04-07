@@ -39,7 +39,7 @@ public:
     static Image *duplicate(const Image *image);
     ~Image();
 
-    void performTransparencyHack(unsigned int colorValue, unsigned int numFrames, unsigned int currentFrameIndex, unsigned int haloWidth, unsigned int haloOpacityIncrementByPixelDistance);
+    void performTransparencyHack(const RGBA& colorValue, unsigned int numFrames, unsigned int currentFrameIndex, unsigned int haloWidth, unsigned int haloOpacityIncrementByPixelDistance);
 
     bool setFontColorFG(ColorFG fg);
     bool setFontColorBG(ColorBG bg);
