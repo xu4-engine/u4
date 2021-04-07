@@ -79,7 +79,6 @@ set(XU4_INC
 	u4_pch.h
 	unzip.h
 	utils.h
-	vc6.h
 	view.h
 	weapon.h
 	xml.h
