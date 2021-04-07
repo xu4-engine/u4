@@ -95,6 +95,9 @@ $(MAIN): $(OBJS)
 coord$(EXEEXT): util/coord.o
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ $+
 
+dumpmap$(EXEEXT) : util/dumpmap.o
+	$(CC) $(CFLAGS) -o $@ $+
+
 dumpsavegame$(EXEEXT) : util/dumpsavegame.o savegame.o io.o names.o
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ $+
 
