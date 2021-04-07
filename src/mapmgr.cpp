@@ -13,7 +13,6 @@
 #include "dungeon.h"
 #include "error.h"
 #include "map.h"
-#include "maploader.h"
 #include "mapmgr.h"
 #include "moongate.h"
 #include "person.h"
@@ -29,6 +28,7 @@
 using std::vector;
 using std::pair;
 
+extern bool loadMap(Map *map);
 extern bool isAbyssOpened(const Portal *p);
 extern bool shrineCanEnter(const Portal *p);
 
@@ -103,13 +103,11 @@ Map *MapMgr::initMap(Map::Type type) {
 Map *MapMgr::get(MapId id) {
     /* if the map hasn't been loaded yet, load it! */
     if (!mapList[id]->data.size()) {
-        MapLoader *loader = MapLoader::getLoader(mapList[id]->type);
-        if (loader == NULL)
-            errorFatal("can't load map of type \"%d\"", mapList[id]->type);
-
         TRACE_LOCAL(*logger, string("loading map data for map \'") + mapList[id]->fname + "\'");
-
-        loader->load(mapList[id]);
+        if (! loadMap(mapList[id])) {
+            errorFatal("loadMap failed to read \"%s\" (type %d)",
+                       mapList[id]->fname.c_str(), mapList[id]->type);
+        }
     }
     return mapList[id];
 }

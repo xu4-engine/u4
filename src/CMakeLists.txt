@@ -37,7 +37,6 @@ set(XU4_INC
 	item.h
 	location.h
 	map.h
-	maploader.h
 	mapmgr.h
 	menu.h
 	menuitem.h

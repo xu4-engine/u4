@@ -1,11 +1,9 @@
 /*
- * $Id$
+ * maploader.cpp
  */
 
 #include <cstring>
 #include "u4.h"
-
-#include "maploader.h"
 
 #include "city.h"
 #include "combat.h"
@@ -14,48 +12,26 @@
 #include "dungeon.h"
 #include "error.h"
 #include "map.h"
-#include "maploader.h"
 #include "mapmgr.h"
 #include "person.h"
 #include "tilemap.h"
 #include "u4file.h"
 #include "xu4.h"
 
-std::map<Map::Type, MapLoader *> *MapLoader::loaderMap = NULL;
 
-MapLoader *CityMapLoader::instance = MapLoader::registerLoader(new CityMapLoader, Map::CITY);
-MapLoader *ConMapLoader::instance = MapLoader::registerLoader(MapLoader::registerLoader(new ConMapLoader, Map::COMBAT), Map::SHRINE);
-MapLoader *DngMapLoader::instance = MapLoader::registerLoader(new DngMapLoader, Map::DUNGEON);
-MapLoader *WorldMapLoader::instance = MapLoader::registerLoader(new WorldMapLoader, Map::WORLD);
-
-/**
- * Gets a map loader for the given map type.
- */
-MapLoader *MapLoader::getLoader(Map::Type type) {
-    ASSERT(loaderMap != NULL, "MapLoader::getLoader loaderMap not initialized");
-    if (loaderMap->find(type) == loaderMap->end())
-        return NULL;
-    return (*loaderMap)[type];
-}
-
-/**
- * Registers a loader for the given map type.
- */
-MapLoader *MapLoader::registerLoader(MapLoader *loader, Map::Type type) {
-    if (loaderMap == NULL)
-        loaderMap = new std::map<Map::Type, MapLoader *>;
-
-    if (loaderMap->find(type) != loaderMap->end())
-        errorFatal("map loader already registered for type %d", type);
-
-    (*loaderMap)[type] = loader;
-    return loader;
+static bool isChunkCompressed(Map *map, int chunk) {
+    CompressedChunkList::iterator i;
+    for (i = map->compressed_chunks.begin(); i != map->compressed_chunks.end(); i++) {
+        if (chunk == *i)
+            return true;
+    }
+    return false;
 }
 
 /**
  * Loads raw data from the given file.
  */
-bool MapLoader::loadData(Map *map, U4FILE *f) {
+static bool loadMapData(Map *map, U4FILE *uf) {
     unsigned int x, xch, y, ych;
 
     /* allocate the space we need for the map data */
@@ -66,7 +42,7 @@ bool MapLoader::loadData(Map *map, U4FILE *f) {
     if (map->chunk_width == 0)
         map->chunk_width = map->width;
 
-    u4fseek(f, map->offset, SEEK_CUR);
+    u4fseek(uf, map->offset, SEEK_CUR);
 
     for(ych = 0; ych < (map->height / map->chunk_height); ++ych) {
         for(xch = 0; xch < (map->width / map->chunk_width); ++xch) {
@@ -81,7 +57,7 @@ bool MapLoader::loadData(Map *map, U4FILE *f) {
             else {
                 for(y = 0; y < map->chunk_height; ++y) {
                     for(x = 0; x < map->chunk_width; ++x) {
-                        int c = u4fgetc(f);
+                        int c = u4fgetc(uf);
                         if (c == EOF)
                             return false;
 
@@ -96,37 +72,20 @@ bool MapLoader::loadData(Map *map, U4FILE *f) {
     return true;
 }
 
-bool MapLoader::isChunkCompressed(Map *map, int chunk) {
-    CompressedChunkList::iterator i;
-
-    for (i = map->compressed_chunks.begin(); i != map->compressed_chunks.end(); i++) {
-        if (chunk == *i)
-            return true;
-    }
-    return false;
-}
-
 /**
  * Load city data from 'ult' and 'tlk' files.
  */
-bool CityMapLoader::load(Map *map) {
+static bool loadCityMap(Map *map, U4FILE *ult) {
     City *city = dynamic_cast<City*>(map);
-
     unsigned int i, j;
     Person *people[CITY_MAX_PERSONS];
     Dialogue *dialogues[CITY_MAX_PERSONS];
-    DialogueLoader *dlgLoader = DialogueLoader::getLoader("application/x-u4tlk");
-
-    U4FILE *ult = u4fopen(city->fname);
-    U4FILE *tlk = u4fopen(city->tlk_fname);
-    if (!ult || !tlk)
-        errorFatal("unable to load map data");
 
     /* the map must be 32x32 to be read from an .ULT file */
     ASSERT(city->width == CITY_WIDTH, "map width is %d, should be %d", city->width, CITY_WIDTH);
     ASSERT(city->height == CITY_HEIGHT, "map height is %d, should be %d", city->height, CITY_HEIGHT);
 
-    if (!loadData(city, ult))
+    if (! loadMapData(city, ult))
         return false;
 
     /* Properly construct people for the city */
@@ -168,6 +127,12 @@ bool CityMapLoader::load(Map *map) {
         people[i]->getStart().z = 0;
     }
 
+    {
+    U4FILE *tlk = u4fopen(city->tlk_fname);
+    if (! tlk)
+        errorFatal("Unable to open .TLK file");
+
+    DialogueLoader *dlgLoader = DialogueLoader::getLoader("application/x-u4tlk");
     for (i = 0; i < CITY_MAX_PERSONS; i++) {
         dialogues[i] = dlgLoader->load(tlk);
 
@@ -193,6 +158,9 @@ bool CityMapLoader::load(Map *map) {
             city->extraDialogues.push_back(dialogues[i]);
         else
             city->dialogueStore.push_back(dialogues[i]);
+    }
+
+    u4fclose(tlk);
     }
 
     /*
@@ -222,21 +190,14 @@ bool CityMapLoader::load(Map *map) {
             delete people[i];
     }
 
-    u4fclose(ult);
-    u4fclose(tlk);
-
     return true;
 }
 
 /**
- * Loads a combat map from the 'con' file
+ * Loads a combat (or shrine) map from the 'con' file
  */
-bool ConMapLoader::load(Map *map) {
+static bool loadCombatMap(Map *map, U4FILE *uf) {
     int i;
-
-    U4FILE *con = u4fopen(map->fname);
-    if (!con)
-        errorFatal("unable to load map data");
 
     /* the map must be 11x11 to be read from an .CON file */
     ASSERT(map->width == CON_WIDTH, "map width is %d, should be %d", map->width, CON_WIDTH);
@@ -246,37 +207,44 @@ bool ConMapLoader::load(Map *map) {
         CombatMap *cm = getCombatMap(map);
 
         for (i = 0; i < AREA_CREATURES; i++)
-            cm->creature_start[i] = MapCoords(u4fgetc(con));
+            cm->creature_start[i] = MapCoords(u4fgetc(uf));
 
         for (i = 0; i < AREA_CREATURES; i++)
-            cm->creature_start[i].y = u4fgetc(con);
+            cm->creature_start[i].y = u4fgetc(uf);
 
         for (i = 0; i < AREA_PLAYERS; i++)
-            cm->player_start[i] = MapCoords(u4fgetc(con));
+            cm->player_start[i] = MapCoords(u4fgetc(uf));
 
         for (i = 0; i < AREA_PLAYERS; i++)
-            cm->player_start[i].y = u4fgetc(con);
+            cm->player_start[i].y = u4fgetc(uf);
 
-        u4fseek(con, 16L, SEEK_CUR);
+        u4fseek(uf, 16L, SEEK_CUR);
     }
 
-    if (!loadData(map, con))
-        return false;
+    return loadMapData(map, uf);
+}
 
-    u4fclose(con);
+/**
+ * Loads a dungeon room into map->dungeon->room
+ */
+static void initDungeonRoom(Dungeon *dng, int room) {
+    dng->roomMaps[room] = dynamic_cast<CombatMap *>(xu4.mapMgr->initMap(Map::COMBAT));
 
-    return true;
+    dng->roomMaps[room]->id = 0;
+    dng->roomMaps[room]->border_behavior = Map::BORDER_FIXED;
+    dng->roomMaps[room]->width = dng->roomMaps[room]->height = 11;
+    dng->roomMaps[room]->data = dng->rooms[room].map_data; // Load map data
+    dng->roomMaps[room]->music = MUSIC_COMBAT;
+    dng->roomMaps[room]->type = Map::COMBAT;
+    dng->roomMaps[room]->flags |= NO_LINE_OF_SIGHT;
+    dng->roomMaps[room]->tileset = Tileset::get("base");
 }
 
 /**
  * Loads a dungeon map from the 'dng' file
  */
-bool DngMapLoader::load(Map *map) {
+static bool loadDungeonMap(Map *map, U4FILE *uf) {
     Dungeon *dungeon = dynamic_cast<Dungeon*>(map);
-
-    U4FILE *dng = u4fopen(dungeon->fname);
-    if (!dng)
-        errorFatal("unable to load map data");
 
     /* the map must be 11x11 to be read from an .CON file */
     ASSERT(dungeon->width == DNG_WIDTH, "map width is %d, should be %d", dungeon->width, DNG_WIDTH);
@@ -285,7 +253,7 @@ bool DngMapLoader::load(Map *map) {
     /* load the dungeon map */
     unsigned int i, j;
     for (i = 0; i < (DNG_HEIGHT * DNG_WIDTH * dungeon->levels); i++) {
-        unsigned char mapData = u4fgetc(dng);
+        unsigned char mapData = u4fgetc(uf);
         MapTile tile = map->translateFromRawTileIndex(mapData);
 
         /* determine what type of tile it is */
@@ -303,40 +271,40 @@ bool DngMapLoader::load(Map *map) {
         for (j = 0; j < DNGROOM_NTRIGGERS; j++) {
             int tmp;
 
-            dungeon->rooms[i].triggers[j].tile = TileMap::get("base")->translate(u4fgetc(dng)).id;
+            dungeon->rooms[i].triggers[j].tile = TileMap::get("base")->translate(u4fgetc(uf)).id;
 
-            tmp = u4fgetc(dng);
+            tmp = u4fgetc(uf);
             if (tmp == EOF)
                 return false;
             dungeon->rooms[i].triggers[j].x = (tmp >> 4) & 0x0F;
             dungeon->rooms[i].triggers[j].y = tmp & 0x0F;
 
-            tmp = u4fgetc(dng);
+            tmp = u4fgetc(uf);
             if (tmp == EOF)
                 return false;
             dungeon->rooms[i].triggers[j].change_x1 = (tmp >> 4) & 0x0F;
             dungeon->rooms[i].triggers[j].change_y1 = tmp & 0x0F;
 
-            tmp = u4fgetc(dng);
+            tmp = u4fgetc(uf);
             if (tmp == EOF)
                 return false;
             dungeon->rooms[i].triggers[j].change_x2 = (tmp >> 4) & 0x0F;
             dungeon->rooms[i].triggers[j].change_y2 = tmp & 0x0F;
         }
 
-        u4fread(dungeon->rooms[i].creature_tiles, sizeof(dungeon->rooms[i].creature_tiles), 1, dng);
-        u4fread(dungeon->rooms[i].creature_start_x, sizeof(dungeon->rooms[i].creature_start_x), 1, dng);
-        u4fread(dungeon->rooms[i].creature_start_y, sizeof(dungeon->rooms[i].creature_start_y), 1, dng);
-        u4fread(dungeon->rooms[i].party_north_start_x, sizeof(dungeon->rooms[i].party_north_start_x), 1, dng);
-        u4fread(dungeon->rooms[i].party_north_start_y, sizeof(dungeon->rooms[i].party_north_start_y), 1, dng);
-        u4fread(dungeon->rooms[i].party_east_start_x, sizeof(dungeon->rooms[i].party_east_start_x), 1, dng);
-        u4fread(dungeon->rooms[i].party_east_start_y, sizeof(dungeon->rooms[i].party_east_start_y), 1, dng);
-        u4fread(dungeon->rooms[i].party_south_start_x, sizeof(dungeon->rooms[i].party_south_start_x), 1, dng);
-        u4fread(dungeon->rooms[i].party_south_start_y, sizeof(dungeon->rooms[i].party_south_start_y), 1, dng);
-        u4fread(dungeon->rooms[i].party_west_start_x, sizeof(dungeon->rooms[i].party_west_start_x), 1, dng);
-        u4fread(dungeon->rooms[i].party_west_start_y, sizeof(dungeon->rooms[i].party_west_start_y), 1, dng);
-        u4fread(room_tiles, sizeof(room_tiles), 1, dng);
-        u4fread(dungeon->rooms[i].buffer, sizeof(dungeon->rooms[i].buffer), 1, dng);
+        u4fread(dungeon->rooms[i].creature_tiles, sizeof(dungeon->rooms[i].creature_tiles), 1, uf);
+        u4fread(dungeon->rooms[i].creature_start_x, sizeof(dungeon->rooms[i].creature_start_x), 1, uf);
+        u4fread(dungeon->rooms[i].creature_start_y, sizeof(dungeon->rooms[i].creature_start_y), 1, uf);
+        u4fread(dungeon->rooms[i].party_north_start_x, sizeof(dungeon->rooms[i].party_north_start_x), 1, uf);
+        u4fread(dungeon->rooms[i].party_north_start_y, sizeof(dungeon->rooms[i].party_north_start_y), 1, uf);
+        u4fread(dungeon->rooms[i].party_east_start_x, sizeof(dungeon->rooms[i].party_east_start_x), 1, uf);
+        u4fread(dungeon->rooms[i].party_east_start_y, sizeof(dungeon->rooms[i].party_east_start_y), 1, uf);
+        u4fread(dungeon->rooms[i].party_south_start_x, sizeof(dungeon->rooms[i].party_south_start_x), 1, uf);
+        u4fread(dungeon->rooms[i].party_south_start_y, sizeof(dungeon->rooms[i].party_south_start_y), 1, uf);
+        u4fread(dungeon->rooms[i].party_west_start_x, sizeof(dungeon->rooms[i].party_west_start_x), 1, uf);
+        u4fread(dungeon->rooms[i].party_west_start_y, sizeof(dungeon->rooms[i].party_west_start_y), 1, uf);
+        u4fread(room_tiles, sizeof(room_tiles), 1, uf);
+        u4fread(dungeon->rooms[i].buffer, sizeof(dungeon->rooms[i].buffer), 1, uf);
 
         /* translate each creature tile to a tile id */
         for (j = 0; j < sizeof(dungeon->rooms[i].creature_tiles); j++)
@@ -407,7 +375,6 @@ bool DngMapLoader::load(Map *map) {
             }
         }
     }
-    u4fclose(dng);
 
     dungeon->roomMaps = new CombatMap *[dungeon->n_rooms];
     for (i = 0; i < dungeon->n_rooms; i++)
@@ -416,34 +383,29 @@ bool DngMapLoader::load(Map *map) {
     return true;
 }
 
-/**
- * Loads a dungeon room into map->dungeon->room
- */
-void DngMapLoader::initDungeonRoom(Dungeon *dng, int room) {
-    dng->roomMaps[room] = dynamic_cast<CombatMap *>(xu4.mapMgr->initMap(Map::COMBAT));
+bool loadMap(Map *map) {
+    bool ok = false;
+    U4FILE* uf = u4fopen(map->fname);
+    if (uf) {
+        switch (map->type) {
+            case Map::CITY:
+                ok = loadCityMap(map, uf);
+                break;
 
-    dng->roomMaps[room]->id = 0;
-    dng->roomMaps[room]->border_behavior = Map::BORDER_FIXED;
-    dng->roomMaps[room]->width = dng->roomMaps[room]->height = 11;
-    dng->roomMaps[room]->data = dng->rooms[room].map_data; // Load map data
-    dng->roomMaps[room]->music = MUSIC_COMBAT;
-    dng->roomMaps[room]->type = Map::COMBAT;
-    dng->roomMaps[room]->flags |= NO_LINE_OF_SIGHT;
-    dng->roomMaps[room]->tileset = Tileset::get("base");
-}
+            case Map::COMBAT:
+            case Map::SHRINE:
+                ok = loadCombatMap(map, uf);
+                break;
 
-/**
- * Loads the world map data in from the 'world' file.
- */
-bool WorldMapLoader::load(Map *map) {
-    U4FILE *world = u4fopen(map->fname);
-    if (!world)
-        errorFatal("unable to load map data");
+            case Map::DUNGEON:
+                ok = loadDungeonMap(map, uf);
+                break;
 
-    if (!loadData(map, world))
-        return false;
-
-    u4fclose(world);
-
-    return true;
+            case Map::WORLD:
+                ok = loadMapData(map, uf);
+                break;
+        }
+        u4fclose(uf);
+    }
+    return ok;
 }
