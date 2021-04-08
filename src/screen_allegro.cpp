@@ -65,9 +65,24 @@ static ALLEGRO_MOUSE_CURSOR* screenInitCursor(ALLEGRO_BITMAP* bmp, const char * 
 }
 
 
+#ifdef USE_GL
+#include "gpu_opengl.cpp"
+#include <allegro5/allegro_opengl.h>
+#endif
+
+
 void screenInit_sys(const Settings* settings, int reset) {
     ScreenAllegro* sa;
+#ifdef USE_GL
+    // NOTE: _FORWARD_COMPATIBLE requires al_set_current_opengl_context()
+    int dflags = ALLEGRO_OPENGL | ALLEGRO_OPENGL_3_0 |
+                 ALLEGRO_OPENGL_FORWARD_COMPATIBLE;
+#else
     int format;
+    int dflags = 0;
+#endif
+    int dw = 320 * settings->scale;
+    int dh = 200 * settings->scale;
 
     if (reset) {
         sa = SA;
@@ -79,6 +94,10 @@ void screenInit_sys(const Settings* settings, int reset) {
         al_stop_timer(sa->refreshTimer);
 
         al_unregister_event_source(sa->queue, al_get_display_event_source(sa->disp));
+
+#ifdef USE_GL
+        gpu_free(&sa->gpu);
+#endif
         al_destroy_display(sa->disp);
         sa->disp = NULL;
 
@@ -100,10 +119,12 @@ void screenInit_sys(const Settings* settings, int reset) {
             goto fatal;
     }
 
-    al_set_new_display_flags(settings->fullscreen ? ALLEGRO_FULLSCREEN : 0);
+    if (settings->fullscreen)
+        dflags |= ALLEGRO_FULLSCREEN;
+    al_set_new_display_flags(dflags);
 
-    sa->disp = al_create_display(320 * settings->scale, 200 * settings->scale);
-    if(!sa->disp)
+    sa->disp = al_create_display(dw, dh);
+    if (! sa->disp)
         goto fatal;
 
     al_set_window_title(sa->disp, "Ultima IV");  // configService->gameName()
@@ -111,6 +132,7 @@ void screenInit_sys(const Settings* settings, int reset) {
 
     // Can settings->gamma be applied?
 
+#ifndef USE_GL
     // Default bitmap format is ALLEGRO_PIXEL_FORMAT_ANY_WITH_ALPHA.
     //printf("KR fmt %d\n", al_get_new_bitmap_format());
     //al_set_new_bitmap_format(ALLEGRO_PIXEL_FORMAT_ABGR_8888);
@@ -128,6 +150,7 @@ void screenInit_sys(const Settings* settings, int reset) {
             screenFormatIsABGR = true;
             break;
     }
+#endif
 
     /* enable or disable the mouse cursor */
     if (settings->mouseOptions.enabled) {
@@ -155,6 +178,15 @@ void screenInit_sys(const Settings* settings, int reset) {
         al_hide_mouse_cursor(sa->disp);
     }
 
+#ifdef USE_GL
+    // NOTE: The GL context is made current after creating the mouse cursors
+    // as the context is lost when mucking with bitmaps.
+    al_set_current_opengl_context(sa->disp);
+
+    if (! gpu_init(&sa->gpu, dw, dh))
+        errorFatal("Unable to initialize OpenGL resources");
+#endif
+
     sa->refreshRate = 1.0 / settings->screenAnimationFramesPerSecond;
     if (reset) {
         al_set_timer_speed(sa->refreshTimer, sa->refreshRate);
@@ -178,6 +210,10 @@ void screenDelete_sys() {
 
     al_destroy_timer(sa->refreshTimer);
     sa->refreshTimer = NULL;
+
+#ifdef USE_GL
+    gpu_free(&sa->gpu);
+#endif
 
     for( int i = 1; i < 5; ++i )
         al_destroy_mouse_cursor(sa->cursors[i]);
@@ -204,6 +240,7 @@ void screenIconify() {
 //#define CPU_TEST
 #include "support/cpuCounter.h"
 
+#ifndef USE_GL
 /*
  * Show screenImage on the display.
  * If w is zero then the entire display is updated.
@@ -261,9 +298,28 @@ static void updateDisplay(int x, int y, int w, int h) {
 
     CPU_END("ut:")
 }
+#endif
 
 void screenSwapBuffers() {
+#ifdef USE_GL
+    Image* simg = xu4.screenImage;
+
+    CPU_START()
+    /*
+    glClearColor(0.0f, 0.5f, 0.8f, 0.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    */
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, simg->width(), simg->height(),
+                 0, GL_RGBA, GL_UNSIGNED_BYTE, simg->pixelData());
+
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    al_flip_display();
+    CPU_END("ut:")
+#else
     updateDisplay(0, 0, 0, 0);
+#endif
 }
 
 void screenWait(int numberOfAnimationFrames) {

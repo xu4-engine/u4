@@ -1,5 +1,6 @@
 options [
 	os_api: 'allegro	"Platform Hardware API ('allegro 'sdl)"
+	use_gl: true
 ]
 
 exe %u4 [
@@ -39,6 +40,10 @@ exe %u4 [
 	unix [
 		cflags "-Wno-unused-parameter"
 		libs [%xml2 %png %z]
+		if use_gl [
+				cflags "-DUSE_GL"
+				libs %GL
+		]
 	]
 	win32 [
 		cflags "/DLIBXML_STATIC"
