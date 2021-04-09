@@ -9,9 +9,14 @@
 #include "direction.h"
 
 class Tile;
+typedef uint16_t TileId;
+typedef uint16_t VisualId;
+typedef uint8_t  MapId;
 
-typedef unsigned int TileId;
-typedef unsigned char MapId;
+// VisualId macros
+#define MAKE_VID(bank,idx)  ((bank << 12) | (idx))
+#define VID_BANK(vid)       (vid >> 12)
+#define VID_INDEX(vid)      (vid & 0xfff)
 
 typedef enum {
     FAST,

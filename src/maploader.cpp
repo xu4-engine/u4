@@ -44,6 +44,11 @@ static bool loadMapData(Map *map, U4FILE *uf) {
 
     u4fseek(uf, map->offset, SEEK_CUR);
 
+#ifdef USE_GL
+    size_t chunkLen = map->chunk_width * map->chunk_height;
+    map->chunks = new uint8_t[map->width * map->height];
+    uint8_t* cp = map->chunks;
+#endif
     for(ych = 0; ych < (map->height / map->chunk_height); ++ych) {
         for(xch = 0; xch < (map->width / map->chunk_width); ++xch) {
             if (isChunkCompressed(map, ych * map->chunk_width + xch)) {
@@ -55,12 +60,20 @@ static bool loadMapData(Map *map, U4FILE *uf) {
                 }
             }
             else {
+#ifdef USE_GL
+                size_t n = u4fread(cp, 1, chunkLen, uf);
+                if (n != chunkLen)
+                    return false;
+#endif
                 for(y = 0; y < map->chunk_height; ++y) {
                     for(x = 0; x < map->chunk_width; ++x) {
+#ifdef USE_GL
+                        int c = *cp++;
+#else
                         int c = u4fgetc(uf);
                         if (c == EOF)
                             return false;
-
+#endif
                         MapTile mt = map->translateFromRawTileIndex(c);
                         map->data[x + (y * map->width) + (xch * map->chunk_width) + (ych * map->chunk_height * map->width)] = mt;
                     }

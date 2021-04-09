@@ -11,6 +11,8 @@
 #include "ios_helpers.h"
 #endif
 
+class TileView;
+
 /**
  * Generic base class for reflecting the state of a game object onto
  * the screen.
@@ -27,14 +29,20 @@ public:
     virtual void highlight(int x, int y, int width, int height);
     virtual void unhighlight();
 
+#ifdef USE_GL
+    int screenRect[4];
+#endif
+
 protected:
-    const int x, y, width, height;
-    bool highlighted;
+    int x, y, width, height;
     int highlightX, highlightY, highlightW, highlightH;
+    bool highlighted;
+
     void drawHighlighted();
 #ifdef IOS
     friend void U4IOS::updateScreenView();
 #endif
+    friend void screenUpdate(TileView*, bool, bool);
 };
 
 #endif /* VIEW_H */

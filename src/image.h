@@ -97,7 +97,7 @@ public:
 
     int width() const { return w; }
     int height() const { return h; }
-    uint32_t* pixelData() { return pixels; }
+    const uint32_t* pixelData() const { return pixels; }
 
     void save(const char* filename);
     void drawHighlighted();

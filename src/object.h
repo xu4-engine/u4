@@ -80,6 +80,8 @@ protected:
     bool focused;
     bool visible;
     bool animated;
+
+    friend class Map;
 };
 
 #endif

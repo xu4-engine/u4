@@ -96,6 +96,9 @@ public:
     // Member functions
     virtual string getName();
 
+    void queryVisible(const Coords &coords, int radius,
+                      void (*func)(const Coords*, VisualId, void*),
+                      void* user) const;
     class Object *objectAt(const Coords &coords);
     const Portal *portalAt(const Coords &coords, int actionFlags);
     MapTile* getTileFromData(const Coords &coords);
@@ -141,6 +144,9 @@ public:
     uint16_t        flags;
     uint16_t        music;
     MapData         data;
+#ifdef USE_GL
+    uint8_t* chunks;
+#endif
     ObjectDeque     objects;
     std::map<string, MapCoords> labels;
     Tileset        *tileset;

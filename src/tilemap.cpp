@@ -131,7 +131,7 @@ MapTile TileMap::translate(unsigned int index) {
     return tilemap[index];
 }
 
-unsigned int TileMap::untranslate(MapTile &tile) {
+unsigned int TileMap::untranslate(const MapTile &tile) {
     unsigned int index = 0;
 
     for (std::map<unsigned int, MapTile>::iterator i = tilemap.begin(); i != tilemap.end(); i++) {

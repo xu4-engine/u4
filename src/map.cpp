@@ -24,6 +24,7 @@
 #include "settings.h"
 #include "xu4.h"
 
+
 /**
  * MapCoords Class Implementation
  */
@@ -252,6 +253,9 @@ Map::Map() {
     id = 0;
     tileset = NULL;
     tilemap = NULL;
+#ifdef USE_GL
+    chunks = NULL;
+#endif
 }
 
 Map::~Map() {
@@ -259,10 +263,57 @@ Map::~Map() {
         delete *i;
     clearObjects();
     delete annotations;
+#ifdef USE_GL
+    delete[] chunks;
+#endif
 }
 
 string Map::getName() {
     return fname;
+}
+
+/*
+ * Call a function for each entity (Annotations & Objects) near a coordinate.
+ *
+ * \param center    Center of area to process.
+ * \param radius    Number of tiles away from center.
+ * \param func      Callback function.
+ * \param user      User data pointer passed to callback.
+ */
+void Map::queryVisible(const Coords& center, int radius,
+                       void (*func)(const Coords*, VisualId, void*),
+                       void* user) const {
+    int minX, minY, maxX, maxY;
+    const Coords* cp;
+    VisualId vid;
+
+    minX = center.x - radius;
+    minY = center.y - radius;
+    maxX = center.x + radius;
+    maxY = center.y + radius;
+
+    // Manufacture VisualIds until they become part of a structure somewhere.
+
+    Annotation::List::const_iterator ait;
+    Annotation::List& alist = annotations->annotations;
+    for(ait = alist.begin(); ait != alist.end(); ait++) {
+        const Annotation& ann = *ait;
+        cp = &ann.coords;
+        if (cp->x < minX || cp->x > maxX || cp->y < minY || cp->y > maxY)
+            continue;
+        vid = tilemap->untranslate(ann.tile);
+        func(cp, vid, user);
+    }
+
+    ObjectDeque::const_iterator it;
+    for(it = objects.begin(); it != objects.end(); it++) {
+        const Object* obj = *it;
+        cp = &obj->coords;
+        if (cp->x < minX || cp->x > maxX || cp->y < minY || cp->y > maxY)
+            continue;
+        vid = tilemap->untranslate(obj->tile);
+        func(cp, vid, user);
+    }
 }
 
 /**

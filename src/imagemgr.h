@@ -81,6 +81,7 @@ enum ImageFixup {
  */
 class ImageInfo {
 public:
+    ImageInfo();
     ~ImageInfo();
 
     std::string name;
@@ -94,6 +95,10 @@ public:
     uint8_t transparentIndex;   /**< color index to consider transparent */
     uint8_t fixup;              /**< a routine to do miscellaneous fixes to the image */
     Image *image;               /**< the image we're describing */
+#ifdef USE_GL
+    uint32_t tex;               /**< OpenGL texture name */
+    const float* tileTexCoord;  /**< Indexed by VisualId */
+#endif
     std::map<std::string, SubImage *> subImages;
 };
 

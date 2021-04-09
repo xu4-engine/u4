@@ -16,6 +16,10 @@
 #include "u4file.h"
 #include "xu4.h"
 
+#ifdef USE_GL
+#include "gpu.h"
+#endif
+
 using std::map;
 using std::string;
 using std::vector;
@@ -429,6 +433,38 @@ ImageInfo *ImageMgr::get(const string &name, bool returnUnscaled) {
             info->width  = unscaled->width();
             info->height = unscaled->height();
         }
+
+#ifdef USE_GL
+        // Pre-compute tile UVs.
+        if (info->tiles > 1 && info->tileTexCoord == NULL ) {
+            // Assuming image is one tile wide.
+            float iwf = (float) unscaled->width();
+            float ihf = (float) unscaled->height();
+            float tileH = iwf;
+            float tileY = 0.0f;
+            float *uv;
+
+            info->tileTexCoord = uv = new float[info->tiles * 4];
+            for (int i = 0; i < info->tiles; ++i) {
+                *uv++ = 0.0f;
+                *uv++ = tileY / ihf;
+                *uv++ = 1.0f;
+                *uv++ = (tileY + tileH) / ihf;
+                tileY += tileH;
+            }
+        }
+        /*
+        std::map<std::string, SubImage *>::iterator it;
+        foreach (it, info->subImages) {
+            SubImage* simg = it->second;
+            simg->u0 = simg->x / iwf;
+            simg->v0 = simg->y / ihf;
+            simg->u1 = (simg->x + simg->width) / iwf;
+            simg->v1 = (simg->y + simg->height) / ihf;
+        }
+        */
+#endif
+
 #if 0
         string out("/tmp/xu4/");
         unscaled->save(out.append(name).append(".ppm").c_str());
@@ -506,6 +542,9 @@ ImageInfo *ImageMgr::get(const string &name, bool returnUnscaled) {
     imageScale /= info->prescale;
 
     info->image = screenScale(unscaled, imageScale, info->tiles, 1);
+#ifdef USE_GL
+    info->tex = gpu_makeTexture(info->image);
+#endif
 
     delete unscaled;
 
@@ -558,6 +597,10 @@ void ImageMgr::freeResourceGroup(uint16_t group) {
             ImageInfo *info = j->second;
             if (info->image && (info->resGroup == group)) {
                 //dprint("ImageMgr::freeRes %s\n", info->filename.c_str());
+#ifdef USE_GL
+                gpu_freeTexture(info->tex);
+                info->tex = 0;
+#endif
                 delete info->image;
                 info->image = NULL;
             }
@@ -601,10 +644,22 @@ ImageSet::~ImageSet() {
         delete it->second;
 }
 
+ImageInfo::ImageInfo() {
+#ifdef USE_GL
+    tex = 0;
+    tileTexCoord = NULL;
+#endif
+}
+
 ImageInfo::~ImageInfo() {
     std::map<string, SubImage *>::iterator it;
     foreach (it, subImages)
         delete it->second;
 
     delete image;
+#ifdef USE_GL
+    if (tex)
+        gpu_freeTexture(tex);
+    delete[] tileTexCoord;
+#endif
 }

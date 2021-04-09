@@ -8,8 +8,14 @@
 #include "xu4.h"
 
 View::View(int x, int y, int width, int height)
-: x(x), y(y), width(width), height(height), highlighted(false), highlightX(0), highlightY(0), highlightW(0), highlightH(0)
+: x(x), y(y), width(width), height(height), highlightX(0), highlightY(0), highlightW(0), highlightH(0), highlighted(false)
 {
+#ifdef USE_GL
+    screenRect[0] = SCALED(x);
+    screenRect[1] = xu4.screenImage->height() - SCALED(y + height);
+    screenRect[2] = SCALED(width);
+    screenRect[3] = SCALED(height);
+#endif
 }
 
 /**

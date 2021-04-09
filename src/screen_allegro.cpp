@@ -107,6 +107,9 @@ void screenInit_sys(const Settings* settings, int reset) {
             al_unregister_event_source(sa->queue, source);
     } else {
         xu4.screen = sa = new ScreenAllegro;
+#ifdef USE_GL
+        xu4.gpu = &sa->gpu;
+#endif
         memset(sa, 0, sizeof(ScreenAllegro));
 
         if (! al_init())
@@ -313,19 +316,7 @@ static void updateDisplay(int x, int y, int w, int h) {
 
 void screenSwapBuffers() {
 #ifdef USE_GL
-    Image* simg = xu4.screenImage;
-
     CPU_START()
-    /*
-    glClearColor(0.0f, 0.5f, 0.8f, 0.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
-    */
-
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, simg->width(), simg->height(),
-                 0, GL_RGBA, GL_UNSIGNED_BYTE, simg->pixelData());
-
-    glDrawArrays(GL_TRIANGLES, 0, 6);
-
     al_flip_display();
     CPU_END("ut:")
 #else

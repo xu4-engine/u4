@@ -28,6 +28,10 @@
 #include "annotation.h"
 #include "xu4.h"
 
+#ifdef USE_GL
+#include "gpu.h"
+#endif
+
 #ifdef IOS
 #include "ios_helpers.h"
 #endif
@@ -105,6 +109,11 @@ static void screenInit_data(Settings& settings) {
     if (!u4isUpgradeAvailable() && settings.videoType == "VGA")
         settings.videoType = "EGA";
 
+#ifdef USE_GL
+    ImageInfo* shapes = xu4.imageMgr->get(BKGD_SHAPES);
+    gpu_setTilesTexture(xu4.gpu, shapes->tex);
+#endif
+
     assert(tileanims == NULL);
     gemTilesInfo = NULL;
     screenLoadGraphicsFromConf();
@@ -160,7 +169,7 @@ enum ScreenSystemStage {
 };
 
 /*
- * Sets xu4.screen pointer.
+ * Sets xu4.screen & xu4.gpu pointers.
  */
 void screenInit() {
     screenInit_sys(xu4.settings, SYS_CLEAN);
@@ -437,6 +446,32 @@ bool screenTileUpdate(TileView *view, const Coords &coords, bool redraw)
     return false;
 }
 
+#ifdef USE_GL
+struct SpriteRenderData {
+    float* attr;
+    const float* uvTable;
+    float rect[4];
+    int cx, cy;
+};
+
+#define VIEW_TILE_SIZE  (2.0f / VIEWPORT_W)
+
+static void drawSprite(const Coords* loc, VisualId vid, void* user) {
+    SpriteRenderData* rd = (SpriteRenderData*) user;
+    float* rect = rd->rect;
+    const float halfTile = VIEW_TILE_SIZE * -0.5f;
+    int uvIndex = VID_INDEX(vid);
+
+    rect[0] = halfTile + (float) (loc->x - rd->cx) * VIEW_TILE_SIZE;
+    rect[1] = halfTile + (float) (rd->cy - loc->y) * VIEW_TILE_SIZE;
+    rd->attr = gpu_emitQuad(rd->attr, rect, rd->uvTable + uvIndex*4);
+#if 0
+    printf("KR drawSprite %d,%d vid:%d:%d\n",
+            loc->x, loc->y, VID_BANK(vid), VID_INDEX(vid));
+#endif
+}
+#endif
+
 /**
  * Redraw the screen.  If showmap is set, the normal map is drawn in
  * the map area.  If blackout is set, the map area is blacked out. If
@@ -445,8 +480,64 @@ bool screenTileUpdate(TileView *view, const Coords &coords, bool redraw)
 void screenUpdate(TileView *view, bool showmap, bool blackout) {
     ASSERT(c != NULL, "context has not yet been initialized");
 
-    //screenLock();
+#ifdef USE_GL
+    //static const float clearColor[4] = {0.0, 0.5, 0.8, 1.0};
+    const Image* screen = xu4.screenImage;
+    Location* loc = c->location;
+    const Map* map = loc->map;
 
+    if (blackout) {
+        screenEraseMapArea();
+        goto raster_update;
+    }
+    else if (map->flags & FIRST_PERSON) {
+        DungeonViewer.display(c, view);
+        xu4.game->mapArea.update();
+
+raster_update:
+        screenUpdateCursor();
+        screenUpdateMoons();
+        screenUpdateWind();
+
+        gpu_viewport(0, 0, screen->width(), screen->height());
+        gpu_background(xu4.gpu, NULL, screen);
+    }
+    else if (showmap) {
+        ImageInfo* shapes = xu4.imageMgr->get(BKGD_SHAPES);
+        const MapCoords& coord = loc->coords;   // Center of view.
+
+        screenUpdateCursor();
+        screenUpdateMoons();
+        screenUpdateWind();
+
+        gpu_viewport(0, 0, screen->width(), screen->height());
+        gpu_background(xu4.gpu, NULL, screen);
+
+#if 0
+        // Unscaled pixel rect. on screen.
+        printf( "KR view %d,%d %d,%d\n",
+                view->x, view->y, view->width, view->height );
+#endif
+        const int* vrect = view->screenRect;
+        gpu_viewport(vrect[0], vrect[1], vrect[2], vrect[3]);
+        gpu_drawMap(xu4.gpu, map, shapes->tileTexCoord,
+                    coord.x, coord.y, VIEWPORT_W / 2);
+
+        {
+        SpriteRenderData rd;
+
+        rd.uvTable = shapes->tileTexCoord;
+        rd.rect[2] = rd.rect[3] = VIEW_TILE_SIZE;
+        rd.cx = coord.x;
+        rd.cy = coord.y;
+        rd.attr = gpu_beginDraw(xu4.gpu);
+
+        map->queryVisible(coord, VIEWPORT_W / 2, drawSprite, &rd);
+
+        gpu_endDraw(xu4.gpu, rd.attr);
+        }
+    }
+#else
     if (blackout)
     {
         screenEraseMapArea();
@@ -455,7 +546,6 @@ void screenUpdate(TileView *view, bool showmap, bool blackout) {
         DungeonViewer.display(c, view);
         screenRedrawMapArea();
     }
-
     else if (showmap) {
         static MapTile black = c->location->map->tileset->getByName("black")->getId();
         //static MapTile avatar = c->location->map->tileset->getByName("avatar")->getId();
@@ -488,8 +578,7 @@ void screenUpdate(TileView *view, bool showmap, bool blackout) {
     screenUpdateCursor();
     screenUpdateMoons();
     screenUpdateWind();
-
-    //screenUnlock();
+#endif
 }
 
 /**
