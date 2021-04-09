@@ -17,8 +17,13 @@
 #endif
 
 #undef TRACE
+#ifdef TRACE_ON
 #define TRACE(dbg, msg) (dbg).trace(msg, __FILE__, XU4_FUNCTION, __LINE__)
 #define TRACE_LOCAL(dbg, msg) (dbg).trace(msg, __FILE__, XU4_FUNCTION, __LINE__, false);
+#else
+#define TRACE(dbg, msg)
+#define TRACE_LOCAL(dbg, msg)
+#endif
 
 #include <string>
 #include <cstdio>
@@ -87,5 +92,3 @@ private:
 };
 
 #endif /* ifndef DEBUG_H */
-
-
