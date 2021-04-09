@@ -2,7 +2,7 @@
  * screen_allegro.cpp
  */
 
-#include <allegro5/allegro5.h>
+#include "screen_allegro.h"
 
 #include "config.h"
 #include "context.h"
@@ -16,14 +16,7 @@
 extern bool verbose;
 
 
-ALLEGRO_EVENT_QUEUE* sa_queue = NULL;
-ALLEGRO_DISPLAY* sa_disp = NULL;
-ALLEGRO_TIMER* sa_refreshTimer = NULL;
 bool screenFormatIsABGR = true;
-
-static ALLEGRO_MOUSE_CURSOR* cursors[5] = {NULL, NULL, NULL, NULL, NULL};
-static int frameDuration = 0;
-
 
 #if defined(MACOSX)
 #define CURSORSIZE 16
@@ -73,43 +66,48 @@ static ALLEGRO_MOUSE_CURSOR* screenInitCursor(ALLEGRO_BITMAP* bmp, const char * 
 
 
 void screenInit_sys(const Settings* settings, int reset) {
+    ScreenAllegro* sa;
     int format;
-    double refreshRate = 1.0 / settings->screenAnimationFramesPerSecond;
 
     if (reset) {
-        // On reset sa_queue is not touched as the TimedEventMgr has a timer
+        sa = SA;
+
+        // On reset sa->queue is not touched as the TimedEventMgr has a timer
         // registered and that needs to keep running.
 
         // Halt refresh timer as display re-creation may take a moment.
-        al_stop_timer(sa_refreshTimer);
+        al_stop_timer(sa->refreshTimer);
 
-        al_unregister_event_source(sa_queue, al_get_display_event_source(sa_disp));
-        al_destroy_display(sa_disp);
-        sa_disp = NULL;
+        al_unregister_event_source(sa->queue, al_get_display_event_source(sa->disp));
+        al_destroy_display(sa->disp);
+        sa->disp = NULL;
 
         ALLEGRO_EVENT_SOURCE* source = al_get_mouse_event_source();
         if (source)
-            al_unregister_event_source(sa_queue, source);
+            al_unregister_event_source(sa->queue, source);
     } else {
+        xu4.screen = sa = new ScreenAllegro;
+        memset(sa, 0, sizeof(ScreenAllegro));
+
         if (! al_init())
             goto fatal;
 
         if (!al_install_keyboard())
             goto fatal;
 
-        sa_queue = al_create_event_queue();
-        if (!sa_queue)
+        sa->queue = al_create_event_queue();
+        if (!sa->queue)
             goto fatal;
     }
 
     al_set_new_display_flags(settings->fullscreen ? ALLEGRO_FULLSCREEN : 0);
 
-    sa_disp = al_create_display(320 * settings->scale, 200 * settings->scale);
-    if(!sa_disp)
+    sa->disp = al_create_display(320 * settings->scale, 200 * settings->scale);
+    if(!sa->disp)
         goto fatal;
 
-    al_set_window_title(sa_disp, "Ultima IV");  // configService->gameName()
-    //al_set_display_icon(sa_disp, ALLEGRO_BITMAP*);  LoadBMP(ICON_FILE));
+    al_set_window_title(sa->disp, "Ultima IV");  // configService->gameName()
+    //al_set_display_icon(sa->disp, ALLEGRO_BITMAP*);  LoadBMP(ICON_FILE));
 
     // Can settings->gamma be applied?
 
@@ -118,7 +116,7 @@ void screenInit_sys(const Settings* settings, int reset) {
     //al_set_new_bitmap_format(ALLEGRO_PIXEL_FORMAT_ABGR_8888);
     //al_set_new_bitmap_flags(ALLEGRO_VIDEO_BITMAP);
 
-    format = al_get_display_format(sa_disp);
+    format = al_get_display_format(sa->disp);
     switch (format) {
         default:
             errorWarning("Unsupported Allegro pixel format: %d", format);
@@ -136,38 +134,39 @@ void screenInit_sys(const Settings* settings, int reset) {
         if (!al_install_mouse())
             goto fatal;
 
-        if (cursors[1] == NULL) {
+        if (sa->cursors[1] == NULL) {
             // Create a temporary bitmap to build the cursor in.
             al_set_new_bitmap_flags(ALLEGRO_MEMORY_BITMAP);
             ALLEGRO_BITMAP* bm = al_create_bitmap(CURSORSIZE, CURSORSIZE);
             if (bm) {
-                cursors[0] = NULL;
-                cursors[1] = screenInitCursor(bm, w_xpm);
-                cursors[2] = screenInitCursor(bm, n_xpm);
-                cursors[3] = screenInitCursor(bm, e_xpm);
-                cursors[4] = screenInitCursor(bm, s_xpm);
+                sa->cursors[0] = NULL;
+                sa->cursors[1] = screenInitCursor(bm, w_xpm);
+                sa->cursors[2] = screenInitCursor(bm, n_xpm);
+                sa->cursors[3] = screenInitCursor(bm, e_xpm);
+                sa->cursors[4] = screenInitCursor(bm, s_xpm);
 
                 al_destroy_bitmap(bm);
             }
         }
 
-        al_register_event_source(sa_queue, al_get_mouse_event_source());
-        al_show_mouse_cursor(sa_disp);
+        al_register_event_source(sa->queue, al_get_mouse_event_source());
+        al_show_mouse_cursor(sa->disp);
     } else {
-        al_hide_mouse_cursor(sa_disp);
+        al_hide_mouse_cursor(sa->disp);
     }
 
+    sa->refreshRate = 1.0 / settings->screenAnimationFramesPerSecond;
     if (reset) {
-        al_set_timer_speed(sa_refreshTimer, refreshRate);
+        al_set_timer_speed(sa->refreshTimer, sa->refreshRate);
     } else {
-        sa_refreshTimer = al_create_timer(refreshRate);
+        sa->refreshTimer = al_create_timer(sa->refreshRate);
 
-        al_register_event_source(sa_queue, al_get_timer_event_source(sa_refreshTimer));
-        al_register_event_source(sa_queue, al_get_keyboard_event_source());
+        al_register_event_source(sa->queue, al_get_timer_event_source(sa->refreshTimer));
+        al_register_event_source(sa->queue, al_get_keyboard_event_source());
     }
 
-    al_register_event_source(sa_queue, al_get_display_event_source(sa_disp));
-    al_start_timer(sa_refreshTimer);
+    al_register_event_source(sa->queue, al_get_display_event_source(sa->disp));
+    al_start_timer(sa->refreshTimer);
     return;
 
 fatal:
@@ -175,17 +174,22 @@ fatal:
 }
 
 void screenDelete_sys() {
-    al_destroy_timer(sa_refreshTimer);
-    sa_refreshTimer = NULL;
+    ScreenAllegro* sa = SA;
+
+    al_destroy_timer(sa->refreshTimer);
+    sa->refreshTimer = NULL;
 
     for( int i = 1; i < 5; ++i )
-        al_destroy_mouse_cursor(cursors[i]);
+        al_destroy_mouse_cursor(sa->cursors[i]);
 
-    al_destroy_event_queue(sa_queue);
-    sa_queue = NULL;
+    al_destroy_event_queue(sa->queue);
+    sa->queue = NULL;
 
-    al_destroy_display(sa_disp);
-    sa_disp = NULL;
+    al_destroy_display(sa->disp);
+    sa->disp = NULL;
+
+    delete sa;
+    xu4.screen = NULL;
 }
 
 /**
@@ -204,8 +208,7 @@ void screenIconify() {
  * Show screenImage on the display.
  * If w is zero then the entire display is updated.
  */
-// This would be static but its an Image friend to access screenImage->pixels.
-void updateDisplay(int x, int y, int w, int h) {
+static void updateDisplay(int x, int y, int w, int h) {
     const ALLEGRO_LOCKED_REGION* lr;
     uint32_t* drow;
     uint32_t* dp;
@@ -213,6 +216,7 @@ void updateDisplay(int x, int y, int w, int h) {
     const uint32_t* send;
     const uint32_t* sp;
     int dpitch, cr;
+    int screenImageW = xu4.screenImage->width();
 
 #if 0
     static uint32_t dt = 0;
@@ -224,11 +228,11 @@ void updateDisplay(int x, int y, int w, int h) {
     CPU_START()
 
     if (w == 0) {
-        w = xu4.screenImage->w;
-        h = xu4.screenImage->h;
+        w = xu4.screenImage->width();
+        h = xu4.screenImage->height();
     }
 
-    ALLEGRO_BITMAP* backBuf = al_get_backbuffer(sa_disp);
+    ALLEGRO_BITMAP* backBuf = al_get_backbuffer(SA->disp);
 
     lr = al_lock_bitmap(backBuf, ALLEGRO_PIXEL_FORMAT_ANY,
                         ALLEGRO_LOCK_WRITEONLY);
@@ -239,7 +243,7 @@ void updateDisplay(int x, int y, int w, int h) {
 #endif
     dpitch = lr->pitch / sizeof(uint32_t);
     drow = ((uint32_t*) lr->data) + y*dpitch + x;
-    srow = xu4.screenImage->pixels + y*xu4.screenImage->w + x;
+    srow = xu4.screenImage->pixelData() + y*screenImageW + x;
 
     for (cr = 0; cr < h; ++cr) {
         dp = drow;
@@ -249,7 +253,7 @@ void updateDisplay(int x, int y, int w, int h) {
             *dp++ = *sp++;
         }
         drow += dpitch;
-        srow += xu4.screenImage->w;
+        srow += screenImageW;
     }
     al_unlock_bitmap(backBuf);
 
@@ -263,33 +267,35 @@ void screenSwapBuffers() {
 }
 
 void screenWait(int numberOfAnimationFrames) {
+    ScreenAllegro* sa = SA;
+
     // Does this wait need to handle world animation or input (e.g. user
     // quits game)?
 
     assert(numberOfAnimationFrames >= 0);
 
     // Stop refresh timer to prevent events from accumulating in queue.
-    al_stop_timer(sa_refreshTimer);
+    al_stop_timer(sa->refreshTimer);
     screenSwapBuffers();
-    al_rest(0.001 * (numberOfAnimationFrames * frameDuration));
-    al_start_timer(sa_refreshTimer);
+    al_rest(sa->refreshRate * numberOfAnimationFrames);
+    al_start_timer(sa->refreshTimer);
 }
 
 void screenSetMouseCursor(MouseCursor cursor) {
-    static int current = 0;
+    ScreenAllegro* sa = SA;
 
-    if (cursor != current) {
+    if (cursor != sa->currentCursor) {
         if (cursor == MC_DEFAULT)
-            al_set_system_mouse_cursor(sa_disp, ALLEGRO_SYSTEM_MOUSE_CURSOR_DEFAULT);
+            al_set_system_mouse_cursor(sa->disp, ALLEGRO_SYSTEM_MOUSE_CURSOR_DEFAULT);
         else
-            al_set_mouse_cursor(sa_disp, cursors[cursor]);
-        current = cursor;
+            al_set_mouse_cursor(sa->disp, sa->cursors[cursor]);
+        sa->currentCursor = cursor;
     }
 }
 
 void screenShowMouseCursor(bool visible) {
     if (visible)
-        al_show_mouse_cursor(sa_disp);
+        al_show_mouse_cursor(SA->disp);
     else
-        al_hide_mouse_cursor(sa_disp);
+        al_hide_mouse_cursor(SA->disp);
 }

@@ -158,6 +158,9 @@ enum ScreenSystemStage {
     SYS_RESET = 1   // Reconfigure screen settings.
 };
 
+/*
+ * Sets xu4.screen pointer.
+ */
 void screenInit() {
     screenInit_sys(xu4.settings, SYS_CLEAN);
     screenInit_data(*xu4.settings);

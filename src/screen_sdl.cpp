@@ -24,9 +24,14 @@ extern unsigned int refresh_callback(unsigned int, void*);
 
 bool screenFormatIsABGR = true;
 
-static SDL_Cursor *cursors[5] = {NULL, NULL, NULL, NULL, NULL};
-static SDL_TimerID refreshTimer = NULL;
-static int frameDuration = 0;
+struct ScreenSDL {
+    SDL_Cursor *cursors[5];
+    SDL_TimerID refreshTimer;
+    int frameDuration;
+    int currentCursor;
+};
+
+#define SD  ((ScreenSDL*) xu4.screen)
 
 SDL_Cursor *screenInitCursor(const char * const xpm[]);
 
@@ -50,9 +55,12 @@ void u4_SDL_QuitSubSystem(Uint32 flags) {
 }
 
 void screenInit_sys(const Settings* settings, int reset) {
+    ScreenSDL* sd;
+
     if (reset) {
-        SDL_RemoveTimer(refreshTimer);
-        refreshTimer = NULL;
+        sd = SD;
+        SDL_RemoveTimer(sd->refreshTimer);
+        sd->refreshTimer = NULL;
     } else {
         /* start SDL */
         if (u4_SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_TIMER) < 0)
@@ -64,6 +72,8 @@ void screenInit_sys(const Settings* settings, int reset) {
 #ifdef ICON_FILE
         SDL_WM_SetIcon(SDL_LoadBMP(ICON_FILE), NULL);
 #endif
+        xu4.screen = sd = new ScreenSDL;
+        memset(sd, 0, sizeof(ScreenSDL));
     }
 
     SDL_SetGamma(settings->gamma / 100.0f, settings->gamma / 100.0f, settings->gamma / 100.0f);
@@ -79,12 +89,12 @@ void screenInit_sys(const Settings* settings, int reset) {
     /* enable or disable the mouse cursor */
     if (settings->mouseOptions.enabled) {
         SDL_ShowCursor(SDL_ENABLE);
-        if (cursors[0] == NULL) {
-            cursors[0] = SDL_GetCursor();
-            cursors[1] = screenInitCursor(w_xpm);
-            cursors[2] = screenInitCursor(n_xpm);
-            cursors[3] = screenInitCursor(e_xpm);
-            cursors[4] = screenInitCursor(s_xpm);
+        if (sd->cursors[0] == NULL) {
+            sd->cursors[0] = SDL_GetCursor();
+            sd->cursors[1] = screenInitCursor(w_xpm);
+            sd->cursors[2] = screenInitCursor(n_xpm);
+            sd->cursors[3] = screenInitCursor(e_xpm);
+            sd->cursors[4] = screenInitCursor(s_xpm);
         }
     } else {
         SDL_ShowCursor(SDL_DISABLE);
@@ -111,20 +121,25 @@ void screenInit_sys(const Settings* settings, int reset) {
     }
     }
 
-    frameDuration = 1000 / settings->screenAnimationFramesPerSecond;
-    refreshTimer = SDL_AddTimer(frameDuration, &refresh_callback, NULL);
+    sd->frameDuration = 1000 / settings->screenAnimationFramesPerSecond;
+    sd->refreshTimer = SDL_AddTimer(sd->frameDuration, &refresh_callback, NULL);
 }
 
 void screenDelete_sys() {
-    SDL_RemoveTimer(refreshTimer);
-    refreshTimer = NULL;
+    ScreenSDL* sd = SD;
 
-    SDL_FreeCursor(cursors[1]);
-    SDL_FreeCursor(cursors[2]);
-    SDL_FreeCursor(cursors[3]);
-    SDL_FreeCursor(cursors[4]);
+    SDL_RemoveTimer(sd->refreshTimer);
+    sd->refreshTimer = NULL;
+
+    SDL_FreeCursor(sd->cursors[1]);
+    SDL_FreeCursor(sd->cursors[2]);
+    SDL_FreeCursor(sd->cursors[3]);
+    SDL_FreeCursor(sd->cursors[4]);
 
     u4_SDL_QuitSubSystem(SDL_INIT_VIDEO | SDL_INIT_TIMER);
+
+    delete sd;
+    xu4.screen = NULL;
 }
 
 /**
@@ -233,8 +248,7 @@ int screenLoadImageCga(Image **image, int width, int height, U4FILE *file, Compr
  * Show screenImage on the display.
  * If w is zero then the entire display is updated.
  */
-// This would be static but its an Image friend to access screenImage->pixels.
-void updateDisplay( int x, int y, int w, int h ) {
+static void updateDisplay( int x, int y, int w, int h ) {
     SDL_Surface* ss = SDL_GetVideoSurface();
     if (ss) {
         uint32_t* dp;
@@ -243,6 +257,7 @@ void updateDisplay( int x, int y, int w, int h ) {
         const uint32_t* send;
         const uint32_t* srow;
         int dpitch = ss->pitch / sizeof(uint32_t);
+        int screenImageW = xu4.screenImage->width();
         int cr;
 
 #if 0
@@ -258,15 +273,15 @@ void updateDisplay( int x, int y, int w, int h ) {
         }
 
         SDL_LockSurface(ss);
-        srow = xu4.screenImage->pixels + y*xu4.screenImage->w + x;
+        srow = xu4.screenImage->pixelData() + y*screenImageW + x;
         drow = ((uint32_t*) ss->pixels) + y*dpitch + x;
         for (cr = 0; cr < h; ++cr) {
             dp = drow;
             sp = srow;
-            send = srow + xu4.screenImage->w;
+            send = srow + screenImageW;
             while (sp != send)
                 *dp++ = *sp++;
-            srow += xu4.screenImage->w;
+            srow += screenImageW;
             drow += dpitch;
         }
         SDL_UnlockSurface(ss);
@@ -285,7 +300,7 @@ void screenSwapBuffers() {
 }
 
 void screenWait(int numberOfAnimationFrames) {
-    SDL_Delay(numberOfAnimationFrames * frameDuration);
+    SDL_Delay(numberOfAnimationFrames * SD->frameDuration);
 }
 
 /**
@@ -331,11 +346,11 @@ SDL_Cursor *screenInitCursor(const char * const xpm[]) {
 }
 
 void screenSetMouseCursor(MouseCursor cursor) {
-    static int current = 0;
+    ScreenSDL* sd = SD;
 
-    if (cursor != current) {
-        SDL_SetCursor(cursors[cursor]);
-        current = cursor;
+    if (cursor != sd->currentCursor) {
+        SDL_SetCursor(sd->cursors[cursor]);
+        sd->currentCursor = cursor;
     }
 }
 

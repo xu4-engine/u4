@@ -22,6 +22,7 @@ struct XU4GameServices {
     Settings* settings;
     Config* config;
     ImageMgr* imageMgr;
+    void* screen;
     Image* screenImage;
     EventHandler* eventHandler;
     CreatureMgr* creatureMgr;

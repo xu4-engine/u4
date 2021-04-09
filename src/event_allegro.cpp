@@ -2,7 +2,7 @@
  * event_allegro.cpp
  */
 
-#include <allegro5/allegro.h>
+#include "screen_allegro.h"
 #include "event.h"
 #include "screen.h"
 #include "settings.h"
@@ -12,8 +12,6 @@ extern uint32_t getTicks();
 
 extern bool verbose;
 extern int eventTimerGranularity;
-extern ALLEGRO_EVENT_QUEUE* sa_queue;
-extern ALLEGRO_TIMER* sa_refreshTimer;
 
 
 #define CTIMER(id)  ((ALLEGRO_TIMER*) id)
@@ -25,7 +23,7 @@ extern ALLEGRO_TIMER* sa_refreshTimer;
 TimedEventMgr::TimedEventMgr(int msec) : baseInterval(msec) {
     ALLEGRO_TIMER* timer = al_create_timer(double(msec) * 0.001);
     id = timer;
-    al_register_event_source(sa_queue, al_get_timer_event_source(timer));
+    al_register_event_source(SA->queue, al_get_timer_event_source(timer));
     al_start_timer(timer);
 }
 
@@ -164,6 +162,7 @@ static void handleKeyDownEvent(const ALLEGRO_EVENT* event, Controller *controlle
  */
 void EventHandler::sleep(unsigned int msec) {
     ALLEGRO_EVENT event;
+    ScreenAllegro* sa = SA;
     uint32_t endTime = getTicks() + msec;
     bool sleeping = true;
     bool redraw = false;
@@ -173,7 +172,7 @@ void EventHandler::sleep(unsigned int msec) {
 
     while (sleeping) {
         do {
-            al_wait_for_event(sa_queue, &event);
+            al_wait_for_event(sa->queue, &event);
             switch (event.type) {
             default:
                 // Discard any key & button events.
@@ -188,7 +187,7 @@ void EventHandler::sleep(unsigned int msec) {
                 break;
             */
             case ALLEGRO_EVENT_TIMER:
-                if (event.timer.source == sa_refreshTimer) {
+                if (event.timer.source == sa->refreshTimer) {
                     redraw = true;
                 } else {
                     xu4.eventHandler->getTimer()->tick();
@@ -201,7 +200,7 @@ void EventHandler::sleep(unsigned int msec) {
                 sleeping = false;
                 break;
             }
-        } while (! al_is_event_queue_empty(sa_queue));
+        } while (! al_is_event_queue_empty(sa->queue));
 
         if (redraw) {
             redraw = false;
@@ -211,21 +210,21 @@ void EventHandler::sleep(unsigned int msec) {
 }
 
 void EventHandler::run() {
-    static int recursion = 0;
     ALLEGRO_EVENT event;
+    ScreenAllegro* sa = SA;
     bool redraw = false;
 
     if (updateScreen)
         (*updateScreen)();
     screenSwapBuffers();
 
-    if (! recursion)
-        al_start_timer(sa_refreshTimer);
-    ++recursion;
+    if (! sa->runRecursion)
+        al_start_timer(sa->refreshTimer);
+    ++sa->runRecursion;
 
     while (!ended && !controllerDone) {
         do {
-            al_wait_for_event(sa_queue, &event);
+            al_wait_for_event(sa->queue, &event);
             switch (event.type) {
             default:
                 break;
@@ -240,7 +239,7 @@ void EventHandler::run() {
                 handleMouseMotionEvent(event.mouse.x, event.mouse.y);
                 break;
             case ALLEGRO_EVENT_TIMER:
-                if (event.timer.source == sa_refreshTimer)
+                if (event.timer.source == sa->refreshTimer)
                     redraw = true;
                 else
                     getTimer()->tick();
@@ -259,7 +258,7 @@ void EventHandler::run() {
             case ALLEGRO_EVENT_DISPLAY_RESUME_DRAWING:
 #endif
             }
-        } while (! al_is_event_queue_empty(sa_queue));
+        } while (! al_is_event_queue_empty(sa->queue));
 
         if (redraw) {
             redraw = false;
@@ -267,9 +266,9 @@ void EventHandler::run() {
         }
     }
 
-    --recursion;
-    if (! recursion)
-        al_stop_timer(sa_refreshTimer);
+    --sa->runRecursion;
+    if (! sa->runRecursion)
+        al_stop_timer(sa->refreshTimer);
 }
 
 void EventHandler::setScreenUpdate(void (*updateFunc)(void)) {

@@ -97,6 +97,8 @@ public:
 
     int width() const { return w; }
     int height() const { return h; }
+    uint32_t* pixelData() { return pixels; }
+
     void save(const char* filename);
     void drawHighlighted();
 
@@ -124,7 +126,6 @@ private:
     const Image &operator=(const Image&);
 
     friend void setFromRawData(Image*, int, int, int, unsigned char*, RGBA*);
-    friend void updateDisplay(int, int, int, int);
 };
 
 #endif /* IMAGE_H */
