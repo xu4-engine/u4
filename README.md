@@ -1,22 +1,22 @@
 XU4
 ===
 
-   "Prepare yourself for a grand adventure: Ultima IV, sixteen times
-   larger than Ultima III, is a milestone in computer gaming.  Lord
-   British has produced a game to challenge, not only your physical
-   and mental skills, but the true fabric of your character.  The evil
-   triad of Mondain, Minax, and the hellspawn Exodus, have been
-   vanquished and peace reigns throughout the land of Britannia.  Evil
-   yet abounds, but in isolated pockets and in the hearts of men.  A
-   new age awaits the coming of one who can conquer evil on all
-   frontiers through the mastery of both magic and the use of force.
-   Daemons, dragons and long-dead wizards still plague the countryside
-   and must be destroyed.  The seeker on the path of the avatar will
-   faces hostile groups composed of mixed enemy types and will survive
-   such encounters only by strategic use of weapons and terrain.
-   Earthly victories over seemingly impossible odds lead to the final
-   conflict, where the ultimate challenge -- the self -- awaits..."
-     -- Back cover of Ultima IV box
+> Prepare yourself for a grand adventure: Ultima IV, sixteen times
+> larger than Ultima III, is a milestone in computer gaming.  Lord
+> British has produced a game to challenge, not only your physical
+> and mental skills, but the true fabric of your character.  The evil
+> triad of Mondain, Minax, and the hellspawn Exodus, have been
+> vanquished and peace reigns throughout the land of Britannia.  Evil
+> yet abounds, but in isolated pockets and in the hearts of men.  A
+> new age awaits the coming of one who can conquer evil on all
+> frontiers through the mastery of both magic and the use of force.
+> Daemons, dragons and long-dead wizards still plague the countryside
+> and must be destroyed.  The seeker on the path of the avatar will
+> faces hostile groups composed of mixed enemy types and will survive
+> such encounters only by strategic use of weapons and terrain.
+> Earthly victories over seemingly impossible odds lead to the final
+> conflict, where the ultimate challenge -- the self -- awaits...
+>   -- Back cover of Ultima IV box
 
 XU4 is a remake of the computer game Ultima IV.  The goal is to make
 it easy and convenient to play this classic on modern operating
@@ -36,7 +36,7 @@ its savegame files.  You can use a game saved in XU4 with the original
 and vice versa, at least in theory.
 
 
-STATUS
+Status
 ------
 
 A major code cleanup began in 2021 after a 5-year hiatus in development
@@ -59,7 +59,7 @@ Some thoughts for possible improvements:
    + correct for aspect ratio
 
 
-COMPILING
+Compiling
 ---------
 
 To build on Linux and macOS use these commands:
@@ -84,7 +84,7 @@ The libxml2 development files are necessary regardless of what platform API
 is used.
 
 
-RUNNING
+Running
 -------
 
 The actual data files from Ultima 4 are loaded at runtime, which means
@@ -115,24 +115,24 @@ take effect.  These settings are stored in the file $HOME/.xu4rc.
 
 xu4 also accepts the following command line options:
 
-   --fullscreen     Fullscreen mode.
-   -f
+    --fullscreen     Fullscreen mode.
+    -f
 
-   --filter <str>   Apply a filter on the scaled images. The <str>
-                    parameter must be set to one of the following
-                    case-sensitive options:
-                        point
-                        2xBi
-                        2xSaI
-                        Scale2x
+    --filter <str>   Apply a filter on the scaled images. The <str>
+                     parameter must be set to one of the following
+                     case-sensitive options:
+                         point
+                         2xBi
+                         2xSaI
+                         Scale2x
 
-   --skip-intro     Skip the intro, and go directly into the game.
-   -i               This option requires the existance of a valid saved
-                    game.
+    --skip-intro     Skip the intro, and go directly into the game.
+    -i               This option requires the existance of a valid saved
+                     game.
 
-   --profile <str>  Activate a specific save game profile.  Using this
-   -p <str>         option, you may have multiple saved games at the
-                    same time.
+    --profile <str>  Activate a specific save game profile.  Using this
+    -p <str>         option, you may have multiple saved games at the
+                     same time.
                       * Use quotation marks around profile names that
                         include spaces.
                       * All profiles are stored in the "profiles"
@@ -140,17 +140,17 @@ xu4 also accepts the following command line options:
                       * The active profile name is shown on the
                         introduction map view off the main menu.
 
-   --quiet          Quiet mode - no sound or music.
-   -q
+    --quiet          Quiet mode - no sound or music.
+    -q
 
-   --scale <n>      Scale the original graphics by a factor of <n>.
-   -s <n>           Factor <n> must be 1, 2, 3, 4, or 5.
+    --scale <n>      Scale the original graphics by a factor of <n>.
+    -s <n>           Factor <n> must be 1, 2, 3, 4, or 5.
 
-   --verbose        Verbose output; prints out information useful for
-   -v               trouble-shooting.
+    --verbose        Verbose output; prints out information useful for
+    -v               trouble-shooting.
 
 
-ULTIMA 4 DOCUMENTATION
+Ultima 4 Documentation
 ----------------------
 
 Included with Ultima 4 for DOS, as downloaded from one of the above
@@ -169,7 +169,7 @@ An image of the cloth map from the original Ultima IV box is also
 included in the EXTRA folder.
 
 
-DEBUG MODE (CHEATS)
+Debug Mode (cheats)
 -------------------
 
 xu4 has a very useful debug mode (you can also think of it as a cheat mode).
@@ -181,28 +181,30 @@ To enable it:
 
 Cheat list:
 * ctrl-c (cheat menu; press one of the following keys to use a cheat)
-  1-8     gate (teleports you to a moongate location)
-  F1-F8   virtue +10
-  a       advance moons (advances the left moon [Trammel] to its next phase)
-  c       collision (lets you walk across water, through mountains, etc.)
-  e       equipment (gives the party Armour and Weapons)
-  f       full stats (gives all party members 50 str, dex & intel and level 8)
-  g       goto (enter a location and xu4 teleports you there)
-  h       help (displays list of available cheats)
-  i       items (gives the party Items and Equipment)
-  k       show karma (shows your virtues)
-  l       location (displays current map and coordinates)
-  m       mixtures (gives the party 99 mixtures of all spells)
-  o       opacity (lets you see through opaque tiles)
-  p       peer (switches between normal and gem view)
-  r       reagents (gives the party 99 of all reagents)
-  s       summon (enter a monster name, and xu4 creates it somewhere nearby)
-  t       transports (press b/h/s + arrow key, and xu4 creates a balloon/horse/ship)
-  v       full virtues (makes you a full avatar)
-  w       change wind (changes or locks the wind direction)
-  x       exit map (teleports the party to where it entered the current map)
-  y       y-up (like the Y-up spell, but free)
-  z       z-down (like the Z-down spell, but free)
+
+        1-8   gate (teleports you to a moongate location)
+        F1-F8 virtue +10
+        a     advance moons (advances the left moon [Trammel] to its next phase)
+        c     collision (lets you walk across water, through mountains, etc.)
+        e     equipment (gives the party Armour and Weapons)
+        f     full stats (gives all party members 50 str, dex & intel and level 8)
+        g     goto (enter a location and xu4 teleports you there)
+        h     help (displays list of available cheats)
+        i     items (gives the party Items and Equipment)
+        k     show karma (shows your virtues)
+        l     location (displays current map and coordinates)
+        m     mixtures (gives the party 99 mixtures of all spells)
+        o     opacity (lets you see through opaque tiles)
+        p     peer (switches between normal and gem view)
+        r     reagents (gives the party 99 of all reagents)
+        s     summon (enter a monster name, and xu4 creates it somewhere nearby)
+        t     transports (press b/h/s + arrow key, and xu4 creates a balloon/horse/ship)
+        v     full virtues (makes you a full avatar)
+        w     change wind (changes or locks the wind direction)
+        x     exit map (teleports the party to where it entered the current map)
+        y     y-up (like the Y-up spell, but free)
+        z     z-down (like the Z-down spell, but free)
+
 * ctrl-d (destroy monster/object; doesn't work on energy fields)
 * ctrl-h (teleport to Lord British's throne room)
 * ctrl-v (switch between 3-d and 2-d view; dungeons only)
@@ -215,8 +217,8 @@ Note:
 Except for the Escape key, none of the cheats work during combat.
 
 
-MISC
-----
+Misc.
+-----
 
 See http://xu4.sourceforge.net/links.html for some other interesting
 Ultima IV related links.
