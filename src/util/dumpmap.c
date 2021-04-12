@@ -6,6 +6,9 @@
 #include <string.h>
 #include <stdio.h>
 
+#define EX_USAGE     64  /* command line usage error */
+#define EX_NOINPUT   66  /* cannot open input */
+
 int main( int argc, char** argv )
 {
     const int chunkDim = 32;
@@ -17,10 +20,15 @@ int main( int argc, char** argv )
     uint8_t* buf;
     uint8_t* cp;
 
+    if (argc != 2) {
+        printf( "Usage: dumpmap <WORLD.MAP>\n" );
+        return EX_USAGE;
+    }
+
     fp = fopen( argv[1], "rb" );
     if( ! fp ) {
         printf( "Cannot open %s\n", argv[1] );
-        return 1;
+        return EX_NOINPUT;
     }
 
     memset(hist, 0, sizeof hist);
