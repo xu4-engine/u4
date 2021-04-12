@@ -22,8 +22,10 @@ using std::vector;
 
 Image *screenScale(Image *src, int scale, int n, int filter);
 
+//#define dprint  printf
 
-ImageMgr::ImageMgr() {
+
+ImageMgr::ImageMgr() : resGroup(0) {
     logger = new Debug("debug/imagemgr.txt", "ImageMgr");
     TRACE(*logger, "creating ImageMgr");
 
@@ -408,6 +410,7 @@ ImageInfo *ImageMgr::get(const string &name, bool returnUnscaled) {
     Image *unscaled = NULL;
     if (file) {
         TRACE(*logger, string("loading image from file '") + info->filename + string("'"));
+        //dprint( "ImageMgr load %d:%s\n", resGroup, info->filename.c_str() );
 
         unscaled = loadImage(file, info->filetype, info->width, info->height,
                              info->depth);
@@ -419,6 +422,7 @@ ImageInfo *ImageMgr::get(const string &name, bool returnUnscaled) {
             return info;
         }
 
+        info->resGroup = resGroup;
         if (info->width == -1) {
             // Write in the values for later use.
             info->width  = unscaled->width();
@@ -532,16 +536,27 @@ SubImage *ImageMgr::getSubImage(const string &name) {
 }
 
 /**
- * Free up any background images used only in the animations.
+ * Set the group loaded images will belong to.
+ * Return the previously set group.
  */
-void ImageMgr::freeIntroBackgrounds() {
+uint16_t ImageMgr::setResourceGroup(uint16_t group) {
+    uint16_t prev = resGroup;
+    resGroup = group;
+    return prev;
+}
+
+/**
+ * Free all images that are part of the specified group.
+ */
+void ImageMgr::freeResourceGroup(uint16_t group) {
     std::map<string, ImageSet *>::iterator si;
     std::map<string, ImageInfo *>::iterator j;
 
     foreach (si, imageSets) {
         foreach (j, si->second->info) {
             ImageInfo *info = j->second;
-            if (info->image != NULL && info->introOnly) {
+            if (info->image && (info->resGroup == group)) {
+                //dprint("ImageMgr::freeRes %s\n", info->filename.c_str());
                 delete info->image;
                 info->image = NULL;
             }

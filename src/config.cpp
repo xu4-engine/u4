@@ -472,13 +472,13 @@ static ImageInfo* loadImageInfo(const ConfigElement &conf) {
     info = new ImageInfo;
     info->name = conf.getString("name");
     info->filename = conf.getString("filename");
+    info->resGroup = 0;
     info->width = conf.getInt("width", -1);
     info->height = conf.getInt("height", -1);
     info->depth = conf.getInt("depth", -1);
     info->prescale = conf.getInt("prescale");
     info->filetype = mapFiletype(conf.getString("filetype"), info->filename);
     info->tiles = conf.getInt("tiles");
-    info->introOnly = conf.getBool("introOnly");
     info->transparentIndex = conf.getInt("transparentIndex", -1);
     info->fixup = static_cast<ImageFixup>(conf.getEnum("fixup", fixupEnumStrings));
     info->image = NULL;

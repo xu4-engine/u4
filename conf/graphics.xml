@@ -149,40 +149,40 @@
         <image name="borders"  filename="u4/start.ega"    width="320" height="200" depth="4" filetype="image/x-u4rle"/>
 
         <!-- intro screen images -->
-        <image name="title"   filename="u4/title.ega"  width="320" height="200" depth="4" filetype="image/x-u4lzw" introOnly="true" fixup="intro">
+        <image name="title"   filename="u4/title.ega"  width="320" height="200" depth="4" filetype="image/x-u4lzw" fixup="intro">
             <subimage name="options_top"  x="0"  y="32"   width="320"  height="128"/>
             <subimage name="options_btm"  x="0"  y="112"  width="320"  height="80"/>
         </image>
-        <image name="tree"     filename="u4/tree.ega"     width="320" height="200" depth="4" filetype="image/x-u4lzw" introOnly="true">
+        <image name="tree"     filename="u4/tree.ega"     width="320" height="200" depth="4" filetype="image/x-u4lzw">
             <subimage name="moongate" x="0"   y="152" width="24" height="24"/>
             <subimage name="items"    x="24"  y="152" width="24" height="24"/>
         </image>
-        <image name="portal"   filename="u4/portal.ega"   width="320" height="200" depth="4" filetype="image/x-u4lzw" introOnly="true"/>
-        <image name="outside"  filename="u4/outside.ega"  width="320" height="200" depth="4" filetype="image/x-u4lzw" introOnly="true"/>
-        <image name="inside"   filename="u4/inside.ega"   width="320" height="200" depth="4" filetype="image/x-u4lzw" introOnly="true"/>
-        <image name="wagon"    filename="u4/wagon.ega"    width="320" height="200" depth="4" filetype="image/x-u4lzw" introOnly="true"/>
-        <image name="gypsy"    filename="u4/gypsy.ega"    width="320" height="200" depth="4" filetype="image/x-u4lzw" introOnly="true"/>
-        <image name="abacus"   filename="u4/abacus.ega"   width="320" height="200" depth="4" filetype="image/x-u4lzw" introOnly="true" fixup="abacus">
+        <image name="portal"   filename="u4/portal.ega"   width="320" height="200" depth="4" filetype="image/x-u4lzw"/>
+        <image name="outside"  filename="u4/outside.ega"  width="320" height="200" depth="4" filetype="image/x-u4lzw"/>
+        <image name="inside"   filename="u4/inside.ega"   width="320" height="200" depth="4" filetype="image/x-u4lzw"/>
+        <image name="wagon"    filename="u4/wagon.ega"    width="320" height="200" depth="4" filetype="image/x-u4lzw"/>
+        <image name="gypsy"    filename="u4/gypsy.ega"    width="320" height="200" depth="4" filetype="image/x-u4lzw"/>
+        <image name="abacus"   filename="u4/abacus.ega"   width="320" height="200" depth="4" filetype="image/x-u4lzw" fixup="abacus">
             <subimage name="whitebead"      x="8"   y="187" width="8" height="12"/>
             <subimage name="blackbead"      x="24"  y="187" width="8" height="12"/>
         </image>
-        <image name="honcom"   filename="u4/honcom.ega"   width="320" height="200" depth="4" filetype="image/x-u4lzw" introOnly="true">
+        <image name="honcom"   filename="u4/honcom.ega"   width="320" height="200" depth="4" filetype="image/x-u4lzw">
             <subimage name="honestycard"    x="12"  y="12" width="90" height="124"/>
             <subimage name="compassioncard" x="218" y="12" width="90" height="124"/>
         </image>
-        <image name="valjus"   filename="u4/valjus.ega"   width="320" height="200" depth="4" filetype="image/x-u4lzw" introOnly="true">
+        <image name="valjus"   filename="u4/valjus.ega"   width="320" height="200" depth="4" filetype="image/x-u4lzw">
             <subimage name="valorcard"      x="12"  y="12" width="90" height="124"/>
             <subimage name="justicecard"    x="218" y="12" width="90" height="124"/>
         </image>
-        <image name="sachonor" filename="u4/sachonor.ega" width="320" height="200" depth="4" filetype="image/x-u4lzw" introOnly="true">
+        <image name="sachonor" filename="u4/sachonor.ega" width="320" height="200" depth="4" filetype="image/x-u4lzw">
             <subimage name="sacrificecard"  x="12"  y="12" width="90" height="124"/>
             <subimage name="honorcard"      x="218" y="12" width="90" height="124"/>
         </image>
-        <image name="spirhum"  filename="u4/spirhum.ega"  width="320" height="200" depth="4" filetype="image/x-u4lzw" introOnly="true">
+        <image name="spirhum"  filename="u4/spirhum.ega"  width="320" height="200" depth="4" filetype="image/x-u4lzw">
             <subimage name="spiritualitycard" x="12"  y="12" width="90" height="124"/>
             <subimage name="humilitycard"   x="218" y="12" width="90" height="124"/>
         </image>
-        <image name="beasties" filename="u4/animate.ega"  width="320" height="200" depth="4" filetype="image/x-u4lzw" introOnly="true">
+        <image name="beasties" filename="u4/animate.ega"  width="320" height="200" depth="4" filetype="image/x-u4lzw">
             <subimage name="beast0frame00" x="0"   y="0"   width="55" height="31"/>
             <subimage name="beast0frame01" x="0"   y="32"  width="55" height="31"/>
             <subimage name="beast0frame02" x="0"   y="64"  width="55" height="31"/>
@@ -883,13 +883,13 @@
         <image name="borders"  filename="hires/mystart.vga"    width="640" height="400" depth="32" filetype="image/x-u4rle" prescale="2"/>
 
         <!-- not using intro screen images in hires, intro.ccp can't handle them properly yet
-        <image name="title"   filename="hires/mytitle.vga"  width="640" height="400" depth="24" filetype="image/x-u4lzw" introOnly="true" fixup="intro" prescale="2">
+        <image name="title"   filename="hires/mytitle.vga"  width="640" height="400" depth="24" filetype="image/x-u4lzw" fixup="intro" prescale="2">
            <subimage name="options_top"  x="0"  y="64"   width="640"  height="256"/>
            <subimage name="options_btm"  x="0"  y="224"  width="640"  height="160"/>
         </image>
         -->
 
-       <image name="beasties" filename="hires/myanimate.vga" width="640" height="400" depth="24" filetype="image/x-u4lzw" introOnly="true" prescale="2">
+       <image name="beasties" filename="hires/myanimate.vga" width="640" height="400" depth="24" filetype="image/x-u4lzw" prescale="2">
             <subimage name="beast0frame00" x="0"   y="0"   width="110" height="62"/>
             <subimage name="beast0frame01" x="0"   y="64"  width="110" height="62"/>
             <subimage name="beast0frame02" x="0"   y="128" width="110" height="62"/>
@@ -928,24 +928,24 @@
             <subimage name="beast1frame17" x="544" y="320" width="96"  height="62"/>
         </image>
         
-        <image name="abacus"   filename="hires/abacus.vga"   width="640" height="400" depth="32" filetype="image/x-u4lzw" introOnly="true" fixup="abacus" prescale="2" transparentIndex="0">
+        <image name="abacus"   filename="hires/abacus.vga"   width="640" height="400" depth="32" filetype="image/x-u4lzw" fixup="abacus" prescale="2" transparentIndex="0">
             <subimage name="whitebead"      x="16"   y="374" width="16" height="24"/>
             <subimage name="blackbead"      x="48"  y="374" width="16" height="24"/>
         </image>
         
-       <image name="honcom"   filename="hires/honcom.vga"   width="640" height="400" depth="32" filetype="image/x-u4lzw" introOnly="true" prescale="2" transparentIndex="0">
+       <image name="honcom"   filename="hires/honcom.vga"   width="640" height="400" depth="32" filetype="image/x-u4lzw" prescale="2" transparentIndex="0">
             <subimage name="honestycard"    x="26"  y="26" width="178" height="244"/>
             <subimage name="compassioncard" x="438" y="26" width="178" height="244"/>
         </image>
-        <image name="valjus"   filename="hires/valjus.vga"   width="640" height="400" depth="32" filetype="image/x-u4lzw" introOnly="true" prescale="2" transparentIndex="0">
+        <image name="valjus"   filename="hires/valjus.vga"   width="640" height="400" depth="32" filetype="image/x-u4lzw" prescale="2" transparentIndex="0">
             <subimage name="valorcard"      x="26"  y="26" width="178" height="244"/>
             <subimage name="justicecard"    x="438" y="26" width="178" height="244"/>
         </image>
-        <image name="sachonor" filename="hires/sachonor.vga" width="640" height="400" depth="32" filetype="image/x-u4lzw" introOnly="true" prescale="2" transparentIndex="0">
+        <image name="sachonor" filename="hires/sachonor.vga" width="640" height="400" depth="32" filetype="image/x-u4lzw" prescale="2" transparentIndex="0">
             <subimage name="sacrificecard"  x="26"  y="26" width="178" height="244"/>
             <subimage name="honorcard"      x="438" y="26" width="178" height="244"/>
         </image>
-        <image name="spirhum"  filename="hires/spirhum.vga"  width="640" height="400" depth="32" filetype="image/x-u4lzw" introOnly="true" prescale="2" transparentIndex="0">
+        <image name="spirhum"  filename="hires/spirhum.vga"  width="640" height="400" depth="32" filetype="image/x-u4lzw" prescale="2" transparentIndex="0">
             <subimage name="spiritualitycard" x="26"  y="26" width="178" height="244"/>
             <subimage name="humilitycard"   x="438" y="26" width="178" height="244"/>
         </image>
@@ -954,19 +954,19 @@
     <imageset name="VGA2" extends="VGA">
         <image name="borders" filename="vga2/start.png" prescale="2"/>
         <image name="charset" filename="vga2/charset.png" tiles="128" prescale="2"/>
-        <image name="honcom" filename="vga2/honcom.png" introOnly="true" prescale="2">
+        <image name="honcom" filename="vga2/honcom.png" prescale="2">
             <subimage name="honestycard"    x="24"  y="24" width="180" height="248"/>
             <subimage name="compassioncard" x="436" y="24" width="180" height="248"/>
         </image>
-        <image name="sachonor" filename="vga2/sachonor.png" introOnly="true" prescale="2">
+        <image name="sachonor" filename="vga2/sachonor.png" prescale="2">
             <subimage name="sacrificecard"  x="26"  y="26" width="178" height="244"/>
             <subimage name="honorcard"      x="438" y="26" width="178" height="244"/>
         </image>
-        <image name="spirhum"  filename="vga2/spirhum.png" introOnly="true" prescale="2">
+        <image name="spirhum"  filename="vga2/spirhum.png" prescale="2">
             <subimage name="spiritualitycard" x="26"  y="26" width="178" height="244"/>
             <subimage name="humilitycard"   x="438" y="26" width="178" height="244"/>
         </image>
-        <image name="valjus" filename="vga2/valjus.png" introOnly="true" prescale="2">
+        <image name="valjus" filename="vga2/valjus.png" prescale="2">
             <subimage name="valorcard"      x="26"  y="26" width="178" height="244"/>
             <subimage name="justicecard"    x="438" y="26" width="178" height="244"/>
         </image>
@@ -1128,25 +1128,25 @@
         <image name="borders" filename="vga2/start.png" prescale="2"/>
 
         <!-- no intro screen images in VGA upgrade -->
-	         <image name="title"   filename="png/title.png" introOnly="true" fixup="intro">
+	         <image name="title"   filename="png/title.png" fixup="intro">
                 <subimage name="options_top"  x="0"  y="32"   width="320"  height="128"/>
                 <subimage name="options_btm"  x="0"  y="112"  width="320"  height="80"/>
             </image>
-            <image name="tree"     filename="png/tree.png" introOnly="true" >
+            <image name="tree"     filename="png/tree.png" >
                 <subimage name="moongate" x="0"   y="152" width="24" height="24"/>
                 <subimage name="items"    x="24"  y="152" width="24" height="24"/>
             </image>
-            <image name="portal"   filename="png/portal.png" introOnly="true"/>
-            <image name="outside"  filename="png/outside.png" introOnly="true"/>
-            <image name="inside"   filename="png/inside.png" introOnly="true"/>
-            <image name="wagon"    filename="png/wagon.png" introOnly="true"/>
-            <image name="gypsy"    filename="png/gypsy.png" introOnly="true"/>
-            <image name="abacus"   filename="png/abacus.png" introOnly="true" fixup="abacus">
+            <image name="portal"   filename="png/portal.png"/>
+            <image name="outside"  filename="png/outside.png"/>
+            <image name="inside"   filename="png/inside.png"/>
+            <image name="wagon"    filename="png/wagon.png"/>
+            <image name="gypsy"    filename="png/gypsy.png"/>
+            <image name="abacus"   filename="png/abacus.png" fixup="abacus">
                 <subimage name="whitebead"      x="8"   y="187" width="8" height="12"/>
                 <subimage name="blackbead"      x="24"  y="187" width="8" height="12"/>
             </image>
 
-            <image name="beasties" filename="png/beasties.png" introOnly="true">
+            <image name="beasties" filename="png/beasties.png">
                 <subimage name="beast0frame00" x="0"   y="0"   width="55" height="31"/>
                 <subimage name="beast0frame01" x="0"   y="32"  width="55" height="31"/>
                 <subimage name="beast0frame02" x="0"   y="64"  width="55" height="31"/>
@@ -1209,36 +1209,36 @@
         <!-- Not a 16 bit image :( <image name="borders"  filename="fmtowns/ULT4_MEN.TIF" width="320" height="200" depth="16" filetype="image/fmtowns-tif"/> -->
         
         <!-- intro screen images Don't look good yet.  Wrong palette, and incompatible positioning 
-        <image name="title"   filename="fmtowns/ULT4_MEN.TIF"  width="640" height="480" depth="4" prescale="2" filetype="image/fmtowns-tif" introOnly="true" fixup="fmtownsscreen" >
+        <image name="title"   filename="fmtowns/ULT4_MEN.TIF"  width="640" height="480" depth="4" prescale="2" filetype="image/fmtowns-tif" fixup="fmtownsscreen" >
             <subimage name="options_top"  x="0"  y="64"   width="640"  height="400"/>
             <subimage name="options_btm"  x="0"  y="300"  width="640"  height="180"/>
         </image>
         -->
 
-		<image name="tree"     filename="fmtowns/U4_6.TIF"     width="320" height="240" depth="16" filetype="image/fmtowns-tif" introOnly="true" fixup="fmtownsscreen"/>
+		<image name="tree"     filename="fmtowns/U4_6.TIF"     width="320" height="240" depth="16" filetype="image/fmtowns-tif" fixup="fmtownsscreen"/>
 		<!-- TODO, create replacement moongate and items
-        <image name="tree"     filename="tree.ega"     width="320" height="200" depth="16" filetype="image/fmtowns" introOnly="true">
+        <image name="tree"     filename="tree.ega"     width="320" height="200" depth="16" filetype="image/fmtowns">
             <subimage name="moongate" x="0"   y="152" width="24" height="24"/>
             <subimage name="items"    x="24"  y="152" width="24" height="24"/>
         </image>  -->
-        <image name="portal"   filename="fmtowns/U4_7.TIF" 	width="320" height="240" depth="16" filetype="image/fmtowns-tif" introOnly="true" fixup="fmtownsscreen"/>
-        <image name="outside"  filename="fmtowns/U4_8.TIF" 	width="320" height="240" depth="16" filetype="image/fmtowns-tif" introOnly="true" fixup="fmtownsscreen"/>
-        <image name="inside"   filename="fmtowns/U4_9.TIF" 	width="320" height="240" depth="16" filetype="image/fmtowns-tif" introOnly="true" fixup="fmtownsscreen"/>
-        <image name="wagon"    filename="fmtowns/U4_10.TIF" width="320" height="240" depth="16" filetype="image/fmtowns-tif" introOnly="true" fixup="fmtownsscreen"/>
-        <image name="gypsy"    filename="fmtowns/U4_11.TIF" width="320" height="240" depth="16" filetype="image/fmtowns-tif" introOnly="true" fixup="fmtownsscreen"/>
-        <image name="abacus"   filename="fmtowns/U4_HASHI.TIF" width="320" height="240" depth="16" filetype="image/fmtowns-tif" introOnly="true" />
+        <image name="portal"   filename="fmtowns/U4_7.TIF" 	width="320" height="240" depth="16" filetype="image/fmtowns-tif" fixup="fmtownsscreen"/>
+        <image name="outside"  filename="fmtowns/U4_8.TIF" 	width="320" height="240" depth="16" filetype="image/fmtowns-tif" fixup="fmtownsscreen"/>
+        <image name="inside"   filename="fmtowns/U4_9.TIF" 	width="320" height="240" depth="16" filetype="image/fmtowns-tif" fixup="fmtownsscreen"/>
+        <image name="wagon"    filename="fmtowns/U4_10.TIF" width="320" height="240" depth="16" filetype="image/fmtowns-tif" fixup="fmtownsscreen"/>
+        <image name="gypsy"    filename="fmtowns/U4_11.TIF" width="320" height="240" depth="16" filetype="image/fmtowns-tif" fixup="fmtownsscreen"/>
+        <image name="abacus"   filename="fmtowns/U4_HASHI.TIF" width="320" height="240" depth="16" filetype="image/fmtowns-tif" />
 
-        <image name="whitebead"  filename="fmtowns/TAMA_W.TIF"       width="8" height="15" depth="16" filetype="image/fmtowns-tif" introOnly="true"/>
-        <image name="blackbead"  filename="fmtowns/TAMA_B.TIF"       width="8" height="15" depth="16" filetype="image/fmtowns-tif" introOnly="true"/>
+        <image name="whitebead"  filename="fmtowns/TAMA_W.TIF"       width="8" height="15" depth="16" filetype="image/fmtowns-tif"/>
+        <image name="blackbead"  filename="fmtowns/TAMA_B.TIF"       width="8" height="15" depth="16" filetype="image/fmtowns-tif"/>
 
-        <image filename="fmtowns/U4_16.TIF" name="honestycard" width="74" height="116" depth="16" filetype="image/fmtowns-tif" introOnly="true"/>
-        <image filename="fmtowns/U4_18.TIF" name="compassioncard"   width="74" height="116" depth="16" filetype="image/fmtowns-tif" introOnly="true"/>
-        <image filename="fmtowns/U4_12.TIF" name="valorcard" width="74" height="116" depth="16" filetype="image/fmtowns-tif" introOnly="true"/>
-        <image filename="fmtowns/U4_14.TIF" name="justicecard"   width="74" height="116" depth="16" filetype="image/fmtowns-tif" introOnly="true"/>
-        <image filename="fmtowns/U4_13.TIF" name="sacrificecard" width="74" height="116" depth="16" filetype="image/fmtowns-tif" introOnly="true"/>
-        <image filename="fmtowns/U4_19.TIF" name="honorcard"   width="74" height="116" depth="16" filetype="image/fmtowns-tif" introOnly="true"/>
-        <image filename="fmtowns/U4_17.TIF" name="spiritualitycard" width="74" height="116" depth="16" filetype="image/fmtowns-tif" introOnly="true"/>
-        <image filename="fmtowns/U4_15.TIF" name="humilitycard"   width="74" height="116" depth="16" filetype="image/fmtowns-tif" introOnly="true"/>
+        <image filename="fmtowns/U4_16.TIF" name="honestycard" width="74" height="116" depth="16" filetype="image/fmtowns-tif"/>
+        <image filename="fmtowns/U4_18.TIF" name="compassioncard"   width="74" height="116" depth="16" filetype="image/fmtowns-tif"/>
+        <image filename="fmtowns/U4_12.TIF" name="valorcard" width="74" height="116" depth="16" filetype="image/fmtowns-tif"/>
+        <image filename="fmtowns/U4_14.TIF" name="justicecard"   width="74" height="116" depth="16" filetype="image/fmtowns-tif"/>
+        <image filename="fmtowns/U4_13.TIF" name="sacrificecard" width="74" height="116" depth="16" filetype="image/fmtowns-tif"/>
+        <image filename="fmtowns/U4_19.TIF" name="honorcard"   width="74" height="116" depth="16" filetype="image/fmtowns-tif"/>
+        <image filename="fmtowns/U4_17.TIF" name="spiritualitycard" width="74" height="116" depth="16" filetype="image/fmtowns-tif"/>
+        <image filename="fmtowns/U4_15.TIF" name="humilitycard"   width="74" height="116" depth="16" filetype="image/fmtowns-tif"/>
        
         <!-- abyss vision images: codex symbol images are overlaid on top of each other, so color 0 (black) is set to be transparent PICS don't work yet.
         <image name="key"      filename="fmtowns/key7.pic"     width="320" height="200" depth="16" filetype="image/fmtowns-pic" />
@@ -1456,25 +1456,25 @@
 
         <!-- no intro screen images in VGA upgrade - borrowed from ALLPNG -->
 
-           <image name="title"   filename="png/title.png" introOnly="true" fixup="intro">
+           <image name="title"   filename="png/title.png" fixup="intro">
                <subimage name="options_top"  x="0"  y="32"   width="320"  height="128"/>
                <subimage name="options_btm"  x="0"  y="112"  width="320"  height="80"/>
            </image>
-           <image name="tree"     filename="png/tree.png" introOnly="true" >
+           <image name="tree"     filename="png/tree.png" >
                <subimage name="moongate" x="0"   y="152" width="24" height="24"/>
                <subimage name="items"    x="24"  y="152" width="24" height="24"/>
            </image>
-           <image name="portal"   filename="png/portal.png" introOnly="true"/>
-           <image name="outside"  filename="png/outside.png" introOnly="true"/>
-           <image name="inside"   filename="png/inside.png" introOnly="true"/>
-           <image name="wagon"    filename="png/wagon.png" introOnly="true"/>
-           <image name="gypsy"    filename="png/gypsy.png" introOnly="true"/>
-           <image name="abacus"   filename="png/abacus.png" introOnly="true" fixup="abacus">
+           <image name="portal"   filename="png/portal.png"/>
+           <image name="outside"  filename="png/outside.png"/>
+           <image name="inside"   filename="png/inside.png"/>
+           <image name="wagon"    filename="png/wagon.png"/>
+           <image name="gypsy"    filename="png/gypsy.png"/>
+           <image name="abacus"   filename="png/abacus.png" fixup="abacus">
                <subimage name="whitebead"      x="8"   y="187" width="8" height="12"/>
                <subimage name="blackbead"      x="24"  y="187" width="8" height="12"/>
            </image>
 
-           <image name="beasties" filename="png/beasties.png" introOnly="true">
+           <image name="beasties" filename="png/beasties.png">
                <subimage name="beast0frame00" x="0"   y="0"   width="55" height="31"/>
                <subimage name="beast0frame01" x="0"   y="32"  width="55" height="31"/>
                <subimage name="beast0frame02" x="0"   y="64"  width="55" height="31"/>
@@ -1668,19 +1668,19 @@
         </image>
         <image name="borders" filename="vga2/start.png" prescale="2"/>
         <image name="charset" filename="vga2/charset.png" tiles="128" prescale="2"/>
-        <image name="honcom" filename="vga2/honcom.png" introOnly="true" prescale="2">
+        <image name="honcom" filename="vga2/honcom.png" prescale="2">
             <subimage name="honestycard"    x="24"  y="24" width="180" height="248"/>
             <subimage name="compassioncard" x="436" y="24" width="180" height="248"/>
         </image>
-        <image name="sachonor" filename="vga2/sachonor.png" introOnly="true" prescale="2">
+        <image name="sachonor" filename="vga2/sachonor.png" prescale="2">
             <subimage name="sacrificecard"  x="26"  y="26" width="178" height="244"/>
             <subimage name="honorcard"      x="438" y="26" width="178" height="244"/>
         </image>
-        <image name="spirhum"  filename="vga2/spirhum.png" introOnly="true" prescale="2">
+        <image name="spirhum"  filename="vga2/spirhum.png" prescale="2">
             <subimage name="spiritualitycard" x="26"  y="26" width="178" height="244"/>
             <subimage name="humilitycard"   x="438" y="26" width="178" height="244"/>
         </image>
-        <image name="valjus" filename="vga2/valjus.png" introOnly="true" prescale="2">
+        <image name="valjus" filename="vga2/valjus.png" prescale="2">
             <subimage name="valorcard"      x="26"  y="26" width="178" height="244"/>
             <subimage name="justicecard"    x="438" y="26" width="178" height="244"/>
         </image>

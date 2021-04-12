@@ -291,9 +291,13 @@ bool IntroController::init() {
     justInitiatedNewGame = false;
     introMusic = MUSIC_TOWNS;
 
+    uint16_t saveGroup = xu4.imageMgr->setResourceGroup(StageIntro);
+
     // sigData is referenced during Titles initialization
     binData = new IntroBinData();
     binData->load();
+
+    xu4.imageMgr->get(BKGD_ANIMATE);    // Assign resource group.
 
     if (bSkipTitles)
     {
@@ -336,6 +340,7 @@ bool IntroController::init() {
     if (bSkipTitles)
         updateScreen();
 
+    xu4.imageMgr->setResourceGroup(saveGroup);
     return true;
 }
 
@@ -354,7 +359,7 @@ void IntroController::deleteIntro() {
     delete [] objectStateTable;
     objectStateTable = NULL;
 
-    xu4.imageMgr->freeIntroBackgrounds();
+    xu4.imageMgr->freeResourceGroup(StageIntro);
 }
 
 unsigned char *IntroController::getSigData() {
@@ -742,6 +747,9 @@ void IntroController::finishInitiateGame(const string &nameBuffer, SexType sex)
     // no more text entry, so disable the text cursor
     menuArea.disableCursor();
 
+    {
+    uint16_t saveGroup = xu4.imageMgr->setResourceGroup(StageIntro);
+
     // show the lead up story
     showStory();
     if (xu4.stage != StageIntro)
@@ -752,9 +760,10 @@ void IntroController::finishInitiateGame(const string &nameBuffer, SexType sex)
     if (xu4.stage != StageIntro)
         return;
 
+    xu4.imageMgr->setResourceGroup(saveGroup);
+    }
+
     // write out save game an segue into game
-    SaveGame saveGame;
-    SaveGamePlayerRecord avatar;
 
     FILE *saveGameFile = fopen((xu4.settings->getUserPath() + PARTY_SAV_BASE_FILENAME).c_str(), "wb");
     if (!saveGameFile) {
@@ -763,6 +772,10 @@ void IntroController::finishInitiateGame(const string &nameBuffer, SexType sex)
         updateScreen();
         return;
     }
+
+    {
+    SaveGame saveGame;
+    SaveGamePlayerRecord avatar;
 
     avatar.init();
     strcpy(avatar.name, nameBuffer.c_str());
@@ -776,6 +789,8 @@ void IntroController::finishInitiateGame(const string &nameBuffer, SexType sex)
     saveGame.reagents[REAG_GARLIC] = 4;
     saveGame.torches = 2;
     saveGame.write(saveGameFile);
+    }
+
     fclose(saveGameFile);
 
     saveGameFile = fopen((xu4.settings->getUserPath() + MONSTERS_SAV_BASE_FILENAME).c_str(), "wb");

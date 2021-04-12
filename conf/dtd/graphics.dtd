@@ -21,7 +21,6 @@
                 prescale          NMTOKEN  #IMPLIED
                 filetype          CDATA    #IMPLIED
                 tiles             NMTOKEN  #IMPLIED
-                introOnly         %bool;   #IMPLIED
                 transparentIndex  NMTOKEN  #IMPLIED
                 fixup             %fixup;  #IMPLIED>
 

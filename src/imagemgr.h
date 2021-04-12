@@ -85,12 +85,12 @@ public:
 
     std::string name;
     std::string filename;
+    uint16_t resGroup;          /**< resource group */
     uint16_t tiles;             /**< used to scale the without bleeding colors between adjacent tiles */
     int16_t width, height;
     uint8_t depth;
     uint8_t prescale;
     uint8_t filetype;
-    bool introOnly;             /**< whether can be freed after the intro */
     uint8_t transparentIndex;   /**< color index to consider transparent */
     uint8_t fixup;              /**< a routine to do miscellaneous fixes to the image */
     Image *image;               /**< the image we're describing */
@@ -119,7 +119,9 @@ public:
 
     ImageInfo *get(const std::string &name, bool returnUnscaled=false);
     SubImage *getSubImage(const std::string &name);
-    void freeIntroBackgrounds();
+
+    uint16_t setResourceGroup(uint16_t group);
+    void freeResourceGroup(uint16_t group);
 
 private:
     U4FILE * getImageFile(ImageInfo *info);
@@ -137,6 +139,7 @@ private:
     std::map<std::string, ImageSet *> imageSets;
     ImageSet *baseSet;
     Debug *logger;
+    uint16_t resGroup;
 };
 
 extern ImageMgr* imageMgr;
