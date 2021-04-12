@@ -3,6 +3,7 @@
  */
 
 #include <vector>
+#include <string.h>
 
 #include "config.h"
 #include "debug.h"
@@ -354,36 +355,39 @@ ImageInfo *ImageMgr::getInfoFromSet(const string &name, ImageSet *imageset) {
 
 U4FILE * ImageMgr::getImageFile(ImageInfo *info)
 {
+    U4FILE *file;
     string filename = info->filename;
+    const char* fn = filename.c_str();
 
-    /*
-     * If the u4 VGA upgrade is installed (i.e. setup has been run and
-     * the u4dos files have been renamed), we need to use VGA names
-     * for EGA and vice versa, but *only* when the upgrade file has a
-     * .old extention.  The charset and tiles have a .vga extention
-     * and are not renamed in the upgrade installation process
-     */
-    if (u4isUpgradeInstalled()) {
-        string& vgaFile = getInfoFromSet(info->name, scheme("VGA"))->filename;
-        if (vgaFile.find(".old") != string::npos) {
-            if (xu4.settings->videoType == "EGA")
-                filename = vgaFile;
-            else
-                filename = getInfoFromSet(info->name, scheme("EGA"))->filename;
+    if (strncmp(fn, "u4/", 3) == 0 ||
+        strncmp(fn, "u4u/", 4) == 0) {
+        // Original game data - strip off path.
+        string basename = fn + ((fn[2] == '/') ? 3 : 4);
+
+        /*
+         * If the u4 VGA upgrade is installed (i.e. setup has been run and
+         * the u4dos files have been renamed), we need to use VGA names
+         * for EGA and vice versa, but *only* when the upgrade file has a
+         * .old extention.  The charset and tiles have a .vga extention
+         * and are not renamed in the upgrade installation process
+         */
+        if (u4isUpgradeInstalled()) {
+            string& vgaFile = getInfoFromSet(info->name, scheme("VGA"))->filename;
+            if (vgaFile.find(".old") != string::npos) {
+                if (xu4.settings->videoType == "EGA")
+                    basename = vgaFile;
+                else
+                    basename = getInfoFromSet(info->name, scheme("EGA"))->filename;
+            }
         }
-    }
 
-    if (filename == "")
-        return NULL;
-
-    U4FILE *file = NULL;
-    if (info->xu4Graphic) {
+        file = u4fopen(basename);
+    } else {
         string pathname(u4find_graphics(filename));
-        if (!pathname.empty())
+        if (pathname.empty())
+            file = NULL;
+        else
             file = u4fopen_stdio(pathname);
-    }
-    else {
-        file = u4fopen(filename);
     }
     return file;
 }

@@ -23,7 +23,6 @@
                 tiles             NMTOKEN  #IMPLIED
                 introOnly         %bool;   #IMPLIED
                 transparentIndex  NMTOKEN  #IMPLIED
-                xu4Graphic        %bool;   #IMPLIED
                 fixup             %fixup;  #IMPLIED>
 
 <!ELEMENT subimage EMPTY >

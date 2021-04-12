@@ -480,8 +480,6 @@ static ImageInfo* loadImageInfo(const ConfigElement &conf) {
     info->tiles = conf.getInt("tiles");
     info->introOnly = conf.getBool("introOnly");
     info->transparentIndex = conf.getInt("transparentIndex", -1);
-
-    info->xu4Graphic = conf.getBool("xu4Graphic");
     info->fixup = static_cast<ImageFixup>(conf.getEnum("fixup", fixupEnumStrings));
     info->image = NULL;
 

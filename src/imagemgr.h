@@ -91,7 +91,6 @@ public:
     uint8_t prescale;
     uint8_t filetype;
     bool introOnly;             /**< whether can be freed after the intro */
-    bool xu4Graphic;            /**< an original xu4 graphic not part of u4dos or the VGA upgrade */
     uint8_t transparentIndex;   /**< color index to consider transparent */
     uint8_t fixup;              /**< a routine to do miscellaneous fixes to the image */
     Image *image;               /**< the image we're describing */
@@ -121,9 +120,9 @@ public:
     ImageInfo *get(const std::string &name, bool returnUnscaled=false);
     SubImage *getSubImage(const std::string &name);
     void freeIntroBackgrounds();
-    U4FILE * getImageFile(ImageInfo *info);
 
 private:
+    U4FILE * getImageFile(ImageInfo *info);
     ImageSet* scheme(const std::string &setname);
     ImageInfo* getInfoFromSet(const std::string &name, ImageSet *set);
 
