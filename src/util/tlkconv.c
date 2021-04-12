@@ -1,12 +1,75 @@
 /*
- * $Id$
+ * tlkconv.c
  */
 
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
-
 #include <libxml/xmlmemory.h>
 #include <libxml/parser.h>
+
+#define EX_USAGE     64  /* command line usage error */
+#define EX_NOINPUT   66  /* cannot open input */
+#define EX_CANTCREAT 73  /* can't create (user) output file */
+
+
+struct Talk {
+    char* name;
+    char* pronoun;
+    char* look;
+    char* job;
+    char* health;
+    char* response1;
+    char* response2;
+    char* question;
+    char* yes;
+    char* no;
+    char* topic1;
+    char* topic2;
+    char* askAfter;
+    uint8_t questionHumility;
+    uint8_t turnAway;
+};
+
+void talk_init(struct Talk* ts, char* tlk_buffer) {
+    char *ptr = tlk_buffer + 3;
+
+    ts->questionHumility = tlk_buffer[1];
+    ts->turnAway = ((uint8_t*) tlk_buffer)[2];
+
+#define SET(memb) \
+    ts->memb = ptr; \
+    ptr += strlen(ptr) + 1
+
+    SET(name);
+    SET(pronoun);
+    SET(look);
+    SET(job);
+    SET(health);
+    SET(response1);
+    SET(response2);
+    SET(question);
+    SET(yes);
+    SET(no);
+    SET(topic1);
+    SET(topic2);
+
+    switch( tlk_buffer[0] )
+    {
+        case 3:
+            ts->askAfter = ts->job; break;
+        case 4:
+            ts->askAfter = ts->health; break;
+        case 5:
+            ts->askAfter = ts->topic1; break;
+        case 6:
+            ts->askAfter = ts->topic2; break;
+        default:
+            ts->askAfter = NULL; break;
+    }
+}
+
+//--------------------------------------
 
 xmlNodePtr addAsText(xmlDocPtr doc, xmlNodePtr node, const char *in) {
     const char *begin, *end;
@@ -152,7 +215,7 @@ xmlDocPtr tlkToXml(FILE *tlk) {
     int i;
     char tlk_buffer[288];
     char buf[100];
-    char *response1, *response2, *question, *yes, *no;
+    struct Talk ts;
 
     doc = xmlNewDoc((const xmlChar *)"1.0");
     // FIXME: this encoding is not found on my machine; is it universal?
@@ -163,61 +226,36 @@ xmlDocPtr tlkToXml(FILE *tlk) {
     xmlNodeSetSpacePreserve(root, 1);
 
     for (i = 0; ; i++) {
-        char *ptr;
         xmlNodePtr job, health, kw1, kw2, target;
 
         if (fread(tlk_buffer, 1, sizeof(tlk_buffer), tlk) != sizeof(tlk_buffer))
             break;
+        talk_init(&ts, tlk_buffer);
 
         node = xmlNewChild(root, NULL, (const xmlChar *)"person", NULL);
-
-        ptr = tlk_buffer + 3;
 
         sprintf(buf, "%d", i);
         xmlSetProp(node, (const xmlChar *)"id", (const xmlChar *)buf);
 
-        xmlSetProp(node, (const xmlChar *)"name", (const xmlChar *)ptr);
-        ptr += strlen(ptr) + 1;
+        xmlSetProp(node, (const xmlChar *)"name", (const xmlChar *)ts.name);
+        xmlSetProp(node, (const xmlChar *)"pronoun", (const xmlChar *)ts.pronoun);
 
-        xmlSetProp(node, (const xmlChar *)"pronoun", (const xmlChar *)ptr);
-        ptr += strlen(ptr) + 1;
-
-        sprintf(buf, "%d", (unsigned char) tlk_buffer[2]);
+        sprintf(buf, "%d", ts.turnAway);
         xmlSetProp(node, (const xmlChar *)"turnAwayProb", (const xmlChar *)buf);
 
-        addAsText(doc, xmlNewTextChild(node, NULL, (const xmlChar *)"description", NULL), ptr);
-        ptr += strlen(ptr) + 1;
+        addAsText(doc, xmlNewTextChild(node, NULL, (const xmlChar *)"description", NULL), ts.look);
 
-        job = addAsText(doc, xmlNewTextChild(node, NULL, (const xmlChar *)"topic", NULL), ptr);
+        job = addAsText(doc, xmlNewTextChild(node, NULL, (const xmlChar *)"topic", NULL), ts.job);
         xmlSetProp(job, (const xmlChar *)"query", (const xmlChar *)"job");
-        ptr += strlen(ptr) + 1;
 
-        health = addAsText(doc, xmlNewTextChild(node, NULL, (const xmlChar *)"topic", NULL), ptr);
+        health = addAsText(doc, xmlNewTextChild(node, NULL, (const xmlChar *)"topic", NULL), ts.health);
         xmlSetProp(health, (const xmlChar *)"query", (const xmlChar *)"health");
-        ptr += strlen(ptr) + 1;
 
-        response1 = strdup(ptr);
-        ptr += strlen(ptr) + 1;
+        kw1 = addAsText(doc, xmlNewTextChild(node, NULL, (const xmlChar *)"topic", NULL), ts.response1);
+        xmlSetProp(kw1, (const xmlChar *)"query", (const xmlChar *)ts.topic1);
 
-        response2 = strdup(ptr);
-        ptr += strlen(ptr) + 1;
-
-        question = strdup(ptr);
-        ptr += strlen(ptr) + 1;
-
-        yes = strdup(ptr);
-        ptr += strlen(ptr) + 1;
-
-        no = strdup(ptr);
-        ptr += strlen(ptr) + 1;
-
-        kw1 = addAsText(doc, xmlNewTextChild(node, NULL, (const xmlChar *)"topic", NULL), response1);
-        xmlSetProp(kw1, (const xmlChar *)"query", (const xmlChar *)ptr);
-        ptr += strlen(ptr) + 1;
-
-        kw2 = addAsText(doc, xmlNewTextChild(node, NULL, (const xmlChar *)"topic", NULL), response2);
-        xmlSetProp(kw2, (const xmlChar *)"query", (const xmlChar *)ptr);
-        ptr += strlen(ptr) + 1;
+        kw2 = addAsText(doc, xmlNewTextChild(node, NULL, (const xmlChar *)"topic", NULL), ts.response2);
+        xmlSetProp(kw2, (const xmlChar *)"query", (const xmlChar *)ts.topic2);
 
         switch(tlk_buffer[0]) {
         case 3: target = job; break;
@@ -232,71 +270,165 @@ xmlDocPtr tlkToXml(FILE *tlk) {
 
         if (target) {
             xmlNodePtr q;
-            q = addAsText(doc, xmlNewTextChild(target, NULL, (const xmlChar *)"question", NULL), question);
+            q = addAsText(doc, xmlNewTextChild(target, NULL, (const xmlChar *)"question", NULL), ts.question);
 
             // Get the question type
-            sprintf(buf, "%d", tlk_buffer[1]);
+            sprintf(buf, "%d", ts.questionHumility);
             xmlSetProp(q, (const xmlChar *)"type", (const xmlChar *)buf);
 
-            addAsText(doc, xmlNewTextChild(q, NULL, (const xmlChar *)"yes", NULL), yes);
-            addAsText(doc, xmlNewTextChild(q, NULL, (const xmlChar *)"no", NULL), no);
+            addAsText(doc, xmlNewTextChild(q, NULL, (const xmlChar *)"yes", NULL), ts.yes);
+            addAsText(doc, xmlNewTextChild(q, NULL, (const xmlChar *)"no", NULL), ts.no);
         }
-
-        free(response1);
-        free(response2);
-        free(question);
-        free(yes);
-        free(no);
     }
 
     return doc;
 }
 
+//--------------------------------------
+
+void askBoron(FILE *out, struct Talk* ts) {
+    fprintf( out, "    ask {%s} [\n"
+                  "      {%s}\n"
+                  "      {%s}\n"
+                  "    ]\n",
+             ts->question, ts->yes, ts->no );
+}
+
+void tlkToBoron(FILE *tlk, FILE* out) {
+    char tlk_buffer[288];
+    struct Talk ts;
+    int i;
+
+    for (i = 0; ; i++) {
+        if (fread(tlk_buffer, 1, sizeof(tlk_buffer), tlk) != sizeof(tlk_buffer))
+            break;
+        talk_init(&ts, tlk_buffer);
+
+        fprintf( out, "[\n  name: \"%s\"\n", ts.name );
+        fprintf( out, "  pronoun: \"%s\"\n", ts.pronoun );
+        fprintf( out, "  look: {%s}\n", ts.look );
+        fprintf( out, "  turn-away: %d\n", ts.turnAway );
+        fprintf( out, "  topics [\n" );
+
+        fprintf( out, "    \"job\" {%s}\n", ts.job );
+        if (ts.askAfter == ts.job) askBoron(out, &ts);
+
+        fprintf( out, "    \"health\" {%s}\n", ts.health );
+        if (ts.askAfter == ts.health) askBoron(out, &ts);
+
+        fprintf( out, "    \"%s\" {%s}\n", ts.topic1, ts.response1 );
+        if (ts.askAfter == ts.topic1) askBoron(out, &ts);
+
+        fprintf( out, "    \"%s\" {%s}\n", ts.topic2, ts.response2 );
+        if (ts.askAfter == ts.topic2) askBoron(out, &ts);
+
+        fprintf( out, "  ]\n]" );
+    }
+    fprintf( out, "\n" );
+}
+
+//--------------------------------------
+
+void usage() {
+    printf("Usage: tlkconv [OPTIONS] <input-file>\n"
+           "\nOptions:\n"
+           "  -f <format>   Output file format (boron, tlk, xml)\n"
+           "  -h            Print this help and exit\n"
+           "  -o <file>     Output filename    (defaults to stdout)\n");
+}
+
+void missingArg(char* option) {
+    printf("Missing argument for %s\n", option);
+    exit(EX_USAGE);
+}
+
 int main(int argc, char *argv[1]) {
     FILE *in, *out;
+    char *infile = NULL;
+    char *outfile = NULL;
+    int outFormat = 'x';
     xmlDocPtr doc;
     char *xml;
     int xmlSize;
+    int i;
 
-    if (argc != 4) {
-        fprintf(stderr, "usage: tlkconv --toxml file.tlk file.xml\n"
-                        "       tlkconv --fromxml file.xml file.tlk\n");
-        exit(1);
+    for (i = 1; i < argc; ++i) {
+        if (argv[i][0] == '-') {
+            switch (argv[i][1]) {
+                case 'f':
+                    if (++i >= argc)
+                        missingArg(argv[i-1]);
+                    outFormat = argv[i][0];
+                    break;
+                case 'h':
+                    usage();
+                    return 0;
+                case 'o':
+                    if (++i >= argc)
+                        missingArg(argv[i-1]);
+                    outfile = argv[i];
+                    break;
+                default:
+                    printf("Invalid option %s\n", argv[i]);
+                    return EX_USAGE;
+            }
+        } else {
+            infile = argv[i];
+       }
     }
 
-    in = fopen(argv[2], "rb");
+    if (! infile) {
+        usage();
+        return EX_USAGE;
+    }
+
+    in = fopen(infile, "rb");
     if (!in) {
-        perror(argv[2]);
-        exit(1);
+        perror(infile);
+        return EX_NOINPUT;
     }
 
-    out = fopen(argv[3], "wb");
-    if (!out) {
-        perror(argv[3]);
-        exit(1);
-    }
-
-    if (strcmp(argv[1], "--toxml") == 0) {
-        doc = tlkToXml(in);
-        xmlDocDumpFormatMemory(doc, (xmlChar **)&xml, &xmlSize, 1);
-        fwrite(xml, xmlSize, 1, out);
-        xmlFree(xml);
-    } else if (strcmp(argv[1], "--fromxml") == 0) {
-        fseek(in, 0L, SEEK_END);
-        xmlSize = ftell(in);
-        fseek(in, 0L, SEEK_SET);
-        xml = (char *) malloc(xmlSize);
-        fread(xml, xmlSize, 1, in);
-        doc = xmlParseMemory(xml, xmlSize);
-        if (doc)
-            xmlToTlk(doc, out);
+    if (outfile) {
+        out = fopen(outfile, "wb");
+        if (!out) {
+            perror(outfile);
+            fclose(in);
+            return EX_CANTCREAT;
+        }
     } else {
-        fprintf(stderr, "%s: invalid option\n", argv[1]);
-        exit(1);
+        out = stdout;
     }
+
+    switch (outFormat) {
+        case 'b':
+            tlkToBoron(in, out);
+            break;
+
+        case 't':
+            fseek(in, 0L, SEEK_END);
+            xmlSize = ftell(in);
+            fseek(in, 0L, SEEK_SET);
+            xml = (char *) malloc(xmlSize);
+            fread(xml, xmlSize, 1, in);
+            doc = xmlParseMemory(xml, xmlSize);
+            if (doc)
+                xmlToTlk(doc, out);
+            break;
+
+        case 'x':
+            doc = tlkToXml(in);
+            xmlDocDumpFormatMemory(doc, (xmlChar **)&xml, &xmlSize, 1);
+            fwrite(xml, xmlSize, 1, out);
+            xmlFree(xml);
+            break;
+
+        default:
+            printf("Invalid format '%c'\n", outFormat);
+    }
+
+    if (out != stdout)
+        fclose(out);
 
     fclose(in);
-    fclose(out);
-
     return 0;
 }

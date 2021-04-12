@@ -86,17 +86,17 @@ tlkconv converts the Ultima IV .TLK files into XML and back.  The
 conversation text can be changed, but it must follow the basic Ultima
 IV conversation structure: response for each of the standard questions
 ("name", "look", "job", and "health") a pronoun (he, she, it, etc.),
-two addtional four letter keywords and the responses they trigger, and
+two additional four letter keywords and the responses they trigger, and
 finally a question and the responses for yes and no answers.
 Attributes also specify when the question is asked, whether the answer
 to the question will affect the players humility, and how likely the
 talker is to turn away in mid-conversation.
 
-This should also make internationalizing most of the NPC convsations
+This should also make internationalizing most of the NPC conversations
 easier.  Note that both xu4 and Ultima IV for DOS only support
 US-ASCII characters (xu4 may support ISO-8859-1 or even Unicode in the
 future).
 
-Example:
-C:\xu4> tlkconv --toxml BRITAIN.TLK BRITAIN.XML        (to convert to XML)
-C:\xu4> tlkconv --fromxml BRITAIN.XML BRITAIN.TLK      (to convert back to U4 format)
+Examples:
+    tlkconv -f xml BRITAIN.TLK >Britain.xml     # Convert to XML
+    tlkconv -f tlk Britain.xml >BRITAIN.TLK     # Convert back to U4 format
