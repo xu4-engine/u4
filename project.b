@@ -1,13 +1,22 @@
 options [
 	os_api: 'allegro	"Platform Hardware API ('allegro 'sdl)"
 	use_gl: true
+	make_util: true
+]
+
+libxml2: does [
+	unix [
+		include_from %/usr/include/libxml2
+		libs %xml2
+	]
+	win32 [
+		libs_from %../usr/lib [%libxml2_a]
+	]
 ]
 
 exe %u4 [
 	include_from %src
-	unix [
-		include_from %/usr/include/libxml2
-	]
+	libxml2
 	win32 [
 		include_from %../usr/include
 	]
@@ -39,7 +48,7 @@ exe %u4 [
 
 	unix [
 		cflags "-Wno-unused-parameter"
-		libs [%xml2 %png %z]
+		libs [%png %z]
 		if use_gl [
 				cflags "-DUSE_GL"
 				libs %GL
@@ -47,7 +56,7 @@ exe %u4 [
 	]
 	win32 [
 		cflags "/DLIBXML_STATIC"
-		libs_from %../usr/lib [%libxml2_a %libpng16 %zlib]
+		libs_from %../usr/lib [%libpng16 %zlib]
 		libs [%User32]
 	]
 	cflags {-DVERSION=\"KR-1.0\"}
@@ -125,5 +134,21 @@ exe %u4 [
 		%lzw/lzw.c
 		%lzw/u6decode.cpp
 		%lzw/u4decode.cpp
+	]
+]
+
+if make_util [
+	exe %coord   [console sources [%src/util/coord.c]]
+	exe %tlkconv [console libxml2 sources [%src/util/tlkconv.c]]
+	exe %dumpmap [console sources [%src/util/dumpmap.c]]
+	exe %dumpsavegame [
+		console
+		include_from %src
+		sources [
+			%src/io.cpp
+			%src/names.cpp
+			%src/savegame.cpp
+			%src/util/dumpsavegame.cpp
+		]
 	]
 ]
