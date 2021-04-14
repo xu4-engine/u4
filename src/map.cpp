@@ -262,7 +262,7 @@ Map::~Map() {
 }
 
 string Map::getName() {
-    return baseSource.fname;
+    return fname;
 }
 
 /**

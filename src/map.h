@@ -90,16 +90,6 @@ public:
         BORDER_FIXED
     };
 
-
-    class Source {
-    public:
-        Source() {}
-        Source(const string &f, Type t) : fname(f), type(t) {}
-
-        string fname;
-        Type type;
-    };
-
     Map();
     virtual ~Map();
 
@@ -136,23 +126,20 @@ public:
     MapId           id;
     string          fname;
     Type            type;
-    unsigned int    width,
+    uint16_t        width,
                     height,
                     levels;
-    unsigned int    chunk_width,
+    uint16_t        chunk_width,
                     chunk_height;
     unsigned int    offset;
-
-    Source          baseSource;
-    std::list<Source> extraSources;
 
     CompressedChunkList     compressed_chunks;
     BorderBehavior          border_behavior;
 
     PortalList      portals;
     AnnotationMgr  *annotations;
-    int             flags;
-    int             music;
+    uint16_t        flags;
+    uint16_t        music;
     MapData         data;
     ObjectDeque     objects;
     std::map<string, MapCoords> labels;
