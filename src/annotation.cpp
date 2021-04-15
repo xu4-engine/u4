@@ -69,6 +69,7 @@ Annotation *AnnotationMgr::add(Coords coords, MapTile tile, bool visual, bool is
  */
 Annotation::List AnnotationMgr::allAt(Coords coords) {
     Annotation::List list;
+    Annotation::List::iterator i;
 
     for (i = annotations.begin(); i != annotations.end(); i++) {
         if (i->getCoords() == coords)
@@ -83,6 +84,7 @@ Annotation::List AnnotationMgr::allAt(Coords coords) {
  */
 std::list<Annotation *> AnnotationMgr::ptrsToAllAt(Coords coords) {
     std::list<Annotation *> list;
+    Annotation::List::iterator i;
 
     for (i = annotations.begin(); i != annotations.end(); i++) {
         if (i->getCoords() == coords)
@@ -104,6 +106,7 @@ void AnnotationMgr::clear() {
  * annotations whose TTL has expired
  */
 void AnnotationMgr::passTurn() {
+    Annotation::List::iterator i;
     for (i = annotations.begin(); i != annotations.end(); i++) {
         if (i->getTTL() == 0) {
             i = annotations.erase(i);
@@ -124,6 +127,7 @@ void AnnotationMgr::remove(Coords coords, MapTile tile) {
 }
 
 void AnnotationMgr::remove(Annotation &a) {
+    Annotation::List::iterator i;
     for (i = annotations.begin(); i != annotations.end(); i++) {
         if (*i == a) {
             i = annotations.erase(i);

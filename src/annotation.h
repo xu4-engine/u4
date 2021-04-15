@@ -50,6 +50,8 @@ private:
     bool visual;
     int ttl;
     bool coverUp;
+
+    friend class Map;
 };
 
 /**
@@ -73,7 +75,8 @@ public:
 
 private:
     Annotation::List  annotations;
-    Annotation::List::iterator i;
+
+    friend class Map;
 };
 
 #endif
