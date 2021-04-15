@@ -123,6 +123,8 @@ public:
     uint16_t setResourceGroup(uint16_t group);
     void freeResourceGroup(uint16_t group);
 
+    const RGBA* vgaPalette();
+
 private:
     U4FILE * getImageFile(ImageInfo *info);
     ImageSet* scheme(const std::string &setname);
@@ -138,6 +140,7 @@ private:
 
     std::map<std::string, ImageSet *> imageSets;
     ImageSet *baseSet;
+    RGBA* vgaColors;
     Debug *logger;
     uint16_t resGroup;
 };

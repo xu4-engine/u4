@@ -13,6 +13,7 @@ class ImageSet;
 class Armor;
 class Weapon;
 class ConfigElement;
+struct RGBA;
 
 /**
  * Config is a singleton data provider interface which hides the storage
@@ -28,6 +29,7 @@ public:
     //void setGame(const char* name);
 
     // Primary configurable elements.
+    const RGBA* egaPalette();
     const char* musicFile( uint32_t id );
     const char* soundFile( uint32_t id );
     const char** schemeNames();

@@ -7,90 +7,24 @@
 #include "debug.h"
 #include "error.h"
 #include "imageloader.h"
+#include "imagemgr.h"
 #include "u4file.h"
 #include "xu4.h"
 
 extern bool screenFormatIsABGR;
 
-// TODO: Delete these on program exit!
-static RGBA* bwPalette = NULL;
-static RGBA* egaPalette = NULL;
-static RGBA* vgaPalette = NULL;
+// A black & white palette
+static RGBA bwPalette[2] = {{0,0,0,0}, {255,255,255,255}};
 
-
-/**
- * Loads a simple black & white palette
- */
-static RGBA* loadBWPalette() {
-    if (bwPalette == NULL) {
-        bwPalette = new RGBA[2];
-
-        bwPalette[0].r = 0;
-        bwPalette[0].g = 0;
-        bwPalette[0].b = 0;
-
-        bwPalette[1].r = 255;
-        bwPalette[1].g = 255;
-        bwPalette[1].b = 255;
-    }
-    return bwPalette;
-}
-
-/**
- * Loads the basic EGA palette from egaPalette.xml
- */
-static RGBA* loadEgaPalette() {
-    if (egaPalette == NULL) {
-        int index = 0;
-
-        egaPalette = new RGBA[16];
-
-        std::vector<ConfigElement> paletteConf = xu4.config->getElement("egaPalette").getChildren();
-        for (std::vector<ConfigElement>::iterator i = paletteConf.begin(); i != paletteConf.end(); i++) {
-
-            if (i->getName() != "color")
-                continue;
-
-            egaPalette[index].r = i->getInt("red");
-            egaPalette[index].g = i->getInt("green");
-            egaPalette[index].b = i->getInt("blue");
-
-            index++;
-        }
-    }
-    return egaPalette;
-}
-
-/**
- * Load the 256 color VGA palette from a file.
- */
-static RGBA* loadVgaPalette() {
-    if (vgaPalette == NULL) {
-        U4FILE *pal = u4fopen("u4vga.pal");
-        if (!pal)
-            return NULL;
-
-        vgaPalette = new RGBA[256];
-
-        for (int i = 0; i < 256; i++) {
-            vgaPalette[i].r = u4fgetc(pal) * 255 / 63;
-            vgaPalette[i].g = u4fgetc(pal) * 255 / 63;
-            vgaPalette[i].b = u4fgetc(pal) * 255 / 63;
-        }
-        u4fclose(pal);
-    }
-    return vgaPalette;
-}
-
-static RGBA* stdPalette(int bpp)
+static const RGBA* stdPalette(int bpp)
 {
     switch(bpp) {
         case 8:
-            return loadVgaPalette();
+            return xu4.imageMgr->vgaPalette();
         case 4:
-            return loadEgaPalette();
+            return xu4.config->egaPalette();
         case 1:
-            return loadBWPalette();
+            return bwPalette;
         default:
             return NULL;
     }
@@ -103,7 +37,7 @@ static RGBA* stdPalette(int bpp)
  * entries for that depth (i.e. 2, 16, and 256 respectively).
  */
 // This would be static but is a friend of Image.
-void setFromRawData(Image *image, int width, int height, int bpp, unsigned char *rawData, RGBA *palette) {
+void setFromRawData(Image *image, int width, int height, int bpp, unsigned char *rawData, const RGBA *palette) {
     const RGBA* col;
     uint32_t* row;
     uint32_t* rowEnd;

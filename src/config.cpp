@@ -58,6 +58,7 @@ struct XMLConfig
     xmlDocPtr doc;
     string sbuf;        // Temporary buffer for const char* return values.
     vector<const char*> sarray;   // Temp. buffer for const char** values.
+    RGBA* egaColors;
     vector<string> musicFiles;
     vector<string> soundFiles;
     vector<string> schemeNames;
@@ -146,6 +147,9 @@ Config::Config() {
 
     // Load primary elements.
 
+    // egaPalette (load on demand)
+    xcd.egaColors = NULL;
+
     // musicFile
     {
     xcd.musicFiles.reserve(MUSIC_MAX);
@@ -213,6 +217,8 @@ Config::Config() {
 
 Config::~Config() {
     xmlFreeDoc(xcd.doc);
+
+    delete[] xcd.egaColors;
 
     vector<Armor *>::iterator ait;
     foreach (ait, xcd.armors)
@@ -322,6 +328,30 @@ vector<ConfigElement> ConfigElement::getChildren() const {
     }
 
     return result;
+}
+
+/*
+ * Return pointer to 16 RGBA values.
+ */
+const RGBA* Config::egaPalette() {
+    if (! xcd.egaColors) {
+        RGBA* col = xcd.egaColors = new RGBA[16];
+        RGBA* end = col + 16;
+
+        vector<ConfigElement> ce = getElement("egaPalette").getChildren();
+        vector<ConfigElement>::iterator it;
+        foreach (it, ce) {
+            if (it->getName() != "color")
+                continue;
+            col->r = it->getInt("red");
+            col->g = it->getInt("green");
+            col->b = it->getInt("blue");
+            col->a = 255;
+            if (++col == end)
+                break;
+        }
+    }
+    return xcd.egaColors;
 }
 
 /*

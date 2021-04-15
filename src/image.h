@@ -125,7 +125,7 @@ private:
     Image(const Image&);
     const Image &operator=(const Image&);
 
-    friend void setFromRawData(Image*, int, int, int, unsigned char*, RGBA*);
+    friend void setFromRawData(Image*, int, int, int, unsigned char*, const RGBA*);
 };
 
 #endif /* IMAGE_H */

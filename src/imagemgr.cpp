@@ -25,7 +25,7 @@ Image *screenScale(Image *src, int scale, int n, int filter);
 //#define dprint  printf
 
 
-ImageMgr::ImageMgr() : resGroup(0) {
+ImageMgr::ImageMgr() : vgaColors(NULL), resGroup(0) {
     logger = new Debug("debug/imagemgr.txt", "ImageMgr");
     TRACE(*logger, "creating ImageMgr");
 
@@ -40,6 +40,7 @@ ImageMgr::~ImageMgr() {
     foreach (it, imageSets)
         delete it->second;
 
+    delete[] vgaColors;
     delete logger;
 }
 
@@ -562,6 +563,27 @@ void ImageMgr::freeResourceGroup(uint16_t group) {
             }
         }
     }
+}
+
+/**
+ * Get the 256 color VGA palette from the u4upgrad file.
+ */
+const RGBA* ImageMgr::vgaPalette() {
+    if (vgaColors == NULL) {
+        U4FILE *pal = u4fopen("u4vga.pal");
+        if (!pal)
+            return NULL;
+
+        vgaColors = new RGBA[256];
+
+        for (int i = 0; i < 256; i++) {
+            vgaColors[i].r = u4fgetc(pal) * 255 / 63;
+            vgaColors[i].g = u4fgetc(pal) * 255 / 63;
+            vgaColors[i].b = u4fgetc(pal) * 255 / 63;
+        }
+        u4fclose(pal);
+    }
+    return vgaColors;
 }
 
 /**
