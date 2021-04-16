@@ -1147,11 +1147,6 @@ void screenShake(int iterations) {
  */
 static void screenShowGemTile(Layout *layout, Map *map, MapTile &t, bool focus, int x, int y) {
     unsigned int scale = xu4.settings->scale;
-    // Make sure we account for tiles that look like other tiles (dungeon tiles, mainly)
-    string looks_like = t.getTileType()->getLooksLike();
-    if (!looks_like.empty())
-        t = map->tileset->getByName(looks_like)->getId();
-
     unsigned int tile = map->translateToRawTileIndex(t);
 
     if (map->type == Map::DUNGEON) {

@@ -60,7 +60,6 @@ public:
     int getScale() const                {return scale;}
     TileAnim *getAnim() const           {return anim;}
     Image *getImage();
-    const string &getLooksLike() const  {return looks_like;}
 
     bool isTiledInDungeon() const       {return tiledInDungeon;}
     bool isLandForeground() const       {return foreground;}
@@ -127,7 +126,6 @@ private:
 
     TileRule *rule;     /**< The rules that govern the behavior of this tile */
     string imageName;   /**< The name of the image that belongs to this tile */
-    string looks_like;  /**< The name of the tile that this tile looks exactly like (if any) */
 
     Image *image;       /**< The original image for this tile (with all of its frames) */
     bool tiledInDungeon;
