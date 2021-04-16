@@ -1,8 +1,6 @@
 Ultima 4 File Structures
 ========================
 
-$Id$
-
 Please send additions, corrections and feedback to
 <andrewtaylor@users.sourceforge.net>!
 
@@ -10,16 +8,135 @@ Please send additions, corrections and feedback to
 SHAPES.EGA
 ----------
 
-This contains the bitmaps for each tile.  Each tile is 16x16 pixels,
-and each byte represents two pixels.  In other words, the first 8
-bytes represent the 16 pixels on the first row of the first tile.
+This contains the bitmaps for all 256 tiles.  Each tile is 16x16 pixels and
+each byte represents two pixels.  This means that the first 8 bytes represent
+the 16 pixels on the first row of the first tile.  Each tile is 128 bytes.
 
-offset  len  notes
-0x0     128  tile 0
-0x80    128  tile 1
-0x100   128  tile 2
-...
-0x7F80  128  tile 255
+Offset | Tile  | Description
+-------|:-----:|----------------
+0x0000 |   0   | Deep Water
+0x0080 |   1   | Medium Water
+0x0100 |   2   | Shallow Water
+0x0180 |   3   | Swamp
+0x0200 |   4   | Grasslands
+0x0280 |   5   | Scrubland
+0x0300 |   6   | Forest
+0x0380 |   7   | Hills
+0x0400 |   8   | Mountains
+0x0480 |   9   | Dungeon Entrance
+0x0500 |  10   | Town
+0x0580 |  11   | Castle
+0x0600 |  12   | Village
+0x0680 |  13   | Lord British's Castle West
+0x0700 |  14   | Lord British's Castle Entrance
+0x0780 |  15   | Lord British's Castle East
+0x0800 |  16   | Ship West
+0x0880 |  17   | Ship North
+0x0900 |  18   | Ship East
+0x0980 |  19   | Ship South
+0x0a00 |  20   | Horse West
+0x0a80 |  21   | Horse East
+0x0b00 |  22   | Tile Floor
+0x0b80 |  23   | Bridge
+0x0c00 |  24   | Balloon
+0x0c80 |  25   | Bridge North
+0x0d00 |  26   | Bridge South
+0x0d80 |  27   | Ladder Up
+0x0e00 |  28   | Ladder Down
+0x0e80 |  29   | Ruins
+0x0f00 |  30   | Shrine
+0x0f80 |  31   | Avatar
+0x1000 | 32-33 | Mage (2)
+0x1100 | 34-35 | Bard (2)
+0x1200 | 36-37 | Fighter (2)
+0x1300 | 38-39 | Druid (2)
+0x1400 | 40-41 | Tinker (2)
+0x1500 | 42-43 | Paladin (2)
+0x1600 | 44-45 | Ranger (2)
+0x1700 | 46-47 | Shepherd (2)
+0x1800 |  48   | Column
+0x1880 |  49   | White SW
+0x1900 |  50   | White SE
+0x1980 |  51   | White NW
+0x1a00 |  52   | White NE
+0x1a80 |  53   | Mast
+0x1b00 |  54   | Ship's Wheel
+0x1b80 |  55   | Rocks
+0x1c00 |  56   | Lyin Down
+0x1c80 |  57   | Stone Wall
+0x1d00 |  58   | Locked Door
+0x1d80 |  59   | Unlocked Door
+0x1e00 |  60   | Chest
+0x1e80 |  61   | Ankh
+0x1f00 |  62   | Brick Floor
+0x1f80 |  63   | Wooden Planks
+0x2000 | 64-66 | Moongate Opening (3)
+0x2180 |  67   | Moongate Open
+0x2200 |  68   | Poison Field
+0x2280 |  69   | Energy Field
+0x2300 |  70   | Fire Field
+0x2380 |  71   | Sleep Field
+0x2400 |  72   | Solid Barrier
+0x2480 |  73   | Hidden Passage
+0x2500 |  74   | Altar
+0x2580 |  75   | Spit
+0x2600 |  76   | Lava Flow
+0x2680 |  77   | Missile
+0x2700 |  78   | Magic Sphere
+0x2780 |  79   | Attack Flash
+0x2800 | 80-81 | Guard (2)
+0x2900 | 82-83 | Citizen (2)
+0x2a00 | 84-85 | Singing Bard (2)
+0x2b00 | 86-87 | Jester (2)
+0x2c00 | 88-89 | Beggar (2)
+0x2d00 | 90-91 | Child (2)
+0x2e00 | 92-93 | Bull (2)
+0x2f00 | 94-95 | Lord British (2)
+0x3000 | 96-121| Letters A-Z
+0x3d00 | 122   | Space
+0x3d80 | 123   | Right
+0x3e00 | 124   | Left
+0x3e80 | 125   | Window
+0x3f00 | 126   | Blank
+0x3f80 | 127   | Brick Wall
+0x4000 | 128   | Pirate Ship West
+0x4080 | 129   | Pirate Ship North
+0x4100 | 130   | Pirate Ship East
+0x4180 | 131   | Pirate Ship South
+0x4200 |132-133| Nixie (2)
+0x4300 |134-135| Giant Squid (2)
+0x4400 |136-137| Sea Serpent (2)
+0x4500 |138-139| Seahorse (2)
+0x4600 |140-141| Whirlpool (2)
+0x4700 |142-143| Storm (2)
+0x4800 |144-147| Rat (4)
+0x4a00 |148-151| Bat (4)
+0x4c00 |152-156| Giant Spider (4)
+0x4e00 |156-159| Ghost (4)
+0x5000 |160-163| Slime (4)
+0x5200 |164-167| Troll (4)
+0x5400 |168-171| Gremlin (4)
+0x5600 |172-175| Mimic (4)
+0x5800 |176-179| Reaper (4)
+0x5a00 |180-183| Insect Swarm (4)
+0x5c00 |184-187| Gazer (4)
+0x5e00 |188-191| Phantom (4)
+0x6000 |192-195| Orc (4)
+0x6200 |196-199| Skeleton (4)
+0x6400 |200-203| Rogue (4)
+0x6600 |204-207| Python (4)
+0x6800 |208-211| Ettin (4)
+0x6a00 |212-215| Headless (4)
+0x6c00 |216-219| Cyclops (4)
+0x6e00 |220-223| Wisp (4)
+0x7000 |224-227| Evil Mage (4)
+0x7200 |228-231| Lich (4)
+0x7400 |232-235| Lava Lizard (4)
+0x7600 |236-239| Zorn (4)
+0x7800 |240-243| Daemon (4)
+0x7a00 |244-247| Hydra (4)
+0x7c00 |248-251| Dragon (4)
+0x7e00 |252-255| Balron (4)
 
 
 CHARSET.EGA
@@ -28,50 +145,48 @@ CHARSET.EGA
 This contains the bitmaps for each character in the font.  Each
 character is 8x8 pixels, and each byte represents two pixels.  In
 other words, the first 4 bytes represent the 8 pixels on the first row
-of the first character.
+of the first character.  Each glyph is 32 bytes.
 
 The order is the standard ASCII mapping; 'A' is character 65, 'z' is
 character 122.  The lowest 32 characters have the following glyphs:
-0 - Ankh
-1 - Symbol for horn effect
-2 - Brick wall 1
-3 - Brick wall 2
-4 - Updown arrow
-5 - Down arrow
-6 - Up arrow
-7 - Partial ankh
-8 - Filled circle
-9 - Copyright
-10 - Registered trademark
-11 - Male symbol
-12 - Female symbol
-13 - Border bar
-14 - Hollow square
-15 - 
-16 - Border endpiece (right)
-17 - Border endpiece (left)
-18 - 
-19 - Ellipsis
-20 - Moon phase 0
-21 - Moon phase 1
-22 - Moon phase 2
-23 - Moon phase 3
-24 - Moon phase 4
-25 - Moon phase 5
-26 - Moon phase 6
-27 - Moon phase 7
-28 - Cursor image 1
-29 - Cursor image 2
-30 - Cursor image 3
-31 - Cursor image 4
 
-
-offset  len  notes
-0x0     32   character 0
-0x20    32   character 1
-0x40    32   character 2
-...
-0x1FC0  32   character 255
+Num | Description
+:--:|------------------------
+ 0  | Ankh
+ 1  | Symbol for horn effect
+ 2  | Brick wall 1
+ 3  | Brick wall 2
+ 4  | Updown arrow
+ 5  | Down arrow
+ 6  | Up arrow
+ 7  | Partial ankh
+ 8  | Filled circle
+ 9  | Copyright
+10  | Registered trademark
+11  | Male symbol
+12  | Female symbol
+13  | Border bar
+14  | Hollow square
+15  | Blue dot
+16  | Border endpiece (right)
+17  | Border endpiece (left)
+18  | (empty)
+19  | Ellipsis
+20  | Moon phase 0
+21  | Moon phase 1
+22  | Moon phase 2
+23  | Moon phase 3
+24  | Moon phase 4
+25  | Moon phase 5
+26  | Moon phase 6
+27  | Moon phase 7
+28  | Cursor image 1
+29  | Cursor image 2
+30  | Cursor image 3
+31  | Cursor image 4
+... | (standard ASCII)
+127 | Up Indicator?
+128 | Mini palette?
 
 
 .EGA files (RLE encoded)
@@ -90,27 +205,28 @@ represented as three bytes.  For example, the byte values "28 28 28
 28" could be represented as "02 04 28".  If the value 0x02 needs to be
 represented, it *must* be encoded in a run ("02 01 02").
 
-file         purpose
-START.EGA    the basic game borders
-KEY7.EGA     shown when the key is used
-RUNE_0.EGA   vision shown after meditating on valor
-RUNE_1.EGA   vision shown after meditating on honesty, justice, and honor
-RUNE_2.EGA   vision shown after meditating on compassion and sacrifice
-RUNE_3.EGA   vision shown after meditating on spirituality
-RUNE_4.EGA   vision shown after meditating on humility
-RUNE_5.EGA
-STONCRCL.EGA shown when game completed
-HONESTY.EGA  shown during questioning in abyss
-COMPASSN.EGA shown during questioning in abyss
-VALOR.EGA    shown during questioning in abyss
-JUSTICE.EGA  shown during questioning in abyss
-SACRIFIC.EGA shown during questioning in abyss
-HONOR.EGA    shown during questioning in abyss
-SPIRIT.EGA   shown during questioning in abyss
-HUMILITY.EGA shown during questioning in abyss
-TRUTH.EGA    shown during questioning in abyss
-LOVE.EGA     shown during questioning in abyss
-COURAGE.EGA  shown during questioning in abyss
+File         | Purpose
+-------------|----------------------------------
+START.EGA    | The basic game borders
+KEY7.EGA     | Shown when the key is used
+RUNE_0.EGA   | Vision shown after meditating on valor
+RUNE_1.EGA   | Vision shown after meditating on honesty, justice, and honor
+RUNE_2.EGA   | Vision shown after meditating on compassion and sacrifice
+RUNE_3.EGA   | Vision shown after meditating on spirituality
+RUNE_4.EGA   | Vision shown after meditating on humility
+RUNE_5.EGA   | Vision after answering the final riddle in the Stygian Abyss
+STONCRCL.EGA | Shown when game completed
+HONESTY.EGA  | Shown during questioning in abyss
+COMPASSN.EGA | Shown during questioning in abyss
+VALOR.EGA    | Shown during questioning in abyss
+JUSTICE.EGA  | Shown during questioning in abyss
+SACRIFIC.EGA | Shown during questioning in abyss
+HONOR.EGA    | Shown during questioning in abyss
+SPIRIT.EGA   | Shown during questioning in abyss
+HUMILITY.EGA | Shown during questioning in abyss
+TRUTH.EGA    | Shown during questioning in abyss
+LOVE.EGA     | Shown during questioning in abyss
+COURAGE.EGA  | Shown during questioning in abyss
 
 
 .EGA files (LZW encoded)
@@ -122,25 +238,26 @@ HONCOM.EGA, SACHONOR.EGA, SPIRHUM.EGA, VALJUS.EGA, and TITLE.EGA.
 Also, the file SHAPES.EGZ is a LZW compressed version of SHAPES.EGA.
 Like the RLE encoded files, each of these files represents a 16 color
 320x200 bitmap.  LZW encoded files only seem to be used in the
-introduction sequence (title.exe); the images used by avatar.exe are
-RLE encoded instead.  (Description of LZW algorithm to go here).
+introduction sequence (TITLE.EXE); the images used by AVATAR.EXE are
+RLE encoded instead.
 
-file         purpose
-TITLE.EGA    the background for the inital screen, including the large Ultima IV and
-             the border for the map/menu
-ANIMATE.EGA  the frames for the little critters in the upper corners of the intro
-             screen
-TREE.EGA     initial graphic for character creation sequence (has animated moongate)
-PORTAL.EGA   closeup of the moongate
-OUTSIDE.EGA  the faire from outside
-INSIDE.EGA   inside the faire
-WAGON.EGA    the gyspy's wagon
-GYPSY.EGA    the gypsy herself
-ABACUS.EGA   the abacus that serves as the background while the questions are asked
-HONCOM.EGA   the cards for honor and compassion
-VALJUS.EGA   the cards for valor and justice
-SACHONOR.EGA the cards for sacrifice and honor
-SPIRHUM.EGA  the cards for spirituality and humility
+For more details on the LZW algorithm see [Lempel-Ziv-Welch].
+
+File         | Purpose
+-------------|----------------------------------------
+TITLE.EGA    | The background for the inital screen, including the large Ultima IV and the border for the map/menu
+ANIMATE.EGA  | The frames for the little critters in the upper corners of the intro screen
+TREE.EGA     | Initial graphic for character creation sequence (has animated moongate)
+PORTAL.EGA   | Closeup of the moongate
+OUTSIDE.EGA  | The faire from outside
+INSIDE.EGA   | Inside the faire
+WAGON.EGA    | The gyspy's wagon
+GYPSY.EGA    | The gypsy herself
+ABACUS.EGA   | The abacus that serves as the background while the questions are asked
+HONCOM.EGA   | The cards for honor and compassion
+VALJUS.EGA   | The cards for valor and justice
+SACHONOR.EGA | The cards for sacrifice and honor
+SPIRHUM.EGA  | The cards for spirituality and humility
 
 
 WORLD.MAP
@@ -157,11 +274,12 @@ too much for a C64 or an Apple II, so the game would keep a limited
 number of 1k chunks in memory at a time.  As the player moved around,
 old chunks were thrown out as new ones were swapped in.
 
-offset len  notes
-0x0    1024 32x32 map matrix for chunk 0
-0x400  1024 32x32 map matrix for chunk 1
-...
-0xFC00 1024 32x32 map matrix for chunk 63
+Offset | Bytes | Purpose
+-------|-------|------------------------------
+0x0000 | 1024  | 32x32 map matrix for chunk 0
+0x0400 | 1024  | 32x32 map matrix for chunk 1
+...    |       |
+0xFC00 | 1024  | 32x32 map matrix for chunk 63
 
 
 .ULT files
@@ -173,63 +291,66 @@ NPC.  The conversation index gives the starting position of the NPC's
 dialog block in the corresponding .TLK file.  I'm not sure why some of
 the data is duplicated.
 
-offset len  notes
-0x0    1024 32x32 town map matrix
-0x400  32   tile for NPCs 0-31
-0x420  32   start_x for NPCs 0-31
-0x440  32   start_y for NPCs 0-31
-0x460  32   repitition of 0x400-0x41F
-0x480  32   repitition of 0x420-0x43F
-0x4A0  32   repitition of 0x440-0x45F
-0x4C0  32   movement_behavior for NPCs 0-31 (0x0-fixed, 0x1-wander, 0x80-follow, 0xFF-attack)
-0x4E0  32   conversion index (tlk file) for NPCs 0-31
+Offset | Bytes | Purpose
+-------|:-----:|------------------------------
+0x0000 | 1024  | 32x32 town map matrix
+0x0400 |   32  | Tile for NPCs 0-31
+0x0420 |   32  | Start_x for NPCs 0-31
+0x0440 |   32  | Start_y for NPCs 0-31
+0x0460 |   32  | Repetition of 0x400-0x41F
+0x0480 |   32  | Repetition of 0x420-0x43F
+0x04A0 |   32  | Repetition of 0x440-0x45F
+0x04C0 |   32  | Movement_behavior for NPCs 0-31 (0x0=Fixed, 0x1=Wander, 0x80=Follow, 0xFF=Attack)
+0x04E0 |   32  | Conversion index (in corresponding .TLK file) for NPCs 0-31
 
 
 .TLK files
 ----------
 
-These contain conversation information.  The file has a 288 (0x120)
-byte block containing his or her dialogues, plus the words that
-trigger his or her responses (keywords).  Most of the fields are
-variable length strings terminated by a single zero byte and the
-following field starts immediately after.  The blocks are padded
-with zero bytes to 288 bytes.
+These contain conversation information for up to 16 NPCs.
+Each NPC has a 288 (0x120) byte block containing his or her dialogues, plus
+the words that trigger his or her responses (keywords).  Most of the fields
+are variable length strings terminated by a single zero byte and the following
+field starts immediately after.  The blocks are padded with zero bytes to
+288 bytes.
 
-0x0    1    NPC 0 question flag (0-no question, 3-job triggers, 4-health
-            triggers, 5-keyword 1 triggers, 6-keyword 2 triggers)
-0x1    1    NPC 0 question type (0-should answer yes, 0-should answer no)
-0x2    1    NPC 0 turns away probability
-0x3    var  NPC 0 name (zero terminated)
-var    var  NPC 0 pronoun (zero terminated)
-var    var  NPC 0 description (zero terminated)
-var    var  NPC 0 job (zero terminated)
-var    var  NPC 0 response 1 (zero terminated)
-var    var  NPC 0 response 2 (zero terminated)
-var    var  NPC 0 question (zero terminated)
-var    var  NPC 0 yes answer (zero terminated)
-var    var  NPC 0 no answer (zero terminated)
-var    5    NPC 0 keyword 1 (zero terminated)
-var    5    NPC 0 keyword 2 (zero terminated)
-var    var  zero padding
-0x120  3    NPC 1 question flag
-...
+Offset | Bytes  | Purpose
+-------|:------:|-------------------------------
+0x0    |   1    | Question Trigger (0=None, 3=Job, 4=Health, 5=Keyword 1, 6=Keyword 2)
+0x1    |   1    | Does Response Affect Humility? (0=No, 1=Yes)
+0x2    |   1    | Probability of Turning Away (out of 256)
+0x3    | Varies | Name
+Varies | Varies | Pronoun
+Varies | Varies | Description
+Varies | Varies | Job response
+Varies | Varies | Health response
+Varies | Varies | Response to Keyword 1
+Varies | Varies | Response to Keyword 2
+Varies | Varies | Yes/No Question
+Varies | Varies | Yes response
+Varies | Varies | No response
+Varies |   5    | Keyword 1
+Varies |   5    | Keyword 2
+Varies | Varies | Zero padding
+0x120  | 288    | Next NPC dialogue...
 
 
 .CON files
 ----------
 
-These files contain the 11x11 battleground maps shown when combat
-starts.  It has the map itself plus starting positions for up to 16
-monsters and 8 party members.
+These files contain the 11x11 battleground maps shown when combat starts.
+It has the map itself plus starting positions for up to 16 monsters and
+8 party members.
 
-offset len  notes
-0x0    16   start_x for monsters 0-15
-0x10   16   start_y for monsters 0-15
-0x20   8    start_x for party members 0-7
-0x28   8    start_y for party members 0-7
-0x30   16   ???
-0x40   121  11x11 map matrix
-0xB9   7    ???
+Offset | Bytes | Purpose
+-------|:-----:|----------------------
+0x0    |  16   | start_x for monsters 0-15
+0x10   |  16   | start_y for monsters 0-15
+0x20   |   8   | start_x for party members 0-7
+0x28   |   8   | start_y for party members 0-7
+0x30   |  16   | ??? constant (08AD 83C0 AD83 C0AD 83C0 A000 B9A6 08F0)
+0x40   | 121   | 11x11 map matrix
+0xB9   |   7   | ??? constant (8D 0000 0000 B709)
 
 
 .DNG files
@@ -240,58 +361,61 @@ These files contain dungeon information.  The first 512 bytes are the
 mode.  The rest of the file is a set of 16 (64 in the case of the
 ABYSS.DNG) 256 byte blocks that define the dungeon rooms.
 
-offset len  notes
-0x0    64   level 1 8x8 map matrix
-0x40   64   level 2 8x8 map matrix
-0x80   64   level 3 8x8 map matrix
-0xC0   64   level 4 8x8 map matrix
-0x100  64   level 5 8x8 map matrix
-0x140  64   level 6 8x8 map matrix
-0x180  64   level 7 8x8 map matrix
-0x1C0  64   level 8 8x8 map matrix
-0x200  256  room 0 data
-0x300  256  room 1 data
-0x400  256  room 2 data
-0x500  256  room 3 data
-0x600  256  room 4 data
-...
-0x1100 256  room 15 data
+Offset | Bytes | Purpose
+-------|:-----:|----------------------
+0x0    |   64  | Level 1 8x8 map matrix
+0x40   |   64  | Level 2 8x8 map matrix
+0x80   |   64  | Level 3 8x8 map matrix
+0xC0   |   64  | Level 4 8x8 map matrix
+0x100  |   64  | Level 5 8x8 map matrix
+0x140  |   64  | Level 6 8x8 map matrix
+0x180  |   64  | Level 7 8x8 map matrix
+0x1C0  |   64  | Level 8 8x8 map matrix
+0x200  |  256  | Room 0 data
+0x300  |  256  | Room 1 data
+0x400  |  256  | Room 2 data
+...    |       |
+0x1100 |  256  | Room 15 data
 
 For ABYSS.DNG only:
-0x1200 256  room 16 data
-0x1300 256  room 17 data
-...
-0x4100 256  room 63 data
+
+Offset | Bytes | Purpose
+-------|:-----:|----------------------
+0x1200 |  256  | Room 16 data
+0x1300 |  256  | Room 17 data
+...    |       |
+0x4100 |  256  | Room 63 data
 
 Dungeon Room format:
 
-offset len  notes
-0x0    16   floor triggers (4 bytes each X 4 triggers possible)
-0x10   16   tile for monsters 0-15 (0 means no monster and 0's come FIRST)
-0x20   16   start_x for monsters 0-15
-0x30   16   start_y for monsters 0-15
-0x40   8    start_x for party member 0-7 (north entry)
-0x48   8    start_y for party member 0-7 (north entry)
-0x50   8    start_x for party member 0-7 (east entry)
-0x58   8    start_y for party member 0-7 (east entry)
-0x60   8    start_x for party member 0-7 (south entry)
-0x68   8    start_y for party member 0-7 (south entry)
-0x70   8    start_x for party member 0-7 (west entry)
-0x78   8    start_y for party member 0-7 (west entry)
-0x80   121  11x11 map matrix for room
-0xF9   7    buffer
+Offset | Bytes | Purpose
+-------|:-----:|----------------------
+0x0    |   16  | Floor triggers (4 bytes each X 4 triggers possible)
+0x10   |   16  | Tile for monsters 0-15 (0 means no monster and 0's come FIRST)
+0x20   |   16  | start_x for monsters 0-15
+0x30   |   16  | start_y for monsters 0-15
+0x40   |    8  | start_x for party member 0-7 (north entry)
+0x48   |    8  | start_y for party member 0-7 (north entry)
+0x50   |    8  | start_x for party member 0-7 (east entry)
+0x58   |    8  | start_y for party member 0-7 (east entry)
+0x60   |    8  | start_x for party member 0-7 (south entry)
+0x68   |    8  | start_y for party member 0-7 (south entry)
+0x70   |    8  | start_x for party member 0-7 (west entry)
+0x78   |    8  | start_y for party member 0-7 (west entry)
+0x80   |  121  | 11x11 map matrix for room
+0xF9   |    7  | Buffer
 
 Trigger format:
 
-offset len  notes
-0x0    1    tile to be placed (0 means no trigger and 0's come LAST)
-0x1    1    2 nibbles indicating the (x,y) coords of trigger
-0x2    1    2 nibbles indicating the (x,y) coords of 1st tile to change
-0x3    1    2 nibbles indicating the (x,y) coords of 2nd tile to change
+Offset | Bytes | Purpose
+-------|:-----:|----------------------
+0x0    |  1    | Tile to be placed (0 means no trigger and 0's come LAST)
+0x1    |  1    | 2 nibbles indicating the (x,y) coords of trigger
+0x2    |  1    | 2 nibbles indicating the (x,y) coords of 1st tile to change
+0x3    |  1    | 2 nibbles indicating the (x,y) coords of 2nd tile to change
 
 TRIGGER EXAMPLE:
-46 85 75 65 - Places a Fire Field at (7, 5) and (6, 5) when you
-step on (8, 5).
+46 85 75 65 - Places a Fire Field at (7, 5) and (6, 5) when you step on (8, 5).
 
 
 PARTY.SAV
@@ -301,7 +425,8 @@ This file stores the information that is stored when the game is
 saved.  It includes party-wide information like gold and food, plus a
 39 byte record for each character.
 
-offset len  notes
+```
+Offset Len  Notes
 0x0    4    counter (incremented regularly, probably every screen update)
 0x4    2    moves (low word)
 0x6    2    moves (high word)
@@ -398,63 +523,66 @@ offset len  notes
 0x1F0  2    orientation in dungeon (0-west, 1-north, 2-east, 3-south)
 0x1F2  2    dungeon level (starting at zero, 0xffff = surface)
 0x1F4  2    current party location (see below)
+```
 
 The character record format:
 
-offset len  notes
-0x0    2    hit points
-0x2    2    hit points maximum
-0x4    2    experience points
-0x6    2    strength
-0x8    2    dex
-0xA    2    int
-0xC    2    mp
-0xE    2    ???
-0x10   2    weapon
-0x12   2    armor
-0x14   16   name
-0x24   1    sex (0xb-male, 0xc-female)
-0x25   1    class
-0x26   1    status ('G'-good, 'P'-poisoned, 'S'-sleeping, 'D'-dead)
+Offset | Bytes | Purpose
+-------|:-----:|----------------------
+0x0    |   2   | Hit points
+0x2    |   2   | Hit points maximum
+0x4    |   2   | Experience points
+0x6    |   2   | Strength
+0x8    |   2   | Dexterity
+0xA    |   2   | Intelligence
+0xC    |   2   | Magic points
+0xE    |   2   | ???
+0x10   |   2   | Weapon
+0x12   |   2   | Armor
+0x14   |  16   | Name
+0x24   |   1   | Sex (0xB=Male, 0xC=Female)
+0x25   |   1   | Class
+0x26   |   1   | Status ('G'=Good, 'P'=Poisoned, 'S'=Sleeping, 'D'=Dead)
 
 Party location:
 Since you can only save on the surface or in a dungeon, the only valid
 party locations are 0 and 0x11-0x18.
 
-hex     location
- 0      surface
- 1      Lord British's castle
- 2      The Lycaeum
- 3      Empath Abbey
- 4      Serpent's Hold
- 5      Moonglow
- 6      Britain
- 7      Jhelom
- 8      Yew
- 9      Minoc
- a      Trinsic
- b      Skara Brae
- c      Magincia
- d      Paws
- e      Buccaneer's Den
- f      Vesper
-10      Cove
-11      Deceit
-12      Despise
-13      Destard
-14      Wrong
-15      Covetous
-16      Shame
-17      Hythloth
-18      Abyss
-19      Shrine of Honesty
-1a      Shrine of Compassion
-1b      Shrine of Valor
-1c      Shrine of Justice
-1d      Shrine of Sacrifice
-1e      Shrine of Honor
-1f      Shrine of Spirituality
-20      Shrine of Humility
+Value | Location
+-----:|----------------
+ 0x0  | Surface
+ 0x1  | Lord British's castle
+ 0x2  | The Lycaeum
+ 0x3  | Empath Abbey
+ 0x4  | Serpent's Hold
+ 0x5  | Moonglow
+ 0x6  | Britain
+ 0x7  | Jhelom
+ 0x8  | Yew
+ 0x9  | Minoc
+ 0xA  | Trinsic
+ 0xB  | Skara Brae
+ 0xC  | Magincia
+ 0xD  | Paws
+ 0xE  | Buccaneer's Den
+ 0xF  | Vesper
+0x10  | Cove
+0x11  | Deceit
+0x12  | Despise
+0x13  | Destard
+0x14  | Wrong
+0x15  | Covetous
+0x16  | Shame
+0x17  | Hythloth
+0x18  | Abyss
+0x19  | Shrine of Honesty
+0x1A  | Shrine of Compassion
+0x1B  | Shrine of Valor
+0x1C  | Shrine of Justice
+0x1D  | Shrine of Sacrifice
+0x1E  | Shrine of Honor
+0x1F  | Shrine of Spirituality
+0x20  | Shrine of Humility
 
 
 MONSTERS.SAV
@@ -494,14 +622,16 @@ For transports with more than one tile (horse, ship), the previous tile
 determines which direction the transport is facing, while the current tile
 can be any of the transport's tiles.
 
-0x0     32      current tile
-0x20    32      current x coordinate
-0x40    32      current y coordinate
-0x60    32      tile for previous turn
-0x80    32      x coordinate for previous turn
-0xA0    32      y coordinate for previous turn
-0xC0    32      not used
-0xE0    32      not used
+Offset | Bytes | Purpose
+-------|:-----:|----------------------
+0x0    | 32    | Current tile
+0x20   | 32    | Current x coordinate
+0x40   | 32    | Current y coordinate
+0x60   | 32    | Tile for previous turn
+0x80   | 32    | X coordinate for previous turn
+0xA0   | 32    | Y coordinate for previous turn
+0xC0   | 32    | Not used
+0xE0   | 32    | Not used
 
 Dungeons:
 In a dungeon, the monster table contains information about the monsters
@@ -510,28 +640,32 @@ A monster stored in the monster table is *also* stored in DNGMAP.SAV.
 Inanimate objects are not stored in the monster table; they are stored
 *only* in DNGMAP.SAV.
 
-0x0     32      not used
-0x20    32      current x coordinate
-0x40    32      current y coordinate
-0x60    32      current tile
-0x80    32      x coordinate for previous turn
-0xA0    32      y coordinate for previous turn
-0xC0    32      dungeon level; range = 0-7
-0xE0    32      not used
+Offset | Bytes | Purpose
+-------|:-----:|----------------------
+0x0    | 32    | Not used
+0x20   | 32    | Current x coordinate
+0x40   | 32    | Current y coordinate
+0x60   | 32    | Current tile
+0x80   | 32    | X coordinate for previous turn
+0xA0   | 32    | Y coordinate for previous turn
+0xC0   | 32    | Dungeon level (0-7)
+0xE0   | 32    | Not used
 
 Settlements:
 In a castle/town/village, the monster table is loaded from the settlement's
 .ult file, starting at offset 0x400.
 It contains information about the settlement's NPC's.
 
-0x0     32      current tile
-0x20    32      current x coordinate
-0x40    32      current y coordinate
-0x60    32      tile for previous turn
-0x80    32      x coordinate for previous turn
-0xA0    32      y coordinate for previous turn
-0xC0    32      movement behavior for NPCs 0-31 (0x0-fixed, 0x1-wander, 0x80-follow, 0xFF-attack)
-0xE0    32      conversation index (tlk file) for NPCs 0-31
+Offset | Bytes | Purpose
+-------|:-----:|----------------------
+0x0    | 32    | Current tile
+0x20   | 32    | Current x coordinate
+0x40   | 32    | Current y coordinate
+0x60   | 32    | Tile for previous turn
+0x80   | 32    | X coordinate for previous turn
+0xA0   | 32    | Y coordinate for previous turn
+0xC0   | 32    | Movement behavior for NPCs 0-31 (0x0=Fixed, 0x1=Wander, 0x80=Follow, 0xFF=Attack)
+0xE0   | 32    | Conversation index (.TLK file) for NPCs 0-31
 
 
 OUTMONST.SAV
@@ -542,7 +676,7 @@ a dungeon or settlement.
 When you leave a dungeon or settlement, the monster table is reloaded
 from OUTMONST.SAV.
 
-Exception: when you enter Hythloth though the ladder in LB's castle,
+**Exception:** when you enter Hythloth though the ladder in LB's castle,
 the game does not write the current monster table to OUTMONST.SAV,
 because it already did that when you entered LB's castle.
 
@@ -558,100 +692,104 @@ The upper nibble of a tile determines the tile type (see below).
 The lower nibble encodes the monster standing on the tile, except
 for tiles 0x80 0x90 0xA0 0xD0 (see below).
 
-0x00 = nothing
-0x10 = ladder up
-0x20 = ladder down
-0x30 = ladder up/down
-0x40 = chest
-0x50 = hole (ceiling)
-0x60 = hole (floor)
-0x70 = orb (see below)
-0x80 = trap (magic winds)
-0x81 = trap (falling rocks)
-0x8E = trap (pit)
-0x90 = fountain (no effect)
-0x91 = fountain (healing)
-0x92 = fountain (100 hit points damage)
-0x93 = fountain (cure)
-0x94 = fountain (poison and 100 hit points damage)
-0xA0 = magic field (poison)
-0xA1 = magic field (energy)
-0xA2 = magic field (fire)
-0xA3 = magic field (sleep)
-0xB0 = altar (stone color depends on dungeon)
-0xC0 = door
-0xDn = dungeon room #n
-0xE0 = illusionary wall
-0xF0 = wall
+Value | Purpose
+------|--------------------
+0x00  | Nothing
+0x10  | Ladder up
+0x20  | Ladder down
+0x30  | Ladder up/down
+0x40  | Chest
+0x50  | Hole in ceiling
+0x60  | Hole in floor
+0x70  | Orb (see below)
+0x80  | Trap (magic winds)
+0x81  | Trap (falling rocks)
+0x8E  | Trap (pit)
+0x90  | Fountain (no effect)
+0x91  | Fountain (heals all HP)
+0x92  | Fountain (100 HP damage)
+0x93  | Fountain (cures poison)
+0x94  | Fountain (poison and 100 HP damage)
+0xA0  | Magic field (poison)
+0xA1  | Magic field (energy)
+0xA2  | Magic field (fire)
+0xA3  | Magic field (sleep)
+0xB0  | Altar (stone color depends on dungeon)
+0xC0  | Door
+0xD0-0xDF | Dungeon room 0-15
+0xE0  | Hidden Door
+0xF0  | Wall
 
 Monsters:
 
-0 = none
-1 = rat
-2 = bat
-3 = spider
-4 = ghost
-5 = slime
-6 = troll
-7 = gremlin
-8 = mimic
-9 = reaper
-A = insects
-B = gazer
-C = phantom
-D = orc
-E = skeleton
-F = rogue
+Value | Purpose
+------|--------------------
+0x0   | None
+0x1   | Rat
+0x2   | Bat
+0x3   | Spider
+0x4   | Ghost
+0x5   | Slime
+0x6   | Troll
+0x7   | Gremlin
+0x8   | Mimic
+0x9   | Reaper
+0xA   | Insects
+0xB   | Gazer
+0xC   | Phantom
+0xD   | Orc
+0xE   | Skeleton
+0xF   | Rogue
 
 Orbs:
-When a PC touches an orb, one or more attributes are raised by 5
-points each.
+When a PC touches an orb, one or more attributes are raised by 5 points each.
 Which attributes are raised depends on the dungeon.
 
-dungeon     attributes
-Deceit      I--
-Despise     -D-
-Destard     --S
-Wrong       ID-
-Covetous    -DS
-Shame       I-S
-Hythloth    IDS
+Dungeon  | Attributes
+---------|---------------
+Deceit   | INT
+Despise  | DEX
+Destard  | STR
+Wrong    | INT, DEX
+Covetous | DEX, STR
+Shame    | INT, STR
+Hythloth | INT, DEX, STR
 
 
 TITLE.EXE
 ---------
 
-This executable is launched by ultima.com to display the introduction
-and create new characters.  When "journey onward" is selected from the
-intro menu, it exits and ultima.com passes control off to avatar.exe,
+This executable is launched by ULTIMA.COM to display the introduction
+and create new characters.  When "Journey Onward" is selected from the
+intro menu, it exits and ULTIMA.COM passes control off to AVATAR.EXE,
 the main game executable.  This .exe has lots of the data necessary
 for the intro screens embedded in it.
 
-offset len   notes
-0x0    17445 ???
-0x4425 11088 text for introduction, gypsy dialog and gyspy questions
-             (zero terminated strings)
-0x6f75 1035  ???
-0x7380 184   list of frames sequences for beasties on intro screen
-0x7438 54    ???
-0x746e 532   266 x/y pairs that are the coordinates for the pixels that
-             make up the Lord British signature on the introductory
-             title screen
-0x7682 1     zero terminating byte
-0x7683 95    tile values for the 19x5 map that appears on the
-             introductory title screen
-0x76e2 548   script data for the intro map animations
-0x7906 ...   ???
+Offset | Bytes | Purpose
+-------|------:|----------------------
+0x0    | 17445 | ???
+0x4425 | 11088 | Text for introduction, gypsy dialog and gyspy questions (zero terminated strings)
+0x6f75 |   359 | ???
+0x70dc |     8 | Starting X positions for a new game
+0x70e4 |     8 | Starting Y positions for a new game
+0x70ec |   660 | ???
+0x7380 |   184 | List of frames sequences for beasties on intro screen
+0x7438 |    54 | ???
+0x746e |   532 | 266 X/Y coordinates for the pixels that make up the Lord British signature on the introductory title screen
+0x7682 |     1 | Zero terminating byte
+0x7683 |    95 | Tile values for the 19x5 map that appears on the introductory title screen
+0x76e2 |   548 | Script data for the intro map animations
+0x7906 |  ...  | ???
 
 
 AVATAR.EXE
 ----------
 
-This is the main game executable, launched from ultima.com (or run on
-its own to skip the intro).  Lots of the special case data is embedded
-in this .exe.
+This is the main game executable, launched from ultima.com (or run on its own
+to skip the intro).  Lots of the special case data is embedded in this .exe.
 
-offset  len   notes
+```
+Offset  Len   Notes
 0x0     63843 ???
 0x0f963 1     volume on/off flag
 0x0f964 27    13 two-byte code pointers to 13 sound generation routines
@@ -863,20 +1001,23 @@ offset  len   notes
 0x16262 104   ???
 0x162ca 2037  Lord British "help" response dialog strings
 0x16abf ...   ???
+```
 
 Each item location record has the following structure: 
 
-offset len  notes
-0x0    1    item location (same encoding as party location in PARTY.SAV,
-            e.g. 0 for surface)
-0x1    1    item x coordinate
-0x2    1    item y coordinate
-0x3    2    ??? (a pointer?)
+Offset | Bytes | Purpose
+-------|:-----:|----------------------
+0x0    | 1     | Item location (same encoding as party location in PARTY.SAV, e.g. 0 for surface)
+0x1    | 1     | Item X coordinate
+0x2    | 1     | Item Y coordinate
+0x3    | 2     | Pointer to function that handles picking up the item 
 
 
 Sources
 -------
 
-http://www.geocities.com/xenerkes/
-http://www.moongates.com/u4/Tech.asp
-Marc Winterrowd <nodling at yahoo dot com>
+* http://www.geocities.com/xenerkes/
+* http://www.moongates.com/u4/Tech.asp
+* Marc Winterrowd <nodling at yahoo dot com>
+
+[Lempel-Ziv-Welch]: https://en.wikipedia.org/wiki/Lempel%E2%80%93Ziv%E2%80%93Welch
