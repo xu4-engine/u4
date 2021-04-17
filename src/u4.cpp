@@ -158,6 +158,9 @@ void servicesInit(XU4GameServices* gs, Options* opt) {
     if (opt->filter)
         gs->settings->filter = opt->filter;
 
+    if (opt->flags & OPT_VERBOSE)
+        verbose = true;
+
     Debug::initGlobal("debug/global.txt");
 
     xu4_srandom();
