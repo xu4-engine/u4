@@ -106,8 +106,9 @@ static void handleMouseButtonDownEvent(EventHandler* handler, const ALLEGRO_EVEN
 static void handleKeyDownEvent(const ALLEGRO_EVENT* event, Controller *controller, updateScreenCallback updateScreen) {
     int processed;
     int key;
+    int keycode = event->keyboard.keycode;
 
-    switch( event->keyboard.keycode ) {
+    switch( keycode ) {
         case ALLEGRO_KEY_UP:
             key = U4_UP;
             break;
@@ -127,8 +128,10 @@ static void handleKeyDownEvent(const ALLEGRO_EVENT* event, Controller *controlle
         default:
             if (event->keyboard.unichar > 0)
                 key = event->keyboard.unichar & 0x7F;
+            else if (keycode >= ALLEGRO_KEY_F1 && keycode <= ALLEGRO_KEY_F12)
+                key = U4_FKEY + (keycode - ALLEGRO_KEY_F1);
             else
-                key = event->keyboard.keycode;
+                key = 0;
 
             if (event->keyboard.modifiers & ALLEGRO_KEYMOD_ALT)
                 key += U4_ALT;
