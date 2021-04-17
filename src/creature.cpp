@@ -231,13 +231,9 @@ bool Creature::isAttackable() const  {
     return true;
 }
 
-int  Creature::getDamage() const {
-    int damage, val, x;
-    val = basehp;
-    x = xu4_random(val >> 2);
-    damage = (x >> 4) + ((x >> 2) & 0xfc);
-    damage += x % 10;
-    return damage;
+int Creature::getDamage() const {
+    int x = xu4_random(basehp >> 2);
+    return (x >> 4) * 10 + (x % 10);
 }
 
 int Creature::setInitialHp(int points) {
