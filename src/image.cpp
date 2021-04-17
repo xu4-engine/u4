@@ -313,12 +313,11 @@ void Image::drawOn(Image *dest, int x, int y) const {
     if (dest == NULL)
         dest = xu4.screenImage;
 
-    drow = dest->pixels + dest->w * y + x;
-
     blitW = w;
     if (x < 0) {
         srow += -x;
         blitW += x;     // Subtracts from blitW.
+        x = 0;
     }
     else if ((blitW + x) > int(dest->w)) {
         blitW = dest->w - x;
@@ -330,12 +329,15 @@ void Image::drawOn(Image *dest, int x, int y) const {
     if (y < 0) {
         srow += w*-y;
         blitH += y;     // Subtracts from blitH.
+        y = 0;
     }
     else if ((blitH + y) > int(dest->h)) {
         blitH = dest->h - y;
     }
     if (blitH < 1)
         return;
+
+    drow = dest->pixels + dest->w * y + x;
 
     if (imageBlending) {
         uint8_t* dp;
