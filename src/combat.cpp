@@ -431,7 +431,6 @@ void CombatController::moveCreatures() {
     // if a jinxed monster kills another
     for (unsigned int i = 0; i < map->getCreatures().size(); i++) {
         m = map->getCreatures().at(i);
-        //GameController::doScreenAnimationsWhilePausing(1);
         m->act(this);
 
         if (i < map->getCreatures().size() && map->getCreatures().at(i) != m) {

@@ -87,13 +87,6 @@ public:
     void rangedMiss(const Coords &coords, Creature *attacker);
     bool returnWeaponToOwner(const Coords &coords, int distance, int dir, const Weapon *weapon);
 
-    /**
-     * Static member functions
-     */
-    static void attackFlash(const Coords &coords, MapTile tile, int timeFactor);
-    static void attackFlash(const Coords &coords, const string &tilename, int timeFactor);
-    static void doScreenAnimationsWhilePausing(int timeFactor);
-
     // Key handlers
     virtual bool keyPressed(int key);
 
