@@ -565,8 +565,10 @@ void Map::resetObjectAnimations() {
  * Removes all objects from the given map
  */
 void Map::clearObjects() {
-    for (ObjectDeque::iterator o = objects.begin(); o != objects.end(); o++)
-        delete *o;
+    for (ObjectDeque::iterator o = objects.begin(); o != objects.end(); o++) {
+        if (! isPartyMember(*o))
+            delete *o;
+    }
     objects.clear();
 }
 
