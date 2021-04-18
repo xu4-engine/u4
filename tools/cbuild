@@ -52,6 +52,7 @@ windows)
 		tar xf $FN -C ${ARC_DIR}
 		cp /tmp/xu4.exe-$TIME ${ARC_DIR}/xu4.exe
 		cp Ultima-IV.mod ${ARC_DIR}
+		cp README.md ${ARC_DIR}/README.txt
 		cd ${ARC_DIR%/*}; zip -r xu4-win32.zip ${ARC_DIR##*/}
 	fi
 	;;
@@ -77,7 +78,8 @@ linux)
 		clean_dir ${ARC_DIR}
 		cp /tmp/xu4-$TIME ${ARC_DIR}/xu4
 		cp Ultima-IV.mod dist/setup ${ARC_DIR}
-		cp dist/README.linux-dr ${ARC_DIR}/README
+		cp README.md ${ARC_DIR}/README
+		cp dist/README.linux-dr ${ARC_DIR}/README-Linux
         mkdir ${ARC_DIR}/desktop
 		cp icons/xu4.png dist/xu4.desktop ${ARC_DIR}/desktop
 		tar czf /tmp/xu4-linux.tar.gz -C ${ARC_DIR%/*} ${ARC_DIR##*/}

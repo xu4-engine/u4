@@ -1,5 +1,29 @@
 		XU4 Change Log
 
+v1.0beta5 - 2022-01-06
+  - Allegro 5 is now used as the cross-platform middleware.
+  - OpenGL is now used for scaling and filtering.
+  - Aspect ratio is preserved in fullscreen mode.
+  - Game data is now stored in a single file package.
+  - Replaced XML configuration and scripts with Boron.
+  - Replaced Impulse Tracker music with Ogg Vorbis streams.
+  - Dungeon state is now preserved after a save/load cycle.
+  - Implemented trap detection in dungeons.
+  - Added trap sounds & shaking.
+  - Frame animations now play forward independently for each creature.
+  - Increased creature damage to match the PC version.
+  - Fixed horse gallop animation, sound, & message.
+  - Fixed fire phantom to cycle colors and not move onto other creatures.
+  - Fixed a few message window formatting and timing issues.
+  - Subtitle animation more closely matches the original.
+  - Moongate animates during introduction.
+  - New character creation graphics for VGA mode.
+  - CLI options are more constrained.
+  - CLI --quiet option completely disables audio output.
+  - Added input recording & playback for developers.
+  - Overhauled codebase fixes many memory leaks, compiler errors, and
+    optimizes memory use.
+
 v1.0beta4 - 2011-01-25
  - many bug fixes
  - text colorization

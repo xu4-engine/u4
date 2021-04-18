@@ -21,9 +21,9 @@ XU4
 XU4 is a remake of the computer game Ultima IV.  The goal is to make
 it easy and convenient to play this classic on modern operating
 systems.  XU4 is primarily inspired by the much more ambitious project
-Exult.  Linux is the primary development platform but it gets ported
-to Windows and MacOS X regularly. It should be trivial to port to any
-system with [Allegro] 5.2 or SDL 1.2 support.
+Exult.  Linux is the primary development platform but it gets built
+for Windows regularly.  It should be trivial to port to any system with
+[Allegro] 5.2 or SDL 1.2 support.
 
 XU4 isn't a new game based on the Ultima IV story -- it is a faithful
 recreation of the old game, right up to the crappy graphics.  If you
@@ -39,24 +39,17 @@ and vice versa, at least in theory.
 Status
 ------
 
-A major code cleanup began in 2021 after a 5-year hiatus in development
-(and 10 years since the last beta release). Recent work includes:
-
- - Completion of the Allegro 5 platform interface.
- - Reworking the configuration to allow alternative storage backends.
- - Elimination of compiler warnings & memory leaks.
- - Preparing the way for GPU rendering.
+The game is fully playable and can display the original DOS EGA and
+upgraded VGA graphics.
 
 Some thoughts for possible improvements:
  - Ultima 5 style aiming in combat (i.e. allow angle shots)
- - more sound effects
- - support for higher-resolution tile sets
- - allow running original game without XML configuration
- - allow the map view to display more of the world
- - menu-based interface, like Sega version
- - improve the scalers:
-   + scale entire screen image rather than individual tiles
-   + correct for aspect ratio
+ - More sound effects
+ - Support for higher-resolution tile sets
+ - Allow the map view to display more of the world
+ - Menu-based interface, like Sega version
+ - Use GPU for all rendering.
+ - Formal modding system to extend the world or create entirely new adventures.
 
 
 Compiling
@@ -91,8 +84,8 @@ xu4 searches for the zipfiles, or the unpacked contents of the
 zipfiles in the following places:
  - The current directory when xu4 is run
  - A subdirectory named `ultima4` of the current directory
- - `/usr/share/xu4/`
- - `/usr/local/share/xu4/`
+ - On UNIX systems: `/usr/share/xu4` & `/usr/local/share/xu4`
+ - On Linux `$HOME/.local/share/xu4` may also be used
 
 The zipfile doesn't need to be unpacked, but if it is, xu4 can handle
 uppercase or lowercase filenames even on case-sensitive filesystems,
@@ -101,7 +94,10 @@ avater.exe or even Avatar.exe.
 
 At the title screen, a configuration menu can be accessed by pressing
 'c'.  Here, the screen scale, filter, volume and other settings can be
-modified.  These settings are stored in the file `$HOME/.config/xu4/xu4rc`.
+modified.  These settings are stored in `$HOME/.config/xu4/xu4rc` on Linux
+and `%APPDATA%\xu4\xu4.cfg` on Windows.
+
+The saved game files are stored in the settings directory.
 
 xu4 also accepts the following command line options:
 
@@ -118,7 +114,7 @@ xu4 also accepts the following command line options:
 
 ### Profiles
 
-Profiles are stored in the "profiles" sub-directory.
+Profiles are stored in the `profiles` sub-directory.
 Use quotation marks around profile names that include spaces.
 The active profile name is shown on the introduction map view off the main menu.
 
