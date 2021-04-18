@@ -4,7 +4,7 @@
 <maps>
     <!-- world map -->
     <map id="0" type="world" fname="world.map" width="256" height="256" levels="1" chunkwidth="32" chunkheight="32" 
-     borderbehavior="wrap" showavatar="true" music="1" tileset="base" tilemap="base">
+     borderbehavior="wrap" music="1" tileset="base" tilemap="base">
         <portal x="86"  y="107" destmapid="1"  startx="15" starty="30" action="enter" savelocation="true" transport="footorhorse"/>
         <portal x="218" y="107" destmapid="2"  startx="15" starty="30" action="enter" savelocation="true" transport="footorhorse"/>
         <portal x="28"  y="50"  destmapid="3"  startx="15" starty="30" action="enter" savelocation="true" transport="footorhorse"/>
@@ -68,7 +68,7 @@
 
     <!-- castles -->
     <map id="1" type="city" fname="lcb_1.ult" width="32" height="32" levels="1" 
-     borderbehavior="exit" showavatar="true" music="9" tileset="base" tilemap="base">
+     borderbehavior="exit" music="9" tileset="base" tilemap="base">
         <city name="Britannia" type="castle" tlk_fname="lcb.tlk">
             <personrole role="healer" id="29"/>
             <personrole role="hawkwind" id="30"/>
@@ -81,7 +81,7 @@
         <label name="spiritualityrune" x="17" y="8"/>
     </map>
     <map id="100" type="city" fname="lcb_2.ult" width="32" height="32" levels="1" 
-     borderbehavior="exit" showavatar="true" music="9" tileset="base" tilemap="base">
+     borderbehavior="exit" music="9" tileset="base" tilemap="base">
         <city name="Britannia" type="castle" tlk_fname="lcb.tlk">
             <personrole role="lordbritish" id="32"/>
         </city>
@@ -89,7 +89,7 @@
         <portal x="27" y="3" destmapid="1" startx="27" starty="3" action="descend" savelocation="false" message="Descend to first floor!&#xA;" transport="foot"/>
     </map>
     <map id="2" type="city" fname="lycaeum.ult" width="32" height="32" levels="1" 
-     borderbehavior="exit" showavatar="true" music="9" tileset="base" tilemap="base">
+     borderbehavior="exit" music="9" tileset="base" tilemap="base">
         <city name="Lycaeum" type="castle" tlk_fname="lycaeum.tlk">
             <personrole role="healer" id="23"/>
         </city>
@@ -97,14 +97,14 @@
         <label name="telescope" x="22" y="3"/>
     </map>
     <map id="3" type="city" fname="empath.ult" width="32" height="32" levels="1" 
-     borderbehavior="exit" showavatar="true" music="9" tileset="base" tilemap="base">
+     borderbehavior="exit" music="9" tileset="base" tilemap="base">
         <city name="Empath Abbey" type="castle" tlk_fname="empath.tlk">
             <personrole role="healer" id="30"/>
         </city>
         <label name="mysticarmor" x="22" y="4"/>
     </map>
     <map id="4" type="city" fname="serpent.ult" width="32" height="32" levels="1"
-     borderbehavior="exit" showavatar="true" music="9" tileset="base" tilemap="base">
+     borderbehavior="exit" music="9" tileset="base" tilemap="base">
         <city name="Serpents Hold" type="castle" tlk_fname="serpent.tlk">
             <personrole role="healer" id="31"/>
         </city>
@@ -113,7 +113,7 @@
 
     <!-- cities -->
     <map id="5" type="city" fname="moonglow.ult" width="32" height="32" levels="1"
-     borderbehavior="exit" showavatar="true" music="2" tileset="base" tilemap="base">
+     borderbehavior="exit" music="2" tileset="base" tilemap="base">
         <city name="Moonglow" type="towne" tlk_fname="moonglow.tlk">
             <personrole role="companion" id="32"/>
             <personrole role="foodvendor" id="26"/>
@@ -124,7 +124,7 @@
         <label name="honestyrune" x="8" y="6"/>
     </map>
     <map id="6" type="city" fname="britain.ult" width="32" height="32" levels="1"
-     borderbehavior="exit" showavatar="true" music="2" tileset="base" tilemap="base">
+     borderbehavior="exit" music="2" tileset="base" tilemap="base">
         <city name="Britain" type="towne" tlk_fname="britain.tlk">
             <personrole role="companion" id="32"/>
             <personrole role="weaponsvendor" id="29"/>
@@ -137,7 +137,7 @@
         <label name="compassionrune" x="25" y="1"/>
     </map>
     <map id="7" type="city" fname="jhelom.ult" width="32" height="32" levels="1"
-     borderbehavior="exit" showavatar="true" music="2" tileset="base" tilemap="base">
+     borderbehavior="exit" music="2" tileset="base" tilemap="base">
         <city name="Jhelom" type="towne" tlk_fname="jhelom.tlk">
             <personrole role="companion" id="32"/>
             <personrole role="weaponsvendor" id="29"/>
@@ -151,7 +151,7 @@
         <label name="valorrune" x="30" y="30"/>
     </map>
     <map id="8" type="city" fname="yew.ult" width="32" height="32" levels="1"
-     borderbehavior="exit" showavatar="true" music="2" tileset="base" tilemap="base">
+     borderbehavior="exit" music="2" tileset="base" tilemap="base">
         <city name="Yew" type="towne" tlk_fname="yew.tlk">
             <personrole role="companion" id="32"/>
             <personrole role="foodvendor" id="27"/>
@@ -160,7 +160,7 @@
         <label name="justicerune" x="13" y="6"/>
     </map>
     <map id="9" type="city" fname="minoc.ult" width="32" height="32" levels="1"
-     borderbehavior="exit" showavatar="true" music="2" tileset="base" tilemap="base">
+     borderbehavior="exit" music="2" tileset="base" tilemap="base">
         <city name="Minoc" type="towne" tlk_fname="minoc.tlk">
             <personrole role="companion" id="32"/>
             <personrole role="weaponsvendor" id="30"/>
@@ -169,7 +169,7 @@
         <label name="sacrificerune" x="28" y="30"/>
     </map>
     <map id="10" type="city" fname="trinsic.ult" width="32" height="32" levels="1"
-     borderbehavior="exit" showavatar="true" music="2" tileset="base" tilemap="base">
+     borderbehavior="exit" music="2" tileset="base" tilemap="base">
         <city name="Trinsic" type="towne" tlk_fname="trinsic.tlk">
             <personrole role="companion" id="32"/>
             <personrole role="weaponsvendor" id="29"/>
@@ -180,7 +180,7 @@
         <label name="honorrune" x="2" y="29"/>
     </map>
     <map id="11" type="city" fname="skara.ult" width="32" height="32" levels="1"
-     borderbehavior="exit" showavatar="true" music="2" tileset="base" tilemap="base">
+     borderbehavior="exit" music="2" tileset="base" tilemap="base">
         <city name="Skara Brae" type="towne" tlk_fname="skara.tlk">
             <personrole role="companion" id="32"/>
             <personrole role="foodvendor" id="28"/>
@@ -190,7 +190,7 @@
         </city>
     </map>
     <map id="12" type="city" fname="magincia.ult" width="32" height="32" levels="1"
-     borderbehavior="exit" showavatar="true" music="2" tileset="base" tilemap="base">
+     borderbehavior="exit" music="2" tileset="base" tilemap="base">
         <city name="Magincia" type="ruins" tlk_fname="magincia.tlk">
             <personrole role="companion" id="32"/>
         </city>
@@ -198,7 +198,7 @@
 
     <!-- villages -->
     <map id="13" type="city" fname="paws.ult" width="32" height="32" levels="1"
-     borderbehavior="exit" showavatar="true" music="2" tileset="base" tilemap="base">
+     borderbehavior="exit" music="2" tileset="base" tilemap="base">
         <city name="Paws" type="village" tlk_fname="paws.tlk">
             <personrole role="armorvendor" id="27"/>
             <personrole role="foodvendor" id="31"/>
@@ -210,7 +210,7 @@
         <label name="humilityrune" x="29" y="29"/>
     </map>
     <map id="14" type="city" fname="den.ult" width="32" height="32" levels="1"
-     borderbehavior="exit" showavatar="true" music="2" tileset="base" tilemap="base">
+     borderbehavior="exit" music="2" tileset="base" tilemap="base">
         <city name="Buccaneers Den" type="village" tlk_fname="den.tlk">
             <personrole role="weaponsvendor" id="28"/>
             <personrole role="armorvendor" id="27"/>
@@ -220,7 +220,7 @@
         </city>
     </map>
     <map id="15" type="city" fname="vesper.ult" width="32" height="32" levels="1"
-     borderbehavior="exit" showavatar="true" music="2" tileset="base" tilemap="base">
+     borderbehavior="exit" music="2" tileset="base" tilemap="base">
         <city name="Vesper" type="village" tlk_fname="vesper.tlk">
             <personrole role="weaponsvendor" id="25"/>
             <personrole role="tavernkeeper" id="23"/>
@@ -229,7 +229,7 @@
         </city>
     </map>
     <map id="16" type="city" fname="cove.ult" width="32" height="32" levels="1"
-     borderbehavior="exit" showavatar="true" music="2" tileset="base" tilemap="base">
+     borderbehavior="exit" music="2" tileset="base" tilemap="base">
         <city name="Cove" type="village" tlk_fname="cove.tlk">
             <personrole role="healer" id="31"/>
         </city>

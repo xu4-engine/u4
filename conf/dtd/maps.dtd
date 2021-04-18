@@ -18,7 +18,6 @@
               chunkheight         NMTOKEN  #IMPLIED
               offset              NMTOKEN  #IMPLIED
               borderbehavior      ( exit | fixed | wrap ) #REQUIRED
-              showavatar          %bool;   #IMPLIED
               nolineofsight       %bool;   #IMPLIED
               firstperson         %bool;   #IMPLIED
               contextual          %bool;   #IMPLIED

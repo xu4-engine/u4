@@ -149,7 +149,7 @@ Map *MapMgr::initMapFromConf(const ConfigElement &mapConf) {
 
     TRACE_LOCAL(*logger, string("loading configuration for map \'") + map->fname + "\'");
 
-    if (mapConf.getBool("showavatar"))
+    if (map->type == Map::WORLD || map->type == Map::CITY)
         map->flags |= SHOW_AVATAR;
 
     if (mapConf.getBool("nolineofsight"))
