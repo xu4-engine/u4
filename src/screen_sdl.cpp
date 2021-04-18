@@ -20,6 +20,7 @@
 #endif
 
 extern bool verbose;
+extern int screenVertOffset;
 extern unsigned int refresh_callback(unsigned int, void*);
 
 bool screenFormatIsABGR = true;
@@ -259,6 +260,7 @@ static void updateDisplay( int x, int y, int w, int h ) {
         int dpitch = ss->pitch / sizeof(uint32_t);
         int screenImageW = xu4.screenImage->width();
         int cr;
+        int offset = screenVertOffset;
 
 #if 0
         printf( "KR redraw format:(%d %08x %08x %d,%d pitch:%d\n",
@@ -275,6 +277,16 @@ static void updateDisplay( int x, int y, int w, int h ) {
         SDL_LockSurface(ss);
         srow = xu4.screenImage->pixelData() + y*screenImageW + x;
         drow = ((uint32_t*) ss->pixels) + y*dpitch + x;
+
+        if (offset > 0) {
+            h -= offset;
+            while (offset) {
+                memset(drow, 0, w * sizeof(uint32_t));
+                drow += dpitch;
+                --offset;
+            }
+        }
+
         for (cr = 0; cr < h; ++cr) {
             dp = drow;
             sp = srow;

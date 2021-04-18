@@ -77,6 +77,7 @@ int screenCursorX = 0;
 int screenCursorY = 0;
 int screenCursorStatus = 0;
 int screenCursorEnabled = 1;
+int screenVertOffset = 0;
 int screenLos[VIEWPORT_W][VIEWPORT_H];
 
 static const int BufferSize = 1024;
@@ -1105,40 +1106,18 @@ void screenEraseTextArea(int x, int y, int width, int height) {
  * Do the tremor spell effect where the screen shakes.
  */
 void screenShake(int iterations) {
-    int shakeOffset;
-    unsigned short i;
-    Image *screen = xu4.screenImage;
-    Image *bottom;
-
-    // the MSVC8 binary was generating a Access Violation when using
-    // drawSubRectOn() or drawOn() to draw the screen surface on top
-    // of itself.  Occured on settings.scale 2 and 4 only.
-    // Therefore, a temporary Image buffer is used to store the area
-    // that gets clipped at the bottom.
-
     if (xu4.settings->screenShakes) {
-        // specify the size of the offset, and create a buffer
-        // to store the offset row plus 1
-        shakeOffset = 1;
-        bottom = Image::create(SCALED(320), SCALED(shakeOffset+1));
+        int shakeOffset = SCALED(1);
 
-        for (i = 0; i < iterations; i++) {
-            // store the bottom row
-            screen->drawOn(bottom, 0, SCALED((shakeOffset+1)-200));
-
+        for (int i = 0; i < iterations; i++) {
             // shift the screen down and make the top row black
-            screen->drawSubRectOn(screen, 0, SCALED(shakeOffset), 0, 0, SCALED(320), SCALED(200-(shakeOffset+1)));
-            bottom->drawOn(screen, 0, SCALED(200-(shakeOffset)));
-            screen->fillRect(0, 0, SCALED(320), SCALED(shakeOffset), 0, 0, 0);
+            screenVertOffset = shakeOffset;
             EventHandler::sleep(xu4.settings->shakeInterval);
 
-            // shift the screen back up, and replace the bottom row
-            screen->drawOn(screen, 0, 0-SCALED(shakeOffset));
-            bottom->drawOn(screen, 0, SCALED(200-(shakeOffset+1)));
+            // shift the screen back up
+            screenVertOffset = 0;
             EventHandler::sleep(xu4.settings->shakeInterval);
         }
-        // free the bottom row image
-        delete bottom;
     }
 }
 

@@ -14,6 +14,7 @@
 #include "xu4.h"
 
 extern bool verbose;
+extern int screenVertOffset;
 
 
 bool screenFormatIsABGR = true;
@@ -254,6 +255,7 @@ static void updateDisplay(int x, int y, int w, int h) {
     const uint32_t* sp;
     int dpitch, cr;
     int screenImageW = xu4.screenImage->width();
+    int offset = screenVertOffset;
 
 #if 0
     static uint32_t dt = 0;
@@ -281,6 +283,15 @@ static void updateDisplay(int x, int y, int w, int h) {
     dpitch = lr->pitch / sizeof(uint32_t);
     drow = ((uint32_t*) lr->data) + y*dpitch + x;
     srow = xu4.screenImage->pixelData() + y*screenImageW + x;
+
+    if (offset > 0) {
+        h -= offset;
+        while (offset) {
+            memset(drow, 0, w * sizeof(uint32_t));
+            drow += dpitch;
+            --offset;
+        }
+    }
 
     for (cr = 0; cr < h; ++cr) {
         dp = drow;
