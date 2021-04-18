@@ -592,40 +592,43 @@ int Map::getNumberOfCreatures() {
 /**
  * Returns a mask of valid moves for the given transport on the given map
  */
-int Map::getValidMoves(MapCoords from, MapTile transport) {
+int Map::getValidMoves(const MapCoords& from, MapTile transport) {
     int retval;
     Direction d;
     Object *obj;
     const Creature *m, *to_m;
+    const Tile* prev_tile;
     int ontoAvatar, ontoCreature;
-    MapCoords coords = from;
+    MapCoords testCoord;
 
     // get the creature object, if it exists (the one that's moving)
     m = xu4.creatureMgr->getByTile(transport);
 
-    bool isAvatar = (type != COMBAT) && (coords == c->location->coords);
+    bool isAvatar = (type != COMBAT) && (from == c->location->coords);
     if (m && m->canMoveOntoPlayer())
         isAvatar = false;
 
+    prev_tile = tileAt(from, WITHOUT_OBJECTS)->getTileType();
+
     retval = 0;
     for (d = DIR_WEST; d <= DIR_SOUTH; d = (Direction)(d+1)) {
-        coords = from;
         ontoAvatar = 0;
         ontoCreature = 0;
 
         // Move the coordinates in the current direction and test it
-        coords.move(d, this);
+        testCoord = from;
+        testCoord.move(d, this);
 
         // you can always walk off the edge of the map
-        if (MAP_IS_OOB(this, coords)) {
+        if (MAP_IS_OOB(this, testCoord)) {
             retval = DIR_ADD_TO_MASK(d, retval);
             continue;
         }
 
-        obj = objectAt(coords);
+        obj = objectAt(testCoord);
 
         // see if it's trying to move onto the avatar
-        if ((flags & SHOW_AVATAR) && (coords == c->location->coords))
+        if ((flags & SHOW_AVATAR) && (testCoord == c->location->coords))
             ontoAvatar = 1;
 
         // see if it's trying to move onto a person or creature
@@ -639,9 +642,7 @@ int Map::getValidMoves(MapCoords from, MapTile transport) {
         else if (ontoCreature)
             tile = obj->getTile();
         else
-            tile = *tileAt(coords, WITH_OBJECTS);
-
-        MapTile prev_tile = *tileAt(from, WITHOUT_OBJECTS);
+            tile = *tileAt(testCoord, WITH_OBJECTS);
 
         // get the other creature object, if it exists (the one that's being moved onto)
         to_m = dynamic_cast<Creature*>(obj);
@@ -654,7 +655,7 @@ int Map::getValidMoves(MapCoords from, MapTile transport) {
             // these conditions are not met, the creature cannot move onto another.
 
             if ((ontoAvatar && m->canMoveOntoPlayer()) || (ontoCreature && m->canMoveOntoCreatures()))
-                tile = *tileAt(coords, WITHOUT_OBJECTS); //Ignore all objects, and just consider terrain
+                tile = *tileAt(testCoord, WITHOUT_OBJECTS); //Ignore all objects, and just consider terrain
               if ((ontoAvatar && !m->canMoveOntoPlayer())
                 ||  (
                         ontoCreature &&
@@ -679,7 +680,7 @@ int Map::getValidMoves(MapCoords from, MapTile transport) {
             else if (transport == tileset->getByName("avatar")->getId() || transport.getTileType()->isHorse()) {
                 if (tile.getTileType()->canWalkOn(d) &&
                     (!transport.getTileType()->isHorse() || tile.getTileType()->isCreatureWalkable()) &&
-                    prev_tile.getTileType()->canWalkOff(d))
+                    prev_tile->canWalkOff(d))
                     retval = DIR_ADD_TO_MASK(d, retval);
             }
 //            else if (ontoCreature && to_m->canMoveOntoPlayer()) {
@@ -720,18 +721,16 @@ int Map::getValidMoves(MapCoords from, MapTile transport) {
             // walking creatures
             else if (m->walks()) {
                 if (tile.getTileType()->canWalkOn(d) &&
-                    prev_tile.getTileType()->canWalkOff(d) &&
+                    prev_tile->canWalkOff(d) &&
                     tile.getTileType()->isCreatureWalkable())
                     retval = DIR_ADD_TO_MASK(d, retval);
             }
             // Creatures that can move onto player
             else if (ontoAvatar && m->canMoveOntoPlayer())
             {
-
                 //tile should be transport
                 if (tile.getTileType()->isShip() && m->swims())
                     retval = DIR_ADD_TO_MASK(d, retval);
-
             }
         }
     }

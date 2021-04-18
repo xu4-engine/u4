@@ -112,7 +112,7 @@ public:
     class Creature *moveObjects(MapCoords avatar);
     void resetObjectAnimations();
     int getNumberOfCreatures();
-    int getValidMoves(MapCoords from, MapTile transport);
+    int getValidMoves(const MapCoords& from, MapTile transport);
     bool move(Object *obj, Direction d);
     void alertGuards();
     const MapCoords &getLabel(const string &name) const;
