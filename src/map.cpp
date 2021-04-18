@@ -603,7 +603,7 @@ int Map::getValidMoves(MapCoords from, MapTile transport) {
     // get the creature object, if it exists (the one that's moving)
     m = xu4.creatureMgr->getByTile(transport);
 
-    bool isAvatar = (c->location->coords == coords);
+    bool isAvatar = (type != COMBAT) && (coords == c->location->coords);
     if (m && m->canMoveOntoPlayer())
         isAvatar = false;
 

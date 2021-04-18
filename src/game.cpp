@@ -539,7 +539,6 @@ void GameController::setMap(Map *map, bool saveLocation, const Portal *portal, T
             c->saveGame->orientation = DIR_EAST;
         break;
     case Map::COMBAT:
-        coords = MapCoords(-1, -1); /* set these to -1 just to be safe; we don't need them */
         context = CTX_COMBAT;
         viewMode = VIEW_NORMAL;
         activePlayer = -1; /* different active player for combat, defaults to 'None' */
