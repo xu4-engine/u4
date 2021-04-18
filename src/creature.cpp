@@ -625,6 +625,7 @@ void Creature::act(CombatController *controller) {
                     c->party->adjustKarma(KA_SPARED_GOOD);
 
                 map->removeObject(this);
+                return;     // Avoid calling animateMovement below.
             }
         }
         break;
