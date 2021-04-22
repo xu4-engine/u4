@@ -1727,7 +1727,7 @@ void IntroController::getTitleSourceData()
         titles[i].destImage = Image::create(
             2 + (titles[i].prescaled ? SCALED(titles[i].rw) : titles[i].rw) * info->prescale ,
             2 + (titles[i].prescaled ? SCALED(titles[i].rh) : titles[i].rh) * info->prescale);
-        titles[i].destImage->fill(RGBA(0, 0, 0, 255));
+        titles[i].destImage->fill(Image::black);
     }
 
     // scale the original image now
@@ -1762,7 +1762,7 @@ bool IntroController::updateTitle()
         if (title == titles.begin())
         {
             // clear the screen
-            xu4.screenImage->fill(RGBA(0, 0, 0, 255));
+            xu4.screenImage->fill(Image::black);
         }
         if (title->method == TITLE)
         {

@@ -8,18 +8,12 @@
 #include <string>
 #include <stdint.h>
 #include "textcolor.h"
+#include "support/image32.h"
 
 #if defined(IOS)
 typedef struct CGImage *CGImageRef;
 typedef struct CGLayer *CGLayerRef;
 #endif
-
-
-struct RGBA {
-    RGBA(uint8_t R, uint8_t G, uint8_t B, uint8_t A) : r(R), g(G), b(B), a(A) {}
-    RGBA() : r(0), g(0), b(0), a(255) {}
-    uint8_t r, g, b, a;
-};
 
 #define IM_OPAQUE       255
 #define IM_TRANSPARENT  0
@@ -32,8 +26,9 @@ struct RGBA {
  *      <li>drawing methods should be pushed to Drawable subclass</li>
  *  </ul>
  */
-class Image {
+class Image : public Image32 {
 public:
+    static RGBA black;
     static int enableBlend(int on);
     static Image *create(int w, int h);
     static Image *duplicate(const Image *image);
@@ -65,21 +60,9 @@ public:
     void getPixelIndex(int x, int y, unsigned int &index) const;
 
     /* image drawing methods */
-    /**
-     * Draws the entire image onto the screen at the given offset.
-     */
-    void draw(int x, int y) const {
-        drawOn(NULL, x, y);
-    }
 
-    /**
-     * Draws a piece of the image onto the screen at the given offset.
-     * The area of the image to draw is defined by the rectangle rx, ry,
-     * rw, rh.
-     */
-    void drawSubRect(int x, int y, int rx, int ry, int rw, int rh) const {
-        drawSubRectOn(NULL, x, y, rx, ry, rw, rh);
-    }
+    void draw(int x, int y) const;
+    void drawSubRect(int x, int y, int rx, int ry, int rw, int rh) const;
 
     /**
      * Draws a piece of the image onto the screen at the given offset, inverted.
@@ -90,16 +73,26 @@ public:
         drawSubRectInvertedOn(NULL, x, y, rx, ry, rw, rh);
     }
 
-    /* image drawing methods for drawing onto another image instead of the screen */
-    void drawOn(Image *d, int x, int y) const;
-    void drawSubRectOn(Image *d, int x, int y, int rx, int ry, int rw, int rh) const;
+    /** Draws the image onto another image. */
+    void drawOn(Image *d, int x, int y) const {
+        image32_blit(d, x, y, this, blending);
+    }
+
+    /** Draws a piece of the image onto another image. */
+    void drawSubRectOn(Image *d, int x, int y,
+                       int rx, int ry, int rw, int rh) const {
+        image32_blitRect(d, x, y, this, rx, ry, rw, rh, blending);
+    }
+
     void drawSubRectInvertedOn(Image *d, int x, int y, int rx, int ry, int rw, int rh) const;
 
     int width() const { return w; }
     int height() const { return h; }
     const uint32_t* pixelData() const { return pixels; }
 
-    void save(const char* filename);
+    void save(const char* filename) {
+        image32_savePPM(this, filename);
+    }
     void drawHighlighted();
 
 #ifdef IOS
@@ -116,10 +109,9 @@ private:
 #endif
 
 private:
-    unsigned int w, h;
-    uint32_t* pixels;
+    static int blending;
 
-    Image();                    /* use create method to construct images */
+    Image() {}      /* use create method to construct images */
 
     // disallow assignments, copy contruction
     Image(const Image&);

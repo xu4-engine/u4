@@ -10,6 +10,7 @@
 #include "settings.h"
 #include "xu4.h"
 
+#include "support/image32.c"
 
 #define CHANNEL_REMAP
 #ifdef CHANNEL_REMAP
@@ -28,32 +29,25 @@ static void screenColor(RGBA* col, int r, int g, int b, int a) {
 }
 #endif
 
-static int imageBlending = 0;
+RGBA Image::black = {0, 0, 0, 255};
+int Image::blending = 0;
 
 /**
  * Enable blending (use alpha channel) for drawOn & drawSubRectOn.
  * Returns previous blending state.
  */
 int Image::enableBlend(int on) {
-    int prev = imageBlending;
-    imageBlending = on ? 1 : 0;
+    int prev = blending;
+    blending = on ? 1 : 0;
     return prev;
 }
-
-Image::Image() {}
 
 /**
  * Creates a new RGBA image.
  */
 Image *Image::create(int w, int h) {
     Image *im = new Image;
-    im->pixels = new uint32_t[w * h];
-    if (!im->pixels) {
-        delete im;
-        return NULL;
-    }
-    im->w = w;
-    im->h = h;
+    image32_allocPixels(im, w, h);
     return im;
 }
 
@@ -61,9 +55,8 @@ Image *Image::create(int w, int h) {
  * Creates a duplicate of another image
  */
 Image *Image::duplicate(const Image *image) {
-    Image *im = create(image->w, image->h);
-    if (im)
-        memcpy(im->pixels, image->pixels, im->w * im->h * sizeof(uint32_t));
+    Image *im = new Image;
+    image32_duplicatePixels(im, image);
     return im;
 }
 
@@ -71,11 +64,13 @@ Image *Image::duplicate(const Image *image) {
  * Frees the image.
  */
 Image::~Image() {
-    delete[] pixels;
+    image32_freePixels(this);
 }
 
 RGBA Image::setColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
-    return RGBA(r, g, b, a);
+    RGBA color;
+    rgba_set(color, r, g, b, a);
+    return color;
 }
 
 /* sets the specified font colors */
@@ -138,7 +133,8 @@ bool Image::setFontColorBG(ColorBG bg) {
 }
 
 void Image::putPixel(int x, int y, int r, int g, int b, int a) {
-    RGBA col(r, g, b, a);
+    RGBA col;
+    rgba_set(col, r, g, b, a);
     pixels[ y*w + x ] = *((uint32_t*) &col);
 }
 
@@ -213,23 +209,13 @@ void Image::putPixelIndex(int x, int y, uint32_t index) {
  * Fills entire image with a given color.
  */
 void Image::fill(const RGBA& col) {
-    uint32_t icol;
-    uint32_t* dp = pixels;
-    uint32_t* dend = pixels + w * h;
-
 #ifdef CHANNEL_REMAP
     RGBA swap;
-    if (screenFormatIsABGR) {
-        screenColor(&swap, col.r, col.g, col.b, col.a);
-        icol = *((uint32_t*) &swap);
-    } else
-        icol = *((uint32_t*) &col);
+    screenColor(&swap, col.r, col.g, col.b, col.a);
+    image32_fill(this, &swap);
 #else
-    icol = *((uint32_t*) &col);
+    image32_fill(this, &col);
 #endif
-
-    while (dp != dend)
-        *dp++ = icol;
 }
 
 /**
@@ -298,160 +284,19 @@ void Image::getPixelIndex(int x, int y, unsigned int &index) const {
     index = pixels[ y*w + x ];
 }
 
-inline uint8_t MIX(int A, int B, int alpha) {
-    return (int8_t) (A + ((B - A) * alpha / 255));
+/**
+ * Draws the entire image onto the screen at the given offset.
+ */
+void Image::draw(int x, int y) const {
+    image32_blit(xu4.screenImage, x, y, this, blending);
 }
 
 /**
- * Draws the image onto another image.
+ * Draws a piece of the image onto the screen at the given offset.
+ * The area of the image to draw is defined by the rectangle rx, ry, rw, rh.
  */
-void Image::drawOn(Image *dest, int x, int y) const {
-    uint32_t* drow;
-    const uint32_t* srow = pixels;
-    int blitW, blitH;
-
-    if (dest == NULL)
-        dest = xu4.screenImage;
-
-    blitW = w;
-    if (x < 0) {
-        srow += -x;
-        blitW += x;     // Subtracts from blitW.
-        x = 0;
-    }
-    else if ((blitW + x) > int(dest->w)) {
-        blitW = dest->w - x;
-    }
-    if (blitW < 1)
-        return;
-
-    blitH = h;
-    if (y < 0) {
-        srow += w*-y;
-        blitH += y;     // Subtracts from blitH.
-        y = 0;
-    }
-    else if ((blitH + y) > int(dest->h)) {
-        blitH = dest->h - y;
-    }
-    if (blitH < 1)
-        return;
-
-    drow = dest->pixels + dest->w * y + x;
-
-    if (imageBlending) {
-        uint8_t* dp;
-        const uint8_t* sp;
-        const uint8_t* send;
-        int alpha;
-
-        while (blitH--) {
-            dp = (uint8_t*) drow;
-            sp = (const uint8_t*) srow;
-            send = (const uint8_t*) (srow + blitW);
-            while( sp != send ) {
-                alpha = sp[3];
-                dp[0] = MIX(dp[0], sp[0], alpha);
-                dp[1] = MIX(dp[1], sp[1], alpha);
-                dp[2] = MIX(dp[2], sp[2], alpha);
-                dp[3] = alpha;
-
-                dp += 4;
-                sp += 4;
-            }
-            drow += dest->w;
-            srow += w;
-        }
-    } else {
-        uint32_t* dp;
-        const uint32_t* sp;
-        const uint32_t* send;
-
-        while (blitH--) {
-            dp = drow;
-            sp = srow;
-            send = sp + blitW;
-            while( sp != send )
-                *dp++ = *sp++;
-            drow += dest->w;
-            srow += w;
-        }
-    }
-}
-
-#define CLIP_SUB(x, rx, rw, SD, DD) \
-    if (rx < 0) { \
-        x -= rx; \
-        rw += rx; \
-        rx = 0; \
-    } \
-    if (x < 0) { \
-        rx -= x; \
-        rw += x; \
-        x = 0; \
-    } \
-    if ((rw + x) > int(DD)) \
-        rw = DD - x; \
-    if ((rw + rx) > int(SD)) \
-        rw = SD - rx; \
-    if (rw < 1) \
-        return;
-
-/**
- * Draws a piece of the image onto another image.
- */
-void Image::drawSubRectOn(Image *dest, int x, int y, int rx, int ry, int rw, int rh) const {
-    uint32_t* drow;
-    const uint32_t* srow;
-
-    if (dest == NULL)
-        dest = xu4.screenImage;
-
-    // Clip position and source rect to positive values.
-    CLIP_SUB(x, rx, rw, w, dest->w)
-    CLIP_SUB(y, ry, rh, h, dest->h)
-
-    srow = pixels + w * ry + rx;
-    drow = dest->pixels + dest->w * y + x;
-
-    if (imageBlending) {
-        uint8_t* dp;
-        const uint8_t* sp;
-        const uint8_t* send;
-        int alpha;
-
-        while (rh--) {
-            dp = (uint8_t*) drow;
-            sp = (const uint8_t*) srow;
-            send = (const uint8_t*) (srow + rw);
-            while( sp != send ) {
-                alpha = sp[3];
-                dp[0] = MIX(dp[0], sp[0], alpha);
-                dp[1] = MIX(dp[1], sp[1], alpha);
-                dp[2] = MIX(dp[2], sp[2], alpha);
-                dp[3] = alpha;
-
-                dp += 4;
-                sp += 4;
-            }
-            drow += dest->w;
-            srow += w;
-        }
-    } else {
-        uint32_t* dp;
-        const uint32_t* sp;
-        const uint32_t* send;
-
-        while (rh--) {
-            dp = drow;
-            sp = srow;
-            send = sp + rw;
-            while( sp != send )
-                *dp++ = *sp++;
-            drow += dest->w;
-            srow += w;
-        }
-    }
+void Image::drawSubRect(int x, int y, int rx, int ry, int rw, int rh) const {
+    image32_blitRect(xu4.screenImage, x, y, this, rx, ry, rw, rh, blending);
 }
 
 /**
@@ -485,58 +330,6 @@ void Image::drawSubRectInvertedOn(Image *dest, int x, int y, int rx, int ry, int
         srow -= w;
     }
 }
-
-/**
- * Dumps the image to a file in PPM format. This is mainly used for debugging.
- */
-void Image::save(const char *filename) {
-    uint8_t* row;
-    uint8_t* rowEnd;
-    uint8_t* cp;
-    int rowBytes = w*4;
-    int alpha;
-    RGBA color;
-    FILE* fp;
-
-    fp = fopen(filename, "w");
-    if (! fp) {
-        fprintf(stderr, "Image::save cannot open file %s\n", filename);
-        return;
-    }
-    fprintf(fp, "P6 %d %d 255\n", w, h);
-
-    row = (uint8_t*) pixels;
-    for (unsigned y = 0; y < h; ++y) {
-        cp = row;
-        rowEnd = row + rowBytes;
-        while (cp != rowEnd) {
-            alpha = cp[3];
-#if 1
-            if (alpha == 255) {
-                fwrite(cp, 1, 3, fp);
-            } else {
-                // PPM has no alpha channel so blend with pink to indicate it.
-                color.r = MIX(255, cp[0], alpha);
-                color.g = MIX(  0, cp[1], alpha);
-                color.b = MIX(255, cp[2], alpha);
-                fwrite(&color, 1, 3, fp);
-            }
-#else
-            // Show alpha as greyscale and fully opaque as red.
-            if (alpha == 255) {
-                color.r = 255;
-                color.g = color.b = 0;
-            } else
-                color.r = color.g = color.b = alpha;
-            fwrite(&color, 1, 3, fp);
-#endif
-            cp += 4;
-        }
-        row += rowBytes;
-    }
-    fclose(fp);
-}
-
 
 /**
  * Invert the RGB values of image.

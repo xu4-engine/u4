@@ -514,9 +514,8 @@ ImageInfo *ImageMgr::get(const string &name, bool returnUnscaled) {
             // NOTE: The first 16 tiles are landscape and must be fully opaque!
             int f = (name == "tiles") ? 16 : 0;
             int frames = info->tiles;
-            RGBA bgCol(0, 0, 0, 0);
             for ( ; f < frames; ++f)
-                unscaled->performTransparencyHack(bgCol, frames, f, transparency_shadow_size, opacity);
+                unscaled->performTransparencyHack(Image::black, frames, f, transparency_shadow_size, opacity);
         }
         break;
     }

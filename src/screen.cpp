@@ -99,7 +99,7 @@ static void screenInit_data(Settings& settings) {
 
     // Create a special purpose image that represents the whole screen.
     xu4.screenImage = Image::create(320 * settings.scale, 200 * settings.scale);
-    xu4.screenImage->fill(RGBA(0, 0, 0, 255));
+    xu4.screenImage->fill(Image::black);
 
     charsetInfo = xu4.imageMgr->get(BKGD_CHARSET);
     if (!charsetInfo)

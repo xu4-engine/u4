@@ -181,7 +181,7 @@ GameController::GameController() : mapArea(BORDER_WIDTH, BORDER_HEIGHT, VIEWPORT
 
 void GameController::initScreen()
 {
-    xu4.screenImage->fill(RGBA(0, 0, 0, 255));
+    xu4.screenImage->fill(Image::black);
 }
 
 void GameController::initScreenWithoutReloadingState()
