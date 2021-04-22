@@ -69,7 +69,7 @@ void gameInnHandler(void);
 void gameLostEighth(Virtue virtue);
 void gamePartyStarving(void);
 time_t gameTimeSinceLastCommand(void);
-int gameSave(void);
+int gameSave(const char* path);
 
 /* spell functions */
 void gameCastSpell(unsigned int spell, int caster, int param);
@@ -331,9 +331,9 @@ void GameController::init() {
 /**
  * Saves the game state into party.sav and creatures.sav.
  */
-int gameSave() {
+int gameSave(const char* path) {
     FILE *saveGameFile, *monstersFile, *dngMapFile;
-    const Settings& settings = *xu4.settings;
+    string userPath(path);
     SaveGame save = *c->saveGame;
 
     /*************************************************/
@@ -359,7 +359,7 @@ int gameSave() {
     /* Done making sure the savegame struct is accurate */
     /****************************************************/
 
-    saveGameFile = fopen((settings.getUserPath() + PARTY_SAV_BASE_FILENAME).c_str(), "wb");
+    saveGameFile = fopen((userPath + PARTY_SAV_BASE_FILENAME).c_str(), "wb");
     if (!saveGameFile) {
         screenMessage("Error opening " PARTY_SAV_BASE_FILENAME "\n");
         return 0;
@@ -372,7 +372,7 @@ int gameSave() {
     }
     fclose(saveGameFile);
 
-    monstersFile = fopen((settings.getUserPath() + MONSTERS_SAV_BASE_FILENAME).c_str(), "wb");
+    monstersFile = fopen((userPath + MONSTERS_SAV_BASE_FILENAME).c_str(), "wb");
     if (!monstersFile) {
         screenMessage("Error opening %s\n", MONSTERS_SAV_BASE_FILENAME);
         return 0;
@@ -420,7 +420,7 @@ int gameSave() {
             id_map[cmgr->getById(ROGUE_ID)]        = 15;
         }
 
-        dngMapFile = fopen((settings.getUserPath() + "dngmap.sav").c_str(), "wb");
+        dngMapFile = fopen((userPath + "dngmap.sav").c_str(), "wb");
         if (!dngMapFile) {
             screenMessage("Error opening dngmap.sav\n");
             return 0;
@@ -454,7 +454,7 @@ int gameSave() {
          * Write outmonst.sav
          */
 
-        monstersFile = fopen((settings.getUserPath() + OUTMONST_SAV_BASE_FILENAME).c_str(), "wb");
+        monstersFile = fopen((userPath + OUTMONST_SAV_BASE_FILENAME).c_str(), "wb");
         if (!monstersFile) {
             screenMessage("Error opening %s\n", OUTMONST_SAV_BASE_FILENAME);
             return 0;
@@ -1196,7 +1196,7 @@ bool GameController::keyPressed(int key) {
         case 'q':
             screenMessage("Quit & Save...\n%d moves\n", c->saveGame->moves);
             if (c->location->context & CTX_CAN_SAVE_GAME) {
-                gameSave();
+                gameSave(xu4.settings->getUserPath().c_str());
                 screenMessage("Press Alt-x to quit\n");
             }
             else screenMessage("%cNot here!%c\n", FG_GREY, FG_WHITE);

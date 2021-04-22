@@ -33,6 +33,10 @@
 #include "SDL.h"
 #endif
 
+#ifdef DEBUG
+extern int gameSave(const char*);
+#endif
+
 bool verbose = false;
 
 
@@ -40,7 +44,8 @@ enum OptionsFlag {
     OPT_FULLSCREEN = 1,
     OPT_NO_INTRO   = 2,
     OPT_NO_AUDIO   = 4,
-    OPT_VERBOSE    = 8
+    OPT_VERBOSE    = 8,
+    OPT_TEST_SAVE  = 0x10
 };
 
 struct Options {
@@ -120,6 +125,12 @@ int parseOptions(Options* opt, int argc, char** argv) {
 
             return 0;
         }
+#ifdef DEBUG
+        else if (strEqual(argv[i], "--test-save"))
+        {
+            opt->flags |= OPT_TEST_SAVE;
+        }
+#endif
         else {
             errorFatal("Unrecognized argument: %s\n\n"
                    "Use --help for a list of supported arguments.", argv[i]);
@@ -216,6 +227,16 @@ int main(int argc, char *argv[]) {
 
     memset(&xu4, 0, sizeof xu4);
     servicesInit(&xu4, &opt);
+
+#ifdef DEBUG
+    if (opt.flags & OPT_TEST_SAVE) {
+        xu4.game = new GameController();
+        xu4.game->init();
+        gameSave("/tmp/xu4/");
+        servicesFree(&xu4);
+        return 0;
+    }
+#endif
     }
 
 #if 1
