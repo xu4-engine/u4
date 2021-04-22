@@ -33,7 +33,6 @@ set(XU4_INC
 	imagemgr.h
 	imageview.h
 	intro.h
-	io.h
 	item.h
 	location.h
 	map.h
@@ -109,7 +108,6 @@ set(XU4_SRC
 	imagemgr.cpp
 	imageview.cpp 
 	intro.cpp 
-	io.cpp 
 	item.cpp
 	location.cpp 
 	map.cpp 

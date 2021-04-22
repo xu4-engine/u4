@@ -92,7 +92,6 @@ exe %u4 [
 		%imagemgr.cpp
 		%imageview.cpp
 		%intro.cpp
-		%io.cpp
 		%item.cpp
 		%location.cpp
 		%map.cpp
@@ -145,7 +144,6 @@ if make_util [
 		console
 		include_from %src
 		sources [
-			%src/io.cpp
 			%src/names.cpp
 			%src/savegame.cpp
 			%src/util/dumpsavegame.cpp

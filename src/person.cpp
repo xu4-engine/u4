@@ -17,7 +17,6 @@
 #include "debug.h"
 #include "event.h"
 #include "game.h"   // Included for ReadPlayerController
-#include "io.h"
 #include "location.h"
 #include "names.h"
 #include "player.h"

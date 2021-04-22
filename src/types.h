@@ -8,6 +8,13 @@
 #include <stdint.h>
 #include "direction.h"
 
+#ifdef _MSC_VER
+#if _MSC_VER > 1600
+#define strcasecmp  _stricmp
+#define strncasecmp _strnicmp
+#endif
+#endif
+
 class Tile;
 typedef uint16_t TileId;
 typedef uint16_t VisualId;

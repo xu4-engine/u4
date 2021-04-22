@@ -1,15 +1,51 @@
 /*
- * $Id$
+ * savegame.cpp
  */
 
 #include "savegame.h"
 
-#include <cstring>
-#include "io.h"
-#include "object.h"
-#include "types.h"
 
-using std::string;
+static int writeInt(uint32_t i, FILE *f) {
+    if (fputc(i & 0xff, f) == EOF ||
+        fputc((i >> 8) & 0xff, f) == EOF ||
+        fputc((i >> 16) & 0xff, f) == EOF ||
+        fputc((i >> 24) & 0xff, f) == EOF)
+        return 0;
+    return 1;
+}
+
+static int writeShort(uint16_t s, FILE *f) {
+    if (fputc(s & 0xff, f) == EOF ||
+        fputc((s >> 8) & 0xff, f) == EOF)
+        return 0;
+    return 1;
+}
+
+static int writeChar(uint8_t c, FILE *f) {
+    if (fputc(c, f) == EOF)
+        return 0;
+    return 1;
+}
+
+static int readInt(uint32_t *i, FILE *f) {
+    *i = fgetc(f);
+    *i |= (fgetc(f) << 8);
+    *i |= (fgetc(f) << 16);
+    *i |= (fgetc(f) << 24);
+    return 1;
+}
+
+static int readShort(uint16_t *s, FILE *f) {
+    *s = fgetc(f);
+    *s |= (fgetc(f) << 8);
+    return 1;
+}
+
+static int readChar(uint8_t *c, FILE *f) {
+    *c = fgetc(f);
+    return 1;
+}
+
 
 int SaveGame::write(FILE *f) const {
     int i;
@@ -307,7 +343,7 @@ void SaveGamePlayerRecord::init() {
     status = STAT_GOOD;
 }
 
-int saveGameMonstersWrite(SaveGameMonsterRecord *monsterTable, FILE *f) {
+int saveGameMonstersWrite(const SaveGameMonsterRecord *monsterTable, FILE *f) {
     int i, max;
 
     if (monsterTable) {

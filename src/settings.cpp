@@ -17,7 +17,6 @@
 #if defined(_WIN32) || defined(__CYGWIN__)
 #include <windows.h>
 #include <shlobj.h>
-#define strcasecmp  _stricmp
 #elif defined(MACOSX)
 #include <CoreServices/CoreServices.h>
 #elif defined(IOS)

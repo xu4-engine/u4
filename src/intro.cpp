@@ -765,7 +765,7 @@ void IntroController::finishInitiateGame(const string &nameBuffer, SexType sex)
 
     // write out save game an segue into game
 
-    FILE *saveGameFile = fopen((xu4.settings->getUserPath() + PARTY_SAV_BASE_FILENAME).c_str(), "wb");
+    FILE *saveGameFile = fopen((xu4.settings->getUserPath() + PARTY_SAV).c_str(), "wb");
     if (!saveGameFile) {
         questionArea.disableCursor();
         errorMessage = "Unable to create save game!";
@@ -793,7 +793,7 @@ void IntroController::finishInitiateGame(const string &nameBuffer, SexType sex)
 
     fclose(saveGameFile);
 
-    saveGameFile = fopen((xu4.settings->getUserPath() + MONSTERS_SAV_BASE_FILENAME).c_str(), "wb");
+    saveGameFile = fopen((xu4.settings->getUserPath() + MONSTERS_SAV).c_str(), "wb");
     if (saveGameFile) {
         saveGameMonstersWrite(NULL, saveGameFile);
         fclose(saveGameFile);
@@ -947,7 +947,7 @@ void IntroController::journeyOnward() {
      * ensure a party.sav file exists, otherwise require user to
      * initiate game
      */
-    saveGameFile = fopen((xu4.settings->getUserPath() + PARTY_SAV_BASE_FILENAME).c_str(), "rb");
+    saveGameFile = fopen((xu4.settings->getUserPath() + PARTY_SAV).c_str(), "rb");
     if (saveGameFile) {
         SaveGame *saveGame = new SaveGame;
 

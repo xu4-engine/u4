@@ -236,7 +236,7 @@ void GameController::init() {
     c->lastShip = NULL;
 
     /* load in the save game */
-    saveGameFile = fopen((settings.getUserPath() + PARTY_SAV_BASE_FILENAME).c_str(), "rb");
+    saveGameFile = fopen((settings.getUserPath() + PARTY_SAV).c_str(), "rb");
     if (saveGameFile) {
         c->saveGame->read(saveGameFile);
         fclose(saveGameFile);
@@ -288,8 +288,8 @@ void GameController::init() {
 
     TRACE_LOCAL(gameDbg, "Loading monsters."); ++pb;
 
-    /* load in creatures.sav */
-    monstersFile = fopen((settings.getUserPath() + MONSTERS_SAV_BASE_FILENAME).c_str(), "rb");
+    /* load in monsters.sav */
+    monstersFile = fopen((settings.getUserPath() + MONSTERS_SAV).c_str(), "rb");
     if (monstersFile) {
         saveGameMonstersRead(c->location->map->monsterTable, monstersFile);
         fclose(monstersFile);
@@ -298,7 +298,7 @@ void GameController::init() {
 
     /* we have previous creature information as well, load it! */
     if (c->location->prev) {
-        monstersFile = fopen((settings.getUserPath() + OUTMONST_SAV_BASE_FILENAME).c_str(), "rb");
+        monstersFile = fopen((settings.getUserPath() + OUTMONST_SAV).c_str(), "rb");
         if (monstersFile) {
             saveGameMonstersRead(c->location->prev->map->monsterTable, monstersFile);
             fclose(monstersFile);
@@ -323,85 +323,83 @@ void GameController::init() {
 #endif
 
 
-
     initScreenWithoutReloadingState();
     TRACE(gameDbg, "gameInit() completed successfully.");
 }
 
 /**
- * Saves the game state into party.sav and creatures.sav.
+ * Saves the game state into party.sav and monsters.sav.
+ * For dungeons dngmap.sav & outmonst.sav are also created.
  */
-int gameSave(const char* path) {
-    FILE *saveGameFile, *monstersFile, *dngMapFile;
-    string userPath(path);
+int gameSave(const char* userPath) {
+    FILE *fp;
+    string sbuf(userPath);
+    size_t userPathLen = sbuf.size();
+    const char* basename;
+    const Location* loc = c->location;
+    Map* map = loc->map;
     SaveGame save = *c->saveGame;
+
+#define openSaveFile(FN) \
+    basename = FN; \
+    sbuf.erase(userPathLen, string::npos); \
+    sbuf.append(basename); \
+    fp = fopen(sbuf.c_str(), "wb"); \
+    if (!fp) { \
+        screenMessage("Error opening %s\n", basename); \
+        return 0; \
+    }
 
     /*************************************************/
     /* Make sure the savegame struct is accurate now */
 
-    if (c->location->prev) {
-        save.x = c->location->coords.x;
-        save.y = c->location->coords.y;
-        save.dnglevel = c->location->coords.z;
-        save.dngx = c->location->prev->coords.x;
-        save.dngy = c->location->prev->coords.y;
-    }
-    else {
-        save.x = c->location->coords.x;
-        save.y = c->location->coords.y;
-        save.dnglevel = c->location->coords.z;
+    if (loc->prev) {
+        save.x = loc->coords.x;
+        save.y = loc->coords.y;
+        save.dnglevel = loc->coords.z;
+        save.dngx = loc->prev->coords.x;
+        save.dngy = loc->prev->coords.y;
+    } else {
+        save.x = loc->coords.x;
+        save.y = loc->coords.y;
+        save.dnglevel = loc->coords.z;
         save.dngx = c->saveGame->dngx;
         save.dngy = c->saveGame->dngy;
     }
-    save.location = c->location->map->id;
+    save.location = map->id;
     save.orientation = (Direction)(c->saveGame->orientation - DIR_WEST);
 
     /* Done making sure the savegame struct is accurate */
     /****************************************************/
 
-    saveGameFile = fopen((userPath + PARTY_SAV_BASE_FILENAME).c_str(), "wb");
-    if (!saveGameFile) {
-        screenMessage("Error opening " PARTY_SAV_BASE_FILENAME "\n");
-        return 0;
-    }
 
-    if (!save.write(saveGameFile)) {
-        screenMessage("Error writing to " PARTY_SAV_BASE_FILENAME "\n");
-        fclose(saveGameFile);
-        return 0;
-    }
-    fclose(saveGameFile);
+    openSaveFile(PARTY_SAV);
+    if (! save.write(fp))
+        goto write_error;
+    fclose(fp);
 
-    monstersFile = fopen((userPath + MONSTERS_SAV_BASE_FILENAME).c_str(), "wb");
-    if (!monstersFile) {
-        screenMessage("Error opening %s\n", MONSTERS_SAV_BASE_FILENAME);
-        return 0;
-    }
+
+    openSaveFile(MONSTERS_SAV);
 
     /* fix creature animations so they are compatible with u4dos */
-    c->location->map->resetObjectAnimations();
-    c->location->map->fillMonsterTable(); /* fill the monster table so we can save it */
+    map->resetObjectAnimations();
+    map->fillMonsterTable(); /* fill the monster table so we can save it */
 
-    if (!saveGameMonstersWrite(c->location->map->monsterTable, monstersFile)) {
-        screenMessage("Error opening creatures.sav\n");
-        fclose(monstersFile);
-        return 0;
-    }
-    fclose(monstersFile);
+    if (! saveGameMonstersWrite(map->monsterTable, fp))
+        goto write_error;
+    fclose(fp);
+
 
     /**
-     * Write dungeon info
+     * Write dngmap.sav & outmonst.sav
      */
-    if (c->location->context & CTX_DUNGEON) {
-        unsigned int x, y, z;
-
+    if (loc->context & CTX_DUNGEON) {
+        uint32_t x, y, z;
         typedef std::map<const Creature*, int> DngCreatureIdMap;
         static DngCreatureIdMap id_map;
         CreatureMgr* cmgr = xu4.creatureMgr;
 
-        /**
-         * Map creatures to u4dos dungeon creature Ids
-         */
+        /* Map creatures to u4dos dungeon creature Ids */
         if (id_map.size() == 0) {
             id_map[cmgr->getById(RAT_ID)]          = 1;
             id_map[cmgr->getById(BAT_ID)]          = 2;
@@ -420,17 +418,13 @@ int gameSave(const char* path) {
             id_map[cmgr->getById(ROGUE_ID)]        = 15;
         }
 
-        dngMapFile = fopen((userPath + "dngmap.sav").c_str(), "wb");
-        if (!dngMapFile) {
-            screenMessage("Error opening dngmap.sav\n");
-            return 0;
-        }
+        openSaveFile(DNGMAP_SAV);
 
-        for (z = 0; z < c->location->map->levels; z++) {
-            for (y = 0; y < c->location->map->height; y++) {
-                for (x = 0; x < c->location->map->width; x++) {
-                    unsigned char tile = c->location->map->translateToRawTileIndex(*c->location->map->getTileFromData(MapCoords(x, y, z)));
-                    Object *obj = c->location->map->objectAt(MapCoords(x, y, z));
+        for (z = 0; z < map->levels; z++) {
+            for (y = 0; y < map->height; y++) {
+                for (x = 0; x < map->width; x++) {
+                    uint8_t tile = map->translateToRawTileIndex(*map->getTileFromData(MapCoords(x, y, z)));
+                    Object *obj = map->objectAt(MapCoords(x, y, z));
 
                     /**
                      * Add the creature to the tile
@@ -443,36 +437,30 @@ int gameSave(const char* path) {
                     }
 
                     // Write the tile
-                    fputc(tile, dngMapFile);
+                    fputc(tile, fp);
                 }
             }
         }
 
-        fclose(dngMapFile);
+        fclose(fp);
 
-        /**
-         * Write outmonst.sav
-         */
 
-        monstersFile = fopen((userPath + OUTMONST_SAV_BASE_FILENAME).c_str(), "wb");
-        if (!monstersFile) {
-            screenMessage("Error opening %s\n", OUTMONST_SAV_BASE_FILENAME);
-            return 0;
-        }
+        openSaveFile(OUTMONST_SAV);
 
         /* fix creature animations so they are compatible with u4dos */
-        c->location->prev->map->resetObjectAnimations();
-        c->location->prev->map->fillMonsterTable(); /* fill the monster table so we can save it */
+        loc->prev->map->resetObjectAnimations();
+        loc->prev->map->fillMonsterTable(); /* fill the monster table so we can save it */
 
-        if (!saveGameMonstersWrite(c->location->prev->map->monsterTable, monstersFile)) {
-            screenMessage("Error opening %s\n", OUTMONST_SAV_BASE_FILENAME);
-            fclose(monstersFile);
-            return 0;
-        }
-        fclose(monstersFile);
+        if (! saveGameMonstersWrite(loc->prev->map->monsterTable, fp))
+            goto write_error;
+        fclose(fp);
     }
-
     return 1;
+
+write_error:
+    fclose(fp);
+    screenMessage("Error writing to %s\n", basename);
+    return 0;
 }
 
 /**
