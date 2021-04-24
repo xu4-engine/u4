@@ -1,44 +1,107 @@
+// Dump Ultima 4 PARTY.SAV
+
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 
 #include "savegame.h"
-#include "names.h"
 
-int verbose = 0;
+#define EX_USAGE     64  /* command line usage error */
+#define EX_NOINPUT   66  /* cannot open input */
 
-void showSaveGame(SaveGame *sg);
-void showSaveGamePlayerRecord(SaveGamePlayerRecord *rec);
-char *itemsString(unsigned short items);
+void showSaveGamePlayerRecord(SaveGamePlayerRecord *rec) {
+    static const char* const weapNames[] = {
+        "Hands",       "Staff",       "Dagger",     "Sling",
+        "Mace",        "Axe",         "Sword",      "Bow",
+        "Crossbow",    "Flaming-Oil", "Halberd",    "Magic-Axe",
+        "Magic-Sword", "Magic-Bow",   "Magic-Wand", "Mystic-Sword"
+    };
+    static const char* const armorNames[] = {
+        "none",  "Cloth",   "Leather", "Chain",
+        "Plate", "M-Chain", "M-Plate", "M-Robe"
+    };
+    static const char* const classNames[] = {
+        "Mage",   "Bard",    "Fighter", "Druid",
+        "Tinker", "Paladin", "Ranger",  "Shepherd"
+    };
 
-int main(int argc, char *argv[]) {
-    SaveGame sg;
-    FILE *in;
+    printf("%-12s %3d %3d %4d", rec->name, rec->hp, rec->hpMax, rec->xp);
+    printf(" %2d  %2d  %2d  %2d %d",
+           rec->str, rec->dex, rec->intel, rec->mp, rec->unknown);
+    printf(" %-12s %-8s %c  %-9s %c\n",
+           weapNames[rec->weapon],
+           armorNames[rec->armor],
+           rec->sex == 11 ? 'M' : 'F',
+           (rec->klass < 8) ? classNames[rec->klass] : "???",
+           rec->status);
+}
 
-    if (argc != 2) {
-        fprintf(stderr, "usage: %s party.sav\n", argv[0]);
-        exit(1);
+char *itemsString(uint16_t items) {
+    static char sbuf[256];
+    size_t len;
+
+    sbuf[0] = '\0';
+
+    if (items & 0xff) {
+        strcat(sbuf, "\n    ");
+        if (items & ITEM_SKULL)
+            strcat(sbuf, "skull ");
+        if (items & ITEM_SKULL_DESTROYED)
+            strcat(sbuf, "skull-destroyed ");
+        if (items & ITEM_CANDLE)
+            strcat(sbuf, "candle ");
+        if (items & ITEM_BOOK)
+            strcat(sbuf, "book ");
+        if (items & ITEM_BELL)
+            strcat(sbuf, "bell ");
+        if (items & ITEM_KEY_C)
+            strcat(sbuf, "key-courage ");
+        if (items & ITEM_KEY_L)
+            strcat(sbuf, "key-love ");
+        if (items & ITEM_KEY_T)
+            strcat(sbuf, "key-truth ");
     }
 
-    in = fopen(argv[1], "rb");
-    if (!in) {
-        perror(argv[1]);
-        exit(1);
+    if (items & 0xff00) {
+        strcat(sbuf, "\n    ");
+        if (items & ITEM_HORN)
+            strcat(sbuf, "horn ");
+        if (items & ITEM_WHEEL)
+            strcat(sbuf, "wheel ");
+        if (items & ITEM_CANDLE_USED)
+            strcat(sbuf, "candle-used ");
+        if (items & ITEM_BOOK_USED)
+            strcat(sbuf, "book-used ");
+        if (items & ITEM_BELL_USED)
+            strcat(sbuf, "bell-used ");
+        if (items & 0x2000)
+            strcat(sbuf, "bit-14 ");
+        if (items & 0x4000)
+            strcat(sbuf, "bit-15 ");
+        if (items & 0x8000)
+            strcat(sbuf, "bit-16 ");
     }
 
-    sg.read(in);
+    len = strlen(sbuf);
+    if (len)
+        sbuf[ len ] = '\n';
 
-    showSaveGame(&sg);
-
-    return 0;
+    return sbuf;
 }
 
 void showSaveGame(SaveGame *sg) {
     int i;
 
-    printf("???: %x\n", sg->unknown1);
-    printf("moves: %-4d food: %-5g gold: %d\n",
-           sg->moves, ((double)sg->food) / 100.0, sg->gold);
+    printf("counter: 0x%x moves: %d\n", sg->unknown1, sg->moves);
+
+    printf("players: [\n");
+    printf("; Name        HP/max  XP  Str Dex Int MP ? Weapon       Armor   Sex Class   Stat\n");
+    for (i = 0; i < 8; i++) {
+        showSaveGamePlayerRecord(&(sg->players[i]));
+    }
+    printf("]\n");
+
+    printf("food: %-5g gold: %d\n", ((double)sg->food) / 100.0, sg->gold);
 
     printf("karma: [ ");
     for (i = 0; i < 8; i++)
@@ -63,130 +126,49 @@ void showSaveGame(SaveGame *sg) {
         printf("%d ", sg->reagents[i]);
     printf("]\n");
 
-    printf("mixtures: [ ");
-    for (i = 0; i < 26; i++)
+    printf("mixtures: [");
+    for (i = 0; i < 26; i++) {
+        if ((i % 10) == 0)
+            printf("\n    ");
         printf("%d ", sg->mixtures[i]);
-    printf("]\n");
+    }
+    printf("\n]\n");
 
-    printf("items: %s\n", itemsString(sg->items));
-
-    printf("x: %-8d y: %d\n", sg->x, sg->y);
-
-    printf("stones: %-3x runes %x\n", sg->stones, sg->runes);
-
-    printf("party members: %d\n", sg->members);
-    printf("transport: %x\n", sg->transport);
-    printf("balloon state/torch duration: %x\n", sg->balloonstate);
+    printf("items: [%s]\n", itemsString(sg->items));
+    printf("x: %d y: %d\n", sg->x, sg->y);
+    printf("stones: 0x%02x runes: 0x%02x\n", sg->stones, sg->runes);
+    printf("party-members: %d\n", sg->members);
+    printf("transport: 0x%x\n", sg->transport);
+    printf("torch-duration: 0x%x\t; Or balloon-state\n", sg->balloonstate);
     printf("trammel: %d  felucca: %d\n", sg->trammelphase, sg->feluccaphase);
     printf("shiphull: %d\n", sg->shiphull);
     printf("lbintro: %d\n", sg->lbintro);
-    printf("lastcamp: %d       lastreagent: %d\n", sg->lastcamp, sg->lastreagent);
-    printf("lastmeditation: %d lastvirtue: %d\n", sg->lastmeditation, sg->lastvirtue);
-    printf("dngx: %-5d dngy: %-5d orientation: %d dnglevel: %d\n", sg->dngx, sg->dngy, sg->orientation, sg->dnglevel);
-
-    printf("location: %x\n", sg->location);
-
-    for (i = 0; i < 8; i++) {
-        printf("player %d\n", i);
-        showSaveGamePlayerRecord(&(sg->players[i]));
-    }
+    printf("last-camp: %-5d       last-reagent: %d\n",
+            sg->lastcamp, sg->lastreagent);
+    printf("last-meditation: %-5d last-virtue: %d\n",
+            sg->lastmeditation, sg->lastvirtue);
+    printf("dngx: %-5d dngy: %-5d orientation: %d dnglevel: %d\n",
+           sg->dngx, sg->dngy, sg->orientation, sg->dnglevel);
+    printf("location: 0x%x\n", sg->location);
 }
 
-void showSaveGamePlayerRecord(SaveGamePlayerRecord *rec) {
-    static const char * const weapNames[] = {
-        "Hands", "Staff", "Dagger",
-        "Sling", "Mace", "Axe",
-        "Sword", "Bow", "Crossbow",
-        "Flaming Oil", "Halberd", "Magic Axe",
-        "Magic Sword", "Magic Bow", "Magic Wand",
-        "Mystic Sword"
-    };
+int main(int argc, char *argv[]) {
+    SaveGame sg;
+    FILE *in;
 
-    static const char * const armorNames[] = {
-        "Skin", "Cloth", "Leather",
-        "Chain Mail", "Plate Mail",
-        "Magic Chain", "Magic Plate", "Mystic Robe"
-    };
-
-    printf("  name: %-17s hp: %-7d hpMax: %-4d xp: %d\n",
-           rec->name, rec->hp, rec->hpMax, rec->xp);
-    printf("  str: %-6d dex: %-6d intel: %-4d mp: %-7d ???: %d\n",
-           rec->str, rec->dex, rec->intel, rec->mp, rec->unknown);
-    printf("  weapon: %-15s armor: %s\n", weapNames[rec->weapon], armorNames[rec->armor]);
-    printf("  sex: %-6s class: %-16s status: %c\n",
-           rec->sex == 11 ? "M" : "F", getClassName(rec->klass), rec->status);
-}
-
-char *itemsString(unsigned short items) {
-    static char buffer[256];
-    int first = 1;
-
-    buffer[0] = '\0';
-
-    if (items & ITEM_SKULL) {
-        strcat(strcat(buffer, first ? "" : ", "), getItemName(ITEM_SKULL));
-        first = 0;
-    }
-    if (items & ITEM_SKULL_DESTROYED) {
-        strcat(strcat(buffer, first ? "" : ", "), "skull destroyed");
-        first = 0;
-    }
-    if (items & ITEM_CANDLE) {
-        strcat(strcat(buffer, first ? "" : ", "), getItemName(ITEM_CANDLE));
-        first = 0;
-    }
-    if (items & ITEM_BOOK) {
-        strcat(strcat(buffer, first ? "" : ", "), getItemName(ITEM_BOOK));
-        first = 0;
-    }
-    if (items & ITEM_BELL) {
-        strcat(strcat(buffer, first ? "" : ", "), getItemName(ITEM_BELL));
-        first = 0;
-    }
-    if (items & ITEM_KEY_C) {
-        strcat(strcat(buffer, first ? "" : ", "), "key c");
-        first = 0;
-    }
-    if (items & ITEM_KEY_L) {
-        strcat(strcat(buffer, first ? "" : ", "), "key l");
-        first = 0;
-    }
-    if (items & ITEM_KEY_T) {
-        strcat(strcat(buffer, first ? "" : ", "), "key t");
-        first = 0;
-    }
-    if (items & ITEM_HORN) {
-        strcat(strcat(buffer, first ? "" : ", "), getItemName(ITEM_HORN));
-        first = 0;
-    }
-    if (items & ITEM_WHEEL) {
-        strcat(strcat(buffer, first ? "" : ", "), getItemName(ITEM_WHEEL));
-        first = 0;
-    }
-    if (items & ITEM_CANDLE_USED) {
-        strcat(strcat(buffer, first ? "" : ", "), "candle used");
-        first = 0;
-    }
-    if (items & ITEM_BOOK_USED) {
-        strcat(strcat(buffer, first ? "" : ", "), "book used");
-        first = 0;
-    }
-    if (items & ITEM_BELL_USED) {
-        strcat(strcat(buffer, first ? "" : ", "), "bell used");
-        first = 0;
-    }
-    if (items & 0x2000) {
-        strcat(strcat(buffer, first ? "" : ", "), "(bit 14)");
-        first = 0;
-    }
-    if (items & 0x4000) {
-        strcat(strcat(buffer, first ? "" : ", "), "(bit 15)");
-        first = 0;
-    }
-    if (items & 0x8000) {
-        strcat(strcat(buffer, first ? "" : ", "), "(bit 16)");
-        first = 0;
+    if (argc != 2) {
+        fprintf(stderr, "usage: %s party.sav\n", argv[0]);
+        return EX_USAGE;
     }
 
-    return buffer;
+    in = fopen(argv[1], "rb");
+    if (!in) {
+        perror(argv[1]);
+        return EX_NOINPUT;
+    }
+
+    sg.read(in);
+    showSaveGame(&sg);
+    fclose(in);
+    return 0;
 }

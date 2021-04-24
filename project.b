@@ -144,7 +144,6 @@ if make_util [
 		console
 		include_from %src
 		sources [
-			%src/names.cpp
 			%src/savegame.cpp
 			%src/util/dumpsavegame.cpp
 		]
