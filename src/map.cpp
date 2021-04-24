@@ -320,13 +320,13 @@ void Map::queryVisible(const Coords& center, int radius,
  * Returns the object at the given (x,y,z) coords, if one exists.
  * Otherwise, returns NULL.
  */
-Object *Map::objectAt(const Coords &coords) {
+const Object *Map::objectAt(const Coords &coords) const {
     /* FIXME: return a list instead of one object */
     ObjectDeque::const_iterator i;
-    Object *objAt = NULL;
+    const Object *objAt = NULL;
 
     for(i = objects.begin(); i != objects.end(); i++) {
-        Object *obj = *i;
+        const Object *obj = *i;
 
         if (obj->getCoords() == coords) {
             /* get the most visible object */
@@ -361,7 +361,7 @@ const Portal *Map::portalAt(const Coords &coords, int actionFlags) {
 /**
  * Returns the raw tile for the given (x,y,z) coords for the given map
  */
-MapTile *Map::getTileFromData(const Coords &coords) {
+const MapTile *Map::getTileFromData(const Coords &coords) const {
     static MapTile blank(0);
 
     if (MAP_IS_OOB(this, coords))
@@ -376,12 +376,12 @@ MapTile *Map::getTileFromData(const Coords &coords) {
  * annotations like moongates and attack icons are ignored.  Any walkable tiles
  * are taken into account (treasure chests, ships, balloon, etc.)
  */
-MapTile *Map::tileAt(const Coords &coords, int withObjects) {
+const MapTile *Map::tileAt(const Coords &coords, int withObjects) const {
     /* FIXME: this should return a list of tiles, with the most visible at the front */
-    MapTile *tile;
+    const MapTile *tile;
     std::list<Annotation *> a = annotations->ptrsToAllAt(coords);
     std::list<Annotation *>::iterator i;
-    Object *obj = objectAt(coords);
+    const Object *obj = objectAt(coords);
 
     tile = getTileFromData(coords);
 
@@ -404,7 +404,7 @@ MapTile *Map::tileAt(const Coords &coords, int withObjects) {
 }
 
 const Tile *Map::tileTypeAt(const Coords &coords, int withObjects) {
-    MapTile *tile = tileAt(coords, withObjects);
+    const MapTile *tile = tileAt(coords, withObjects);
     return tile->getTileType();
 }
 
@@ -595,21 +595,6 @@ Creature *Map::moveObjects(MapCoords avatar) {
     }
 
     return attacker;
-}
-
-/**
- * Resets object animations to a value that is acceptable for
- * savegame compatibility with u4dos.
- */
-void Map::resetObjectAnimations() {
-    ObjectDeque::iterator i;
-
-    for (i = objects.begin(); i != objects.end(); i++) {
-        Object *obj = *i;
-
-        if (obj->getType() == Object::CREATURE)
-            obj->setPrevTile(xu4.creatureMgr->getByTile(obj->getTile())->getTile());
-    }
 }
 
 /**
@@ -820,19 +805,18 @@ const MapCoords &Map::getLabel(const string &name) const {
     return i->second;
 }
 
-bool Map::fillMonsterTable() {
-    ObjectDeque::iterator current;
-    Object *obj;
-    ObjectDeque monsters;
-    ObjectDeque other_creatures;
-    ObjectDeque inanimate_objects;
+bool Map::fillMonsterTable(SaveGameMonsterRecord* table) const {
+    ObjectDeque::const_iterator current;
+    const Object *obj;
+    CObjectDeque monsters;
+    CObjectDeque other_creatures;
+    CObjectDeque inanimate_objects;
     Object empty;
 
     int nCreatures = 0;
     int nObjects = 0;
     int i;
 
-    memset(monsterTable, 0, MONSTERTABLE_SIZE * sizeof(SaveGameMonsterRecord));
 
     /**
      * First, categorize all the objects we have
@@ -841,14 +825,16 @@ bool Map::fillMonsterTable() {
         obj = *current;
 
         /* moving objects first */
-        if ((obj->getType() == Object::CREATURE) && (obj->getMovementBehavior() != MOVEMENT_FIXED)) {
-            Creature *c = dynamic_cast<Creature*>(obj);
+        if ((obj->getType() == Object::CREATURE) &&
+            (obj->getMovementBehavior() != MOVEMENT_FIXED)) {
+            const Creature *c = dynamic_cast<const Creature*>(obj);
             /* whirlpools and storms are separated from other moving objects */
             if (c->getId() == WHIRLPOOL_ID || c->getId() == STORM_ID)
                 monsters.push_back(obj);
-            else other_creatures.push_back(obj);
-        }
-        else inanimate_objects.push_back(obj);
+            else
+                other_creatures.push_back(obj);
+        } else
+            inanimate_objects.push_back(obj);
     }
 
     /**
@@ -884,14 +870,20 @@ bool Map::fillMonsterTable() {
      */
     for (i = 0; i < MONSTERTABLE_SIZE; i++) {
         Coords c = monsters[i]->getCoords(),
-               prevc = monsters[i]->getPrevCoords();
+           prevc = monsters[i]->getPrevCoords();
 
-        monsterTable[i].tile = translateToRawTileIndex(monsters[i]->getTile());
-        monsterTable[i].x = c.x;
-        monsterTable[i].y = c.y;
-        monsterTable[i].prevTile = translateToRawTileIndex(monsters[i]->getPrevTile());
-        monsterTable[i].prevx = prevc.x;
-        monsterTable[i].prevy = prevc.y;
+        // Reset animation to a value that is savegame compatible with u4dos.
+        MapTile prevTile = monsters[i]->getPrevTile();
+        prevTile.frame = 0;
+
+        table[i].tile = translateToRawTileIndex(monsters[i]->getTile());
+        table[i].x = c.x;
+        table[i].y = c.y;
+        table[i].prevTile = translateToRawTileIndex(prevTile);
+        table[i].prevx = prevc.x;
+        table[i].prevy = prevc.y;
+        table[i].unused1 =
+        table[i].unused2 = 0;
     }
 
     return true;
@@ -903,6 +895,6 @@ MapTile Map::translateFromRawTileIndex(int raw) const {
     return tilemap->translate(raw);
 }
 
-unsigned int Map::translateToRawTileIndex(MapTile &tile) const {
+unsigned int Map::translateToRawTileIndex(const MapTile &tile) const {
     return tilemap->untranslate(tile);
 }

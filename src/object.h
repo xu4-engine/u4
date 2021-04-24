@@ -10,8 +10,6 @@
 #include "tile.h"
 #include "types.h"
 
-typedef std::deque<class Object *> ObjectDeque;
-
 typedef enum {
     MOVEMENT_FIXED,
     MOVEMENT_WANDER,
@@ -41,7 +39,8 @@ public:
 
     // Methods
     MapTile& getTile()                      { return tile; }
-    MapTile& getPrevTile()                  { return prevTile; }
+    const MapTile& getTile() const          { return tile; }
+    const MapTile& getPrevTile() const      { return prevTile; }
     const Coords& getCoords() const         { return coords; }
     const Coords& getPrevCoords() const     { return prevCoords; }
     ObjectMovementBehavior getMovementBehavior() const    { return movement_behavior; }
@@ -83,5 +82,8 @@ protected:
 
     friend class Map;
 };
+
+typedef std::deque<Object *> ObjectDeque;
+typedef std::deque<const Object *> CObjectDeque;
 
 #endif

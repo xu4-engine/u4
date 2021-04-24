@@ -450,7 +450,7 @@ static int spellCure(int player) {
 }
 
 static int spellDispel(int dir) {
-    MapTile *tile;
+    const MapTile *tile;
     MapCoords field;
 
     /*

@@ -72,7 +72,7 @@ private:
     PersonNpcType npcType;
 };
 
-bool isPerson(Object *punknown);
+bool isPerson(const Object *punknown);
 
 list<string> replySplit(const string &text);
 int linecount(const string &s, int columnmax);

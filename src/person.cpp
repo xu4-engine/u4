@@ -41,9 +41,9 @@ int chars_needed(const char *s, int columnmax, int linesdesired, int *real_lines
  * Returns true of the object that 'punknown' points
  * to is a person object
  */
-bool isPerson(Object *punknown) {
-    Person *p;
-    if ((p = dynamic_cast<Person*>(punknown)) != NULL)
+bool isPerson(const Object *punknown) {
+    const Person *p;
+    if ((p = dynamic_cast<const Person*>(punknown)) != NULL)
         return true;
     else
         return false;

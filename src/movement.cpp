@@ -119,7 +119,7 @@ void moveAvatarInDungeon(MoveEvent &event) {
     Direction realDir = dirNormalize((Direction)c->saveGame->orientation, event.dir); /* get our real direction */
     int advancing = realDir == c->saveGame->orientation,
         retreating = realDir == dirReverse((Direction)c->saveGame->orientation);
-    MapTile *tile;
+    const MapTile *tile;
 
     /* we're not in a dungeon, failed! */
     ASSERT(c->location->context & CTX_DUNGEON, "moveAvatarInDungeon() called outside of dungeon, failed!");

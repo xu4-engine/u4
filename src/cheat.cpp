@@ -277,7 +277,7 @@ bool CheatMenuController::keyPressed(int key) {
                 coords.move(readDir.waitFor(), c->location->map);
                 if (coords != c->location->coords) {
                     bool ok = false;
-                    MapTile *ground = c->location->map->tileAt(coords, WITHOUT_OBJECTS);
+                    const MapTile *ground = c->location->map->tileAt(coords, WITHOUT_OBJECTS);
 
                     screenMessage("%s\n", getDirectionName(readDir.getValue()));
 

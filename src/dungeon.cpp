@@ -316,6 +316,6 @@ bool Dungeon::ladderDownAt(MapCoords coords) {
 }
 
 bool Dungeon::validTeleportLocation(MapCoords coords) {
-    MapTile *tile = tileAt(coords, WITH_OBJECTS);
+    const MapTile *tile = tileAt(coords, WITH_OBJECTS);
     return tokenForTile(*tile) == DUNGEON_CORRIDOR;
 }

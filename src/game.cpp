@@ -99,7 +99,7 @@ void gameLordBritishCheckLevels(void);
 
 /* creature functions */
 void gameDestroyAllCreatures(void);
-void gameFixupObjects(Map *map);
+void gameFixupObjects(Map *map, const SaveGameMonsterRecord* table);
 void gameCreatureAttack(Creature *obj);
 
 /* Functions END */
@@ -199,10 +199,22 @@ void GameController::initScreenWithoutReloadingState()
 }
 
 
+class MonstersSav {
+public:
+    MonstersSav() {
+        table = new SaveGameMonsterRecord[MONSTERTABLE_SIZE];
+    }
+    ~MonstersSav() {
+        delete[] table;
+    }
+    SaveGameMonsterRecord* table;
+};
+
 void GameController::init() {
     Debug gameDbg("debug/game.txt", "Game");
-    FILE *saveGameFile, *monstersFile;
+    FILE *fp;
     const Settings& settings = *xu4.settings;
+    MonstersSav mons;
 
     TRACE(gameDbg, "gameInit() running.");
 
@@ -236,10 +248,10 @@ void GameController::init() {
     c->lastShip = NULL;
 
     /* load in the save game */
-    saveGameFile = fopen((settings.getUserPath() + PARTY_SAV).c_str(), "rb");
-    if (saveGameFile) {
-        c->saveGame->read(saveGameFile);
-        fclose(saveGameFile);
+    fp = fopen((settings.getUserPath() + PARTY_SAV).c_str(), "rb");
+    if (fp) {
+        c->saveGame->read(fp);
+        fclose(fp);
     } else
         errorFatal("no savegame found!");
 
@@ -274,7 +286,9 @@ void GameController::init() {
         c->location->coords = MapCoords(c->saveGame->x, c->saveGame->y, c->saveGame->dnglevel);
         c->location->prev->coords = MapCoords(c->saveGame->dngx, c->saveGame->dngy);
     }
-    else c->location->coords = MapCoords(c->saveGame->x, c->saveGame->y, (int)c->saveGame->dnglevel);
+    else
+        c->location->coords = MapCoords(c->saveGame->x, c->saveGame->y, (int)c->saveGame->dnglevel);
+
     c->saveGame->orientation = (Direction)(c->saveGame->orientation + DIR_WEST);
 
     /**
@@ -289,21 +303,21 @@ void GameController::init() {
     TRACE_LOCAL(gameDbg, "Loading monsters."); ++pb;
 
     /* load in monsters.sav */
-    monstersFile = fopen((settings.getUserPath() + MONSTERS_SAV).c_str(), "rb");
-    if (monstersFile) {
-        saveGameMonstersRead(c->location->map->monsterTable, monstersFile);
-        fclose(monstersFile);
+    fp = fopen((settings.getUserPath() + MONSTERS_SAV).c_str(), "rb");
+    if (fp) {
+        saveGameMonstersRead(mons.table, fp);
+        fclose(fp);
+        gameFixupObjects(c->location->map, mons.table);
     }
-    gameFixupObjects(c->location->map);
 
     /* we have previous creature information as well, load it! */
     if (c->location->prev) {
-        monstersFile = fopen((settings.getUserPath() + OUTMONST_SAV).c_str(), "rb");
-        if (monstersFile) {
-            saveGameMonstersRead(c->location->prev->map->monsterTable, monstersFile);
-            fclose(monstersFile);
+        fp = fopen((settings.getUserPath() + OUTMONST_SAV).c_str(), "rb");
+        if (fp) {
+            saveGameMonstersRead(mons.table, fp);
+            fclose(fp);
+            gameFixupObjects(c->location->prev->map, mons.table);
         }
-        gameFixupObjects(c->location->prev->map);
     }
 
     spellSetEffectCallback(&gameSpellEffect);
@@ -339,8 +353,9 @@ int gameSave(const char* userPath) {
     size_t userPathLen = sbuf.size();
     const char* basename;
     const Location* loc = c->location;
-    Map* map = loc->map;
+    const Map* map = loc->map;
     SaveGame save = *c->saveGame;
+    MonstersSav mons;
 
 #define openSaveFile(FN) \
     basename = FN; \
@@ -382,12 +397,8 @@ int gameSave(const char* userPath) {
 
 
     openSaveFile(MONSTERS_SAV);
-
-    /* fix creature animations so they are compatible with u4dos */
-    map->resetObjectAnimations();
-    map->fillMonsterTable(); /* fill the monster table so we can save it */
-
-    if (! saveGameMonstersWrite(map->monsterTable, fp))
+    map->fillMonsterTable(mons.table);
+    if (! saveGameMonstersWrite(mons.table, fp))
         goto write_error;
     fclose(fp);
 
@@ -428,13 +439,13 @@ int gameSave(const char* userPath) {
                 for (x = 0; x < map->width; x++) {
                     mt = map->getTileFromData(MapCoords(x, y, z));
                     int tile = moduleToDngMap(mt->id);
-                    Object *obj = map->objectAt(MapCoords(x, y, z));
+                    const Object *obj = map->objectAt(MapCoords(x, y, z));
 
                     /**
                      * Add the creature to the tile
                      */
                     if (obj && obj->getType() == Object::CREATURE) {
-                        const Creature *m = dynamic_cast<Creature*>(obj);
+                        const Creature *m = dynamic_cast<const Creature*>(obj);
                         DngCreatureIdMap::iterator m_id = id_map.find(m);
                         if (m_id != id_map.end())
                             tile |= m_id->second;
@@ -450,12 +461,8 @@ int gameSave(const char* userPath) {
 
 
         openSaveFile(OUTMONST_SAV);
-
-        /* fix creature animations so they are compatible with u4dos */
-        loc->prev->map->resetObjectAnimations();
-        loc->prev->map->fillMonsterTable(); /* fill the monster table so we can save it */
-
-        if (! saveGameMonstersWrite(loc->prev->map->monsterTable, fp))
+        loc->prev->map->fillMonsterTable(mons.table);
+        if (! saveGameMonstersWrite(mons.table, fp))
             goto write_error;
         fclose(fp);
     }
@@ -819,7 +826,7 @@ bool GameController::keyPressed(int key) {
     bool valid = true;
     int endTurn = 1;
     Object *obj;
-    MapTile *tile;
+    const MapTile *tile;
 
     /* Translate context-sensitive action key into a useful command */
     if (key == U4_ENTER && settings.enhancements && settings.enhancementsOptions.smartEnterKey) {
@@ -2221,7 +2228,7 @@ void GameController::avatarMoved(MoveEvent &event) {
             /* if shortcuts are enabled, try them! */
             if (xu4.settings->shortcutCommands) {
                 MapCoords new_coords = c->location->coords;
-                MapTile *tile;
+                const MapTile *tile;
 
                 new_coords.move(event.dir, c->location->map);
                 tile = c->location->map->tileAt(new_coords, WITH_OBJECTS);
@@ -2350,7 +2357,7 @@ void jimmy() {
  * tile.
  */
 bool jimmyAt(const Coords &coords) {
-    MapTile *tile = c->location->map->tileAt(coords, WITH_OBJECTS);
+    const MapTile *tile = c->location->map->tileAt(coords, WITH_OBJECTS);
 
     if (!tile->getTileType()->isLockedDoor())
         return false;
@@ -3123,13 +3130,14 @@ bool GameController::checkMoongates() {
  * Fixes objects initially loaded by saveGameMonstersRead,
  * and alters movement behavior accordingly to match the creature
  */
-void gameFixupObjects(Map *map) {
+void gameFixupObjects(Map *map, const SaveGameMonsterRecord* table) {
     int i;
     Object *obj;
+    const SaveGameMonsterRecord *monster;
 
     /* add stuff from the monster table to the map */
     for (i = 0; i < MONSTERTABLE_SIZE; i++) {
-        SaveGameMonsterRecord *monster = &map->monsterTable[i];
+        monster = table + i;
         if (monster->prevTile != 0) {
             Coords coords(monster->x, monster->y);
 
@@ -3167,7 +3175,7 @@ time_t gameTimeSinceLastCommand() {
  * Handles what happens when a creature attacks you
  */
 void gameCreatureAttack(Creature *m) {
-    Object *under;
+    const Object *under;
     const Tile *ground;
 
     screenMessage("\nAttacked by %s\n", m->getName().c_str());

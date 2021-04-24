@@ -99,10 +99,13 @@ public:
     void queryVisible(const Coords &coords, int radius,
                       void (*func)(const Coords*, VisualId, void*),
                       void* user) const;
-    class Object *objectAt(const Coords &coords);
+    const Object* objectAt(const Coords &coords) const;
+    Object* objectAt(const Coords &coords) {
+        return (Object*) static_cast<const Map*>(this)->objectAt(coords);
+    }
     const Portal *portalAt(const Coords &coords, int actionFlags);
-    MapTile* getTileFromData(const Coords &coords);
-    MapTile* tileAt(const Coords &coords, int withObjects);
+    const MapTile* getTileFromData(const Coords &coords) const;
+    const MapTile* tileAt(const Coords &coords, int withObjects) const;
     const Tile *tileTypeAt(const Coords &coords, int withObjects);
     bool isWorldMap();
     bool isEnclosed(const Coords &party);
@@ -113,7 +116,6 @@ public:
     ObjectDeque::iterator removeObject(ObjectDeque::iterator rem, bool deleteObject = true);
     void clearObjects();
     class Creature *moveObjects(MapCoords avatar);
-    void resetObjectAnimations();
     int getNumberOfCreatures();
     int getValidMoves(const MapCoords& from, MapTile transport);
     bool move(Object *obj, Direction d);
@@ -121,9 +123,9 @@ public:
     const MapCoords &getLabel(const string &name) const;
 
     // u4dos compatibility
-    bool fillMonsterTable();
+    bool fillMonsterTable(SaveGameMonsterRecord* table) const;
     MapTile translateFromRawTileIndex(int c) const;
-    unsigned int translateToRawTileIndex(MapTile &tile) const;
+    unsigned int translateToRawTileIndex(const MapTile &tile) const;
 
 public:
     MapId           id;
@@ -151,9 +153,6 @@ public:
     std::map<string, MapCoords> labels;
     Tileset        *tileset;
     TileMap        *tilemap;
-
-    // u4dos compatibility
-    SaveGameMonsterRecord monsterTable[MONSTERTABLE_SIZE];
 
 private:
     // disallow map copying: all maps should be created and accessed
