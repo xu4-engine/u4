@@ -3137,9 +3137,12 @@ void gameFixupObjects(Map *map) {
             if (i < MONSTERTABLE_CREATURES_SIZE) {
                 const Creature *creature = xu4.creatureMgr->getByTile(tile);
                 /* make sure we really have a creature */
-                if (creature)
+                if (creature) {
                     obj = map->addCreature(creature, coords);
-                else {
+
+                    Coords pc(monster->prevx, monster->prevy);
+                    obj->setPrevCoords(pc);
+                } else {
                     fprintf(stderr, "Error: A non-creature object was found in the creature section of the monster table. (Tile: %s)\n", tile.getTileType()->getName().c_str());
                     obj = map->addObject(tile, oldTile, coords);
                 }
