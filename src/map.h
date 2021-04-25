@@ -123,7 +123,8 @@ public:
     const MapCoords &getLabel(const string &name) const;
 
     // u4dos compatibility
-    bool fillMonsterTable(SaveGameMonsterRecord* table) const;
+    void fillMonsterTable(SaveGameMonsterRecord* table) const;
+    void fillMonsterTableDungeon(SaveGameMonsterRecord* table) const;
     MapTile translateFromRawTileIndex(int c) const;
     unsigned int translateToRawTileIndex(const MapTile &tile) const;
 

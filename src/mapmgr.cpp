@@ -17,6 +17,7 @@
 #include "moongate.h"
 #include "person.h"
 #include "portal.h"
+#include "settings.h"
 #include "shrine.h"
 #include "tilemap.h"
 #include "tileset.h"
@@ -28,7 +29,7 @@
 using std::vector;
 using std::pair;
 
-extern bool loadMap(Map *map);
+extern bool loadMap(Map *map, FILE *sav);
 extern bool isAbyssOpened(const Portal *p);
 extern bool shrineCanEnter(const Portal *p);
 
@@ -104,12 +105,36 @@ Map *MapMgr::get(MapId id) {
     /* if the map hasn't been loaded yet, load it! */
     if (!mapList[id]->data.size()) {
         TRACE_LOCAL(*logger, string("loading map data for map \'") + mapList[id]->fname + "\'");
-        if (! loadMap(mapList[id])) {
+        if (! loadMap(mapList[id], NULL)) {
             errorFatal("loadMap failed to read \"%s\" (type %d)",
                        mapList[id]->fname.c_str(), mapList[id]->type);
         }
     }
     return mapList[id];
+}
+
+// Load map from saved game.
+Map* MapMgr::restore(MapId id) {
+    if (id >= mapList.size())
+        return NULL;
+
+    Map* map = mapList[id];
+    if (! map->data.size()) {
+        FILE* sav = NULL;
+        bool ok;
+
+        if (map->type == Map::DUNGEON) {
+            string path(xu4.settings->getUserPath() + DNGMAP_SAV);
+            sav = fopen(path.c_str(), "rb");
+        }
+        ok = loadMap(map, sav);
+        if (sav)
+            fclose(sav);
+        if (! ok)
+            errorFatal("loadMap failed to read \"%s\" (type %d)",
+                       map->fname.c_str(), map->type);
+    }
+    return map;
 }
 
 void MapMgr::registerMap(Map *map) {

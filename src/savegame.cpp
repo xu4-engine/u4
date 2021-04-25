@@ -360,9 +360,9 @@ int saveGameMonstersWrite(const SaveGameMonsterRecord *monsterTable, FILE *f) {
         for (i = 0; i < MONSTERTABLE_SIZE; i++)
             if (!writeChar(monsterTable[i].prevy, f)) return 0;
         for (i = 0; i < MONSTERTABLE_SIZE; i++)
-            if (!writeChar(monsterTable[i].unused1, f)) return 0;
+            if (!writeChar(monsterTable[i].level, f)) return 0;
         for (i = 0; i < MONSTERTABLE_SIZE; i++)
-            if (!writeChar(monsterTable[i].unused2, f)) return 0;
+            if (!writeChar(monsterTable[i].unused, f)) return 0;
     }
     else {
         max = MONSTERTABLE_SIZE * 8;
@@ -388,9 +388,9 @@ int saveGameMonstersRead(SaveGameMonsterRecord *monsterTable, FILE *f) {
     for (i = 0; i < MONSTERTABLE_SIZE; i++)
         if (!readChar(&monsterTable[i].prevy, f)) return 0;
     for (i = 0; i < MONSTERTABLE_SIZE; i++)
-        if (!readChar(&monsterTable[i].unused1, f)) return 0;
+        if (!readChar(&monsterTable[i].level, f)) return 0;
     for (i = 0; i < MONSTERTABLE_SIZE; i++)
-        if (!readChar(&monsterTable[i].unused1, f)) return 0;
+        if (!readChar(&monsterTable[i].unused, f)) return 0;
 
     return 1;
 }

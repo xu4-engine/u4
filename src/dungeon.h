@@ -72,26 +72,26 @@ public:
     // Members
     virtual string getName();
 
-    DungeonToken tokenForTile(MapTile tile);
+    DungeonToken tokenForTile(const MapTile& tile) const;
     DungeonToken currentToken();
-    unsigned char currentSubToken();
-    DungeonToken tokenAt(MapCoords coords);
-    unsigned char subTokenAt(MapCoords coords);
+    uint8_t currentSubToken();
+    DungeonToken tokenAt(const MapCoords& coords) const;
 
     bool ladderUpAt(MapCoords coords);
     bool ladderDownAt(MapCoords coords);
 
-    bool validTeleportLocation(MapCoords coords);
+    bool validTeleportLocation(const MapCoords& coords) const;
+    uint8_t* fillRawMap();
 
     // Properties
     string name;
-    unsigned int n_rooms;
-    std::vector<unsigned char> dataSubTokens;
+    std::vector<uint8_t> rawMap;
     DngRoom *rooms;
     CombatMap **roomMaps;
+    unsigned int n_rooms;
     int currentRoom;
-    unsigned char party_startx[8];
-    unsigned char party_starty[8];
+    uint8_t party_startx[8];
+    uint8_t party_starty[8];
 };
 
 /**

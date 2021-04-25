@@ -90,6 +90,7 @@ public:
     ~MapMgr();
 
     Map *get(MapId id);
+    Map *restore(MapId id);
     Map *initMap(Map::Type type);
     void unloadMap(MapId id);
 

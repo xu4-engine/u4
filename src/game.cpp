@@ -210,6 +210,9 @@ public:
     SaveGameMonsterRecord* table;
 };
 
+/**
+ * Loads the saved game.
+ */
 void GameController::init() {
     Debug gameDbg("debug/game.txt", "Game");
     FILE *fp;
@@ -268,7 +271,7 @@ void GameController::init() {
     TRACE_LOCAL(gameDbg, "World map set."); ++pb;
 
     /* initialize our start location */
-    Map *map = xu4.mapMgr->get(MapId(c->saveGame->location));
+    Map *map = xu4.mapMgr->restore(MapId(c->saveGame->location));
     TRACE_LOCAL(gameDbg, "Initializing start location.");
 
     /* if our map is not the world map, then load our map */
@@ -297,8 +300,8 @@ void GameController::init() {
      * To maintain compatibility with u4dos, this value gets translated
      * when the game is saved and loaded
      */
-    if (MAP_IS_OOB(c->location->map, c->location->coords))
-        c->location->coords.putInBounds(c->location->map);
+    if (MAP_IS_OOB(map, c->location->coords))
+        c->location->coords.putInBounds(map);
 
     TRACE_LOCAL(gameDbg, "Loading monsters."); ++pb;
 
@@ -307,7 +310,7 @@ void GameController::init() {
     if (fp) {
         saveGameMonstersRead(mons.table, fp);
         fclose(fp);
-        gameFixupObjects(c->location->map, mons.table);
+        gameFixupObjects(map, mons.table);
     }
 
     /* we have previous creature information as well, load it! */
@@ -340,8 +343,6 @@ void GameController::init() {
     initScreenWithoutReloadingState();
     TRACE(gameDbg, "gameInit() completed successfully.");
 }
-
-extern int moduleToDngMap(TileId modId);
 
 /**
  * Saves the game state into party.sav and monsters.sav.
@@ -397,7 +398,10 @@ int gameSave(const char* userPath) {
 
 
     openSaveFile(MONSTERS_SAV);
-    map->fillMonsterTable(mons.table);
+    if (map->type == Map::DUNGEON)
+        map->fillMonsterTableDungeon(mons.table);
+    else
+        map->fillMonsterTable(mons.table);
     if (! saveGameMonstersWrite(mons.table, fp))
         goto write_error;
     fclose(fp);
@@ -407,56 +411,10 @@ int gameSave(const char* userPath) {
      * Write dngmap.sav & outmonst.sav
      */
     if (loc->context & CTX_DUNGEON) {
-        uint32_t x, y, z;
-        typedef std::map<const Creature*, int> DngCreatureIdMap;
-        static DngCreatureIdMap id_map;
-        const MapTile* mt;
-        CreatureMgr* cmgr = xu4.creatureMgr;
-
-        /* Map creatures to u4dos dungeon creature Ids */
-        if (id_map.size() == 0) {
-            id_map[cmgr->getById(RAT_ID)]          = 1;
-            id_map[cmgr->getById(BAT_ID)]          = 2;
-            id_map[cmgr->getById(GIANT_SPIDER_ID)] = 3;
-            id_map[cmgr->getById(GHOST_ID)]        = 4;
-            id_map[cmgr->getById(SLIME_ID)]        = 5;
-            id_map[cmgr->getById(TROLL_ID)]        = 6;
-            id_map[cmgr->getById(GREMLIN_ID)]      = 7;
-            id_map[cmgr->getById(MIMIC_ID)]        = 8;
-            id_map[cmgr->getById(REAPER_ID)]       = 9;
-            id_map[cmgr->getById(INSECT_SWARM_ID)] = 10;
-            id_map[cmgr->getById(GAZER_ID)]        = 11;
-            id_map[cmgr->getById(PHANTOM_ID)]      = 12;
-            id_map[cmgr->getById(ORC_ID)]          = 13;
-            id_map[cmgr->getById(SKELETON_ID)]     = 14;
-            id_map[cmgr->getById(ROGUE_ID)]        = 15;
-        }
-
         openSaveFile(DNGMAP_SAV);
-
-        for (z = 0; z < map->levels; z++) {
-            for (y = 0; y < map->height; y++) {
-                for (x = 0; x < map->width; x++) {
-                    mt = map->getTileFromData(MapCoords(x, y, z));
-                    int tile = moduleToDngMap(mt->id);
-                    const Object *obj = map->objectAt(MapCoords(x, y, z));
-
-                    /**
-                     * Add the creature to the tile
-                     */
-                    if (obj && obj->getType() == Object::CREATURE) {
-                        const Creature *m = dynamic_cast<const Creature*>(obj);
-                        DngCreatureIdMap::iterator m_id = id_map.find(m);
-                        if (m_id != id_map.end())
-                            tile |= m_id->second;
-                    }
-
-                    // Write the tile
-                    fputc(tile, fp);
-                }
-            }
-        }
-
+        const uint8_t* data = static_cast<Dungeon*>((Map*) map)->fillRawMap();
+        size_t dataLen = map->width * map->height * map->levels;
+        fwrite(data, 1, dataLen, fp);
         fclose(fp);
 
 
@@ -3133,25 +3091,36 @@ bool GameController::checkMoongates() {
 void gameFixupObjects(Map *map, const SaveGameMonsterRecord* table) {
     int i;
     Object *obj;
-    const SaveGameMonsterRecord *monster;
+    const SaveGameMonsterRecord *it;
+    MapTile tile, oldTile;
+    TileMap* tm = TileMap::get("base");
+    int creatureLimit = (map->type == Map::DUNGEON) ? MONSTERTABLE_SIZE
+                                          : MONSTERTABLE_CREATURES_SIZE;
+
+    // NOTE: In dungeons it->tile is zero for unused entries and there can
+    // be more than MONSTERTABLE_CREATURES_SIZE monsters.
 
     /* add stuff from the monster table to the map */
     for (i = 0; i < MONSTERTABLE_SIZE; i++) {
-        monster = table + i;
-        if (monster->prevTile != 0) {
-            Coords coords(monster->x, monster->y);
+        it = table + i;
+        if (it->prevTile != 0) {
+            Coords coords(it->x, it->y);
 
             // tile values stored in monsters.sav hardcoded to index into base tilemap
-            MapTile tile = TileMap::get("base")->translate(monster->tile),
-                oldTile = TileMap::get("base")->translate(monster->prevTile);
+            oldTile = tm->translate(it->prevTile);
+            if (map->type == Map::DUNGEON) {
+                coords.z = it->level;
+                tile = oldTile;
+            } else
+                tile = tm->translate(it->tile);
 
-            if (i < MONSTERTABLE_CREATURES_SIZE) {
+            if (i < creatureLimit) {
                 const Creature *creature = xu4.creatureMgr->getByTile(tile);
                 /* make sure we really have a creature */
                 if (creature) {
                     obj = map->addCreature(creature, coords);
 
-                    Coords pc(monster->prevx, monster->prevy);
+                    Coords pc(it->prevx, it->prevy);
                     obj->setPrevCoords(pc);
                 } else {
                     fprintf(stderr, "Error: A non-creature object was found in the creature section of the monster table. (Tile: %s)\n", tile.getTileType()->getName().c_str());

@@ -805,7 +805,7 @@ const MapCoords &Map::getLabel(const string &name) const {
     return i->second;
 }
 
-bool Map::fillMonsterTable(SaveGameMonsterRecord* table) const {
+void Map::fillMonsterTable(SaveGameMonsterRecord* table) const {
     ObjectDeque::const_iterator current;
     const Object *obj;
     CObjectDeque monsters;
@@ -876,17 +876,52 @@ bool Map::fillMonsterTable(SaveGameMonsterRecord* table) const {
         MapTile prevTile = monsters[i]->getPrevTile();
         prevTile.frame = 0;
 
-        table[i].tile = translateToRawTileIndex(monsters[i]->getTile());
-        table[i].x = c.x;
-        table[i].y = c.y;
-        table[i].prevTile = translateToRawTileIndex(prevTile);
-        table[i].prevx = prevc.x;
-        table[i].prevy = prevc.y;
-        table[i].unused1 =
-        table[i].unused2 = 0;
+        table->tile = translateToRawTileIndex(monsters[i]->getTile());
+        table->x = c.x;
+        table->y = c.y;
+        table->prevTile = translateToRawTileIndex(prevTile);
+        table->prevx = prevc.x;
+        table->prevy = prevc.y;
+        table->level =
+        table->unused = 0;
+        ++table;
+    }
+}
+
+void Map::fillMonsterTableDungeon(SaveGameMonsterRecord* table) const {
+    MapTile prevTile;
+    ObjectDeque::const_iterator it;
+    SaveGameMonsterRecord* end = table + MONSTERTABLE_SIZE;
+    const Object *obj;
+
+    for (it = objects.begin(); it != objects.end(); ++it) {
+        obj = *it;
+        if (obj->getType() == Object::CREATURE) {
+            const Coords& c = obj->getCoords();
+            const Coords& prevc = obj->getPrevCoords();
+
+            // Reset animation to a value that is savegame compatible with u4dos.
+            prevTile = obj->getTile();
+            prevTile.frame = 0;
+
+            table->tile = 0;
+            table->x = c.x;
+            table->y = c.y;
+            table->prevTile = translateToRawTileIndex(prevTile);
+            table->prevx = prevc.x;
+            table->prevy = prevc.y;
+            table->level = c.z;
+            table->unused = 0;
+
+            if (++table == end)
+                return;     // Table full.
+        }
     }
 
-    return true;
+    while (table != end) {
+        memset(table, 0, sizeof(SaveGameMonsterRecord));
+        ++table;
+    }
 }
 
 MapTile Map::translateFromRawTileIndex(int raw) const {

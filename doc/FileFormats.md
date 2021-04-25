@@ -599,7 +599,7 @@ Surface:
 On the surface, the monster table contains information about monsters
 and inanimate objects (chests, horses, ships, balloon).
 A table entry is free if (previousTile[i] == 0). However, when u4dos
-deletes and entry, it sets both currentTile[i] and previousTile[i] to 0.
+deletes an entry, it sets both currentTile[i] and previousTile[i] to 0.
 Slots 0-7 are for monsters, while slots 8-31 are for inanimate objects.
 Non-empty entries don't have to be contiguous.
 Whirlpools and twisters are special cases; they must be placed in slot 0-3,
@@ -634,11 +634,14 @@ Offset | Bytes | Purpose
 0xE0   | 32    | Not used
 
 Dungeons:
-In a dungeon, the monster table contains information about the monsters
-in the dungeon.
+In a dungeon, the monster table seems to be a snapshot of a working area to
+track monsters.
 A monster stored in the monster table is *also* stored in DNGMAP.SAV.
 Inanimate objects are not stored in the monster table; they are stored
 *only* in DNGMAP.SAV.
+Entries not used for dungeon monsters (i.e. where bytes 0x60-0x7F are zero)
+can be seen to contain tile numbers and coordinates of surface information
+that matches OUTMONST.SAV.
 
 Offset | Bytes | Purpose
 -------|:-----:|----------------------

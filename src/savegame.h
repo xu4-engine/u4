@@ -194,8 +194,8 @@ typedef struct _SaveGameMonsterRecord {
     uint8_t prevTile;
     uint8_t prevx;
     uint8_t prevy;
-    uint8_t unused1;
-    uint8_t unused2;
+    uint8_t level;
+    uint8_t unused;
 } SaveGameMonsterRecord;
 
 /**

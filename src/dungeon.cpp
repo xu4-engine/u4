@@ -39,7 +39,7 @@ string Dungeon::getName() {
 /**
  * Returns the dungeon token associated with the given dungeon tile
  */
-DungeonToken Dungeon::tokenForTile(MapTile tile) {
+DungeonToken Dungeon::tokenForTile(const MapTile& tile) const {
     const static std::string tileNames[] = {
         "brick_floor", "up_ladder", "down_ladder", "up_down_ladder", "chest",
         "unimpl_ceiling_hole", "unimpl_floor_hole", "magic_orb",
@@ -74,33 +74,23 @@ DungeonToken Dungeon::currentToken() {
 }
 
 /**
- * Return the dungeon sub-token associated with the given dungeon tile.
- *
- */
-/**
  * Returns the dungeon sub-token for the current location
+ * The subtoken is encoded in the lower bits of the map raw data.
+ * For instance, for the raw value 0x91, returns FOUNTAIN_HEALING NOTE:
+ * This function will always need type-casting to the token type
+ * necessary.
  */
-unsigned char Dungeon::currentSubToken() {
-    return subTokenAt(c->location->coords);
+uint8_t Dungeon::currentSubToken() {
+    const Coords& co = c->location->coords;
+    int index = co.x + (co.y * width) + (width * height * co.z);
+    return rawMap[index] & 15;
 }
 
 /**
  * Returns the dungeon token for the given coordinates
  */
-DungeonToken Dungeon::tokenAt(MapCoords coords) {
+DungeonToken Dungeon::tokenAt(const MapCoords& coords) const {
     return tokenForTile(*getTileFromData(coords));
-}
-
-/**
- * Returns the dungeon sub-token for the given coordinates.  The
- * subtoken is encoded in the lower bits of the map raw data.  For
- * instance, for the raw value 0x91, returns FOUNTAIN_HEALING NOTE:
- * This function will always need type-casting to the token type
- * necessary
- */
-unsigned char Dungeon::subTokenAt(MapCoords coords) {
-    int index = coords.x + (coords.y * width) + (width * height * coords.z);
-    return dataSubTokens[index];
 }
 
 /**
@@ -315,7 +305,65 @@ bool Dungeon::ladderDownAt(MapCoords coords) {
     return false;
 }
 
-bool Dungeon::validTeleportLocation(MapCoords coords) {
+bool Dungeon::validTeleportLocation(const MapCoords& coords) const {
     const MapTile *tile = tileAt(coords, WITH_OBJECTS);
     return tokenForTile(*tile) == DUNGEON_CORRIDOR;
+}
+
+
+static const uint8_t ultima4DngMapMonster[16] = {
+    0,          RAT_ID,     BAT_ID,          GIANT_SPIDER_ID,
+    GHOST_ID,   SLIME_ID,   TROLL_ID,        GREMLIN_ID,
+    MIMIC_ID,   REAPER_ID,  INSECT_SWARM_ID, GAZER_ID,
+    PHANTOM_ID, ORC_ID,     SKELETON_ID,     ROGUE_ID
+};
+
+/* Map creatures to u4dos dungeon creature Ids */
+static int u4DngMonster(CreatureId cid) {
+    int i;
+    for (i = 1; i < 16; ++i) {
+        if (cid == ultima4DngMapMonster[i])
+            return i;
+    }
+    return 0;
+}
+
+extern int moduleToDngMap(TileId modId);
+
+uint8_t* Dungeon::fillRawMap() {
+    uint32_t x, y, z;
+    const MapTile* mt;
+    uint8_t* dp = (uint8_t*) &rawMap.front();
+    int uid, dngId;
+
+    for (z = 0; z < levels; z++) {
+        for (y = 0; y < height; y++) {
+            for (x = 0; x < width; x++) {
+                // Don't touch traps, fountains, or rooms.
+                uid = *dp & 0xF0;
+                if (uid == DUNGEON_TRAP ||
+                    uid == DUNGEON_FOUNTAIN ||
+                    uid == DUNGEON_ROOM) {
+                    ++dp;
+                    continue;
+                }
+
+                mt = getTileFromData(MapCoords(x, y, z));
+                dngId = moduleToDngMap(mt->id);
+
+                // Add the creature to the tile
+                const Object *obj = objectAt(MapCoords(x, y, z));
+                if (obj && obj->getType() == Object::CREATURE) {
+                    const Creature *m = static_cast<const Creature*>(obj);
+                    uid = u4DngMonster(m->getId());
+                    if (uid)
+                        dngId |= uid;
+                }
+
+                *dp++ = dngId;
+            }
+        }
+    }
+
+    return &rawMap.front();
 }

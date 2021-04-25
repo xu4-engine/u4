@@ -279,12 +279,14 @@ static TileId dngMapToModule(int u4DngId) {
     return mid;
 }
 
+// NOTE: This does not handle traps, fountains, & rooms!
 int moduleToDngMap(TileId modId) {
     int i;
     for (i = 0; i < 16; ++i) {
         if (modId == ultima4Dng_to_module[i])
             return i << 4;
     }
+    // Magic fields.
     switch (modId) {
         case 51: return 0xA1;
         case 52: return 0xA2;
@@ -294,24 +296,36 @@ int moduleToDngMap(TileId modId) {
 }
 
 /**
- * Loads a dungeon map from the 'dng' file
+ * Loads a dungeon map from the 'dng' file (and dngmap.sav if provided).
  */
-static bool loadDungeonMap(Map *map, U4FILE *uf) {
+static bool loadDungeonMap(Map *map, U4FILE *uf, FILE *sav) {
     Dungeon *dungeon = dynamic_cast<Dungeon*>(map);
+    unsigned int i, j;
+    uint8_t* rawMap;
+    size_t bytes;
 
     /* the map must be 11x11 to be read from an .CON file */
     ASSERT(dungeon->width == DNG_WIDTH, "map width is %d, should be %d", dungeon->width, DNG_WIDTH);
     ASSERT(dungeon->height == DNG_HEIGHT, "map height is %d, should be %d", dungeon->height, DNG_HEIGHT);
 
     /* load the dungeon map */
-    unsigned int i, j;
-    for (i = 0; i < (DNG_HEIGHT * DNG_WIDTH * dungeon->levels); i++) {
-        unsigned char ch = u4fgetc(uf);
-        MapTile tile(dngMapToModule(ch), 0);
-        //printf( "KR dng tile %d: %d => %d\n", i, ch, tile.id);
+    bytes = DNG_HEIGHT * DNG_WIDTH * dungeon->levels;
+    dungeon->rawMap.reserve(bytes);
+    rawMap = &dungeon->rawMap.front();
+    if (sav) {
+        i = fread(rawMap, 1, bytes, sav);
+        u4fseek(uf, bytes, SEEK_CUR);
+    } else {
+        i = u4fread(rawMap, 1, bytes, uf);
+    }
+    if (i != bytes)
+        return false;
 
+    for (i = 0; i < bytes; i++) {
+        j = *rawMap++;
+        MapTile tile(dngMapToModule(j), 0);
         dungeon->data.push_back(tile);
-        dungeon->dataSubTokens.push_back(ch & 15);
+        //printf( "KR dng tile %d: %d => %d\n", i, j, tile.id);
     }
 
     /* read in the dungeon rooms */
@@ -436,7 +450,7 @@ static bool loadDungeonMap(Map *map, U4FILE *uf) {
     return true;
 }
 
-bool loadMap(Map *map) {
+bool loadMap(Map *map, FILE* sav) {
     bool ok = false;
     U4FILE* uf = u4fopen(map->fname);
     if (uf) {
@@ -451,7 +465,7 @@ bool loadMap(Map *map) {
                 break;
 
             case Map::DUNGEON:
-                ok = loadDungeonMap(map, uf);
+                ok = loadDungeonMap(map, uf, sav);
                 break;
 
             case Map::WORLD:
