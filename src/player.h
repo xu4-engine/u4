@@ -191,7 +191,7 @@ public:
     void adjustKarma(KarmaAction action);
     void applyEffect(TileEffect effect);
     bool attemptElevation(Virtue virtue);
-    void burnTorch(int turns = 1);
+    bool burnTorch(int turns = 1);
     bool canEnterShrine(Virtue virtue);
     bool canPersonJoin(string name, Virtue *v);
     void damageShip(unsigned int pts);

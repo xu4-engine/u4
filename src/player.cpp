@@ -887,15 +887,18 @@ bool Party::attemptElevation(Virtue virtue) {
 
 /**
  * Burns a torch's duration down a certain number of turns
+ * Returns true if the torch is still providing light.
  */
-void Party::burnTorch(int turns) {
-    torchduration -= turns;
-    if (torchduration <= 0)
-        torchduration = 0;
+bool Party::burnTorch(int turns) {
+    if (torchduration) {
+        torchduration -= turns;
+        if (torchduration <= 0)
+            torchduration = 0;
 
-    saveGame->torchduration = torchduration;
-
-    notifyOfChange();
+        saveGame->torchduration = torchduration;
+        notifyOfChange();
+    }
+    return torchduration > 0;
 }
 
 /**

@@ -657,9 +657,8 @@ void GameController::finishTurn() {
 
     if (c->location->context == CTX_DUNGEON) {
         Dungeon *dungeon = dynamic_cast<Dungeon *>(c->location->map);
-        if (c->party->getTorchDuration() <= 0)
+        if (! c->party->burnTorch())
             screenMessage("It's Dark!\n");
-        else c->party->burnTorch();
 
         /* handle dungeon traps */
         if (dungeon->currentToken() == DUNGEON_TRAP) {
