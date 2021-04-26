@@ -35,7 +35,11 @@
   <xi:include xmlns:xi="http://www.w3.org/2003/XInclude" href="creatures.xml"/>
   <xi:include xmlns:xi="http://www.w3.org/2003/XInclude" href="maps.xml"/>  
   <xi:include xmlns:xi="http://www.w3.org/2003/XInclude" href="tileRules.xml"/>
-  <xi:include xmlns:xi="http://www.w3.org/2003/XInclude" href="tilesets.xml"/>
+  <tilesets>
+    <xi:include xmlns:xi="http://www.w3.org/2003/XInclude" href="tilemap-base.xml"/>
+
+    <xi:include xmlns:xi="http://www.w3.org/2003/XInclude" href="tileset-base.xml"/>
+  </tilesets>
   <xi:include xmlns:xi="http://www.w3.org/2003/XInclude" href="egaPalette.xml"/>
   <xi:include xmlns:xi="http://www.w3.org/2003/XInclude" href="graphics.xml"/>
   <xi:include xmlns:xi="http://www.w3.org/2003/XInclude" href="music.xml"/>

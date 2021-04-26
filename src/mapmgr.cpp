@@ -159,8 +159,15 @@ Map *MapMgr::initMapFromConf(const ConfigElement &mapConf) {
         map->flags |= FIRST_PERSON;
 
     map->music = mapConf.getInt("music");
-    map->tileset = Tileset::get(mapConf.getString("tileset"));
-    map->tilemap = TileMap::get(mapConf.getString("tilemap"));
+
+    string tiles = mapConf.getString("tileset");
+    if (tiles.empty()) {
+        map->tileset = Tileset::get("base");
+        map->tilemap = TileMap::get("base");
+    } else {
+        map->tileset = Tileset::get(tiles);
+        map->tilemap = TileMap::get(mapConf.getString("tilemap"));
+    }
 
     vector<ConfigElement> children = mapConf.getChildren();
     for (std::vector<ConfigElement>::iterator i = children.begin(); i != children.end(); i++) {

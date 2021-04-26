@@ -327,6 +327,8 @@ void GameController::init() {
     TRACE(gameDbg, "gameInit() completed successfully.");
 }
 
+extern int moduleToDngMap(TileId modId);
+
 /**
  * Saves the game state into party.sav and monsters.sav.
  * For dungeons dngmap.sav & outmonst.sav are also created.
@@ -397,6 +399,7 @@ int gameSave(const char* userPath) {
         uint32_t x, y, z;
         typedef std::map<const Creature*, int> DngCreatureIdMap;
         static DngCreatureIdMap id_map;
+        const MapTile* mt;
         CreatureMgr* cmgr = xu4.creatureMgr;
 
         /* Map creatures to u4dos dungeon creature Ids */
@@ -423,7 +426,8 @@ int gameSave(const char* userPath) {
         for (z = 0; z < map->levels; z++) {
             for (y = 0; y < map->height; y++) {
                 for (x = 0; x < map->width; x++) {
-                    uint8_t tile = map->translateToRawTileIndex(*map->getTileFromData(MapCoords(x, y, z)));
+                    mt = map->getTileFromData(MapCoords(x, y, z));
+                    int tile = moduleToDngMap(mt->id);
                     Object *obj = map->objectAt(MapCoords(x, y, z));
 
                     /**

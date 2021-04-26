@@ -22,8 +22,8 @@
               firstperson         %bool;   #IMPLIED
               contextual          %bool;   #IMPLIED
               music               NMTOKEN  #REQUIRED
-              tileset             NMTOKEN  #REQUIRED
-              tilemap             NMTOKEN  #REQUIRED>
+              tileset             NMTOKEN  #IMPLIED
+              tilemap             NMTOKEN  #IMPLIED>
 
 <!-- city-map specific information -->
 <!ELEMENT city ( personrole* ) >

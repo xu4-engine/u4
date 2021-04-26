@@ -1204,52 +1204,56 @@ Creature *CombatMap::creatureAt(Coords coords) {
  * Returns a valid combat map given the provided information
  */
 MapId CombatMap::mapForTile(const Tile *groundTile, const Tile *transport, Object *obj) {
-    bool fromShip = false,
-        toShip = false;
-    Object *objUnder = c->location->map->objectAt(c->location->coords);
-
     static std::map<const Tile *, MapId> tileMap;
-    if (!tileMap.size()) {
-        tileMap[Tileset::get("base")->getByName("horse")] = MAP_GRASS_CON;
-        tileMap[Tileset::get("base")->getByName("swamp")] = MAP_MARSH_CON;
-        tileMap[Tileset::get("base")->getByName("grass")] = MAP_GRASS_CON;
-        tileMap[Tileset::get("base")->getByName("brush")] = MAP_BRUSH_CON;
-        tileMap[Tileset::get("base")->getByName("forest")] = MAP_FOREST_CON;
-        tileMap[Tileset::get("base")->getByName("hills")] = MAP_HILL_CON;
-        tileMap[Tileset::get("base")->getByName("dungeon")] = MAP_DUNGEON_CON;
-        tileMap[Tileset::get("base")->getByName("city")] = MAP_GRASS_CON;
-        tileMap[Tileset::get("base")->getByName("castle")] = MAP_GRASS_CON;
-        tileMap[Tileset::get("base")->getByName("town")] = MAP_GRASS_CON;
-        tileMap[Tileset::get("base")->getByName("lcb_entrance")] = MAP_GRASS_CON;
-        tileMap[Tileset::get("base")->getByName("bridge")] = MAP_BRIDGE_CON;
-        tileMap[Tileset::get("base")->getByName("balloon")] = MAP_GRASS_CON;
-        tileMap[Tileset::get("base")->getByName("bridge_pieces")] = MAP_BRIDGE_CON;
-        tileMap[Tileset::get("base")->getByName("shrine")] = MAP_GRASS_CON;
-        tileMap[Tileset::get("base")->getByName("chest")] = MAP_GRASS_CON;
-        tileMap[Tileset::get("base")->getByName("brick_floor")] = MAP_BRICK_CON;
-        tileMap[Tileset::get("base")->getByName("moongate")] = MAP_GRASS_CON;
-        tileMap[Tileset::get("base")->getByName("moongate_opening")] = MAP_GRASS_CON;
-        tileMap[Tileset::get("base")->getByName("dungeon_floor")] = MAP_GRASS_CON;
-    }
     static std::map<const Tile *, MapId> dungeontileMap;
-    if (!dungeontileMap.size()) {
-        dungeontileMap[Tileset::get("dungeon")->getByName("brick_floor")] = MAP_DNG0_CON;
-        dungeontileMap[Tileset::get("dungeon")->getByName("up_ladder")] = MAP_DNG1_CON;
-        dungeontileMap[Tileset::get("dungeon")->getByName("down_ladder")] = MAP_DNG2_CON;
-        dungeontileMap[Tileset::get("dungeon")->getByName("up_down_ladder")] = MAP_DNG3_CON;
-        // dungeontileMap[Tileset::get("dungeon")->getByName("chest")] = MAP_DNG4_CON;
-        // chest tile doesn't work that well
-        dungeontileMap[Tileset::get("dungeon")->getByName("dungeon_door")] = MAP_DNG5_CON;
-        dungeontileMap[Tileset::get("dungeon")->getByName("secret_door")] = MAP_DNG6_CON;
-    }
+    bool fromShip, toShip;
+    Location* loc = c->location;
+    Object *objUnder = loc->map->objectAt(loc->coords);
 
-    if (c->location->context & CTX_DUNGEON) {
+    if (loc->context & CTX_DUNGEON) {
+        if (dungeontileMap.empty()) {
+            Tileset* ts = Tileset::get("base");
+            dungeontileMap[ts->getByName("brick_floor")]    = MAP_DNG0_CON;
+            dungeontileMap[ts->getByName("up_ladder")]      = MAP_DNG1_CON;
+            dungeontileMap[ts->getByName("down_ladder")]    = MAP_DNG2_CON;
+            dungeontileMap[ts->getByName("up_down_ladder")] = MAP_DNG3_CON;
+            // dungeontileMap[ts->getByName("chest")]       = MAP_DNG4_CON;
+            // chest tile doesn't work that well
+            dungeontileMap[ts->getByName("dungeon_door")]   = MAP_DNG5_CON;
+            dungeontileMap[ts->getByName("secret_door")]    = MAP_DNG6_CON;
+        }
+
         if (dungeontileMap.find(groundTile) != dungeontileMap.end())
             return dungeontileMap[groundTile];
 
         return MAP_DNG0_CON;
     }
 
+    if (tileMap.empty()) {
+        Tileset* ts = Tileset::get("base");
+        tileMap[ts->getByName("horse")] = MAP_GRASS_CON;
+        tileMap[ts->getByName("swamp")] = MAP_MARSH_CON;
+        tileMap[ts->getByName("grass")] = MAP_GRASS_CON;
+        tileMap[ts->getByName("brush")] = MAP_BRUSH_CON;
+        tileMap[ts->getByName("forest")] = MAP_FOREST_CON;
+        tileMap[ts->getByName("hills")] = MAP_HILL_CON;
+        tileMap[ts->getByName("dungeon")] = MAP_DUNGEON_CON;
+        tileMap[ts->getByName("city")] = MAP_GRASS_CON;
+        tileMap[ts->getByName("castle")] = MAP_GRASS_CON;
+        tileMap[ts->getByName("town")] = MAP_GRASS_CON;
+        tileMap[ts->getByName("lcb_entrance")] = MAP_GRASS_CON;
+        tileMap[ts->getByName("bridge")] = MAP_BRIDGE_CON;
+        tileMap[ts->getByName("balloon")] = MAP_GRASS_CON;
+        tileMap[ts->getByName("bridge_pieces")] = MAP_BRIDGE_CON;
+        tileMap[ts->getByName("shrine")] = MAP_GRASS_CON;
+        tileMap[ts->getByName("chest")] = MAP_GRASS_CON;
+        tileMap[ts->getByName("brick_floor")] = MAP_BRICK_CON;
+        tileMap[ts->getByName("moongate")] = MAP_GRASS_CON;
+        tileMap[ts->getByName("moongate_opening")] = MAP_GRASS_CON;
+        tileMap[ts->getByName("dungeon_floor")] = MAP_GRASS_CON;
+    }
+
+    fromShip = toShip = false;
     if (transport->isShip() || (objUnder && objUnder->getTile().getTileType()->isShip()))
         fromShip = true;
     if (obj->getTile().getTileType()->isPirateShip())
@@ -1260,7 +1264,7 @@ MapId CombatMap::mapForTile(const Tile *groundTile, const Tile *transport, Objec
 
     /* We can fight creatures and townsfolk */
     if (obj->getType() != Object::UNKNOWN) {
-        const Tile *tileUnderneath = c->location->map->tileTypeAt(obj->getCoords(), WITHOUT_OBJECTS);
+        const Tile *tileUnderneath = loc->map->tileTypeAt(obj->getCoords(), WITHOUT_OBJECTS);
 
         if (toShip)
             return MAP_SHORSHIP_CON;

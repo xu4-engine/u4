@@ -253,6 +253,46 @@ static void initDungeonRoom(Dungeon *dng, int room) {
     dng->roomMaps[room]->tileset = Tileset::get("base");
 }
 
+static const uint8_t ultima4Dng_to_module[16] = {
+     46,  // 0x00 brick_floor
+     22,  // 0x10 up_ladder
+     23,  // 0x20 down_ladder
+    135,  // 0x30 up_down_ladder
+     44,  // 0x40 chest
+    136,  // 0x50 ceiling_hole
+    137,  // 0x60 floor_hole
+    138,  // 0x70 magic_orb
+    136,  // 0x80 (trap) ceiling_hole
+    139,  // 0x90 fountain
+     50,  // 0xA0 poison_field
+    142,  // 0xB0 dungeon_altar
+    141,  // 0xC0 dungeon_door
+    140,  // 0xD0 dungeon_room
+     55,  // 0xE0 secret_door
+     99   // 0xF0 brick_wall
+};
+
+static TileId dngMapToModule(int u4DngId) {
+    TileId mid = ultima4Dng_to_module[ u4DngId >> 4 ];
+    if (mid == 50)
+        mid += u4DngId & 0x3;   // Magic fields.
+    return mid;
+}
+
+int moduleToDngMap(TileId modId) {
+    int i;
+    for (i = 0; i < 16; ++i) {
+        if (modId == ultima4Dng_to_module[i])
+            return i << 4;
+    }
+    switch (modId) {
+        case 51: return 0xA1;
+        case 52: return 0xA2;
+        case 53: return 0xA3;
+    }
+    return 0;
+}
+
 /**
  * Loads a dungeon map from the 'dng' file
  */
@@ -266,12 +306,12 @@ static bool loadDungeonMap(Map *map, U4FILE *uf) {
     /* load the dungeon map */
     unsigned int i, j;
     for (i = 0; i < (DNG_HEIGHT * DNG_WIDTH * dungeon->levels); i++) {
-        unsigned char mapData = u4fgetc(uf);
-        MapTile tile = map->translateFromRawTileIndex(mapData);
+        unsigned char ch = u4fgetc(uf);
+        MapTile tile(dngMapToModule(ch), 0);
+        //printf( "KR dng tile %d: %d => %d\n", i, ch, tile.id);
 
-        /* determine what type of tile it is */
         dungeon->data.push_back(tile);
-        dungeon->dataSubTokens.push_back(mapData % 16);
+        dungeon->dataSubTokens.push_back(ch & 15);
     }
 
     /* read in the dungeon rooms */
