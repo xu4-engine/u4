@@ -114,11 +114,10 @@ void dungeonSearch(void) {
     if (a.size() > 0)
         token = DUNGEON_CORRIDOR;
 
-    screenMessage("Search...\n");
+    screenMessage("Search...\n\n");
 
     switch (token) {
     case DUNGEON_MAGIC_ORB: /* magic orb */
-    screenMessage("You find a Magical Ball...\nWho touches? ");
         dungeonTouchOrb();
         break;
 
@@ -139,7 +138,7 @@ void dungeonSearch(void) {
                     (*item->putItemInInventory)(item->data);
                 }
             } else
-                screenMessage("\nYou find Nothing!\n");
+                screenMessage("You find Nothing!\n");
         }
 
         break;
