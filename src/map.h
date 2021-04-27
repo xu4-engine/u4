@@ -107,6 +107,7 @@ public:
     const MapTile* getTileFromData(const Coords &coords) const;
     const MapTile* tileAt(const Coords &coords, int withObjects) const;
     const Tile *tileTypeAt(const Coords &coords, int withObjects);
+    void setTileAt(const Coords &coords, const MapTile& tile);
     bool isWorldMap();
     bool isEnclosed(const Coords &party);
     class Creature *addCreature(const class Creature *m, Coords coords);

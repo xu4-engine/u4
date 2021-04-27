@@ -202,10 +202,11 @@ void dungeonTouchOrb() {
     int damage = 0;
 
     /* Get current position and find a replacement tile for it */
-    Tile * orb_tile = c->location->map->tileset->getByName("magic_orb");
-    MapTile replacementTile(c->location->getReplacementTile(c->location->coords, orb_tile));
+    Location* loc = c->location;
+    Tile * orb_tile = loc->map->tileset->getByName("magic_orb");
+    MapTile replacementTile(loc->getReplacementTile(loc->coords, orb_tile));
 
-    switch(c->location->map->id) {
+    switch(loc->map->id) {
     case MAP_DECEIT:    stats = STATSBONUS_INT; break;
     case MAP_DESPISE:   stats = STATSBONUS_DEX; break;
     case MAP_DESTARD:   stats = STATSBONUS_STR; break;
@@ -235,8 +236,9 @@ void dungeonTouchOrb() {
 
     /* deal damage to the party member who touched the orb */
     c->party->member(player)->applyDamage(damage);
+
     /* remove the orb from the map */
-    c->location->map->annotations->add(c->location->coords, replacementTile);
+    loc->map->setTileAt(loc->coords, replacementTile);
 }
 
 /**
@@ -350,6 +352,7 @@ uint8_t* Dungeon::fillRawMap() {
 
                 mt = getTileFromData(MapCoords(x, y, z));
                 dngId = moduleToDngMap(mt->id);
+                //printf("KR %d,%d,%d %d => %d\n", x, y, z, mt->id, dngId);
 
                 // Add the creature to the tile
                 const Object *obj = objectAt(MapCoords(x, y, z));

@@ -408,6 +408,11 @@ const Tile *Map::tileTypeAt(const Coords &coords, int withObjects) {
     return tile->getTileType();
 }
 
+void Map::setTileAt(const Coords& coords, const MapTile& tile) {
+    int i = (coords.z * width * height) + (coords.y * width) + coords.x;
+    data[i] = tile;
+}
+
 /**
  * Returns true if the given map is the world map
  */

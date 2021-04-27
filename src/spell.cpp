@@ -451,19 +451,20 @@ static int spellCure(int player) {
 
 static int spellDispel(int dir) {
     const MapTile *tile;
-    MapCoords field;
+    Location* loc = c->location;
+    MapCoords fpos;
 
     /*
      * get the location of the avatar (or current party member, if in battle)
      */
-    c->location->getCurrentPosition(&field);
+    loc->getCurrentPosition(&fpos);
 
     /*
      * find where we want to dispel the field
      */
-    field.move((Direction)dir, c->location->map);
+    fpos.move((Direction)dir, loc->map);
 
-    GameController::flashTile(field, "wisp", 2);
+    GameController::flashTile(fpos, "wisp", 2);
     /*
      * if there is a field annotation, remove it and replace it with a valid
      * replacement annotation.  We do this because sometimes dungeon triggers
@@ -471,39 +472,30 @@ static int spellDispel(int dir) {
      * (or other unwalkable surface).  So, we need to provide a valid replacement
      * annotation to fill in the gap :)
      */
-    Annotation::List a = c->location->map->annotations->allAt(field);
+    AnnotationMgr* annot = loc->map->annotations;
+    Annotation::List a = annot->allAt(fpos);
     if (a.size() > 0) {
         Annotation::List::iterator i;
         for (i = a.begin(); i != a.end(); i++) {
             if (i->getTile().getTileType()->canDispel()) {
-
-                /*
-                 * get a replacement tile for the field
-                 */
-                MapTile newTile(c->location->getReplacementTile(field, i->getTile().getTileType()));
-
-                c->location->map->annotations->remove(*i);
-                c->location->map->annotations->add(field, newTile, false, true);
+                // get a replacement tile for the field
+                MapTile newTile(loc->getReplacementTile(fpos, i->getTile().getTileType()));
+                annot->remove(*i);
+                annot->add(fpos, newTile, false, true);
                 return 1;
             }
         }
     }
 
     /*
-     * if the map tile itself is a field, overlay it with a replacement tile
+     * If the map tile itself is a field then replace it.
      */
-
-    tile = c->location->map->tileAt(field, WITHOUT_OBJECTS);
-    if (!tile->getTileType()->canDispel())
+    tile = loc->map->tileAt(fpos, WITHOUT_OBJECTS);
+    if (! tile->getTileType()->canDispel())
         return 0;
 
-    /*
-     * get a replacement tile for the field
-     */
-    MapTile newTile(c->location->getReplacementTile(field, tile->getTileType()));
-
-    c->location->map->annotations->add(field, newTile, false, true);
-
+    MapTile newTile(loc->getReplacementTile(fpos, tile->getTileType()));
+    loc->map->setTileAt(fpos, newTile);
     return 1;
 }
 

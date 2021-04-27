@@ -1944,11 +1944,13 @@ void getChest(int player)
         if (player == -1)
             return;
 
-        if (obj)
+        if (obj) {
+            //printf( "KR getChest obj\n" );
             c->location->map->removeObject(obj);
-        else {
+        } else {
+            //printf( "KR getChest tile\n" );
             TileId newTile = c->location->getReplacementTile(coords, tile);
-            c->location->map->annotations->add(coords, newTile, false , true);
+            c->location->map->setTileAt(coords, newTile);
         }
 
         // see if the chest is trapped and handle it
