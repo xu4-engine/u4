@@ -14,8 +14,10 @@ class ImageSet;
 class Armor;
 class Weapon;
 struct TileRule;
+class Tileset;
 class ConfigElement;
 struct RGBA;
+struct UltimaSaveIds;
 
 /**
  * Config is a singleton data provider interface which hides the storage
@@ -41,7 +43,9 @@ public:
     const Weapon* weapon( uint32_t id );
     int armorType( const char* name );
     int weaponType( const char* name );
-    const TileRule* tileRule( Symbol name );
+    const TileRule* tileRule( Symbol name ) const;
+    const Tileset* tileset() const;
+    const UltimaSaveIds* usaveIds() const;
     // More to be added...
 
     // Deprecated methods for manually parsing a tree.

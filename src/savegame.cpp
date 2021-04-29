@@ -2,6 +2,8 @@
  * savegame.cpp
  */
 
+#include <assert.h>
+#include <stdlib.h>
 #include "savegame.h"
 
 
@@ -393,4 +395,62 @@ int saveGameMonstersRead(SaveGameMonsterRecord *monsterTable, FILE *f) {
         if (!readChar(&monsterTable[i].unused, f)) return 0;
 
     return 1;
+}
+
+//--------------------------------------
+
+void UltimaSaveIds::alloc(int ucount, int mcount) {
+    // Use one block of memory for both tables.
+    size_t msize = ucount * sizeof(TileId);
+    moduleIdTable = (TileId*) malloc( msize + mcount );
+    ultimaIdTable = ((uint8_t*) moduleIdTable) + msize;
+
+    uiCount = ucount;
+    miCount = mcount;
+}
+
+void UltimaSaveIds::free() {
+    ::free(moduleIdTable);
+}
+
+void UltimaSaveIds::addId(uint8_t uid, int frames, TileId mid) {
+    assert(mid < miCount);
+    assert(uid < uiCount);
+    ultimaIdTable[mid] = uid;
+    for (int i = 0; i < frames; ++i)
+        moduleIdTable[uid+i] = mid;
+}
+
+MapTile UltimaSaveIds::moduleId(uint8_t uid) const {
+    const TileId* entry = moduleIdTable + uid;
+    TileId mid = *entry;
+    int frame = 0;
+    if (uid > 15) {     // We know the early entries are single frames.
+        while (entry[-1] == mid) {
+            ++frame;
+            --entry;
+        }
+    }
+    return MapTile(mid, frame);
+}
+
+uint8_t UltimaSaveIds::ultimaId(const MapTile& tile) const {
+    int uid, uidF;
+    TileId mid = tile.id;
+
+    assert(mid < uiCount);
+    if (mid >= uiCount)
+        return 0;
+    uid = ultimaIdTable[ mid ];
+
+    // Check if frame is more than what the original game supports.
+    // If so, treat it as frame 0.
+
+    if (tile.frame > 4)
+        return uid;
+    uidF = uid + tile.frame;
+    if (moduleIdTable[ uidF ] != mid)
+        return uid;
+
+    return uidF;
 }

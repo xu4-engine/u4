@@ -22,7 +22,6 @@
 #include "settings.h"
 #include "shrine.h"
 #include "tileset.h"
-#include "tilemap.h"
 #include "u4file.h"
 #include "utils.h"
 #include "xu4.h"
@@ -99,6 +98,7 @@ IntroBinData::~IntroBinData() {
 
 bool IntroBinData::load() {
     int i;
+    const UltimaSaveIds* usaveIds = xu4.config->usaveIds();
 
     U4FILE *title = u4fopen("title.exe");
     if (!title)
@@ -121,7 +121,7 @@ bool IntroBinData::load() {
     u4fseek(title, INTRO_MAP_OFFSET, SEEK_SET);
     introMap.resize(INTRO_MAP_WIDTH * INTRO_MAP_HEIGHT, MapTile(0));
     for (i = 0; i < INTRO_MAP_HEIGHT * INTRO_MAP_WIDTH; i++)
-        introMap[i] = TileMap::get("base")->translate(u4fgetc(title));
+        introMap[i] = usaveIds->moduleId(u4fgetc(title));
 
     u4fseek(title, INTRO_SCRIPT_TABLE_OFFSET, SEEK_SET);
     scriptTable = new unsigned char[INTRO_SCRIPT_TABLE_SIZE];
@@ -131,7 +131,7 @@ bool IntroBinData::load() {
     u4fseek(title, INTRO_BASETILE_TABLE_OFFSET, SEEK_SET);
     baseTileTable = new const Tile*[INTRO_BASETILE_TABLE_SIZE];
     for (i = 0; i < INTRO_BASETILE_TABLE_SIZE; i++) {
-        MapTile tile = TileMap::get("base")->translate(u4fgetc(title));
+        MapTile tile = usaveIds->moduleId(u4fgetc(title));
         baseTileTable[i] = Tileset::get("base")->get(tile.id);
     }
 

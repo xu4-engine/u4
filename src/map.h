@@ -26,7 +26,6 @@ class Map;
 class Object;
 class Person;
 class Creature;
-class TileMap;
 class Tileset;
 struct Portal;
 struct _Dungeon;
@@ -126,8 +125,6 @@ public:
     // u4dos compatibility
     void fillMonsterTable(SaveGameMonsterRecord* table) const;
     void fillMonsterTableDungeon(SaveGameMonsterRecord* table) const;
-    MapTile translateFromRawTileIndex(int c) const;
-    unsigned int translateToRawTileIndex(const MapTile &tile) const;
 
 public:
     MapId           id;
@@ -154,7 +151,6 @@ public:
     ObjectDeque     objects;
     std::map<string, MapCoords> labels;
     const Tileset  *tileset;
-    TileMap        *tilemap;
 
 private:
     // disallow map copying: all maps should be created and accessed

@@ -7,6 +7,7 @@
 
 #include "event.h"
 
+#include "config.h"
 #include "context.h"
 #include "debug.h"
 #include "location.h"
@@ -521,8 +522,13 @@ bool KeyHandler::defaultHandler(int key, void *data) {
 
     switch (key) {
     case '`':
-        if (c && c->location)
-            printf("x = %d, y = %d, level = %d, tile = %d (%s)\n", c->location->coords.x, c->location->coords.y, c->location->coords.z, c->location->map->translateToRawTileIndex(*c->location->map->tileAt(c->location->coords, WITH_OBJECTS)), c->location->map->tileTypeAt(c->location->coords, WITH_OBJECTS)->getName().c_str());
+        if (c && c->location) {
+            const Location* loc = c->location;
+            printf("x = %d, y = %d, level = %d, tile = %d (%s)\n",
+                    loc->coords.x, loc->coords.y, loc->coords.z,
+                    xu4.config->usaveIds()->ultimaId(*loc->map->tileAt(loc->coords, WITH_OBJECTS)),
+                    loc->map->tileTypeAt(loc->coords, WITH_OBJECTS)->getName().c_str());
+        }
         break;
     default:
         valid = false;

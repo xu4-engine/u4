@@ -13,7 +13,6 @@
 #include "location.h"
 #include "settings.h"
 #include "tileanim.h"
-#include "tilemap.h"
 #include "tileset.h"
 #include "utils.h"
 #include "assert.h"
@@ -48,7 +47,7 @@ Tile::~Tile() {
 /**
  * Loads tile information.
  */
-void Tile::loadProperties(const ConfigElement &conf) {
+void Tile::loadProperties(const Config* config, const ConfigElement &conf) {
     if (conf.getName() != "tile")
         return;
 
@@ -68,8 +67,8 @@ void Tile::loadProperties(const ConfigElement &conf) {
     /* Get the rule that applies to the current tile (or "default") */
     Symbol sym = SYM_UNSET;
     if (conf.exists("rule"))
-        sym = xu4.config->propSymbol(conf, "rule");
-    rule = xu4.config->tileRule(sym);
+        sym = config->propSymbol(conf, "rule");
+    rule = config->tileRule(sym);
 
     /* get the number of frames the tile has */
     frames = conf.getInt("frames", 1);

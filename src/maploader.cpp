@@ -7,6 +7,7 @@
 
 #include "city.h"
 #include "combat.h"
+#include "config.h"
 #include "dialogueloader.h"
 #include "debug.h"
 #include "dungeon.h"
@@ -14,7 +15,6 @@
 #include "map.h"
 #include "mapmgr.h"
 #include "person.h"
-#include "tilemap.h"
 #include "tileset.h"
 #include "u4file.h"
 #include "xu4.h"
@@ -34,6 +34,7 @@ static bool isChunkCompressed(Map *map, int chunk) {
  */
 static bool loadMapData(Map *map, U4FILE *uf) {
     unsigned int x, xch, y, ych;
+    const UltimaSaveIds* usaveIds = xu4.config->usaveIds();
 
     /* allocate the space we need for the map data */
     map->data.resize(map->height * map->width, MapTile(0));
@@ -75,7 +76,7 @@ static bool loadMapData(Map *map, U4FILE *uf) {
                         if (c == EOF)
                             return false;
 #endif
-                        MapTile mt = map->translateFromRawTileIndex(c);
+                        MapTile mt = usaveIds->moduleId(c);
                         map->data[x + (y * map->width) + (xch * map->chunk_width) + (ych * map->chunk_height * map->width)] = mt;
                     }
                 }
@@ -94,6 +95,7 @@ static bool loadCityMap(Map *map, U4FILE *ult) {
     unsigned int i, j;
     Person *people[CITY_MAX_PERSONS];
     Dialogue *dialogues[CITY_MAX_PERSONS];
+    const UltimaSaveIds* usaveIds = xu4.config->usaveIds();
 
     /* the map must be 32x32 to be read from an .ULT file */
     ASSERT(city->width == CITY_WIDTH, "map width is %d, should be %d", city->width, CITY_WIDTH);
@@ -104,7 +106,7 @@ static bool loadCityMap(Map *map, U4FILE *ult) {
 
     /* Properly construct people for the city */
     for (i = 0; i < CITY_MAX_PERSONS; i++)
-        people[i] = new Person(map->translateFromRawTileIndex(u4fgetc(ult)));
+        people[i] = new Person(usaveIds->moduleId(u4fgetc(ult)));
 
     for (i = 0; i < CITY_MAX_PERSONS; i++)
         people[i]->getStart().x = u4fgetc(ult);
@@ -113,7 +115,7 @@ static bool loadCityMap(Map *map, U4FILE *ult) {
         people[i]->getStart().y = u4fgetc(ult);
 
     for (i = 0; i < CITY_MAX_PERSONS; i++)
-        people[i]->setPrevTile(map->translateFromRawTileIndex(u4fgetc(ult)));
+        people[i]->setPrevTile(usaveIds->moduleId(u4fgetc(ult)));
 
     for (i = 0; i < CITY_MAX_PERSONS * 2; i++)
         u4fgetc(ult);           /* read redundant startx/starty */
@@ -301,6 +303,7 @@ int moduleToDngMap(TileId modId) {
  */
 static bool loadDungeonMap(Map *map, U4FILE *uf, FILE *sav) {
     Dungeon *dungeon = dynamic_cast<Dungeon*>(map);
+    const UltimaSaveIds* usaveIds = xu4.config->usaveIds();
     unsigned int i, j;
     uint8_t* rawMap;
     size_t bytes;
@@ -339,7 +342,7 @@ static bool loadDungeonMap(Map *map, U4FILE *uf, FILE *sav) {
         for (j = 0; j < DNGROOM_NTRIGGERS; j++) {
             int tmp;
 
-            dungeon->rooms[i].triggers[j].tile = TileMap::get("base")->translate(u4fgetc(uf)).id;
+            dungeon->rooms[i].triggers[j].tile = usaveIds->moduleId(u4fgetc(uf)).id;
 
             tmp = u4fgetc(uf);
             if (tmp == EOF)
@@ -376,11 +379,11 @@ static bool loadDungeonMap(Map *map, U4FILE *uf, FILE *sav) {
 
         /* translate each creature tile to a tile id */
         for (j = 0; j < sizeof(dungeon->rooms[i].creature_tiles); j++)
-            dungeon->rooms[i].creature_tiles[j] = TileMap::get("base")->translate(dungeon->rooms[i].creature_tiles[j]).id;
+            dungeon->rooms[i].creature_tiles[j] = usaveIds->moduleId(dungeon->rooms[i].creature_tiles[j]).id;
 
         /* translate each map tile to a tile id */
         for (j = 0; j < sizeof(room_tiles); j++)
-            dungeon->rooms[i].map_data.push_back(TileMap::get("base")->translate(room_tiles[j]));
+            dungeon->rooms[i].map_data.push_back(usaveIds->moduleId(room_tiles[j]));
 
         //
         // dungeon room fixup
@@ -438,7 +441,7 @@ static bool loadDungeonMap(Map *map, U4FILE *uf, FILE *sav) {
                 for (int j=0; j < int(sizeof(tile)/sizeof(Coords)); j++)
                 {
                     const int index = (tile[j].y * CON_WIDTH) + tile[j].x;
-                    dungeon->rooms[i].map_data[index] = TileMap::get("base")->translate(tile[j].z);
+                    dungeon->rooms[i].map_data[index] = usaveIds->moduleId(tile[j].z);
                 }
             }
         }

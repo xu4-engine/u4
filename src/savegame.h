@@ -6,7 +6,7 @@
 #define SAVEGAME_H
 
 #include <stdio.h>
-#include <stdint.h>
+#include "types.h"
 
 #define PARTY_SAV           "party.sav"
 #define MONSTERS_SAV        "monsters.sav"
@@ -246,5 +246,20 @@ struct SaveGame {
 
 int saveGameMonstersWrite(const SaveGameMonsterRecord *monsterTable, FILE *f);
 int saveGameMonstersRead(SaveGameMonsterRecord *monsterTable, FILE *f);
+
+struct UltimaSaveIds {
+    uint8_t* ultimaIdTable;
+    TileId*  moduleIdTable;
+    uint16_t uiCount;       // Number of entries in moduleIdTable.
+    uint16_t miCount;       // Number of entries in ultimaIdTable.
+
+    //uint8_t ultimaBaseId(TileId tid) const { return ultimaIdTable[tid]; }
+    MapTile moduleId(uint8_t uid) const;
+    uint8_t ultimaId(const MapTile& tile) const;
+
+    void alloc(int ucount, int mcount);
+    void addId(uint8_t uid, int frames, TileId);
+    void free();
+};
 
 #endif

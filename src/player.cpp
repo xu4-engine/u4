@@ -13,7 +13,6 @@
 #include "location.h"
 #include "mapmgr.h"
 #include "names.h"
-#include "tilemap.h"
 #include "tileset.h"
 #include "types.h"
 #include "utils.h"
@@ -609,7 +608,7 @@ Party::Party(SaveGame *s) : saveGame(s), transport(0), torchduration(0), activeP
 
     // set the party's transport (transport value stored in savegame
     // hardcoded to index into base tilemap)
-    setTransport(TileMap::get("base")->translate(saveGame->transport));
+    setTransport(xu4.config->usaveIds()->moduleId(saveGame->transport));
 }
 
 Party::~Party() {
@@ -1188,7 +1187,7 @@ MapTile Party::getTransport() const {
 
 void Party::setTransport(MapTile tile) {
     // transport value stored in savegame hardcoded to index into base tilemap
-    saveGame->transport = TileMap::get("base")->untranslate(tile);
+    saveGame->transport = xu4.config->usaveIds()->ultimaId(tile);
     ASSERT(saveGame->transport != 0, "could not generate valid savegame transport for tile with id %d\n", tile.id);
 
     transport = tile;

@@ -46,7 +46,6 @@
 #include "sound.h"
 #include "spell.h"
 #include "stats.h"
-#include "tilemap.h"
 #include "tileset.h"
 #include "utils.h"
 #include "script.h"
@@ -2091,62 +2090,65 @@ void GameController::updateMoons(bool showmoongates)
 
         if (showmoongates)
         {
+            AnnotationMgr* annot = c->location->map->annotations;
+            const UltimaSaveIds* usaveIds = xu4.config->usaveIds();
+
             /* update the moongates if trammel changed */
             if (trammelSubphase == 0) {
                 gate = moongateGetGateCoordsForPhase(oldTrammel);
                 if (gate)
-                    c->location->map->annotations->remove(*gate, c->location->map->translateFromRawTileIndex(0x40));
+                    annot->remove(*gate, usaveIds->moduleId(0x40));
                 gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
                 if (gate)
-                    c->location->map->annotations->add(*gate, c->location->map->translateFromRawTileIndex(0x40));
+                    annot->add(*gate, usaveIds->moduleId(0x40));
             }
             else if (trammelSubphase == 1) {
                 gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
                 if (gate) {
-                    c->location->map->annotations->remove(*gate, c->location->map->translateFromRawTileIndex(0x40));
-                    c->location->map->annotations->add(*gate, c->location->map->translateFromRawTileIndex(0x41));
+                    annot->remove(*gate, usaveIds->moduleId(0x40));
+                    annot->add(*gate, usaveIds->moduleId(0x41));
                 }
             }
             else if (trammelSubphase == 2) {
                 gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
                 if (gate) {
-                    c->location->map->annotations->remove(*gate, c->location->map->translateFromRawTileIndex(0x41));
-                    c->location->map->annotations->add(*gate, c->location->map->translateFromRawTileIndex(0x42));
+                    annot->remove(*gate, usaveIds->moduleId(0x41));
+                    annot->add(*gate, usaveIds->moduleId(0x42));
                 }
             }
             else if (trammelSubphase == 3) {
                 gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
                 if (gate) {
-                    c->location->map->annotations->remove(*gate, c->location->map->translateFromRawTileIndex(0x42));
-                    c->location->map->annotations->add(*gate, c->location->map->translateFromRawTileIndex(0x43));
+                    annot->remove(*gate, usaveIds->moduleId(0x42));
+                    annot->add(*gate, usaveIds->moduleId(0x43));
                 }
             }
             else if ((trammelSubphase > 3) && (trammelSubphase < (MOON_SECONDS_PER_PHASE * 4 * 3) - 3)) {
                 gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
                 if (gate) {
-                    c->location->map->annotations->remove(*gate, c->location->map->translateFromRawTileIndex(0x43));
-                    c->location->map->annotations->add(*gate, c->location->map->translateFromRawTileIndex(0x43));
+                    annot->remove(*gate, usaveIds->moduleId(0x43));
+                    annot->add(*gate, usaveIds->moduleId(0x43));
                 }
             }
             else if (trammelSubphase == (MOON_SECONDS_PER_PHASE * 4 * 3) - 3) {
                 gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
                 if (gate) {
-                    c->location->map->annotations->remove(*gate, c->location->map->translateFromRawTileIndex(0x43));
-                    c->location->map->annotations->add(*gate, c->location->map->translateFromRawTileIndex(0x42));
+                    annot->remove(*gate, usaveIds->moduleId(0x43));
+                    annot->add(*gate, usaveIds->moduleId(0x42));
                 }
             }
             else if (trammelSubphase == (MOON_SECONDS_PER_PHASE * 4 * 3) - 2) {
                 gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
                 if (gate) {
-                    c->location->map->annotations->remove(*gate, c->location->map->translateFromRawTileIndex(0x42));
-                    c->location->map->annotations->add(*gate, c->location->map->translateFromRawTileIndex(0x41));
+                    annot->remove(*gate, usaveIds->moduleId(0x42));
+                    annot->add(*gate, usaveIds->moduleId(0x41));
                 }
             }
             else if (trammelSubphase == (MOON_SECONDS_PER_PHASE * 4 * 3) - 1) {
                 gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
                 if (gate) {
-                    c->location->map->annotations->remove(*gate, c->location->map->translateFromRawTileIndex(0x41));
-                    c->location->map->annotations->add(*gate, c->location->map->translateFromRawTileIndex(0x40));
+                    annot->remove(*gate, usaveIds->moduleId(0x41));
+                    annot->add(*gate, usaveIds->moduleId(0x40));
                 }
             }
         }
@@ -3095,7 +3097,7 @@ void gameFixupObjects(Map *map, const SaveGameMonsterRecord* table) {
     Object *obj;
     const SaveGameMonsterRecord *it;
     MapTile tile, oldTile;
-    TileMap* tm = TileMap::get("base");
+    const UltimaSaveIds* usaveIds = xu4.config->usaveIds();
     int creatureLimit = (map->type == Map::DUNGEON) ? MONSTERTABLE_SIZE
                                           : MONSTERTABLE_CREATURES_SIZE;
 
@@ -3109,12 +3111,12 @@ void gameFixupObjects(Map *map, const SaveGameMonsterRecord* table) {
             Coords coords(it->x, it->y);
 
             // tile values stored in monsters.sav hardcoded to index into base tilemap
-            oldTile = tm->translate(it->prevTile);
+            oldTile = usaveIds->moduleId(it->prevTile);
             if (map->type == Map::DUNGEON) {
                 coords.z = it->level;
                 tile = oldTile;
             } else
-                tile = tm->translate(it->tile);
+                tile = usaveIds->moduleId(it->tile);
 
             if (i < creatureLimit) {
                 const Creature *creature = xu4.creatureMgr->getByTile(tile);

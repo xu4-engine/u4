@@ -70,7 +70,6 @@ CXXSRCS=\
         textview.cpp \
         tile.cpp \
         tileanim.cpp \
-        tilemap.cpp \
         tileset.cpp \
         tileview.cpp \
         u4.cpp \

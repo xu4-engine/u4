@@ -12,6 +12,7 @@
 
 using std::string;
 
+class Config;
 class ConfigElement;
 class Image;
 class Tileset;
@@ -62,7 +63,7 @@ public:
     Tile(Tileset *tileset);
     ~Tile();
 
-    void loadProperties(const ConfigElement &conf);
+    void loadProperties(const Config*, const ConfigElement &conf);
 
     TileId getId() const                {return id;}
     const string &getName() const       {return name;}

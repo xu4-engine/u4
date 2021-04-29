@@ -19,7 +19,6 @@
 #include "portal.h"
 #include "settings.h"
 #include "shrine.h"
-#include "tilemap.h"
 #include "tileset.h"
 #include "types.h"
 #include "u4file.h"
@@ -185,14 +184,7 @@ Map *MapMgr::initMapFromConf(const ConfigElement &mapConf) {
 
     map->music = mapConf.getInt("music");
 
-    string tiles = mapConf.getString("tileset");
-    if (tiles.empty()) {
-        map->tileset = Tileset::get("base");
-        map->tilemap = TileMap::get("base");
-    } else {
-        map->tileset = Tileset::get(tiles);
-        map->tilemap = TileMap::get(mapConf.getString("tilemap"));
-    }
+    map->tileset = xu4.config->tileset();
 
     vector<ConfigElement> children = mapConf.getChildren();
     for (std::vector<ConfigElement>::iterator i = children.begin(); i != children.end(); i++) {

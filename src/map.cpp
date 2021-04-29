@@ -7,6 +7,7 @@
 #include "map.h"
 
 #include "annotation.h"
+#include "config.h"
 #include "context.h"
 #include "debug.h"
 #include "direction.h"
@@ -18,7 +19,6 @@
 #include "portal.h"
 #include "savegame.h"
 #include "tileset.h"
-#include "tilemap.h"
 #include "types.h"
 #include "utils.h"
 #include "settings.h"
@@ -252,7 +252,6 @@ Map::Map() {
     offset = 0;
     id = 0;
     tileset = NULL;
-    tilemap = NULL;
 #ifdef USE_GL
     chunks = NULL;
 #endif
@@ -293,6 +292,7 @@ void Map::queryVisible(const Coords& center, int radius,
     maxY = center.y + radius;
 
     // Manufacture VisualIds until they become part of a structure somewhere.
+    const UltimaSaveIds* usaveIds = xu4.config->usaveIds();
 
     Annotation::List::const_iterator ait;
     Annotation::List& alist = annotations->annotations;
@@ -301,7 +301,7 @@ void Map::queryVisible(const Coords& center, int radius,
         cp = &ann.coords;
         if (cp->x < minX || cp->x > maxX || cp->y < minY || cp->y > maxY)
             continue;
-        vid = tilemap->untranslate(ann.tile);
+        vid = usaveIds->ultimaId(ann.tile);
         func(cp, vid, user);
     }
 
@@ -311,7 +311,7 @@ void Map::queryVisible(const Coords& center, int radius,
         cp = &obj->coords;
         if (cp->x < minX || cp->x > maxX || cp->y < minY || cp->y > maxY)
             continue;
-        vid = tilemap->untranslate(obj->tile);
+        vid = usaveIds->ultimaId(obj->tile);
         func(cp, vid, user);
     }
 }
@@ -873,6 +873,7 @@ void Map::fillMonsterTable(SaveGameMonsterRecord* table) const {
     /**
      * Fill in our monster table
      */
+    const UltimaSaveIds* saveIds = xu4.config->usaveIds();
     for (i = 0; i < MONSTERTABLE_SIZE; i++) {
         Coords c = monsters[i]->getCoords(),
            prevc = monsters[i]->getPrevCoords();
@@ -881,10 +882,10 @@ void Map::fillMonsterTable(SaveGameMonsterRecord* table) const {
         MapTile prevTile = monsters[i]->getPrevTile();
         prevTile.frame = 0;
 
-        table->tile = translateToRawTileIndex(monsters[i]->getTile());
+        table->tile = saveIds->ultimaId(monsters[i]->getTile());
         table->x = c.x;
         table->y = c.y;
-        table->prevTile = translateToRawTileIndex(prevTile);
+        table->prevTile = saveIds->ultimaId(prevTile);
         table->prevx = prevc.x;
         table->prevy = prevc.y;
         table->level =
@@ -897,6 +898,7 @@ void Map::fillMonsterTableDungeon(SaveGameMonsterRecord* table) const {
     MapTile prevTile;
     ObjectDeque::const_iterator it;
     SaveGameMonsterRecord* end = table + MONSTERTABLE_SIZE;
+    const UltimaSaveIds* saveIds = xu4.config->usaveIds();
     const Object *obj;
 
     for (it = objects.begin(); it != objects.end(); ++it) {
@@ -912,7 +914,7 @@ void Map::fillMonsterTableDungeon(SaveGameMonsterRecord* table) const {
             table->tile = 0;
             table->x = c.x;
             table->y = c.y;
-            table->prevTile = translateToRawTileIndex(prevTile);
+            table->prevTile = saveIds->ultimaId(prevTile);
             table->prevx = prevc.x;
             table->prevy = prevc.y;
             table->level = c.z;
@@ -927,14 +929,4 @@ void Map::fillMonsterTableDungeon(SaveGameMonsterRecord* table) const {
         memset(table, 0, sizeof(SaveGameMonsterRecord));
         ++table;
     }
-}
-
-MapTile Map::translateFromRawTileIndex(int raw) const {
-    ASSERT(tilemap != NULL, "tilemap hasn't been set");
-
-    return tilemap->translate(raw);
-}
-
-unsigned int Map::translateToRawTileIndex(const MapTile &tile) const {
-    return tilemap->untranslate(tile);
 }

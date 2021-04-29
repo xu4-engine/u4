@@ -2,8 +2,6 @@
  * $Id$
  */
 
-#include <vector>
-
 #include "tileset.h"
 
 #include "config.h"
@@ -12,188 +10,56 @@
 #include "screen.h"
 #include "settings.h"
 #include "tile.h"
-#include "tilemap.h"
 #include "xu4.h"
 
-using std::vector;
-
 /**
- * Tileset Class Implementation
+ * Loads all tileset images.
  */
-
-/* static member variables */
-Tileset::TilesetMap Tileset::tilesets;
-
-/**
- * Loads all tilesets using the filename
- * indicated by 'filename' as a definition
- */
-void Tileset::loadAll() {
-    Debug dbg("debug/tileset.txt", "Tileset");
-    vector<ConfigElement> conf;
-
-    TRACE(dbg, "Unloading all tilesets");
-    unloadAll();
-
-    // get the config element for all tilesets
-    TRACE_LOCAL(dbg, "Loading tilesets info from config");
-    conf = xu4.config->getElement("tilesets").getChildren();
-
-    // load all of the tilesets
-    for (std::vector<ConfigElement>::iterator i = conf.begin(); i != conf.end(); i++) {
-        if (i->getName() == "tileset") {
-
-            Tileset *tileset = new Tileset;
-            tileset->load(*i);
-            tileset->loadImages();
-
-            tilesets[tileset->name] = tileset;
-        }
+void Tileset::loadImages() {
+    Tileset* ts = (Tileset*) xu4.config->tileset();
+    if (ts) {
+        TileIdMap::iterator it;
+        for (it = ts->tiles.begin(); it != ts->tiles.end(); ++it)
+            it->second->loadImage();
     }
-
-    // load tile maps, including translations from index to id
-    TRACE_LOCAL(dbg, "Loading tilemaps");
-    TileMap::loadAll();
-
-    TRACE(dbg, "Successfully Loaded Tilesets");
 }
 
 /**
- * Delete all tilesets
+ * Delete all tileset images.
  */
-void Tileset::unloadAll() {
-    TilesetMap::iterator i;
-
-    // unload all tilemaps
-    TileMap::unloadAll();
-
-    for (i = tilesets.begin(); i != tilesets.end(); i++) {
-        i->second->unload();
-        delete i->second;
+void Tileset::unloadImages() {
+    Tileset* ts = (Tileset*) xu4.config->tileset();
+    if (ts) {
+        TileIdMap::iterator it;
+        for (it = ts->tiles.begin(); it != ts->tiles.end(); ++it)
+            it->second->deleteImage();
     }
-    tilesets.clear();
-
-    Tile::resetNextId();
 }
 
 /**
- * Load all tileset images
- */
-void Tileset::loadAllImages() {
-    TilesetMap::iterator i;
-    for (i = tilesets.begin(); i != tilesets.end(); i++)
-        i->second->loadImages();
-}
-
-/**
- * Delete all tileset images
- */
-void Tileset::unloadAllImages() {
-    TilesetMap::iterator i;
-
-    for (i = tilesets.begin(); i != tilesets.end(); i++) {
-        i->second->unloadImages();
-    }
-
-    Tile::resetNextId();
-}
-
-/**
+ * Deprecated!
  * Returns the tileset with the given name, if it exists
  */
-Tileset* Tileset::get(const string &name) {
-    if (tilesets.find(name) != tilesets.end())
-        return tilesets[name];
-    else return NULL;
+const Tileset* Tileset::get(const string &name) {
+    return xu4.config->tileset();
 }
 
 /**
  * Returns the tile that has the given name from any tileset, if there is one
  */
 const Tile* Tileset::findTileByName(const string &name) {
-    TilesetMap::iterator i;
-    for (i = tilesets.begin(); i != tilesets.end(); i++) {
-        const Tile *t = i->second->getByName(name);
-        if (t)
-            return t;
-    }
-
-    return NULL;
+    return xu4.config->tileset()->getByName(name);
 }
 
 const Tile* Tileset::findTileById(TileId id) {
-    TilesetMap::iterator i;
-    for (i = tilesets.begin(); i != tilesets.end(); i++) {
-        const Tile *t = i->second->get(id);
-        if (t)
-            return t;
-    }
-
-    return NULL;
+    return xu4.config->tileset()->get(id);
 }
 
-/**
- * Loads a tileset.
- */
-void Tileset::load(const ConfigElement &tilesetConf) {
-    Debug dbg("debug/tileset.txt", "Tileset", true);
-
-    name = tilesetConf.getString("name");
-    if (tilesetConf.exists("imageName"))
-        imageName = tilesetConf.getString("imageName");
-    if (tilesetConf.exists("extends"))
-        extends = Tileset::get(tilesetConf.getString("extends"));
-    else extends = NULL;
-
-    TRACE_LOCAL(dbg, "\tLoading Tiles...");
-
-    int index = 0;
-    vector<ConfigElement> children = tilesetConf.getChildren();
-    for (std::vector<ConfigElement>::iterator i = children.begin(); i != children.end(); i++) {
-        if (i->getName() != "tile")
-            continue;
-
-        Tile *tile = new Tile(this);
-        tile->loadProperties(*i);
-
-        TRACE_LOCAL(dbg, string("\t\tLoaded '") + tile->getName() + "'");
-
-        /* add the tile to our tileset */
-        tiles[tile->getId()] = tile;
-        nameMap[tile->getName()] = tile;
-
-        index += tile->getFrames();
-    }
-    totalFrames = index;
-}
-
-void Tileset::loadImages()
-{
-    Tileset::TileIdMap::iterator i;
-    for (i = tiles.begin(); i != tiles.end(); i++)
-        i->second->loadImage();
-}
-
-void Tileset::unloadImages()
-{
-    Tileset::TileIdMap::iterator i;
-    for (i = tiles.begin(); i != tiles.end(); i++)
-        i->second->deleteImage();
-}
-
-/**
- * Unload the current tileset
- */
-void Tileset::unload() {
-    Tileset::TileIdMap::iterator i;
-
-    /* free all the memory for the tiles */
-    for (i = tiles.begin(); i != tiles.end(); i++)
-        delete i->second;
-
-    tiles.clear();
-    totalFrames = 0;
-    imageName.erase();
+Tileset::~Tileset() {
+    /* free all the tiles */
+    TileIdMap::iterator it;
+    foreach (it, tiles)
+        delete it->second;
 }
 
 /**
@@ -203,8 +69,6 @@ const Tile* Tileset::get(TileId id) const {
     TileIdMap::const_iterator it = tiles.find(id);
     if (it != tiles.end())
         return it->second;
-    else if (extends)
-        return extends->get(id);
     return NULL;
 }
 
@@ -215,18 +79,14 @@ const Tile* Tileset::getByName(const string &name) const {
     TileStrMap::const_iterator it = nameMap.find(name);
     if (it != nameMap.end())
         return it->second;
-    else if (extends)
-        return extends->getByName(name);
-    else return NULL;
+    return NULL;
 }
 
 /**
  * Returns the image name for the tileset, if it exists
  */
 string Tileset::getImageName() const {
-    if (imageName.empty() && extends)
-        return extends->getImageName();
-    else return imageName;
+    return imageName;
 }
 
 /**

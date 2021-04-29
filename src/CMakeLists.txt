@@ -63,7 +63,6 @@ set(XU4_INC
 	textview.h
 	tile.h
 	tileanim.h
-	tilemap.h
 	tileset.h
 	tileview.h
 	types.h
@@ -135,7 +134,6 @@ set(XU4_SRC
 	textview.cpp 
 	tileanim.cpp 
 	tile.cpp 
-	tilemap.cpp
 	tileset.cpp 
 	tileview.cpp 
 	u4.cpp 

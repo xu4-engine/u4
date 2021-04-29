@@ -184,8 +184,6 @@ void servicesInit(XU4GameServices* gs, Options* opt) {
 
     gs->eventHandler = new EventHandler;
 
-    Tileset::loadAll();
-
     gs->creatureMgr = new CreatureMgr;
     gs->creatureMgr->loadAll();
 
@@ -199,7 +197,6 @@ void servicesFree(XU4GameServices* gs) {
     delete gs->intro;
     delete gs->mapMgr;
     delete gs->creatureMgr;
-    Tileset::unloadAll();
     delete gs->eventHandler;
     soundDelete();
     screenDelete();

@@ -147,9 +147,13 @@ static void screenInit_data(Settings& settings) {
     dungeonTileChars["fire_field"] = '^';
     dungeonTileChars["poison_field"] = '^';
     dungeonTileChars["sleep_field"] = '^';
+
+    Tileset::loadImages();
 }
 
 static void screenDelete_data() {
+    Tileset::unloadImages();
+
     delete tileanims;
     tileanims = NULL;
 
@@ -185,11 +189,9 @@ void screenDelete() {
  * Re-initializes the screen and implements any changes made in settings
  */
 void screenReInit() {
-    Tileset::unloadAllImages();
     screenDelete_data();
     screenInit_sys(xu4.settings, SYS_RESET);
     screenInit_data(*xu4.settings); // Load new backgrounds, etc.
-    Tileset::loadAllImages();
 }
 
 void screenTextAt(int x, int y, const char *fmt, ...) {
@@ -1216,7 +1218,7 @@ void screenShake(int iterations) {
  */
 static void screenShowGemTile(Layout *layout, Map *map, MapTile &t, bool focus, int x, int y) {
     unsigned int scale = xu4.settings->scale;
-    unsigned int tile = map->translateToRawTileIndex(t);
+    unsigned int tile = xu4.config->usaveIds()->ultimaId(t);
 
     if (map->type == Map::DUNGEON) {
         ASSERT(charsetInfo, "charset not initialized");

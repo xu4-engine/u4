@@ -33,6 +33,7 @@
 #include "settings.h"
 #include "sound.h"
 #include "tile.h"
+#include "tileset.h"
 #include "weapon.h"
 #include "u4file.h"
 #include "xu4.h"
@@ -73,6 +74,8 @@ struct XMLConfig
     TileRule* tileRules;
     uint16_t tileRuleCount;
     int16_t  tileRuleDefault;
+    Tileset* tileset;
+    UltimaSaveIds usaveIds;
 };
 
 struct ConfigXML : public Config {
@@ -240,6 +243,74 @@ static void conf_tileRule(SymbolTable& sym, TileRule* rule, const ConfigElement 
     rule->effect = static_cast<TileEffect>(conf.getEnum("effect", effectsEnumStrings));
 }
 
+static void conf_tilesetLoad(Config* cfg, Tileset* ts, const ConfigElement& conf) {
+    //ts->name = conf.getString("name");
+    if (conf.exists("imageName"))
+        ts->imageName = conf.getString("imageName");
+
+    int index = 0;
+    vector<ConfigElement> children = conf.getChildren();
+    vector<ConfigElement>::iterator it;
+    foreach (it, children) {
+        if (it->getName() != "tile")
+            continue;
+
+        Tile* tile = new Tile(ts);
+        tile->loadProperties(cfg, *it);
+
+        /* add the tile to our tileset */
+        ts->tiles[tile->getId()] = tile;
+        ts->nameMap[tile->getName()] = tile;
+
+        index += tile->getFrames();
+    }
+    ts->totalFrames = index;
+}
+
+static void conf_ultimaSaveIds(UltimaSaveIds* usaveIds, Tileset* ts, const ConfigElement &conf) {
+    int frames;
+    int uid = 0;
+
+    usaveIds->alloc(256, 135);
+
+    vector<ConfigElement> children = conf.getChildren();
+    vector<ConfigElement>::iterator it;
+    foreach (it, children) {
+        if (it->getName() != "mapping")
+            continue;
+
+        /* find the tile this references */
+        string tile = it->getString("tile");
+        const Tile *t = ts->getByName(tile);
+        if (! t)
+            errorFatal("Error: tile '%s' was not found in tileset", tile.c_str());
+
+        if (it->exists("index"))
+            uid = it->getInt("index");
+
+        if (it->exists("frames"))
+            frames = it->getInt("frames");
+        else
+            frames = 1;
+
+        usaveIds->addId(uid, frames, t->getId());
+        uid += frames;
+    }
+
+#if 0
+    printf( "ultimaIdTable[%d]", usaveIds->miCount);
+    for(int i = 0; i < usaveIds->miCount; ++i) {
+        if ((i & 3) == 0) printf("\n");
+        printf(" %d,", usaveIds->ultimaIdTable[i]);
+    }
+    printf( "\nmoduleIdTable[%d]", usaveIds->uiCount);
+    for(int i = 0; i < usaveIds->uiCount; ++i) {
+        if ((i & 3) == 0) printf("\n");
+        printf(" %d,", usaveIds->moduleIdTable[i]);
+    }
+#endif
+}
+
 //--------------------------------------
 
 static Armor*  conf_armor(int type, const ConfigElement&);
@@ -247,6 +318,9 @@ static Weapon* conf_weapon(int type, const ConfigElement&);
 
 ConfigXML::ConfigXML() {
     backend = &xcd;
+
+    xcd.tileset = NULL;
+    memset(&xcd.usaveIds, 0, sizeof(xcd.usaveIds));
 
     xcd.sym.intern("unset!");   // Symbol 0 can be used as nil/unset/unknown.
 
@@ -361,6 +435,26 @@ ConfigXML::ConfigXML() {
     if (xcd.tileRuleDefault < 0)
         errorFatal("no 'default' rule found in tile rules");
     }
+
+    // tileset
+    ce = getElement("tilesets").getChildren();
+    foreach (it, ce) {
+        if (it->getName() == "tileset") {
+            xcd.tileset = new Tileset;
+            conf_tilesetLoad(this, xcd.tileset, *it);
+            break;      // Only support one tileset.
+        }
+    }
+
+    // usaveIds (requires tileset)
+    if (xcd.tileset) {
+        foreach (it, ce) {
+            if (it->getName() == "tilemap") {
+                conf_ultimaSaveIds(&xcd.usaveIds, xcd.tileset, *it);
+                break;
+            }
+        }
+    }
     }
 }
 
@@ -378,6 +472,8 @@ ConfigXML::~ConfigXML() {
         delete *wit;
 
     delete[] xcd.tileRules;
+    delete xcd.tileset;
+    xcd.usaveIds.free();
 }
 
 //--------------------------------------
@@ -592,7 +688,7 @@ int Config::weaponType( const char* name ) {
  * Get rule by name.  If there is no such named rule, then the "default" rule
  * is returned.
  */
-const TileRule* Config::tileRule( Symbol name ) {
+const TileRule* Config::tileRule( Symbol name ) const {
     const TileRule* it = CB->tileRules;
     const TileRule* end = it + CB->tileRuleCount;
     for (; it != end; ++it) {
@@ -600,6 +696,15 @@ const TileRule* Config::tileRule( Symbol name ) {
             return it;
     }
     return CB->tileRules + CB->tileRuleDefault;
+}
+
+const Tileset* Config::tileset() const {
+    return CB->tileset;
+
+}
+
+const UltimaSaveIds* Config::usaveIds() const {
+    return &CB->usaveIds;
 }
 
 //--------------------------------------

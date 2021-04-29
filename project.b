@@ -119,7 +119,6 @@ exe %u4 [
 		%textview.cpp
 		%tileanim.cpp
 		%tile.cpp
-		%tilemap.cpp
 		%tileset.cpp
 		%tileview.cpp
 		%u4.cpp
