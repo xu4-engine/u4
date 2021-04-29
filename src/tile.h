@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * tile.h
  */
 
 #ifndef TILE_H
@@ -9,7 +9,6 @@
 
 #include "direction.h"
 #include "types.h"
-#include "tileset.h"
 
 using std::string;
 
@@ -42,6 +41,19 @@ class TileAnim;
 #define MASK_CREATURE_UNWALKABLE 0x0008
 
 /**
+ * TileRule struct
+ */
+struct TileRule {
+    Symbol name;
+    uint16_t mask;
+    uint16_t movementMask;
+    TileSpeed speed;
+    TileEffect effect;
+    int walkonDirs;
+    int walkoffDirs;
+};
+
+/**
  * A Tile object represents a specific tile type.  Every tile is a
  * member of a Tileset.
  */
@@ -59,7 +71,7 @@ public:
     int getFrames() const               {return frames;}
     int getScale() const                {return scale;}
     TileAnim *getAnim() const           {return anim;}
-    Image *getImage();
+    const Image *getImage() const       {return image;}
 
     bool isTiledInDungeon() const       {return tiledInDungeon;}
     bool isLandForeground() const       {return foreground;}
@@ -106,10 +118,9 @@ public:
     static void resetNextId()                       {nextId = 0;}
     static bool canTalkOverTile(const Tile *tile)   {return tile->canTalkOver() != 0;}
     static bool canAttackOverTile(const Tile *tile) {return tile->canAttackOver() != 0;}
-    void deleteImage();
 
-private:
     void loadImage();
+    void deleteImage();
 
 private:
     TileId id;          /**< an id that is unique across all tilesets */

@@ -249,7 +249,7 @@ bool CheatMenuController::keyPressed(int key) {
                 ship = c->location->map->tileset->getByName("ship")->getId(),
                 balloon = c->location->map->tileset->getByName("balloon")->getId();
             MapTile *choice;
-            Tile *tile;
+            const Tile *tile;
 
             screenMessage("Create transport!\nWhich? ");
 

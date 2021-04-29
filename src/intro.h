@@ -45,7 +45,7 @@ public:
     std::vector<MapTile> introMap;
     unsigned char *sigData;
     unsigned char *scriptTable;
-    Tile **baseTileTable;
+    const Tile **baseTileTable;
     unsigned char *beastie1FrameTable;
     unsigned char *beastie2FrameTable;
     std::vector<std::string> introText;

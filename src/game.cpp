@@ -665,7 +665,7 @@ void GameController::flashTile(const Coords &coords, MapTile tile, int frames) {
 }
 
 void GameController::flashTile(const Coords &coords, const string &tilename, int timeFactor) {
-    Tile *tile = c->location->map->tileset->getByName(tilename);
+    const Tile *tile = c->location->map->tileset->getByName(tilename);
     ASSERT(tile, "no tile named '%s' found in tileset", tilename.c_str());
     flashTile(coords, tile->getId(), timeFactor);
 }
@@ -1221,7 +1221,7 @@ bool GameController::keyPressed(int key) {
                 if (c->transportContext == TRANSPORT_SHIP)
                     c->lastShip = obj;
 
-                Tile *avatar = c->location->map->tileset->getByName("avatar");
+                const Tile *avatar = c->location->map->tileset->getByName("avatar");
                 ASSERT(avatar, "no avatar tile found in tileset");
                 c->party->setTransport(avatar->getId());
                 c->horseSpeed = 0;
@@ -1584,7 +1584,7 @@ bool destroyAt(const Coords &coords) {
             screenMessage("%s Destroyed!\n", c->getName().c_str());
         }
         else {
-            Tile *t = c->location->map->tileset->get(obj->getTile().id);
+            const Tile *t = c->location->map->tileset->get(obj->getTile().id);
             screenMessage("%s Destroyed!\n", t->getName().c_str());
         }
 
@@ -2323,7 +2323,7 @@ bool jimmyAt(const Coords &coords) {
         return false;
 
     if (c->saveGame->keys) {
-        Tile *door = c->location->map->tileset->getByName("door");
+        const Tile *door = c->location->map->tileset->getByName("door");
         ASSERT(door, "no door tile found in tileset");
         c->saveGame->keys--;
         c->location->map->annotations->add(coords, door->getId());
@@ -2375,7 +2375,7 @@ bool openAt(const Coords &coords) {
         return true;
     }
 
-    Tile *floor = c->location->map->tileset->getByName("brick_floor");
+    const Tile *floor = c->location->map->tileset->getByName("brick_floor");
     ASSERT(floor, "no floor tile found in tileset");
     c->location->map->annotations->add(coords, floor->getId(), false, true)->setTTL(4);
 

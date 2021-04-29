@@ -55,7 +55,7 @@ void TileView::reinit() {
 void TileView::loadTile(MapTile &mapTile)
 {
     //This attempts to preload tiles in advance
-    Tile *tile = tileset->get(mapTile.id);
+    const Tile *tile = tileset->get(mapTile.id);
     if (tile)
     {
         tile->getImage();
@@ -68,7 +68,7 @@ void TileView::loadTile(MapTile &mapTile)
  * setting.
  */
 void TileView::drawTile(MapTile &mapTile, bool focus, int x, int y) {
-    Tile *tile = tileset->get(mapTile.id);
+    const Tile *tile = tileset->get(mapTile.id);
 
     ASSERT(x < columns, "x value of %d out of range", x);
     ASSERT(y < rows, "y value of %d out of range", y);
@@ -102,7 +102,7 @@ void TileView::drawTile(MapTile &mapTile, bool focus, int x, int y) {
                               SCALED(tileHeight));
     }
     else {
-        Image *image = tile->getImage();
+        const Image *image = tile->getImage();
         image->drawSubRect(SCALED(x * tileWidth + this->x),
                            SCALED(y * tileHeight + this->y),
                            0,
@@ -127,8 +127,8 @@ void TileView::drawTile(vector<MapTile> &tiles, bool focus, int x, int y) {
             t != tiles.rend();
             ++t, ++layer)
     {
-        MapTile& frontTile = *t;
-        Tile *frontTileType = tileset->get(frontTile.id);
+        const MapTile& frontTile = *t;
+        const Tile *frontTileType = tileset->get(frontTile.id);
 
         if (!frontTileType)
         {
@@ -142,7 +142,7 @@ void TileView::drawTile(vector<MapTile> &tiles, bool focus, int x, int y) {
             frontTileType->getAnim()->draw(animated, frontTileType, frontTile, DIR_NONE);
         }
         else {
-            Image *image = frontTileType->getImage();
+            const Image *image = frontTileType->getImage();
             if (!image)
                 return; //This is a problem //FIXME, error message it.
 
@@ -211,6 +211,6 @@ void TileView::drawFocus(int x, int y) {
     }
 }
 
-void TileView::setTileset(Tileset *tileset) {
+void TileView::setTileset(const Tileset *tileset) {
     this->tileset = tileset;
 }

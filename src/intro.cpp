@@ -129,7 +129,7 @@ bool IntroBinData::load() {
         scriptTable[i] = u4fgetc(title);
 
     u4fseek(title, INTRO_BASETILE_TABLE_OFFSET, SEEK_SET);
-    baseTileTable = new Tile*[INTRO_BASETILE_TABLE_SIZE];
+    baseTileTable = new const Tile*[INTRO_BASETILE_TABLE_SIZE];
     for (i = 0; i < INTRO_BASETILE_TABLE_SIZE; i++) {
         MapTile tile = TileMap::get("base")->translate(u4fgetc(title));
         baseTileTable[i] = Tileset::get("base")->get(tile.id);

@@ -108,12 +108,6 @@ void Tile::loadProperties(const ConfigElement &conf) {
     }
 }
 
-Image *Tile::getImage() {
-    if (!image)
-        loadImage();
-    return image;
-}
-
 /**
  * Loads the tile image
  */
@@ -152,10 +146,8 @@ void Tile::loadImage() {
             image = Image::create(w, h * frames);
 
             // NOTE: Blending should be off by default, but TileView::drawTile
-            // is loading images on the fly from inside the draw loop.
-            // Therefore, we must ensure blending is disabled and drawTile
-            // must reset it.
-            // TODO: All image loading should be done outside the draw loop.
+            // was loading images on the fly from inside the draw loop.
+            // Therefore, we ensure blending is disabled.
             int wasBlending = Image::enableBlend(0);
 
             /* draw the tile from the image we found to our tile image */
@@ -213,7 +205,7 @@ bool MapTile::setDirection(Direction d) {
 }
 
 bool Tile::isDungeonFloor() const {
-    Tile *floor = tileset->getByName("brick_floor");
+    const Tile *floor = tileset->getByName("brick_floor");
     if (id == floor->id)
         return true;
     return false;

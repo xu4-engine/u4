@@ -110,7 +110,7 @@ TileAnimInvertTransform::TileAnimInvertTransform(int x, int y, int w, int h) {
 }
 
 bool TileAnimInvertTransform::drawsTile() const { return false; }
-void TileAnimInvertTransform::draw(Image *dest, Tile *tile, MapTile &mapTile) {
+void TileAnimInvertTransform::draw(Image *dest, const Tile *tile, const MapTile &mapTile) {
     int scale = tile->getScale();
     tile->getImage()->drawSubRectInvertedOn(dest, x * scale, y * scale, x * scale,
         (tile->getHeight() * mapTile.frame) + (y * scale), w * scale, h * scale);
@@ -122,7 +122,7 @@ TileAnimPixelTransform::TileAnimPixelTransform(int x, int y) {
 }
 
 bool TileAnimPixelTransform::drawsTile() const { return false; }
-void TileAnimPixelTransform::draw(Image *dest, Tile *tile, MapTile &mapTile) {
+void TileAnimPixelTransform::draw(Image *dest, const Tile *tile, const MapTile &mapTile) {
     RGBA *color = colors[xu4_random(colors.size())];
     int scale = tile->getScale();
     dest->fillRect(x * scale, y * scale, scale, scale, color->r, color->g, color->b, color->a);
@@ -130,7 +130,7 @@ void TileAnimPixelTransform::draw(Image *dest, Tile *tile, MapTile &mapTile) {
 
 bool TileAnimScrollTransform::drawsTile() const { return true; }
 TileAnimScrollTransform::TileAnimScrollTransform(int i) : increment(i), current(0), lastOffset(0) {}
-void TileAnimScrollTransform::draw(Image *dest, Tile *tile, MapTile &mapTile) {
+void TileAnimScrollTransform::draw(Image *dest, const Tile *tile, const MapTile &mapTile) {
     if (increment == 0)
         increment = tile->getScale();
 
@@ -152,7 +152,7 @@ void TileAnimScrollTransform::draw(Image *dest, Tile *tile, MapTile &mapTile) {
  * Advance the frame by one and draw it!
  */
 bool TileAnimFrameTransform::drawsTile() const { return true; }
-void TileAnimFrameTransform::draw(Image *dest, Tile *tile, MapTile &mapTile) {
+void TileAnimFrameTransform::draw(Image *dest, const Tile *tile, const MapTile &mapTile) {
     if (++currentFrame >= tile->getFrames())
         currentFrame = 0;
     tile->getImage()->drawSubRectOn(dest, 0, 0, 0, currentFrame * tile->getHeight(), tile->getWidth(), tile->getHeight());
@@ -168,14 +168,14 @@ TileAnimPixelColorTransform::TileAnimPixelColorTransform(int x, int y, int w, in
 }
 
 bool TileAnimPixelColorTransform::drawsTile() const { return false; }
-void TileAnimPixelColorTransform::draw(Image *dest, Tile *tile, MapTile &mapTile) {
+void TileAnimPixelColorTransform::draw(Image *dest, const Tile *tile, const MapTile &mapTile) {
     RGBA diff = *end;
     int scale = tile->getScale();
     diff.r -= start->r;
     diff.g -= start->g;
     diff.b -= start->b;
 
-    Image *tileImage = tile->getImage();
+    const Image *tileImage = tile->getImage();
 
     for (int j = y * scale; j < (y * scale) + (h * scale); j++) {
         for (int i = x * scale; i < (x * scale) + (w * scale); i++) {
@@ -241,7 +241,8 @@ void TileAnimContext::add(TileAnimTransform* transform) {
  * A context which depends on the tile's current frame for animation
  */
 TileAnimFrameContext::TileAnimFrameContext(int f) : frame(f) {}
-bool TileAnimFrameContext::isInContext(Tile *t, MapTile &mapTile, Direction dir) {
+
+bool TileAnimFrameContext::isInContext(const Tile *t, const MapTile &mapTile, Direction dir) {
     return (mapTile.frame == frame);
 }
 
@@ -249,7 +250,7 @@ bool TileAnimFrameContext::isInContext(Tile *t, MapTile &mapTile, Direction dir)
  * An animation context which changes the animation based on the player's current facing direction
  */
 TileAnimPlayerDirContext::TileAnimPlayerDirContext(Direction d) : dir(d) {}
-bool TileAnimPlayerDirContext::isInContext(Tile *t, MapTile &mapTile, Direction d) {
+bool TileAnimPlayerDirContext::isInContext(const Tile *t, const MapTile &mapTile, Direction d) {
     return (d == dir);
 }
 
@@ -298,7 +299,7 @@ TileAnim::TileAnim(const ConfigElement &conf) : random(0) {
     }
 }
 
-void TileAnim::draw(Image *dest, Tile *tile, MapTile &mapTile, Direction dir) {
+void TileAnim::draw(Image *dest, const Tile *tile, const MapTile &mapTile, Direction dir) {
     std::vector<TileAnimTransform *>::const_iterator t;
     std::vector<TileAnimContext *>::const_iterator c;
     bool drawn = false;

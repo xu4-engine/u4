@@ -34,7 +34,7 @@ DungeonGraphicType dungeonViewTilesToGraphic(const std::vector<MapTile> &tiles);
 class DungeonView : public TileView {
 private:
     DungeonView(int x, int y, int columns, int rows);
-    void drawInDungeon(Tile *tile, int x_offset, int distance, Direction orientation, bool tiled);
+    void drawInDungeon(const Tile *tile, int x_offset, int distance, Direction orientation, bool tiled);
 
     bool screen3dDungeonViewEnabled;
 
@@ -43,7 +43,7 @@ public:
     static DungeonView * getInstance();
 
     int graphicIndex(int xoffset, int distance, Direction orientation, DungeonGraphicType type);
-    void drawTile(Tile *tile, int x_offset, int distance, Direction orientation);
+    void drawTile(const Tile *tile, int x_offset, int distance, Direction orientation);
     void drawWall(int xoffset, int distance, Direction orientation, DungeonGraphicType type);
 
     void display(Context * c, TileView *view);

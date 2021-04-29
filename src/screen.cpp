@@ -185,10 +185,11 @@ void screenDelete() {
  * Re-initializes the screen and implements any changes made in settings
  */
 void screenReInit() {
-    Tileset::unloadAllImages();     // unload tilesets, which will be reloaded lazily as needed
+    Tileset::unloadAllImages();
     screenDelete_data();
     screenInit_sys(xu4.settings, SYS_RESET);
     screenInit_data(*xu4.settings); // Load new backgrounds, etc.
+    Tileset::loadAllImages();
 }
 
 void screenTextAt(int x, int y, const char *fmt, ...) {

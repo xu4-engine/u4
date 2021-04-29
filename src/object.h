@@ -50,7 +50,7 @@ public:
     bool isAnimated() const                 { return animated; }
 
     void setTile(MapTile t)                 { tile = t; }
-    void setTile(Tile *t)                   {tile = t->getId();}
+    void setTile(const Tile *t)             { tile = t->getId(); }
     void setPrevTile(MapTile t)             { prevTile = t; }
     void setCoords(Coords c)                { prevCoords = coords; coords = c; }
     void setPrevCoords(Coords c)            { prevCoords = c; }

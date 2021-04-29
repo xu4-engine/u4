@@ -51,7 +51,7 @@ DungeonToken Dungeon::tokenForTile(const MapTile& tile) const {
     const static std::string fieldNames[] = { "poison_field", "energy_field", "fire_field", "sleep_field", "" };
 
     int i;
-    Tile *t = tileset->get(tile.getId());
+    const Tile *t = tileset->get(tile.getId());
 
     for (i = 0; !tileNames[i].empty(); i++) {
         if (t->getName() == tileNames[i])
@@ -203,7 +203,7 @@ void dungeonTouchOrb() {
 
     /* Get current position and find a replacement tile for it */
     Location* loc = c->location;
-    Tile * orb_tile = loc->map->tileset->getByName("magic_orb");
+    const Tile * orb_tile = loc->map->tileset->getByName("magic_orb");
     MapTile replacementTile(loc->getReplacementTile(loc->coords, orb_tile));
 
     switch(loc->map->id) {

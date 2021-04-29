@@ -32,12 +32,12 @@ public:
     void drawTile(std::vector<MapTile> &tiles, bool focus, int x, int y);
     void drawFocus(int x, int y);
     void loadTile(MapTile &mapTile);
-    void setTileset(Tileset *tileset);
+    void setTileset(const Tileset *tileset);
 
 protected:
     int columns, rows;
     int tileWidth, tileHeight;
-    Tileset *tileset;
+    const Tileset *tileset;
     Image *animated;            /**< a scratchpad image for drawing animations */
 };
 

@@ -15,6 +15,7 @@
 #include "mapmgr.h"
 #include "person.h"
 #include "tilemap.h"
+#include "tileset.h"
 #include "u4file.h"
 #include "xu4.h"
 

@@ -153,7 +153,7 @@ public:
 #endif
     ObjectDeque     objects;
     std::map<string, MapCoords> labels;
-    Tileset        *tileset;
+    const Tileset  *tileset;
     TileMap        *tilemap;
 
 private:

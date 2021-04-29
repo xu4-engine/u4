@@ -45,6 +45,7 @@ void Tileset::loadAll() {
 
             Tileset *tileset = new Tileset;
             tileset->load(*i);
+            tileset->loadImages();
 
             tilesets[tileset->name] = tileset;
         }
@@ -76,6 +77,15 @@ void Tileset::unloadAll() {
 }
 
 /**
+ * Load all tileset images
+ */
+void Tileset::loadAllImages() {
+    TilesetMap::iterator i;
+    for (i = tilesets.begin(); i != tilesets.end(); i++)
+        i->second->loadImages();
+}
+
+/**
  * Delete all tileset images
  */
 void Tileset::unloadAllImages() {
@@ -87,7 +97,6 @@ void Tileset::unloadAllImages() {
 
     Tile::resetNextId();
 }
-
 
 /**
  * Returns the tileset with the given name, if it exists
@@ -101,10 +110,10 @@ Tileset* Tileset::get(const string &name) {
 /**
  * Returns the tile that has the given name from any tileset, if there is one
  */
-Tile* Tileset::findTileByName(const string &name) {
+const Tile* Tileset::findTileByName(const string &name) {
     TilesetMap::iterator i;
     for (i = tilesets.begin(); i != tilesets.end(); i++) {
-        Tile *t = i->second->getByName(name);
+        const Tile *t = i->second->getByName(name);
         if (t)
             return t;
     }
@@ -112,10 +121,10 @@ Tile* Tileset::findTileByName(const string &name) {
     return NULL;
 }
 
-Tile* Tileset::findTileById(TileId id) {
+const Tile* Tileset::findTileById(TileId id) {
     TilesetMap::iterator i;
     for (i = tilesets.begin(); i != tilesets.end(); i++) {
-        Tile *t = i->second->get(id);
+        const Tile *t = i->second->get(id);
         if (t)
             return t;
     }
@@ -158,15 +167,18 @@ void Tileset::load(const ConfigElement &tilesetConf) {
     totalFrames = index;
 }
 
+void Tileset::loadImages()
+{
+    Tileset::TileIdMap::iterator i;
+    for (i = tiles.begin(); i != tiles.end(); i++)
+        i->second->loadImage();
+}
+
 void Tileset::unloadImages()
 {
     Tileset::TileIdMap::iterator i;
-
-    /* free all the image memory and nullify so that reloading can automatically take place lazily */
     for (i = tiles.begin(); i != tiles.end(); i++)
-    {
         i->second->deleteImage();
-    }
 }
 
 /**
@@ -187,9 +199,10 @@ void Tileset::unload() {
 /**
  * Returns the tile with the given id in the tileset
  */
-Tile* Tileset::get(TileId id) {
-    if (tiles.find(id) != tiles.end())
-        return tiles[id];
+const Tile* Tileset::get(TileId id) const {
+    TileIdMap::const_iterator it = tiles.find(id);
+    if (it != tiles.end())
+        return it->second;
     else if (extends)
         return extends->get(id);
     return NULL;
@@ -198,9 +211,10 @@ Tile* Tileset::get(TileId id) {
 /**
  * Returns the tile with the given name from the tileset, if it exists
  */
-Tile* Tileset::getByName(const string &name) {
-    if (nameMap.find(name) != nameMap.end())
-        return nameMap[name];
+const Tile* Tileset::getByName(const string &name) const {
+    TileStrMap::const_iterator it = nameMap.find(name);
+    if (it != nameMap.end())
+        return it->second;
     else if (extends)
         return extends->getByName(name);
     else return NULL;

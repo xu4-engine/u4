@@ -35,7 +35,7 @@ void DungeonView::display(Context * c, TileView *view)
     static const int8_t wallSides[3] = { -1, 1, 0 };
     vector<MapTile> tiles;
     int x,y;
-    Tileset* tileset = c->location->map->tileset;
+    const Tileset* tileset = c->location->map->tileset;
 
     /* 1st-person perspective */
     if (screen3dDungeonViewEnabled) {
@@ -96,7 +96,7 @@ void DungeonView::display(Context * c, TileView *view)
     }
 }
 
-void DungeonView::drawInDungeon(Tile *tile, int x_offset, int distance, Direction orientation, bool tiledWall) {
+void DungeonView::drawInDungeon(const Tile *tile, int x_offset, int distance, Direction orientation, bool tiledWall) {
     const static int nscale_vga[] = { 12, 8, 4, 2, 1};
     const static int nscale_ega[] = { 8, 4, 2, 1, 0};
 
@@ -217,7 +217,7 @@ int DungeonView::graphicIndex(int xoffset, int distance, Direction orientation, 
     return index;
 }
 
-void DungeonView::drawTile(Tile *tile, int x_offset, int distance, Direction orientation) {
+void DungeonView::drawTile(const Tile *tile, int x_offset, int distance, Direction orientation) {
     drawInDungeon(tile, x_offset, distance, orientation, tile->isTiledInDungeon());
 }
 
