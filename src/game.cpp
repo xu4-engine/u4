@@ -3122,6 +3122,11 @@ void gameFixupObjects(Map *map, const SaveGameMonsterRecord* table) {
                 if (creature) {
                     obj = map->addCreature(creature, coords);
 
+                    // Preserve animation & previous state to keep round-trip
+                    // load > save > load identical.
+
+                    obj->setTile(tile);
+                    obj->setPrevTile(oldTile);
                     Coords pc(it->prevx, it->prevy);
                     obj->setPrevCoords(pc);
                 } else {
