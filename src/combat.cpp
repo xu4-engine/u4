@@ -8,6 +8,7 @@
 #include "combat.h"
 
 #include "annotation.h"
+#include "config.h"
 #include "context.h"
 #include "creature.h"
 #include "death.h"
@@ -1212,7 +1213,7 @@ MapId CombatMap::mapForTile(const Tile *groundTile, const Tile *transport, Objec
 
     if (loc->context & CTX_DUNGEON) {
         if (dungeontileMap.empty()) {
-            const Tileset* ts = Tileset::get("base");
+            const Tileset* ts = xu4.config->tileset();
             dungeontileMap[ts->getByName("brick_floor")]    = MAP_DNG0_CON;
             dungeontileMap[ts->getByName("up_ladder")]      = MAP_DNG1_CON;
             dungeontileMap[ts->getByName("down_ladder")]    = MAP_DNG2_CON;
@@ -1230,7 +1231,7 @@ MapId CombatMap::mapForTile(const Tile *groundTile, const Tile *transport, Objec
     }
 
     if (tileMap.empty()) {
-        const Tileset* ts = Tileset::get("base");
+        const Tileset* ts = xu4.config->tileset();
         tileMap[ts->getByName("horse")] = MAP_GRASS_CON;
         tileMap[ts->getByName("swamp")] = MAP_MARSH_CON;
         tileMap[ts->getByName("grass")] = MAP_GRASS_CON;

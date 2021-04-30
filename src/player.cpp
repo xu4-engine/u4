@@ -590,7 +590,7 @@ MapTile PartyMember::tileForClass(int klass) {
         ASSERT(0, "invalid class %d in tileForClass", klass);
     }
 
-    const Tile *tile = Tileset::get("base")->getByName(name);
+    const Tile *tile = xu4.config->tileset()->getByName(name);
     ASSERT(tile, "no tile found for class %d", klass);
     return tile->getId();
 }

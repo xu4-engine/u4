@@ -18,6 +18,13 @@
 DungeonView::DungeonView(int x, int y, int columns, int rows) : TileView(x, y, rows, columns)
 , screen3dDungeonViewEnabled(true)
 {
+    black  = tileset->getByName("black")->getId();
+    avatar = tileset->getByName("avatar")->getId();
+
+    corridor      = tileset->getByName("brick_floor")->getId();
+    up_ladder     = tileset->getByName("up_ladder")->getId();
+    down_ladder   = tileset->getByName("down_ladder")->getId();
+    updown_ladder = tileset->getByName("up_down_ladder")->getId();
 }
 
 
@@ -35,7 +42,6 @@ void DungeonView::display(Context * c, TileView *view)
     static const int8_t wallSides[3] = { -1, 1, 0 };
     vector<MapTile> tiles;
     int x,y;
-    const Tileset* tileset = c->location->map->tileset;
 
     /* 1st-person perspective */
     if (screen3dDungeonViewEnabled) {
@@ -77,9 +83,6 @@ void DungeonView::display(Context * c, TileView *view)
 
     /* 3rd-person perspective */
     else {
-        static MapTile black  = tileset->getByName("black")->getId();
-        static MapTile avatar = tileset->getByName("avatar")->getId();
-
         for (y = 0; y < VIEWPORT_H; y++) {
             for (x = 0; x < VIEWPORT_W; x++) {
                 tiles = getTiles((VIEWPORT_H / 2) - y, x - (VIEWPORT_W / 2));
@@ -261,23 +264,18 @@ std::vector<MapTile> DungeonView::getTiles(int fwd, int side) {
 DungeonGraphicType DungeonView::tilesToGraphic(const std::vector<MapTile> &tiles) {
     MapTile tile = tiles.front();
 
-    static const MapTile corridor = c->location->map->tileset->getByName("brick_floor")->getId();
-    static const MapTile up_ladder = c->location->map->tileset->getByName("up_ladder")->getId();
-    static const MapTile down_ladder = c->location->map->tileset->getByName("down_ladder")->getId();
-    static const MapTile updown_ladder = c->location->map->tileset->getByName("up_down_ladder")->getId();
-
     /*
      * check if the dungeon tile has an annotation or object on top
      * (always displayed as a tile, unless a ladder)
      */
     if (tiles.size() > 1) {
-        if (tile.id == up_ladder.id)
+        if (tile.id == up_ladder)
             return DNGGRAPHIC_LADDERUP;
-        else if (tile.id == down_ladder.id)
+        else if (tile.id == down_ladder)
             return DNGGRAPHIC_LADDERDOWN;
-        else if (tile.id == updown_ladder.id)
+        else if (tile.id == updown_ladder)
             return DNGGRAPHIC_LADDERUPDOWN;
-        else if (tile.id == corridor.id)
+        else if (tile.id == corridor)
             return DNGGRAPHIC_NONE;
         else
             return DNGGRAPHIC_BASETILE;

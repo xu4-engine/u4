@@ -2,6 +2,7 @@
  * $Id$
  */
 
+#include "config.h"
 #include "debug.h"
 #include "image.h"
 #include "imagemgr.h"
@@ -20,18 +21,9 @@ using std::vector;
 TileView::TileView(int x, int y, int columns, int rows) : View(x, y, columns * TILE_WIDTH, rows * TILE_HEIGHT) {
     this->columns = columns;
     this->rows = rows;
-    this->tileWidth = TILE_WIDTH;
-    this->tileHeight = TILE_HEIGHT;
-    this->tileset = Tileset::get("base");
-    animated = Image::create(SCALED(tileWidth), SCALED(tileHeight));
-}
-
-TileView::TileView(int x, int y, int columns, int rows, const string &tileset) : View(x, y, columns * TILE_WIDTH, rows * TILE_HEIGHT) {
-    this->columns = columns;
-    this->rows = rows;
-    this->tileWidth = TILE_WIDTH;
-    this->tileHeight = TILE_HEIGHT;
-    this->tileset = Tileset::get(tileset);
+    tileWidth  = TILE_WIDTH;
+    tileHeight = TILE_HEIGHT;
+    tileset = xu4.config->tileset();
     animated = Image::create(SCALED(tileWidth), SCALED(tileHeight));
 }
 
@@ -41,7 +33,6 @@ TileView::~TileView() {
 
 void TileView::reinit() {
     View::reinit();
-    tileset = Tileset::get("base");
 
     //Scratchpad needs to be re-inited if we rescale...
     if (animated)
@@ -52,14 +43,13 @@ void TileView::reinit() {
     animated = Image::create(SCALED(tileWidth), SCALED(tileHeight));
 }
 
-void TileView::loadTile(MapTile &mapTile)
+void TileView::loadTile(const MapTile &mapTile)
 {
     //This attempts to preload tiles in advance
     const Tile *tile = tileset->get(mapTile.id);
     if (tile)
-    {
         tile->getImage();
-    }
+
     //But may fail if the tiles don't exist directly in the expected imagesets
 }
 
@@ -67,7 +57,7 @@ void TileView::loadTile(MapTile &mapTile)
  * Draw a tile on the screenImage using the current Image::enableBlend
  * setting.
  */
-void TileView::drawTile(MapTile &mapTile, bool focus, int x, int y) {
+void TileView::drawTile(const MapTile &mapTile, bool focus, int x, int y) {
     const Tile *tile = tileset->get(mapTile.id);
 
     ASSERT(x < columns, "x value of %d out of range", x);
@@ -209,8 +199,4 @@ void TileView::drawFocus(int x, int y) {
                          SCALED(2),
                          0xff, 0xff, 0xff);
     }
-}
-
-void TileView::setTileset(const Tileset *tileset) {
-    this->tileset = tileset;
 }

@@ -99,6 +99,7 @@ IntroBinData::~IntroBinData() {
 bool IntroBinData::load() {
     int i;
     const UltimaSaveIds* usaveIds = xu4.config->usaveIds();
+    const Tileset* tileset = xu4.config->tileset();
 
     U4FILE *title = u4fopen("title.exe");
     if (!title)
@@ -132,7 +133,7 @@ bool IntroBinData::load() {
     baseTileTable = new const Tile*[INTRO_BASETILE_TABLE_SIZE];
     for (i = 0; i < INTRO_BASETILE_TABLE_SIZE; i++) {
         MapTile tile = usaveIds->moduleId(u4fgetc(title));
-        baseTileTable[i] = Tileset::get("base")->get(tile.id);
+        baseTileTable[i] = tileset->get(tile.id);
     }
 
     /* --------------------------
@@ -164,7 +165,7 @@ IntroController::IntroController() :
     menuArea(1 * CHAR_WIDTH, 13 * CHAR_HEIGHT, 38, 11),
     extendedMenuArea(2 * CHAR_WIDTH, 10 * CHAR_HEIGHT, 36, 13),
     questionArea(INTRO_TEXT_X * CHAR_WIDTH, INTRO_TEXT_Y * CHAR_HEIGHT, INTRO_TEXT_WIDTH, INTRO_TEXT_HEIGHT),
-    mapArea(BORDER_WIDTH, (TILE_HEIGHT * 6) + BORDER_HEIGHT, INTRO_MAP_WIDTH, INTRO_MAP_HEIGHT, "base"),
+    mapArea(BORDER_WIDTH, (TILE_HEIGHT * 6) + BORDER_HEIGHT, INTRO_MAP_WIDTH, INTRO_MAP_HEIGHT),
     binData(NULL),
     titles(),                   // element list
     title(titles.begin()),      // element iterator

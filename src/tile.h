@@ -60,10 +60,15 @@ struct TileRule {
  */
 class Tile {
 public:
-    Tile(Tileset *tileset);
-    ~Tile();
+    static TileId dungeonFloorId;
 
-    void loadProperties(const Config*, const ConfigElement &conf);
+    static bool canTalkOverTile(const Tile *tile)   {return tile->canTalkOver() != 0;}
+    static bool canAttackOverTile(const Tile *tile) {return tile->canAttackOver() != 0;}
+
+
+    Tile(int tid);
+    ~Tile();
+    void setDirections(const string& dirs);
 
     TileId getId() const                {return id;}
     const string &getName() const       {return name;}
@@ -116,17 +121,12 @@ public:
     Direction directionForFrame(int frame) const;
     int frameForDirection(Direction d) const;
 
-    static void resetNextId()                       {nextId = 0;}
-    static bool canTalkOverTile(const Tile *tile)   {return tile->canTalkOver() != 0;}
-    static bool canAttackOverTile(const Tile *tile) {return tile->canAttackOver() != 0;}
-
     void loadImage();
     void deleteImage();
 
-private:
+//private:
     TileId id;          /**< an id that is unique across all tilesets */
     string name;        /**< The name of this tile */
-    Tileset *tileset;   /**< The tileset this tile belongs to */
     int w, h;           /**< width and height of the tile */
     int frames;         /**< The number of frames this tile has */
     int scale;          /**< The scale of the tile */
@@ -145,8 +145,6 @@ private:
     uint8_t directions[7];  /**< Directions used = frames (if present) */
 
     string animationRule;
-
-    static TileId nextId;
 
     // Prevent copying.
     Tile(const Tile&);

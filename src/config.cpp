@@ -243,23 +243,61 @@ static void conf_tileRule(SymbolTable& sym, TileRule* rule, const ConfigElement 
     rule->effect = static_cast<TileEffect>(conf.getEnum("effect", effectsEnumStrings));
 }
 
+static void conf_tileLoad(const Config* cfg, Tile* tile, const ConfigElement &conf) {
+    tile->name = conf.getString("name"); /* get the name of the tile */
+    if (tile->name == "brick_floor")
+        Tile::dungeonFloorId = tile->getId();
+
+    /* get the animation for the tile, if one is specified */
+    if (conf.exists("animation"))
+        tile->animationRule = conf.getString("animation");
+
+    /* see if the tile is opaque */
+    tile->opaque = conf.getBool("opaque");
+
+    tile->foreground = conf.getBool("usesReplacementTileAsBackground");
+    tile->waterForeground = conf.getBool("usesWaterReplacementTileAsBackground");
+
+    /* Get the rule that applies to the current tile (or "default") */
+    Symbol sym = SYM_UNSET;
+    if (conf.exists("rule"))
+        sym = cfg->propSymbol(conf, "rule");
+    tile->rule = cfg->tileRule(sym);
+
+    /* get the number of frames the tile has */
+    tile->frames = conf.getInt("frames", 1);
+
+    /* get the name of the image that belongs to this tile */
+    if (conf.exists("image"))
+        tile->imageName = conf.getString("image");
+    else
+        tile->imageName = string("tile_") + tile->name;
+
+    tile->tiledInDungeon = conf.getBool("tiledInDungeon");
+
+    /* Fill directions if they are specified. */
+    if (conf.exists("directions"))
+        tile->setDirections(conf.getString("directions"));
+}
+
 static void conf_tilesetLoad(Config* cfg, Tileset* ts, const ConfigElement& conf) {
     //ts->name = conf.getString("name");
     if (conf.exists("imageName"))
         ts->imageName = conf.getString("imageName");
 
     int index = 0;
+    int moduleId = 0;
     vector<ConfigElement> children = conf.getChildren();
     vector<ConfigElement>::iterator it;
     foreach (it, children) {
         if (it->getName() != "tile")
             continue;
 
-        Tile* tile = new Tile(ts);
-        tile->loadProperties(cfg, *it);
+        Tile* tile = new Tile(moduleId++);
+        conf_tileLoad(cfg, tile, *it);
 
         /* add the tile to our tileset */
-        ts->tiles[tile->getId()] = tile;
+        ts->tiles.push_back( tile );
         ts->nameMap[tile->getName()] = tile;
 
         index += tile->getFrames();
@@ -436,7 +474,7 @@ ConfigXML::ConfigXML() {
         errorFatal("no 'default' rule found in tile rules");
     }
 
-    // tileset
+    // tileset (requires tileRules)
     ce = getElement("tilesets").getChildren();
     foreach (it, ce) {
         if (it->getName() == "tileset") {

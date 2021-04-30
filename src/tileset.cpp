@@ -1,14 +1,10 @@
 /*
- * $Id$
+ * tileset.cpp
  */
 
 #include "tileset.h"
 
 #include "config.h"
-#include "debug.h"
-#include "error.h"
-#include "screen.h"
-#include "settings.h"
 #include "tile.h"
 #include "xu4.h"
 
@@ -18,9 +14,9 @@
 void Tileset::loadImages() {
     Tileset* ts = (Tileset*) xu4.config->tileset();
     if (ts) {
-        TileIdMap::iterator it;
-        for (it = ts->tiles.begin(); it != ts->tiles.end(); ++it)
-            it->second->loadImage();
+        std::vector<Tile*>::iterator it;
+        foreach (it, ts->tiles)
+            (*it)->loadImage();
     }
 }
 
@@ -30,18 +26,10 @@ void Tileset::loadImages() {
 void Tileset::unloadImages() {
     Tileset* ts = (Tileset*) xu4.config->tileset();
     if (ts) {
-        TileIdMap::iterator it;
-        for (it = ts->tiles.begin(); it != ts->tiles.end(); ++it)
-            it->second->deleteImage();
+        std::vector<Tile*>::iterator it;
+        foreach (it, ts->tiles)
+            (*it)->deleteImage();
     }
-}
-
-/**
- * Deprecated!
- * Returns the tileset with the given name, if it exists
- */
-const Tileset* Tileset::get(const string &name) {
-    return xu4.config->tileset();
 }
 
 /**
@@ -57,18 +45,17 @@ const Tile* Tileset::findTileById(TileId id) {
 
 Tileset::~Tileset() {
     /* free all the tiles */
-    TileIdMap::iterator it;
+    std::vector<Tile*>::iterator it;
     foreach (it, tiles)
-        delete it->second;
+        delete *it;
 }
 
 /**
  * Returns the tile with the given id in the tileset
  */
 const Tile* Tileset::get(TileId id) const {
-    TileIdMap::const_iterator it = tiles.find(id);
-    if (it != tiles.end())
-        return it->second;
+    if (id < tiles.size())
+        return tiles[id];
     return NULL;
 }
 
@@ -80,25 +67,4 @@ const Tile* Tileset::getByName(const string &name) const {
     if (it != nameMap.end())
         return it->second;
     return NULL;
-}
-
-/**
- * Returns the image name for the tileset, if it exists
- */
-string Tileset::getImageName() const {
-    return imageName;
-}
-
-/**
- * Returns the number of tiles in the tileset
- */
-unsigned int Tileset::numTiles() const {
-    return tiles.size();
-}
-
-/**
- * Returns the total number of frames in the tileset
- */
-unsigned int Tileset::numFrames() const {
-    return totalFrames;
 }

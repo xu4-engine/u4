@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * tileset.h
  */
 
 #ifndef TILESET_H
@@ -7,6 +7,7 @@
 
 #include <string>
 #include <map>
+#include <vector>
 #include "types.h"
 
 using std::string;
@@ -18,13 +19,10 @@ class Tile;
  */
 class Tileset {
 public:
-    typedef std::map<TileId, Tile*> TileIdMap;
     typedef std::map<string, const Tile*> TileStrMap;
 
     static void loadImages();
     static void unloadImages();
-    static const Tileset* get(const string &name);
-
     static const Tile* findTileByName(const string &name);
     static const Tile* findTileById(TileId id);
 
@@ -33,12 +31,13 @@ public:
 
     const Tile* get(TileId id) const;
     const Tile* getByName(const string &name) const;
-    string getImageName() const;
-    unsigned int numTiles() const;
-    unsigned int numFrames() const;
+
+    string getImageName() const { return imageName; }
+    unsigned int numTiles() const { return tiles.size(); }
+    unsigned int numFrames() const { return totalFrames; }
 
 //private:
-    TileIdMap tiles;
+    std::vector<Tile*> tiles;
     TileStrMap nameMap;
     unsigned int totalFrames;
     string imageName;

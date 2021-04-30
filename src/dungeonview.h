@@ -52,6 +52,12 @@ public:
     bool toggle3DDungeonView(){return screen3dDungeonViewEnabled=!screen3dDungeonViewEnabled;}
 
     std::vector<MapTile> getTiles(int fwd, int side);
+    MapTile black;
+    MapTile avatar;
+    TileId corridor;
+    TileId up_ladder;
+    TileId down_ladder;
+    TileId updown_ladder;
 };
 
 #endif /* DUNGEONVIEW_H */

@@ -18,12 +18,11 @@
 #include "assert.h"
 #include "xu4.h"
 
-TileId Tile::nextId = 0;
 
-Tile::Tile(Tileset *tileset)
-    : id(nextId++)
-    , name()
-    , tileset(tileset)
+TileId Tile::dungeonFloorId = 0;
+
+Tile::Tile(int tid)
+    : id(tid)
     , w(0)
     , h(0)
     , frames(0)
@@ -33,7 +32,6 @@ Tile::Tile(Tileset *tileset)
     , foreground()
     , waterForeground()
     , rule(NULL)
-    , imageName()
     , image(NULL)
     , tiledInDungeon(false)
     , directionCount(0)
@@ -44,67 +42,26 @@ Tile::~Tile() {
     delete image;
 }
 
-/**
- * Loads tile information.
- */
-void Tile::loadProperties(const Config* config, const ConfigElement &conf) {
-    if (conf.getName() != "tile")
-        return;
-
-    name = conf.getString("name"); /* get the name of the tile */
-
-    /* get the animation for the tile, if one is specified */
-    if (conf.exists("animation")) {
-        animationRule = conf.getString("animation");
-    }
-
-    /* see if the tile is opaque */
-    opaque = conf.getBool("opaque");
-
-    foreground = conf.getBool("usesReplacementTileAsBackground");
-    waterForeground = conf.getBool("usesWaterReplacementTileAsBackground");
-
-    /* Get the rule that applies to the current tile (or "default") */
-    Symbol sym = SYM_UNSET;
-    if (conf.exists("rule"))
-        sym = config->propSymbol(conf, "rule");
-    rule = config->tileRule(sym);
-
-    /* get the number of frames the tile has */
-    frames = conf.getInt("frames", 1);
-
-    /* get the name of the image that belongs to this tile */
-    if (conf.exists("image"))
-        imageName = conf.getString("image");
-    else
-        imageName = string("tile_") + name;
-
-    tiledInDungeon = conf.getBool("tiledInDungeon");
-
-    /* Fill directions if they are specified. */
-    directionCount = 0;
-    if (conf.exists("directions")) {
-        const unsigned maxDir = sizeof(directions);
-        string dirs = conf.getString("directions");
-        directionCount = dirs.length();
-        if (directionCount != (unsigned) frames)
-            errorFatal("Error: %d directions for tile but only %d frames", (int) directionCount, frames);
-        if (directionCount > maxDir)
-            errorFatal("Error: Number of directions exceeds limit of %d", maxDir);
-        unsigned i = 0;
-        for (; i < directionCount; i++) {
-            switch (dirs[i]) {
-            case 'w': directions[i] = DIR_WEST;  break;
-            case 'n': directions[i] = DIR_NORTH; break;
-            case 'e': directions[i] = DIR_EAST;  break;
-            case 's': directions[i] = DIR_SOUTH; break;
-            default:
-                errorFatal("Error: unknown direction specified by %c", dirs[i]);
-            }
+void Tile::setDirections(const string& dirs) {
+    const unsigned maxDir = sizeof(directions);
+    directionCount = dirs.length();
+    if (directionCount != (unsigned) frames)
+        errorFatal("Error: %d directions for tile but only %d frames", (int) directionCount, frames);
+    if (directionCount > maxDir)
+        errorFatal("Error: Number of directions exceeds limit of %d", maxDir);
+    unsigned i = 0;
+    for (; i < directionCount; i++) {
+        switch (dirs[i]) {
+        case 'w': directions[i] = DIR_WEST;  break;
+        case 'n': directions[i] = DIR_NORTH; break;
+        case 'e': directions[i] = DIR_EAST;  break;
+        case 's': directions[i] = DIR_SOUTH; break;
+        default:
+            errorFatal("Error: unknown direction specified by %c", dirs[i]);
         }
-        for (; i < maxDir; i++)
-            directions[i] = DIR_NONE;
     }
+    for (; i < maxDir; i++)
+        directions[i] = DIR_NONE;
 }
 
 /**
@@ -204,10 +161,7 @@ bool MapTile::setDirection(Direction d) {
 }
 
 bool Tile::isDungeonFloor() const {
-    const Tile *floor = tileset->getByName("brick_floor");
-    if (id == floor->id)
-        return true;
-    return false;
+    return (id == dungeonFloorId);
 }
 
 bool Tile::isOpaque() const {

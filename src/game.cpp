@@ -516,9 +516,6 @@ void GameController::setMap(Map *map, bool saveLocation, const Portal *portal, T
     U4IOS::updateGameControllerContext(c->location->context);
 #endif
 
-    /* now, actually set our new tileset */
-    mapArea.setTileset(map->tileset);
-
     if (isCity(map)) {
         City *city = dynamic_cast<City*>(map);
         city->addPeople();
@@ -551,8 +548,6 @@ int GameController::exitToParentMap() {
         }
         locationFree(&c->location);
 
-        // restore the tileset to the one the current map uses
-        mapArea.setTileset(c->location->map->tileset);
 #ifdef IOS
         U4IOS::updateGameControllerContext(c->location->context);
 #endif

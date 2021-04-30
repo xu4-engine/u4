@@ -253,7 +253,7 @@ static void initDungeonRoom(Dungeon *dng, int room) {
     dng->roomMaps[room]->music = MUSIC_COMBAT;
     dng->roomMaps[room]->type = Map::COMBAT;
     dng->roomMaps[room]->flags |= NO_LINE_OF_SIGHT;
-    dng->roomMaps[room]->tileset = Tileset::get("base");
+    dng->roomMaps[room]->tileset = xu4.config->tileset();
 }
 
 static const uint8_t ultima4Dng_to_module[16] = {
