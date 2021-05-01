@@ -13,6 +13,7 @@
 class ImageSet;
 class Armor;
 class Weapon;
+class Map;
 struct TileRule;
 class Tileset;
 class ConfigElement;
@@ -46,6 +47,9 @@ public:
     const TileRule* tileRule( Symbol name ) const;
     const Tileset* tileset() const;
     const UltimaSaveIds* usaveIds() const;
+    Map* map(uint32_t id);
+    Map* restoreMap(uint32_t id);
+    void unloadMap(uint32_t id);
     // More to be added...
 
     // Deprecated methods for manually parsing a tree.
@@ -68,7 +72,7 @@ public:
 
     ConfigElement &operator=(const ConfigElement &e);
 
-    const std::string getName() const { return name; }
+    const std::string& getName() const { return name; }
 
     bool exists(const std::string &name) const;
     std::string getString(const std::string &name) const;

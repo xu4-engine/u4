@@ -250,16 +250,17 @@ static bool loadCombatMap(Map *map, U4FILE *uf) {
  * Loads a dungeon room into map->dungeon->room
  */
 static void initDungeonRoom(Dungeon *dng, int room) {
-    dng->roomMaps[room] = dynamic_cast<CombatMap *>(xu4.mapMgr->initMap(Map::COMBAT));
+    CombatMap* cmap = new CombatMap;
+    dng->roomMaps[room] = cmap;
 
-    dng->roomMaps[room]->id = 0;
-    dng->roomMaps[room]->border_behavior = Map::BORDER_FIXED;
-    dng->roomMaps[room]->width = dng->roomMaps[room]->height = 11;
-    dng->roomMaps[room]->data = dng->rooms[room].map_data; // Load map data
-    dng->roomMaps[room]->music = MUSIC_COMBAT;
-    dng->roomMaps[room]->type = Map::COMBAT;
-    dng->roomMaps[room]->flags |= NO_LINE_OF_SIGHT;
-    dng->roomMaps[room]->tileset = xu4.config->tileset();
+    cmap->id = 0;
+    cmap->border_behavior = Map::BORDER_FIXED;
+    cmap->width = cmap->height = 11;
+    cmap->data = dng->rooms[room].map_data; // Load map data
+    cmap->music = MUSIC_COMBAT;
+    cmap->type = Map::COMBAT;
+    cmap->flags |= NO_LINE_OF_SIGHT;
+    cmap->tileset = xu4.config->tileset();
 }
 
 static const uint8_t ultima4Dng_to_module[16] = {

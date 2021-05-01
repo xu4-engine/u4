@@ -111,7 +111,6 @@ set(XU4_SRC
 	location.cpp 
 	map.cpp 
 	maploader.cpp 
-	mapmgr.cpp 
 	menu.cpp 
 	menuitem.cpp 
 	moongate.cpp 

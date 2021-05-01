@@ -76,7 +76,7 @@ CombatController::CombatController(CombatMap *m) : map(m) {
 }
 
 CombatController::CombatController(MapId id) {
-    map = getCombatMap(xu4.mapMgr->get(id));
+    map = getCombatMap(xu4.config->map(id));
     xu4.game->setMap(map, true, NULL, this);
     c->party->addObserver(this);
     forceStandardEncounterSize = false;

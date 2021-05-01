@@ -96,7 +96,6 @@ exe %u4 [
 		%location.cpp
 		%map.cpp
 		%maploader.cpp
-		%mapmgr.cpp
 		%menu.cpp
 		%menuitem.cpp
 		%moongate.cpp

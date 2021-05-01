@@ -25,12 +25,18 @@
 #endif
 
 #include "config.h"
+#include "city.h"
+#include "dungeon.h"
 #include "error.h"
 #include "imageloader.h"
 #include "imagemgr.h"
+#include "map.h"
+#include "moongate.h"
 #include "names.h"
+#include "portal.h"
 #include "savegame.h"
 #include "settings.h"
+#include "shrine.h"
 #include "sound.h"
 #include "tile.h"
 #include "tileset.h"
@@ -70,6 +76,7 @@ struct XMLConfig
     vector<string> schemeNames;
     vector<Armor*> armors;
     vector<Weapon*> weapons;
+    vector<Map *> mapList;
 
     TileRule* tileRules;
     uint16_t tileRuleCount;
@@ -350,6 +357,234 @@ static void conf_ultimaSaveIds(UltimaSaveIds* usaveIds, Tileset* ts, const Confi
 }
 
 //--------------------------------------
+// Maps
+
+extern bool isAbyssOpened(const Portal*);
+extern bool shrineCanEnter(const Portal*);
+
+static PersonRole* conf_initPersonRole(const ConfigElement& conf) {
+    static const char *roleEnumStrings[] = {
+        "companion", "weaponsvendor", "armorvendor", "foodvendor", "tavernkeeper",
+        "reagentsvendor", "healer", "innkeeper", "guildvendor", "horsevendor",
+        "lordbritish", "hawkwind", NULL
+    };
+
+    PersonRole* role = new PersonRole;
+    role->role = conf.getEnum("role", roleEnumStrings) + NPC_TALKER_COMPANION;
+    role->id   = conf.getInt("id");
+    return role;
+}
+
+static void conf_initCity(const ConfigElement& conf, City *city) {
+    city->name = conf.getString("name");
+    city->type = conf.getString("type");
+    city->tlk_fname = conf.getString("tlk_fname");
+
+    vector<ConfigElement> children = conf.getChildren();
+    vector<ConfigElement>::iterator it;
+    foreach (it, children) {
+        if (it->getName() == "personrole")
+            city->personroles.push_back(conf_initPersonRole(*it));
+    }
+}
+
+Portal* conf_initPortal(const ConfigElement& conf) {
+    Portal* portal = new Portal;
+
+    portal->portalConditionsMet = NULL;
+    portal->retroActiveDest = NULL;
+
+    portal->coords = MapCoords(
+        conf.getInt("x"),
+        conf.getInt("y"),
+        conf.getInt("z", 0));
+    portal->destid = static_cast<MapId>(conf.getInt("destmapid"));
+
+    portal->start.x = static_cast<unsigned short>(conf.getInt("startx"));
+    portal->start.y = static_cast<unsigned short>(conf.getInt("starty"));
+    portal->start.z = static_cast<unsigned short>(conf.getInt("startlevel", 0));
+
+    string prop = conf.getString("action");
+    if (prop == "none")
+        portal->trigger_action = ACTION_NONE;
+    else if (prop == "enter")
+        portal->trigger_action = ACTION_ENTER;
+    else if (prop == "klimb")
+        portal->trigger_action = ACTION_KLIMB;
+    else if (prop == "descend")
+        portal->trigger_action = ACTION_DESCEND;
+    else if (prop == "exit_north")
+        portal->trigger_action = ACTION_EXIT_NORTH;
+    else if (prop == "exit_east")
+        portal->trigger_action = ACTION_EXIT_EAST;
+    else if (prop == "exit_south")
+        portal->trigger_action = ACTION_EXIT_SOUTH;
+    else if (prop == "exit_west")
+        portal->trigger_action = ACTION_EXIT_WEST;
+    else
+        errorFatal("unknown trigger_action: %s", prop.c_str());
+
+    prop = conf.getString("condition");
+    if (!prop.empty()) {
+        if (prop == "shrine")
+            portal->portalConditionsMet = &shrineCanEnter;
+        else if (prop == "abyss")
+            portal->portalConditionsMet = &isAbyssOpened;
+        else
+            errorFatal("unknown portalConditionsMet: %s", prop.c_str());
+    }
+
+    portal->saveLocation = conf.getBool("savelocation");
+
+    portal->message = conf.getString("message");
+
+    prop = conf.getString("transport");
+    if (prop == "foot")
+        portal->portalTransportRequisites = TRANSPORT_FOOT;
+    else if (prop == "footorhorse")
+        portal->portalTransportRequisites = TRANSPORT_FOOT_OR_HORSE;
+    else
+        errorFatal("unknown transport: %s", prop.c_str());
+
+    portal->exitPortal = conf.getBool("exits");
+
+    vector<ConfigElement> children = conf.getChildren();
+    vector<ConfigElement>::iterator it;
+    foreach (it, children) {
+        if (it->getName() == "retroActiveDest") {
+            portal->retroActiveDest = new PortalDestination;
+
+            portal->retroActiveDest->coords = MapCoords(
+                it->getInt("x"),
+                it->getInt("y"),
+                it->getInt("z", 0));
+            portal->retroActiveDest->mapid = static_cast<MapId>(it->getInt("mapid"));
+        }
+    }
+    return portal;
+}
+
+static void conf_initShrine(const ConfigElement& conf, Shrine *shrine) {
+    static const char *virtues[] = {
+        "Honesty", "Compassion", "Valor", "Justice", "Sacrifice",
+        "Honor", "Spirituality", "Humility", NULL
+    };
+
+    shrine->setVirtue(static_cast<Virtue>(conf.getEnum("virtue", virtues)));
+    shrine->setMantra(conf.getString("mantra"));
+}
+
+static void conf_initDungeon(const ConfigElement &conf, Dungeon *dungeon) {
+    dungeon->n_rooms = conf.getInt("rooms");
+    dungeon->rooms = NULL;
+    dungeon->roomMaps = NULL;
+    dungeon->name = conf.getString("name");
+}
+
+static void conf_createMoongate(const ConfigElement& conf) {
+    int phase = conf.getInt("phase");
+    Coords coords(conf.getInt("x"), conf.getInt("y"));
+
+    moongateAdd(phase, coords);
+}
+
+static pair<string, MapCoords> conf_initLabel(const ConfigElement& conf) {
+    return pair<string, MapCoords> (conf.getString("name"),
+         MapCoords(conf.getInt("x"), conf.getInt("y"), conf.getInt("z", 0)));
+}
+
+static Map* conf_makeMap(Tileset* tiles, const ConfigElement& conf) {
+    static const char *mapTypeStrings[] = {
+        "world", "city", "shrine", "combat", "dungeon", NULL
+    };
+    static const char *borderBehaviorStrings[] = {
+        "wrap", "exit", "fixed", NULL
+    };
+    Map* map;
+    Map::Type mtype = (Map::Type) conf.getEnum("type", mapTypeStrings);
+
+    switch(mtype) {
+        case Map::WORLD:
+            map = new Map;
+            break;
+        case Map::COMBAT:
+            map = new CombatMap;
+            break;
+        case Map::SHRINE:
+            map = new Shrine;
+            break;
+        case Map::DUNGEON:
+            map = new Dungeon;
+            break;
+        case Map::CITY:
+            map = new City;
+            break;
+        default:
+            errorFatal("Error: invalid map type used");
+            return NULL;
+    }
+    if (! map)
+        return NULL;
+
+    map->id     = static_cast<MapId>(conf.getInt("id"));
+    map->type   = mtype;
+    map->fname  = conf.getString("fname");
+    map->width  = conf.getInt("width");
+    map->height = conf.getInt("height");
+    map->levels = conf.getInt("levels");
+    map->chunk_width  = conf.getInt("chunkwidth");
+    map->chunk_height = conf.getInt("chunkheight");
+    map->offset       = conf.getInt("offset");
+    map->border_behavior = static_cast<Map::BorderBehavior>(conf.getEnum("borderbehavior", borderBehaviorStrings));
+
+    if (isCombatMap(map)) {
+        CombatMap *cm = dynamic_cast<CombatMap*>(map);
+        cm->setContextual(conf.getBool("contextual"));
+    }
+
+    if (map->type == Map::WORLD || map->type == Map::CITY)
+        map->flags |= SHOW_AVATAR;
+
+    if (conf.getBool("nolineofsight"))
+        map->flags |= NO_LINE_OF_SIGHT;
+
+    if (conf.getBool("firstperson"))
+        map->flags |= FIRST_PERSON;
+
+    map->music = conf.getInt("music");
+
+    map->tileset = tiles;
+
+    vector<ConfigElement> children = conf.getChildren();
+    vector<ConfigElement>::iterator it;
+    foreach (it, children) {
+        const string& cname = it->getName();
+        if (cname == "city") {
+            City *city = dynamic_cast<City*>(map);
+            conf_initCity(*it, city);
+        }
+        else if (cname == "shrine") {
+            Shrine *shrine = dynamic_cast<Shrine*>(map);
+            conf_initShrine(*it, shrine);
+        }
+        else if (cname == "dungeon") {
+            Dungeon *dungeon = dynamic_cast<Dungeon*>(map);
+            conf_initDungeon(*it, dungeon);
+        }
+        else if (cname == "portal")
+            map->portals.push_back(conf_initPortal(*it));
+        else if (cname == "moongate")
+            conf_createMoongate(*it);
+        else if (cname == "compressedchunk")
+            map->compressed_chunks.push_back( (*it).getInt("index") );
+        else if (cname == "label")
+            map->labels.insert( conf_initLabel(*it) );
+    }
+
+    return map;
+}
+
+//--------------------------------------
 
 static Armor*  conf_armor(int type, const ConfigElement&);
 static Weapon* conf_weapon(int type, const ConfigElement&);
@@ -493,6 +728,17 @@ ConfigXML::ConfigXML() {
             }
         }
     }
+
+    // mapList
+    ce = getElement("maps").getChildren();
+    xcd.mapList.resize(ce.size(), NULL);
+    foreach (it, ce) {
+        /* Register map; the contents get loaded later, as needed. */
+        Map* map = conf_makeMap(xcd.tileset, *it);
+        if (xcd.mapList[map->id])
+            errorFatal("A map with id '%d' already exists", map->id);
+        xcd.mapList[map->id] = map;
+    }
     }
 }
 
@@ -500,6 +746,10 @@ ConfigXML::~ConfigXML() {
     xmlFreeDoc(xcd.doc);
 
     delete[] xcd.egaColors;
+
+    vector<Map *>::iterator mit;
+    foreach (mit, xcd.mapList)
+        delete *mit;
 
     vector<Armor *>::iterator ait;
     foreach (ait, xcd.armors)
@@ -738,11 +988,64 @@ const TileRule* Config::tileRule( Symbol name ) const {
 
 const Tileset* Config::tileset() const {
     return CB->tileset;
-
 }
 
 const UltimaSaveIds* Config::usaveIds() const {
     return &CB->usaveIds;
+}
+
+extern bool loadMap(Map *map, FILE* sav);
+
+Map* Config::map(uint32_t id) {
+    if (id >= CB->mapList.size())
+        return NULL;
+
+    Map* rmap = CB->mapList[id];
+    /* if the map hasn't been loaded yet, load it! */
+    if (! rmap->data.size()) {
+        if (! loadMap(rmap, NULL))
+            errorFatal("loadMap failed to read \"%s\" (type %d)",
+                       rmap->fname.c_str(), rmap->type);
+    }
+    return rmap;
+}
+
+// Load map from saved game.
+Map* Config::restoreMap(uint32_t id) {
+    if (id >= CB->mapList.size())
+        return NULL;
+
+    Map* rmap = CB->mapList[id];
+    if (! rmap->data.size()) {
+        FILE* sav = NULL;
+        bool ok;
+
+        if (rmap->type == Map::DUNGEON) {
+            string path(xu4.settings->getUserPath() + DNGMAP_SAV);
+            sav = fopen(path.c_str(), "rb");
+        }
+        ok = loadMap(rmap, sav);
+        if (sav)
+            fclose(sav);
+        if (! ok)
+            errorFatal("loadMap failed to read \"%s\" (type %d)",
+                       rmap->fname.c_str(), rmap->type);
+    }
+    return rmap;
+}
+
+void Config::unloadMap(uint32_t id) {
+    delete CB->mapList[id];
+
+    vector<ConfigElement> maps = getElement("maps").getChildren();
+    vector<ConfigElement>::const_iterator it;
+    foreach (it, maps) {
+        if (id == (uint32_t) (*it).getInt("id")) {
+            Map* map = conf_makeMap(CB->tileset, *it);
+            CB->mapList[id] = map;
+            break;
+        }
+    }
 }
 
 //--------------------------------------

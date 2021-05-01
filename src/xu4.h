@@ -8,7 +8,6 @@ class ImageMgr;
 class Image;
 class EventHandler;
 class CreatureMgr;
-class MapMgr;
 class IntroController;
 class GameController;
 
@@ -27,7 +26,6 @@ struct XU4GameServices {
     Image* screenImage;
     EventHandler* eventHandler;
     CreatureMgr* creatureMgr;
-    MapMgr* mapMgr;
     IntroController* intro;
     GameController* game;
     int stage;

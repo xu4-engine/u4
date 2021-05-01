@@ -99,10 +99,10 @@ bool CheatMenuController::keyPressed(int key) {
         bool found = false;
         for (unsigned p = 0; p < c->location->map->portals.size(); p++) {
             MapId destid = c->location->map->portals[p]->destid;
-            string destNameLower = xu4.mapMgr->get(destid)->getName();
+            string destNameLower = xu4.config->map(destid)->getName();
             lowercase(destNameLower);
             if (destNameLower.find(dest) != string::npos) {
-                screenMessage("\n%s\n", xu4.mapMgr->get(destid)->getName().c_str());
+                screenMessage("\n%s\n", xu4.config->map(destid)->getName().c_str());
                 c->location->coords = c->location->map->portals[p]->coords;
                 found = true;
                 break;

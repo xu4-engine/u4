@@ -9,6 +9,7 @@
 #include "annotation.h"
 #include "city.h"
 #include "combat.h"
+#include "config.h"
 #include "context.h"
 #include "conversation.h"
 #include "event.h"
@@ -50,7 +51,7 @@ CampController::CampController() {
     else
         id = MAP_CAMP_CON;
 
-    map = getCombatMap(xu4.mapMgr->get(id));
+    map = getCombatMap(xu4.config->map(id));
     xu4.game->setMap(map, true, NULL, this);
 }
 
@@ -263,7 +264,7 @@ void InnController::maybeAmbush()
             showMessage = false;
         }
 
-        map = getCombatMap(xu4.mapMgr->get(mapid));
+        map = getCombatMap(xu4.config->map(mapid));
         xu4.game->setMap(map, true, NULL, this);
 
         init(creature);

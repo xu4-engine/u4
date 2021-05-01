@@ -10,6 +10,7 @@
 #include "map.h"
 #include "annotation.h"
 #include "city.h"
+#include "config.h"
 #include "context.h"
 #include "event.h"
 #include "game.h"
@@ -106,7 +107,7 @@ void deathRevive() {
 
     /* Now, move the avatar into the castle and put him
        in front of Lord British */
-    xu4.game->setMap(xu4.mapMgr->get(100), 1, NULL);
+    xu4.game->setMap(xu4.config->map(MAP_CASTLE_LB2), 1, NULL);
     c->location->coords.x = REVIVE_CASTLE_X;
     c->location->coords.y = REVIVE_CASTLE_Y;
     c->location->coords.z = 0;

@@ -19,7 +19,6 @@
 #include "game.h"
 #include "imagemgr.h"
 #include "intro.h"
-#include "mapmgr.h"
 #include "person.h"
 #include "progress_bar.h"
 #include "screen.h"
@@ -187,15 +186,12 @@ void servicesInit(XU4GameServices* gs, Options* opt) {
     gs->creatureMgr = new CreatureMgr;
     gs->creatureMgr->loadAll();
 
-    gs->mapMgr = new MapMgr;
-
     gs->stage = (opt->flags & OPT_NO_INTRO) ? StagePlay : StageIntro;
 }
 
 void servicesFree(XU4GameServices* gs) {
     delete gs->game;
     delete gs->intro;
-    delete gs->mapMgr;
     delete gs->creatureMgr;
     delete gs->eventHandler;
     soundDelete();

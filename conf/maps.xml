@@ -73,14 +73,14 @@
             <personrole role="healer" id="29"/>
             <personrole role="hawkwind" id="30"/>
         </city>
-        <portal x="3" y="3" destmapid="100" startx="3" starty="3" action="klimb" savelocation="false" message="Klimb to second floor!&#xA;" transport="foot"/>
-        <portal x="27" y="3" destmapid="100" startx="27" starty="3" action="klimb" savelocation="false" message="Klimb to second floor!&#xA;" transport="foot"/>
+        <portal x="3" y="3" destmapid="56" startx="3" starty="3" action="klimb" savelocation="false" message="Klimb to second floor!&#xA;" transport="foot"/>
+        <portal x="27" y="3" destmapid="56" startx="27" starty="3" action="klimb" savelocation="false" message="Klimb to second floor!&#xA;" transport="foot"/>
         <portal x="7" y="2" destmapid="23" startx="5" starty="5" action="descend" savelocation="false" message="Descend into the depths!&#xA;" transport="foot">
             <retroActiveDest x="239" y="240" mapid="0"/>
         </portal>
         <label name="spiritualityrune" x="17" y="8"/>
     </map>
-    <map id="100" type="city" fname="lcb_2.ult" width="32" height="32" levels="1" 
+    <map id="56" type="city" fname="lcb_2.ult" width="32" height="32" levels="1"
      borderbehavior="exit" music="9">
         <city name="Britannia" type="castle" tlk_fname="lcb.tlk">
             <personrole role="lordbritish" id="32"/>

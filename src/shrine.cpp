@@ -10,12 +10,12 @@
 #include "shrine.h"
 
 #include "annotation.h"
+#include "config.h"
 #include "context.h"
 #include "event.h"
 #include "game.h"
 #include "imagemgr.h"
 #include "location.h"
-#include "mapmgr.h"
 #include "creature.h"
 #include "names.h"
 #include "player.h"
@@ -40,7 +40,7 @@ vector<string> shrineAdvice;
  * Returns true if the player can use the portal to the shrine
  */
 bool shrineCanEnter(const Portal *p) {
-    Shrine *shrine = dynamic_cast<Shrine*>(xu4.mapMgr->get(p->destid));
+    Shrine *shrine = dynamic_cast<Shrine*>(xu4.config->map(p->destid));
     if (!c->party->canEnterShrine(shrine->getVirtue())) {
         screenMessage("Thou dost not bear the rune of entry!  A strange force keeps you out!\n");
         return 0;

@@ -6,11 +6,11 @@
 
 #include "annotation.h"
 #include "city.h"
+#include "config.h"
 #include "context.h"
 #include "dungeon.h"
 #include "game.h"
 #include "location.h"
-#include "mapmgr.h"
 #include "names.h"
 #include "screen.h"
 #include "shrine.h"
@@ -76,7 +76,7 @@ int usePortalAt(Location *location, MapCoords coords, PortalTriggerAction action
         return 1;
     }
 
-    destination = xu4.mapMgr->get(portal->destid);
+    destination = xu4.config->map(portal->destid);
 
     if (portal->message.empty()) {
 
@@ -145,7 +145,7 @@ int usePortalAt(Location *location, MapCoords coords, PortalTriggerAction action
      */
     if (portal->retroActiveDest && c->location->prev) {
         c->location->prev->coords = portal->retroActiveDest->coords;
-        c->location->prev->map = xu4.mapMgr->get(portal->retroActiveDest->mapid);
+        c->location->prev->map = xu4.config->map(portal->retroActiveDest->mapid);
     }
 
     if (destination->type == Map::SHRINE) {
