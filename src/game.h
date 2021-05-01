@@ -91,6 +91,7 @@ class GameController : public Controller, public Observer<Party *, PartyEvent &>
     public TurnCompleter {
 public:
     GameController();
+    ~GameController();
 
     /* controller functions */
     virtual bool keyPressed(int key);

@@ -22,7 +22,7 @@ struct RGBA;
 class  TileAnimTransform {
 public:
     static TileAnimTransform *create(const ConfigElement &config);
-    static RGBA *loadColorFromConf(const ConfigElement &conf);
+    static RGBA loadColorFromConf(const ConfigElement &conf);
 
     virtual void draw(Image *dest, const Tile *tile, const MapTile &mapTile) = 0;
     virtual ~TileAnimTransform() {}
@@ -61,7 +61,7 @@ public:
     virtual bool drawsTile() const;
 
     int x, y;
-    std::vector<RGBA *> colors;
+    std::vector<RGBA> colors;
 };
 
 /**
@@ -102,7 +102,7 @@ public:
     virtual bool drawsTile() const;
 
     int x, y, w, h;
-    RGBA *start, *end;
+    RGBA start, end;
 };
 
 /**
@@ -121,7 +121,7 @@ public:
     void add(TileAnimTransform*);
     virtual bool isInContext(const Tile *t, const MapTile &mapTile, Direction d) = 0;
     TileAnimTransformList& getTransforms() {return animTransforms;} /**< Returns a list of transformations under the context. */
-    virtual ~TileAnimContext() {}
+    virtual ~TileAnimContext();
 private:
 
     TileAnimTransformList animTransforms;
@@ -159,6 +159,7 @@ private:
 class TileAnim {
 public:
     TileAnim(const ConfigElement &conf);
+    ~TileAnim();
 
     std::string name;
     std::vector<TileAnimTransform *> transforms;
@@ -179,6 +180,7 @@ class TileAnimSet {
 
 public:
     TileAnimSet(const ConfigElement &conf);
+    ~TileAnimSet();
 
     TileAnim *getByName(const std::string &name);
 

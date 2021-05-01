@@ -46,6 +46,7 @@ PartyMember::PartyMember(Party *p, SaveGamePlayerRecord *pr) :
 }
 
 PartyMember::~PartyMember() {
+    remove();
 }
 
 /**
@@ -612,7 +613,9 @@ Party::Party(SaveGame *s) : saveGame(s), transport(0), torchduration(0), activeP
 }
 
 Party::~Party() {
-
+    PartyMemberVector::iterator it;
+    foreach (it, members)
+        delete *it;
 }
 
 /**

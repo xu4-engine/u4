@@ -178,6 +178,11 @@ int AlphaActionController::get(char lastValidLetter, const string &prompt, Event
 GameController::GameController() : mapArea(BORDER_WIDTH, BORDER_HEIGHT, VIEWPORT_W, VIEWPORT_H), paused(false), pausedTimer(0) {
 }
 
+GameController::~GameController() {
+    delete c;
+    c = NULL;
+}
+
 void GameController::initScreen()
 {
     xu4.screenImage->fill(Image::black);

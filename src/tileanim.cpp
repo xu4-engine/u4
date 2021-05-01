@@ -38,7 +38,7 @@ TileAnimTransform *TileAnimTransform::create(const ConfigElement &conf) {
             vector<ConfigElement> children = conf.getChildren();
             for (std::vector<ConfigElement>::iterator i = children.begin(); i != children.end(); i++) {
                 if (i->getName() == "color") {
-                    RGBA *rgba = loadColorFromConf(*i);
+                    RGBA rgba = loadColorFromConf(*i);
                     ((TileAnimPixelTransform *)transform)->colors.push_back(rgba);
                 }
             }
@@ -64,7 +64,7 @@ TileAnimTransform *TileAnimTransform::create(const ConfigElement &conf) {
             vector<ConfigElement> children = conf.getChildren();
             for (std::vector<ConfigElement>::iterator i = children.begin(); i != children.end(); i++) {
                 if (i->getName() == "color") {
-                    RGBA *rgba = loadColorFromConf(*i);
+                    RGBA rgba = loadColorFromConf(*i);
                     if (i == children.begin())
                         ((TileAnimPixelColorTransform *)transform)->start = rgba;
                     else ((TileAnimPixelColorTransform *)transform)->end = rgba;
@@ -90,14 +90,13 @@ TileAnimTransform *TileAnimTransform::create(const ConfigElement &conf) {
 /**
  * Loads a color from a config element
  */
-RGBA *TileAnimTransform::loadColorFromConf(const ConfigElement &conf) {
-    RGBA *rgba;
+RGBA TileAnimTransform::loadColorFromConf(const ConfigElement &conf) {
+    RGBA rgba;
 
-    rgba = new RGBA;
-    rgba->r = conf.getInt("red");
-    rgba->g = conf.getInt("green");
-    rgba->b = conf.getInt("blue");
-    rgba->a = IM_OPAQUE;
+    rgba.r = conf.getInt("red");
+    rgba.g = conf.getInt("green");
+    rgba.b = conf.getInt("blue");
+    rgba.a = IM_OPAQUE;
 
     return rgba;
 }
@@ -123,9 +122,9 @@ TileAnimPixelTransform::TileAnimPixelTransform(int x, int y) {
 
 bool TileAnimPixelTransform::drawsTile() const { return false; }
 void TileAnimPixelTransform::draw(Image *dest, const Tile *tile, const MapTile &mapTile) {
-    RGBA *color = colors[xu4_random(colors.size())];
+    RGBA color = colors[xu4_random(colors.size())];
     int scale = tile->getScale();
-    dest->fillRect(x * scale, y * scale, scale, scale, color->r, color->g, color->b, color->a);
+    dest->fillRect(x * scale, y * scale, scale, scale, color.r, color.g, color.b, color.a);
 }
 
 bool TileAnimScrollTransform::drawsTile() const { return true; }
@@ -169,11 +168,11 @@ TileAnimPixelColorTransform::TileAnimPixelColorTransform(int x, int y, int w, in
 
 bool TileAnimPixelColorTransform::drawsTile() const { return false; }
 void TileAnimPixelColorTransform::draw(Image *dest, const Tile *tile, const MapTile &mapTile) {
-    RGBA diff = *end;
+    RGBA diff = end;
     int scale = tile->getScale();
-    diff.r -= start->r;
-    diff.g -= start->g;
-    diff.b -= start->b;
+    diff.r -= start.r;
+    diff.g -= start.g;
+    diff.b -= start.b;
 
     const Image *tileImage = tile->getImage();
 
@@ -182,10 +181,10 @@ void TileAnimPixelColorTransform::draw(Image *dest, const Tile *tile, const MapT
             RGBA pixelAt;
 
             tileImage->getPixel(i, j + (mapTile.frame * tile->getHeight()), pixelAt);
-            if (pixelAt.r >= start->r && pixelAt.r <= end->r &&
-                pixelAt.g >= start->g && pixelAt.g <= end->g &&
-                pixelAt.b >= start->b && pixelAt.b <= end->b) {
-                dest->putPixel(i, j, start->r + xu4_random(diff.r), start->g + xu4_random(diff.g), start->b + xu4_random(diff.b), pixelAt.a);
+            if (pixelAt.r >= start.r && pixelAt.r <= end.r &&
+                pixelAt.g >= start.g && pixelAt.g <= end.g &&
+                pixelAt.b >= start.b && pixelAt.b <= end.b) {
+                dest->putPixel(i, j, start.r + xu4_random(diff.r), start.g + xu4_random(diff.g), start.b + xu4_random(diff.b), pixelAt.a);
             }
         }
     }
@@ -230,6 +229,12 @@ TileAnimContext* TileAnimContext::create(const ConfigElement &conf) {
     return context;
 }
 
+TileAnimContext::~TileAnimContext() {
+    TileAnimTransformList::iterator it;
+    foreach (it, animTransforms)
+        delete *it;
+}
+
 /**
  * Adds a tile transform to the context
  */
@@ -269,6 +274,12 @@ TileAnimSet::TileAnimSet(const ConfigElement &conf) {
     }
 }
 
+TileAnimSet::~TileAnimSet() {
+    TileAnimMap::iterator it;
+    foreach (it, tileanims)
+        delete it->second;
+}
+
 /**
  * Returns the tile animation with the given name from the current set
  */
@@ -297,6 +308,16 @@ TileAnim::TileAnim(const ConfigElement &conf) : random(0) {
             contexts.push_back(context);
         }
     }
+}
+
+TileAnim::~TileAnim() {
+    vector<TileAnimTransform *>::iterator ti;
+    foreach (ti, transforms)
+        delete *ti;
+
+    vector<TileAnimContext *>::iterator ci;
+    foreach (ci, contexts)
+        delete *ci;
 }
 
 void TileAnim::draw(Image *dest, const Tile *tile, const MapTile &mapTile, Direction dir) {

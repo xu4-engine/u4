@@ -258,8 +258,10 @@ Map::Map() {
 }
 
 Map::~Map() {
-    for (PortalList::iterator i = portals.begin(); i != portals.end(); i++)
+    for (PortalList::iterator i = portals.begin(); i != portals.end(); i++) {
+        delete (*i)->retroActiveDest;
         delete *i;
+    }
     clearObjects();
     delete annotations;
 #ifdef USE_GL

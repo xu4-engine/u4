@@ -18,12 +18,17 @@
  */
 
 #include "context.h"
+#include "player.h"
+#include "stats.h"
 
 Context::Context()
-    : party(NULL)
-    , saveGame(NULL)
-    , location(NULL) {
-
+    : party(NULL), saveGame(NULL), location(NULL), stats(NULL), aura(NULL) {
 }
 
-Context::~Context() {}
+Context::~Context() {
+    delete party;
+    delete saveGame;
+    delete location;
+    delete stats;
+    delete aura;
+}
