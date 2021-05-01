@@ -12,10 +12,7 @@
 
 using std::string;
 
-class Config;
-class ConfigElement;
 class Image;
-class Tileset;
 class TileAnim;
 
 /* attr masks */

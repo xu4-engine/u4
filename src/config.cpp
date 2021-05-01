@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * config.cpp
  */
 
 #include <cstdio>
@@ -89,18 +89,49 @@ struct XMLConfig
     UltimaSaveIds usaveIds;
 };
 
+/**
+ * A single configuration element in the config tree.
+ */
+class ConfigElement {
+public:
+    ConfigElement(xmlNodePtr xmlNode);
+    ConfigElement(const ConfigElement &e);
+
+    ConfigElement &operator=(const ConfigElement &e);
+
+    const string& getName() const { return name; }
+
+    bool exists(const string &name) const;
+    string getString(const string &name) const;
+    int getInt(const string &name, int defaultValue = 0) const;
+    bool getBool(const string &name) const;
+    int getEnum(const string &name, const char *enumValues[]) const;
+
+    std::vector<ConfigElement> getChildren() const;
+
+    xmlNodePtr getNode() const { return node; }
+
+private:
+    xmlNodePtr node;
+    string name;
+};
+
 struct ConfigXML : public Config {
     ConfigXML();
     ~ConfigXML();
+
+    ConfigElement getElement(const string &name) const;
+    Symbol propSymbol(const ConfigElement& ce, const char* name) const;
 
     XMLConfig xcd;
 };
 
 #define CB  static_cast<XMLConfig*>(backend)
+#define CX  static_cast<const ConfigXML*>(this)
 
 static const char* configXmlPath = "config.xml";
 
-ConfigElement Config::getElement(const string &name) const {
+ConfigElement ConfigXML::getElement(const string &name) const {
     xmlXPathContextPtr context;
     xmlXPathObjectPtr result;
 
@@ -131,7 +162,7 @@ static Symbol propertySymbol(SymbolTable& sym, const ConfigElement& ce, const ch
     return ns;
 }
 
-Symbol Config::propSymbol(const ConfigElement& ce, const char* name) const {
+Symbol ConfigXML::propSymbol(const ConfigElement& ce, const char* name) const {
     return propertySymbol(CB->sym, ce, name);
 }
 
@@ -280,7 +311,7 @@ static void conf_tileRule(SymbolTable& sym, TileRule* rule, const ConfigElement 
     rule->effect = static_cast<TileEffect>(conf.getEnum("effect", effectsEnumStrings));
 }
 
-static void conf_tileLoad(const Config* cfg, Tile* tile, const ConfigElement &conf) {
+static void conf_tileLoad(const ConfigXML* cfg, Tile* tile, const ConfigElement &conf) {
     tile->name = conf.getString("name"); /* get the name of the tile */
     if (tile->name == "brick_floor")
         Tile::dungeonFloorId = tile->getId();
@@ -317,7 +348,7 @@ static void conf_tileLoad(const Config* cfg, Tile* tile, const ConfigElement &co
         tile->setDirections(conf.getString("directions"));
 }
 
-static void conf_tilesetLoad(Config* cfg, Tileset* ts, const ConfigElement& conf) {
+static void conf_tilesetLoad(ConfigXML* cfg, Tileset* ts, const ConfigElement& conf) {
     //ts->name = conf.getString("name");
     if (conf.exists("imageName"))
         ts->imageName = conf.getString("imageName");
@@ -997,7 +1028,7 @@ ConfigElement &ConfigElement::operator=(const ConfigElement &e) {
 /**
  * Returns true if the property exists in the current config element
  */
-bool ConfigElement::exists(const std::string &name) const {
+bool ConfigElement::exists(const string &name) const {
     xmlChar *prop = xmlGetProp(node, reinterpret_cast<const xmlChar *>(name.c_str()));
     bool exists = prop != NULL;
     xmlFree(prop);
@@ -1093,7 +1124,7 @@ const RGBA* Config::egaPalette() {
         RGBA* col = CB->egaColors = new RGBA[16];
         RGBA* end = col + 16;
 
-        vector<ConfigElement> ce = getElement("egaPalette").getChildren();
+        vector<ConfigElement> ce = CX->getElement("egaPalette").getChildren();
         vector<ConfigElement>::iterator it;
         foreach (it, ce) {
             if (it->getName() != "color")
@@ -1268,7 +1299,7 @@ Map* Config::restoreMap(uint32_t id) {
 void Config::unloadMap(uint32_t id) {
     delete CB->mapList[id];
 
-    vector<ConfigElement> maps = getElement("maps").getChildren();
+    vector<ConfigElement> maps = CX->getElement("maps").getChildren();
     vector<ConfigElement>::const_iterator it;
     foreach (it, maps) {
         if (id == (uint32_t) (*it).getInt("id")) {
@@ -1405,7 +1436,7 @@ static ImageSet* loadImageSet(const ConfigElement &conf) {
  */
 ImageSet* Config::newScheme( uint32_t id ) {
     uint32_t n = 0;
-    vector<ConfigElement> ce = getElement("graphics").getChildren();
+    vector<ConfigElement> ce = CX->getElement("graphics").getChildren();
     vector<ConfigElement>::const_iterator it  = ce.begin();
     vector<ConfigElement>::const_iterator end = ce.end();
     for (; it != end; ++it) {
@@ -1566,7 +1597,7 @@ static void conf_loadTileAnimSet(TileAnimSet* ts, const ConfigElement &conf) {
  * Return TileAnimSet pointer which caller must delete.
  */
 TileAnimSet* Config::newTileAnims(const char* name) const {
-    vector<ConfigElement> ce = getElement("graphics").getChildren();
+    vector<ConfigElement> ce = CX->getElement("graphics").getChildren();
     vector<ConfigElement>::iterator it;
     foreach (it, ce) {
         if (it->getName() == "tileanimset") {

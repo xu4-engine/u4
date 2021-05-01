@@ -5,9 +5,6 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#include <string>
-#include <vector>
-#include <libxml/xmlmemory.h>
 #include "types.h"
 
 class ImageSet;
@@ -57,43 +54,9 @@ public:
     Map* map(uint32_t id);
     Map* restoreMap(uint32_t id);
     void unloadMap(uint32_t id);
-    // More to be added...
-
-    // Deprecated methods for manually parsing a tree.
-    ConfigElement getElement(const std::string &name) const;
-    Symbol propSymbol(const ConfigElement& ce, const char* name) const;
 
 protected:
     void* backend;
-};
-
-/**
- * NOTE: This class is deprecated and will be eliminated over time.
- *
- * A single configuration element in the config tree.
- */
-class ConfigElement {
-public:
-    ConfigElement(xmlNodePtr xmlNode);
-    ConfigElement(const ConfigElement &e);
-
-    ConfigElement &operator=(const ConfigElement &e);
-
-    const std::string& getName() const { return name; }
-
-    bool exists(const std::string &name) const;
-    std::string getString(const std::string &name) const;
-    int getInt(const std::string &name, int defaultValue = 0) const;
-    bool getBool(const std::string &name) const;
-    int getEnum(const std::string &name, const char *enumValues[]) const;
-
-    std::vector<ConfigElement> getChildren() const;
-
-    xmlNodePtr getNode() const { return node; }
-
-private:
-    xmlNodePtr node;
-    std::string name;
 };
 
 extern Config* configInit();
