@@ -36,8 +36,7 @@ static const RGBA* stdPalette(int bpp)
  * If bpp is 1, 4, or 8, then palette must not be NULL and must have enough
  * entries for that depth (i.e. 2, 16, and 256 respectively).
  */
-// This would be static but is a friend of Image.
-void setFromRawData(Image *image, int width, int height, int bpp, unsigned char *rawData, const RGBA *palette) {
+static void setFromRawData(Image *image, int width, int height, int bpp, unsigned char *rawData, const RGBA *palette) {
     const RGBA* col;
     uint32_t* row;
     uint32_t* rowEnd;

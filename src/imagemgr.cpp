@@ -622,6 +622,7 @@ const RGBA* ImageMgr::vgaPalette() {
             vgaColors[i].r = u4fgetc(pal) * 255 / 63;
             vgaColors[i].g = u4fgetc(pal) * 255 / 63;
             vgaColors[i].b = u4fgetc(pal) * 255 / 63;
+            vgaColors[i].a = 255;
         }
         u4fclose(pal);
     }
