@@ -29,6 +29,19 @@ bool isDungeon(Map *punknown) {
         return false;
 }
 
+Dungeon::~Dungeon() {
+    if (roomMaps) {
+        CombatMap** it  = roomMaps;
+        CombatMap** end = it + n_rooms;
+        for (; it != end; ++it)
+            delete *it;
+
+        delete[] roomMaps;
+    }
+
+    delete[] rooms;
+}
+
 /**
  * Returns the name of the dungeon
  */

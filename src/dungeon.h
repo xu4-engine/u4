@@ -67,7 +67,8 @@ enum DungeonToken {
 
 class Dungeon : public Map {
 public:
-    Dungeon() {}
+    Dungeon() : rooms(NULL), roomMaps(NULL) {}
+    ~Dungeon();
 
     // Members
     virtual string getName();
