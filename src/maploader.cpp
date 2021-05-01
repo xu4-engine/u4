@@ -187,10 +187,16 @@ static bool loadCityMap(Map *map, U4FILE *ult) {
 
         for (current = city->personroles.begin(); current != city->personroles.end(); current++) {
             if ((unsigned)(*current)->id == (i + 1)) {
-                if ((*current)->role == NPC_LORD_BRITISH)
-                    people[i]->setDialogue(DialogueLoader::getLoader("application/x-u4lbtlk")->load(NULL));
-                else if ((*current)->role == NPC_HAWKWIND)
-                    people[i]->setDialogue(DialogueLoader::getLoader("application/x-u4hwtlk")->load(NULL));
+                Dialogue* dlg;
+                if ((*current)->role == NPC_LORD_BRITISH) {
+                    dlg = DialogueLoader::getLoader("application/x-u4lbtlk")->load(NULL);
+set_dialog:
+                    people[i]->setDialogue(dlg);
+                    city->dialogueStore.push_back(dlg);
+                } else if ((*current)->role == NPC_HAWKWIND) {
+                    dlg = DialogueLoader::getLoader("application/x-u4hwtlk")->load(NULL);
+                    goto set_dialog;
+                }
                 people[i]->setNpcType(static_cast<PersonNpcType>((*current)->role));
             }
         }

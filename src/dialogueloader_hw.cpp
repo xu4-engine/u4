@@ -46,6 +46,7 @@ Dialogue* U4HWDialogueLoader::load(void *source) {
         return NULL;
 
     hawkwindText = u4read_stringtable(avatar, 74729, 53);
+    u4fclose(avatar);
 
     Dialogue *dlg = new Dialogue();
     dlg->setTurnAwayProb(0);

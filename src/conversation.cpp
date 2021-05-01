@@ -139,7 +139,8 @@ Dialogue::~Dialogue() {
     for (KeywordMap::iterator i = keywords.begin(); i != keywords.end(); i++) {
         delete i->second;
     }
-    delete intro;
+    if (intro && (intro != longIntro))
+        delete intro;
     delete longIntro;
     delete defaultAnswer;
 }

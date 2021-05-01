@@ -35,6 +35,8 @@ Dialogue* U4LBDialogueLoader::load(void *source) {
     /* There's a \0 in the 19th string so we get a
        spurious 20th entry */
     vector<string> lbText = u4read_stringtable(avatar, 87754, 25);
+    u4fclose(avatar);
+
     for (int i = 20; i < 24; i++)
         lbText[i] = lbText[i+1];
     lbText.pop_back();
