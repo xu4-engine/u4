@@ -87,15 +87,39 @@ static bool loadMapData(Map *map, U4FILE *uf) {
     return true;
 }
 
+enum PersonDataOffset {
+    PD_TILE      = 0,
+    PD_X         = 1*CITY_MAX_PERSONS,
+    PD_Y         = 2*CITY_MAX_PERSONS,
+    PD_PREV_TILE = 3*CITY_MAX_PERSONS,
+    PD_MOVE      = 6*CITY_MAX_PERSONS,
+    PD_CONV      = 7*CITY_MAX_PERSONS,
+    PD_SIZE      = 8*CITY_MAX_PERSONS
+};
+
+static int moveBehavior(int ultValue) {
+    switch(ultValue) {
+        case 0:     return MOVEMENT_FIXED;
+        case 1:     return MOVEMENT_WANDER;
+        case 0x80:  return MOVEMENT_FOLLOW_AVATAR;
+        case 0xFF:  return MOVEMENT_ATTACK_AVATAR;
+    }
+    return -1;
+}
+
 /**
  * Load city data from 'ult' and 'tlk' files.
  */
 static bool loadCityMap(Map *map, U4FILE *ult) {
     City *city = dynamic_cast<City*>(map);
-    unsigned int i, j;
+    int i, j;
+    uint8_t* data;
+    uint8_t* pd;
+    Person* per;
     Person *people[CITY_MAX_PERSONS];
-    Dialogue *dialogues[CITY_MAX_PERSONS];
     const UltimaSaveIds* usaveIds = xu4.config->usaveIds();
+    Dialogue* dlg;
+    bool ok = false;
 
     /* the map must be 32x32 to be read from an .ULT file */
     ASSERT(city->width == CITY_WIDTH, "map width is %d, should be %d", city->width, CITY_WIDTH);
@@ -104,76 +128,70 @@ static bool loadCityMap(Map *map, U4FILE *ult) {
     if (! loadMapData(city, ult))
         return false;
 
+    data = new uint8_t[PD_SIZE];
+    i = u4fread(data, 1, PD_SIZE, ult);
+    if (i != PD_SIZE)
+        goto cleanup;
+
+
     /* Properly construct people for the city */
-    for (i = 0; i < CITY_MAX_PERSONS; i++)
-        people[i] = new Person(usaveIds->moduleId(u4fgetc(ult)));
-
-    for (i = 0; i < CITY_MAX_PERSONS; i++)
-        people[i]->getStart().x = u4fgetc(ult);
-
-    for (i = 0; i < CITY_MAX_PERSONS; i++)
-        people[i]->getStart().y = u4fgetc(ult);
-
-    for (i = 0; i < CITY_MAX_PERSONS; i++)
-        people[i]->setPrevTile(usaveIds->moduleId(u4fgetc(ult)));
-
-    for (i = 0; i < CITY_MAX_PERSONS * 2; i++)
-        u4fgetc(ult);           /* read redundant startx/starty */
-
+    pd = data;
     for (i = 0; i < CITY_MAX_PERSONS; i++) {
-        unsigned char c = u4fgetc(ult);
-        if (c == 0)
-            people[i]->setMovementBehavior(MOVEMENT_FIXED);
-        else if (c == 1)
-            people[i]->setMovementBehavior(MOVEMENT_WANDER);
-        else if (c == 0x80)
-            people[i]->setMovementBehavior(MOVEMENT_FOLLOW_AVATAR);
-        else if (c == 0xFF)
-            people[i]->setMovementBehavior(MOVEMENT_ATTACK_AVATAR);
-        else
-            return false;
-    }
+        if (pd[PD_TILE]) {
+            per = new Person(usaveIds->moduleId( pd[PD_TILE] ));
+            per->setPrevTile(usaveIds->moduleId( pd[PD_PREV_TILE] ));
 
-    unsigned char conv_idx[CITY_MAX_PERSONS];
-    for (i = 0; i < CITY_MAX_PERSONS; i++) {
-        conv_idx[i] = u4fgetc(ult);
-    }
+            MapCoords& pos = per->getStart();
+            pos.x = pd[PD_X];
+            pos.y = pd[PD_Y];
+            pos.z = 0;
 
-    for (i = 0; i < CITY_MAX_PERSONS; i++) {
-        people[i]->getStart().z = 0;
+            if ((j = moveBehavior( pd[PD_MOVE] )) < 0)
+                goto cleanup;
+            per->setMovementBehavior((ObjectMovementBehavior) j);
+
+            city->persons.push_back(per);
+            people[i] = per;
+        } else {
+            people[i] = NULL;
+        }
+        ++pd;
     }
 
     {
+    const uint8_t* conv_idx = data + PD_CONV;
     U4FILE *tlk = u4fopen(city->tlk_fname);
     if (! tlk)
         errorFatal("Unable to open .TLK file");
 
     DialogueLoader *dlgLoader = DialogueLoader::getLoader("application/x-u4tlk");
-    for (i = 0; i < CITY_MAX_PERSONS; i++) {
-        dialogues[i] = dlgLoader->load(tlk);
 
-        if (!dialogues[i])
+    // NOTE: Ultima 4 .TLK files only have 16 conversations, but this`loop
+    // will support mods with more.
+    for (i = 0; i < CITY_MAX_PERSONS; i++) {
+        dlg = dlgLoader->load(tlk);
+        if (! dlg)
             break;
 
         /*
-         * Match up dialogues with their respective people
+         * Match up dialogues with their respective people. Multiple people
+         * can share the same dialogue.
          */
         bool found = false;
         for (j = 0; j < CITY_MAX_PERSONS; j++) {
             if (conv_idx[j] == i+1) {
-                people[j]->setDialogue(dialogues[i]);
+                people[j]->setDialogue(dlg);
                 found = true;
             }
         }
         /*
-         * if the dialogue doesn't match up with a person, attach it
-         * to the city; Isaac the ghost in Skara Brae is handled like
-         * this
+         * if the dialogue doesn't match up with a person, attach it to the
+         * city; Isaac the ghost in Skara Brae is handled like this
          */
-        if (!found)
-            city->extraDialogues.push_back(dialogues[i]);
+        if (! found)
+            city->extraDialogues.push_back(dlg);
         else
-            city->dialogueStore.push_back(dialogues[i]);
+            city->dialogueStore.push_back(dlg);
     }
 
     u4fclose(tlk);
@@ -182,37 +200,29 @@ static bool loadCityMap(Map *map, U4FILE *ult) {
     /*
      * Assign roles to certain people
      */
-    for (i = 0; i < CITY_MAX_PERSONS; i++) {
-        PersonRoleList::iterator current;
-
-        for (current = city->personroles.begin(); current != city->personroles.end(); current++) {
-            if ((unsigned)(*current)->id == (i + 1)) {
-                Dialogue* dlg;
-                if ((*current)->role == NPC_LORD_BRITISH) {
-                    dlg = DialogueLoader::getLoader("application/x-u4lbtlk")->load(NULL);
+    {
+    PersonRoleList::iterator ri;
+    foreach (ri, city->personroles) {
+        per = people[ (*ri)->id - 1 ];
+        if (per) {
+            if ((*ri)->role == NPC_LORD_BRITISH) {
+                dlg = DialogueLoader::getLoader("application/x-u4lbtlk")->load(NULL);
 set_dialog:
-                    people[i]->setDialogue(dlg);
-                    city->dialogueStore.push_back(dlg);
-                } else if ((*current)->role == NPC_HAWKWIND) {
-                    dlg = DialogueLoader::getLoader("application/x-u4hwtlk")->load(NULL);
-                    goto set_dialog;
-                }
-                people[i]->setNpcType(static_cast<PersonNpcType>((*current)->role));
+                per->setDialogue(dlg);
+                city->dialogueStore.push_back(dlg);
+            } else if ((*ri)->role == NPC_HAWKWIND) {
+                dlg = DialogueLoader::getLoader("application/x-u4hwtlk")->load(NULL);
+                goto set_dialog;
             }
+            per->setNpcType(static_cast<PersonNpcType>((*ri)->role));
         }
     }
-
-    /**
-     * Add the people to the city structure
-     */
-    for (i = 0; i < CITY_MAX_PERSONS; i++) {
-        if (people[i]->getTile() != 0)
-            city->persons.push_back(people[i]);
-        else
-            delete people[i];
     }
+    ok = true;
 
-    return true;
+cleanup:
+    delete[] data;
+    return ok;
 }
 
 /**
