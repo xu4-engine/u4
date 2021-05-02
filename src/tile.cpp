@@ -15,7 +15,6 @@
 #include "tileanim.h"
 #include "tileset.h"
 #include "utils.h"
-#include "assert.h"
 #include "xu4.h"
 
 

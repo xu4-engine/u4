@@ -15,7 +15,7 @@ libxml2: does [
 ]
 
 exe %u4 [
-	include_from %src
+	include_from [%src %src/lzw %src/support]
 	libxml2
 	win32 [
 		include_from %../usr/include
