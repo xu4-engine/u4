@@ -1,5 +1,5 @@
 /**
- * $Id$
+ * creature.cpp
  */
 
 #include "creature.h"
@@ -33,193 +33,11 @@ bool isCreature(Object *punknown) {
 /**
  * Creature class implementation
  */
-Creature::Creature(MapTile tile) :
-    Object(Object::CREATURE) {
-    const Creature *m = xu4.creatureMgr->getByTile(tile);
-    if (m)
-        *this = *m;
+Creature::Creature() : Object(Object::CREATURE) {
 }
 
-void Creature::load(const ConfigElement &conf) {
-    unsigned int idx;
-
-    static const struct {
-        const char *name;
-        unsigned int mask;
-    } booleanAttributes[] = {
-        { "undead", MATTR_UNDEAD },
-        { "good", MATTR_GOOD },
-        { "swims", MATTR_WATER },
-        { "sails", MATTR_WATER },
-        { "cantattack", MATTR_NONATTACKABLE },
-        { "camouflage", MATTR_CAMOUFLAGE },
-        { "wontattack", MATTR_NOATTACK },
-        { "ambushes", MATTR_AMBUSHES },
-        { "incorporeal", MATTR_INCORPOREAL },
-        { "nochest", MATTR_NOCHEST },
-        { "divides", MATTR_DIVIDES },
-        { "forceOfNature", MATTR_FORCE_OF_NATURE }
-    };
-
-    /* steals="" */
-    static const struct {
-        const char *name;
-        unsigned int mask;
-    } steals[] = {
-        { "food", MATTR_STEALFOOD },
-        { "gold", MATTR_STEALGOLD }
-    };
-
-    /* casts="" */
-    static const struct {
-        const char *name;
-        unsigned int mask;
-    } casts[] = {
-        { "sleep", MATTR_CASTS_SLEEP },
-        { "negate", MATTR_NEGATE }
-    };
-
-    /* movement="" */
-    static const struct {
-        const char *name;
-        unsigned int mask;
-    } movement[] = {
-        { "none", MATTR_STATIONARY },
-        { "wanders", MATTR_WANDERS }
-    };
-
-    /* boolean attributes that affect movement */
-    static const struct {
-        const char *name;
-        unsigned int mask;
-    } movementBoolean[] = {
-        { "swims", MATTR_SWIMS },
-        { "sails", MATTR_SAILS },
-        { "flies", MATTR_FLIES },
-        { "teleports", MATTR_TELEPORT },
-        { "canMoveOntoCreatures", MATTR_CANMOVECREATURES },
-        { "canMoveOntoAvatar", MATTR_CANMOVEAVATAR }
-    };
-
-    static const struct {
-        const char *name;
-        TileEffect effect;
-    } effects[] = {
-        { "fire", EFFECT_FIRE },
-        { "poison", EFFECT_POISONFIELD },
-        { "sleep", EFFECT_SLEEP }
-    };
-
-    name = conf.getString("name");
-    id = static_cast<unsigned short>(conf.getInt("id"));
-
-    /* Get the leader if it's been included, otherwise the leader is itself */
-    leader = static_cast<unsigned char>(conf.getInt("leader", id));
-
-    xp = static_cast<unsigned short>(conf.getInt("exp"));
-    ranged = conf.getBool("ranged");
-    setTile(Tileset::findTileByName(conf.getString("tile")));
-
-    setHitTile("hit_flash");
-    setMissTile("miss_flash");
-
-    mattr = static_cast<CreatureAttrib>(0);
-    movementAttr = static_cast<CreatureMovementAttrib>(0);
-    resists = 0;
-
-    /* get the encounter size */
-    encounterSize = conf.getInt("encounterSize", 0);
-
-    /* get the base hp */
-    basehp = conf.getInt("basehp", 0);
-    /* adjust basehp according to battle difficulty setting */
-    if (xu4.settings->battleDiff == BattleDiff_Hard)
-        basehp *= 2;
-    if (xu4.settings->battleDiff == BattleDiff_Expert)
-        basehp *= 4;
-
-    /* get the camouflaged tile */
-    if (conf.exists("camouflageTile"))
-        camouflageTile = conf.getString("camouflageTile");
-
-    /* get the ranged tile for world map attacks */
-    if (conf.exists("worldrangedtile"))
-        worldrangedtile = conf.getString("worldrangedtile");
-
-    /* get ranged hit tile */
-    if (conf.exists("rangedhittile")) {
-        if (conf.getString("rangedhittile") == "random")
-            mattr = static_cast<CreatureAttrib>(mattr | MATTR_RANDOMRANGED);
-        else
-            setHitTile(conf.getString("rangedhittile"));
-    }
-
-    /* get ranged miss tile */
-    if (conf.exists("rangedmisstile")) {
-        if (conf.getString("rangedmisstile") ==  "random")
-            mattr = static_cast<CreatureAttrib>(mattr | MATTR_RANDOMRANGED);
-        else
-            setMissTile(conf.getString("rangedmisstile"));
-    }
-
-    /* find out if the creature leaves a tile behind on ranged attacks */
-    leavestile = conf.getBool("leavestile");
-
-    /* get effects that this creature is immune to */
-    for (idx = 0; idx < sizeof(effects) / sizeof(effects[0]); idx++) {
-        if (conf.getString("resists") == effects[idx].name) {
-            resists = effects[idx].effect;
-        }
-    }
-
-    /* Load creature attributes */
-    for (idx = 0; idx < sizeof(booleanAttributes) / sizeof(booleanAttributes[0]); idx++) {
-        if (conf.getBool(booleanAttributes[idx].name)) {
-            mattr = static_cast<CreatureAttrib>(mattr | booleanAttributes[idx].mask);
-        }
-    }
-
-    /* Load boolean attributes that affect movement */
-    for (idx = 0; idx < sizeof(movementBoolean) / sizeof(movementBoolean[0]); idx++) {
-        if (conf.getBool(movementBoolean[idx].name)) {
-            movementAttr = static_cast<CreatureMovementAttrib>(movementAttr | movementBoolean[idx].mask);
-        }
-    }
-
-    /* steals="" */
-    for (idx = 0; idx < sizeof(steals) / sizeof(steals[0]); idx++) {
-        if (conf.getString("steals") == steals[idx].name) {
-            mattr = static_cast<CreatureAttrib>(mattr | steals[idx].mask);
-        }
-    }
-
-    /* casts="" */
-    for (idx = 0; idx < sizeof(casts) / sizeof(casts[0]); idx++) {
-        if (conf.getString("casts") == casts[idx].name) {
-            mattr = static_cast<CreatureAttrib>(mattr | casts[idx].mask);
-        }
-    }
-
-    /* movement="" */
-    for (idx = 0; idx < sizeof(movement) / sizeof(movement[0]); idx++) {
-        if (conf.getString("movement") == movement[idx].name) {
-            movementAttr = static_cast<CreatureMovementAttrib>(movementAttr | movement[idx].mask);
-        }
-    }
-
-    if (conf.exists("spawnsOnDeath")) {
-        mattr = static_cast<CreatureAttrib>(mattr | MATTR_SPAWNSONDEATH);
-        spawn = static_cast<unsigned char>(conf.getInt("spawnsOnDeath"));
-    }
-
-    /* Figure out which 'slowed' function to use */
-    slowedType = SLOWED_BY_TILE;
-    if (sails())
-        /* sailing creatures (pirate ships) */
-        slowedType = SLOWED_BY_WIND;
-    else if (flies() || isIncorporeal())
-        /* flying creatures (dragons, bats, etc.) and incorporeal creatures (ghosts, zorns) */
-        slowedType = SLOWED_BY_NOTHING;
+Creature::Creature(const Creature* cproto) : Object(Object::CREATURE) {
+    *this = *cproto;
 }
 
 bool Creature::isAttackable() const  {
@@ -723,7 +541,7 @@ bool Creature::spawnOnDeath() {
     MapCoords coords(getCoords());
 
     /* create our new creature! */
-    map->addCreature(xu4.creatureMgr->getById(spawn), coords);
+    map->addCreature(xu4.config->creature(spawn), coords);
     return true;
 }
 
@@ -895,38 +713,23 @@ bool Creature::dealDamage(Creature *m, int damage) {
     return m->applyDamage(damage, isPartyMember(this));
 }
 
-
-CreatureMgr::~CreatureMgr() {
-    CreatureMap::iterator it;
-    for (it = creatures.begin(); it != creatures.end(); ++it)
-        delete it->second;
-}
-
-void CreatureMgr::loadAll() {
-    vector<ConfigElement> creatureConfs = xu4.config->getElement("creatures").getChildren();
-
-    for (std::vector<ConfigElement>::iterator i = creatureConfs.begin(); i != creatureConfs.end(); i++) {
-        if (i->getName() != "creature")
-            continue;
-
-        Creature *m = new Creature(0);
-        m->load(*i);
-
-        /* add the creature to the list */
-        creatures[m->getId()] = m;
-    }
-}
+//--------------------------------------
+// Static Functions
 
 /**
  * Returns a creature using a tile to find which one to create
  * or NULL if a creature with that tile cannot be found
  */
-Creature *CreatureMgr::getByTile(MapTile tile) {
-    CreatureMap::const_iterator i;
+const Creature* Creature::getByTile(const MapTile& tile) {
+    uint32_t i;
+    uint32_t count;
+    const Creature* const* creatures = xu4.config->creatureTable(&count);
+    const Creature* cp;
 
-    for (i = creatures.begin(); i != creatures.end(); i++) {
-        if (i->second->getTile() == tile)
-            return i->second;
+    for (i = 0; i < count; ++i) {
+        cp = creatures[i];
+        if (cp->getTile() == tile)
+            return cp;
     }
 
 //    if (tile.id)
@@ -935,27 +738,20 @@ Creature *CreatureMgr::getByTile(MapTile tile) {
 }
 
 /**
- * Returns the creature that has the corresponding id
- * or returns NULL if no creature with that id could
- * be found.
- */
-Creature *CreatureMgr::getById(CreatureId id) {
-    CreatureMap::const_iterator i = creatures.find(id);
-    if (i != creatures.end())
-        return i->second;
-    else return NULL;
-}
-
-/**
  * Returns the creature that has the corresponding name
  * or returns NULL if no creature can be found with
  * that name (case insensitive)
  */
-Creature *CreatureMgr::getByName(string name) {
-    CreatureMap::const_iterator i;
-    for (i = creatures.begin(); i != creatures.end(); i++) {
-        if (strcasecmp(i->second->getName().c_str(), name.c_str()) == 0)
-            return i->second;
+const Creature* Creature::getByName(const string& name) {
+    uint32_t i;
+    uint32_t count;
+    const Creature* const* creatures = xu4.config->creatureTable(&count);
+    const Creature* cp;
+
+    for (i = 0; i < count; ++i) {
+        cp = creatures[i];
+        if (strcasecmp(cp->getName().c_str(), name.c_str()) == 0)
+            return cp;
     }
     return NULL;
 }
@@ -963,7 +759,7 @@ Creature *CreatureMgr::getByName(string name) {
 /**
  * Creates a random creature based on the tile given
  */
-Creature *CreatureMgr::randomForTile(const Tile *tile) {
+const Creature* Creature::randomForTile(const Tile *tile) {
     /* FIXME: this is too dependent on the tile system, and easily
        broken when tileset changes are made.  Methinks the logic
        behind this should be moved to monsters.xml or another conf
@@ -973,12 +769,12 @@ Creature *CreatureMgr::randomForTile(const Tile *tile) {
     TileId randTile;
 
     if (tile->isSailable()) {
-        randTile = creatures.find(PIRATE_ID)->second->getTile().getId();
+        randTile = xu4.config->creature(PIRATE_ID)->getTile().getId();
         randTile += xu4_random(7);
         return getByTile(randTile);
     }
     else if (tile->isSwimable()) {
-        randTile = creatures.find(NIXIE_ID)->second->getTile().getId();
+        randTile = xu4.config->creature(NIXIE_ID)->getTile().getId();
         randTile += xu4_random(5);
         return getByTile(randTile);
     }
@@ -994,7 +790,7 @@ Creature *CreatureMgr::randomForTile(const Tile *tile) {
     else
         era = 0x03;
 
-    randTile = creatures.find(ORC_ID)->second->getTile().getId();
+    randTile = xu4.config->creature(ORC_ID)->getTile().getId();
     randTile += era & xu4_random(0x10) & xu4_random(0x10);
     return getByTile(randTile);
 }
@@ -1003,7 +799,7 @@ Creature *CreatureMgr::randomForTile(const Tile *tile) {
 /**
  * Creates a random creature based on the dungeon level given
  */
-Creature *CreatureMgr::randomForDungeon(int dngLevel) {
+const Creature* Creature::randomForDungeon(int dngLevel) {
     // Based on u4dos observations, see:
     //  https://sourceforge.net/p/xu4/patches/37/
     int adjustedDngLevel = dngLevel + 1;
@@ -1012,21 +808,24 @@ Creature *CreatureMgr::randomForDungeon(int dngLevel) {
     if(monster >= MIMIC_ID)
         ++monster;
 
-    return getById(monster);
+    return xu4.config->creature(monster);
 }
 
 
 /**
  * Creates a random ambushing creature
  */
-Creature *CreatureMgr::randomAmbushing() {
-    CreatureMap::const_iterator i;
-    int numAmbushingCreatures = 0,
-        randCreature;
+const Creature* Creature::randomAmbushing() {
+    int numAmbushingCreatures = 0;
+    int randCreature;
+    uint32_t i;
+    uint32_t count;
+    const Creature* const* creatures = xu4.config->creatureTable(&count);
+    const Creature* cp;
 
     /* first, find out how many creatures exist that might ambush you */
-    for (i = creatures.begin(); i != creatures.end(); i++) {
-        if (i->second->ambushes())
+    for (i = 0; i < count; ++i) {
+        if (creatures[i]->ambushes())
             numAmbushingCreatures++;
     }
 
@@ -1036,13 +835,15 @@ Creature *CreatureMgr::randomAmbushing() {
         numAmbushingCreatures = 0;
 
         /* now, find the one we selected */
-        for (i = creatures.begin(); i != creatures.end(); i++) {
-            if (i->second->ambushes()) {
+        for (i = 0; i < count; ++i) {
+            cp = creatures[i];
+            if (cp->ambushes()) {
                 /* found the creature - return it! */
                 if (numAmbushingCreatures == randCreature)
-                    return i->second;
-                /* move on to the next creature */
-                else numAmbushingCreatures++;
+                    return cp;
+                else
+                    /* move on to the next creature */
+                    numAmbushingCreatures++;
             }
         }
     }

@@ -76,6 +76,7 @@ struct XMLConfig
     vector<string> schemeNames;
     vector<Armor*> armors;
     vector<Weapon*> weapons;
+    vector<Creature *> creatures;
     vector<Map *> mapList;
 
     TileRule* tileRules;
@@ -585,6 +586,169 @@ static Map* conf_makeMap(Tileset* tiles, const ConfigElement& conf) {
 }
 
 //--------------------------------------
+// Creature
+
+struct Attribute {
+    const char *name;
+    unsigned int mask;
+};
+
+static void conf_creatureLoad(Creature* cr, Tileset* ts, const ConfigElement &conf) {
+    static const Attribute booleanAttributes[] = {
+        { "undead",         MATTR_UNDEAD },
+        { "good",           MATTR_GOOD },
+        { "swims",          MATTR_WATER },
+        { "sails",          MATTR_WATER },
+        { "cantattack",     MATTR_NONATTACKABLE },
+        { "camouflage",     MATTR_CAMOUFLAGE },
+        { "wontattack",     MATTR_NOATTACK },
+        { "ambushes",       MATTR_AMBUSHES },
+        { "incorporeal",    MATTR_INCORPOREAL },
+        { "nochest",        MATTR_NOCHEST },
+        { "divides",        MATTR_DIVIDES },
+        { "forceOfNature",  MATTR_FORCE_OF_NATURE }
+    };
+    static const Attribute steals[] = {
+        { "food", MATTR_STEALFOOD },
+        { "gold", MATTR_STEALGOLD }
+    };
+    static const Attribute casts[] = {
+        { "sleep",  MATTR_CASTS_SLEEP },
+        { "negate", MATTR_NEGATE }
+    };
+    static const Attribute movement[] = {
+        { "none",    MATTR_STATIONARY },
+        { "wanders", MATTR_WANDERS }
+    };
+    /* boolean attributes that affect movement */
+    static const Attribute movementBoolean[] = {
+        { "swims", MATTR_SWIMS },
+        { "sails", MATTR_SAILS },
+        { "flies", MATTR_FLIES },
+        { "teleports", MATTR_TELEPORT },
+        { "canMoveOntoCreatures", MATTR_CANMOVECREATURES },
+        { "canMoveOntoAvatar", MATTR_CANMOVEAVATAR }
+    };
+    static const struct {
+        const char *name;
+        TileEffect effect;
+    } effects[] = {
+        { "fire",   EFFECT_FIRE },
+        { "poison", EFFECT_POISONFIELD },
+        { "sleep",  EFFECT_SLEEP }
+    };
+
+    unsigned int idx;
+    int attr = 0;
+    int moveAttr = 0;
+
+
+    cr->name = conf.getString("name");
+    cr->id = conf.getInt("id");
+
+    /* Get the leader if it's been included, otherwise the leader is itself */
+    cr->leader = conf.getInt("leader", cr->id);
+
+    cr->xp = conf.getInt("exp");
+    cr->ranged = conf.getBool("ranged");
+    cr->setTile(ts->getByName(conf.getString("tile")));
+
+    cr->setHitTile("hit_flash");
+    cr->setMissTile("miss_flash");
+
+    cr->resists = 0;
+
+    /* get the encounter size */
+    cr->encounterSize = conf.getInt("encounterSize", 0);
+
+    /* get the base hp */
+    cr->basehp = conf.getInt("basehp", 0);
+    /* adjust basehp according to battle difficulty setting */
+    if (xu4.settings->battleDiff == BattleDiff_Hard)
+        cr->basehp *= 2;
+    else if (xu4.settings->battleDiff == BattleDiff_Expert)
+        cr->basehp *= 4;
+
+    /* get the camouflaged tile */
+    if (conf.exists("camouflageTile"))
+        cr->camouflageTile = conf.getString("camouflageTile");
+
+    /* get the ranged tile for world map attacks */
+    if (conf.exists("worldrangedtile"))
+        cr->worldrangedtile = conf.getString("worldrangedtile");
+
+    /* get ranged hit tile */
+    if (conf.exists("rangedhittile")) {
+        if (conf.getString("rangedhittile") == "random")
+            attr |= MATTR_RANDOMRANGED;
+        else
+            cr->setHitTile(conf.getString("rangedhittile"));
+    }
+
+    /* get ranged miss tile */
+    if (conf.exists("rangedmisstile")) {
+        if (conf.getString("rangedmisstile") ==  "random")
+            attr |= MATTR_RANDOMRANGED;
+        else
+            cr->setMissTile(conf.getString("rangedmisstile"));
+    }
+
+    /* find out if the creature leaves a tile behind on ranged attacks */
+    cr->leavestile = conf.getBool("leavestile");
+
+    /* get effects that this creature is immune to */
+    for (idx = 0; idx < sizeof(effects) / sizeof(effects[0]); idx++) {
+        if (conf.getString("resists") == effects[idx].name)
+            cr->resists = effects[idx].effect;
+    }
+
+    /* Load creature attributes */
+    for (idx = 0; idx < sizeof(booleanAttributes) / sizeof(booleanAttributes[0]); idx++) {
+        if (conf.getBool(booleanAttributes[idx].name))
+            attr |= booleanAttributes[idx].mask;
+    }
+
+    /* Load boolean attributes that affect movement */
+    for (idx = 0; idx < sizeof(movementBoolean) / sizeof(movementBoolean[0]); idx++) {
+        if (conf.getBool(movementBoolean[idx].name))
+            moveAttr |= movementBoolean[idx].mask;
+    }
+
+    for (idx = 0; idx < sizeof(movement) / sizeof(movement[0]); idx++) {
+        if (conf.getString("movement") == movement[idx].name)
+            moveAttr |= movement[idx].mask;
+    }
+
+    for (idx = 0; idx < sizeof(steals) / sizeof(steals[0]); idx++) {
+        if (conf.getString("steals") == steals[idx].name)
+            attr |= steals[idx].mask;
+    }
+
+    for (idx = 0; idx < sizeof(casts) / sizeof(casts[0]); idx++) {
+        if (conf.getString("casts") == casts[idx].name)
+            attr |= casts[idx].mask;
+    }
+
+    if (conf.exists("spawnsOnDeath")) {
+        attr |= MATTR_SPAWNSONDEATH;
+        cr->spawn = static_cast<unsigned char>(conf.getInt("spawnsOnDeath"));
+    }
+
+    cr->mattr = static_cast<CreatureAttrib>(attr);
+    cr->movementAttr = static_cast<CreatureMovementAttrib>(moveAttr);
+
+    /* Figure out which 'slowed' function to use */
+    if (cr->sails())
+        /* sailing creatures (pirate ships) */
+        cr->slowedType = SLOWED_BY_WIND;
+    else if (cr->flies() || cr->isIncorporeal())
+        /* flying creatures (dragons, bats, etc.) and incorporeal creatures (ghosts, zorns) */
+        cr->slowedType = SLOWED_BY_NOTHING;
+    else
+        cr->slowedType = SLOWED_BY_TILE;
+}
+
+//--------------------------------------
 
 static Armor*  conf_armor(int type, const ConfigElement&);
 static Weapon* conf_weapon(int type, const ConfigElement&);
@@ -739,6 +903,17 @@ ConfigXML::ConfigXML() {
             errorFatal("A map with id '%d' already exists", map->id);
         xcd.mapList[map->id] = map;
     }
+
+    // creatures
+    ce = getElement("creatures").getChildren();
+    xcd.creatures.resize(ce.size(), NULL);
+    foreach (it, ce) {
+        if (it->getName() != "creature")
+            continue;
+        Creature* cr = new Creature;
+        conf_creatureLoad(cr, xcd.tileset, *it);
+        xcd.creatures[cr->getId()] = cr;
+    }
     }
 }
 
@@ -750,6 +925,10 @@ ConfigXML::~ConfigXML() {
     vector<Map *>::iterator mit;
     foreach (mit, xcd.mapList)
         delete *mit;
+
+    vector<Creature *>::iterator cit;
+    foreach (cit, xcd.creatures)
+        delete *cit;
 
     vector<Armor *>::iterator ait;
     foreach (ait, xcd.armors)
@@ -970,6 +1149,20 @@ int Config::weaponType( const char* name ) {
             return it - CB->weapons.begin();
     }
     return -1;
+}
+
+/**
+ * Returns the creature of the corresponding id or NULL if not found.
+ */
+const Creature* Config::creature( uint32_t id ) const {
+    if (id < CB->creatures.size())
+        return CB->creatures[id];
+    return NULL;
+}
+
+const Creature* const* Config::creatureTable( uint32_t* plen ) const {
+    *plen = CB->creatures.size();
+    return &CB->creatures.front();
 }
 
 /*

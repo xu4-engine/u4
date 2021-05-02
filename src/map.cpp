@@ -480,10 +480,7 @@ void Map::findWalkability(Coords coords, int *path_data) {
  * Adds a creature object to the given map
  */
 Creature *Map::addCreature(const Creature *creature, Coords coords) {
-    Creature *m = new Creature;
-
-    /* make a copy of the creature before placing it */
-    *m = *creature;
+    Creature *m = new Creature(creature);
 
     m->setInitialHp();
     m->setStatus(STAT_GOOD);
@@ -645,7 +642,7 @@ int Map::getValidMoves(const MapCoords& from, MapTile transport) {
     MapCoords testCoord;
 
     // get the creature object, if it exists (the one that's moving)
-    m = xu4.creatureMgr->getByTile(transport);
+    m = Creature::getByTile(transport);
 
     bool isAvatar = (type != COMBAT) && (from == c->location->coords);
     if (m && m->canMoveOntoPlayer())
@@ -799,7 +796,7 @@ void Map::alertGuards() {
 
     /* switch all the guards to attack mode */
     for (i = objects.begin(); i != objects.end(); i++) {
-        m = xu4.creatureMgr->getByTile((*i)->getTile());
+        m = Creature::getByTile((*i)->getTile());
         if (m && (m->getId() == GUARD_ID || m->getId() == LORDBRITISH_ID))
             (*i)->setMovementBehavior(MOVEMENT_ATTACK_AVATAR);
     }

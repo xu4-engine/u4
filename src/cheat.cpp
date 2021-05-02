@@ -396,10 +396,10 @@ void CheatMenuController::summonCreature(const string &name) {
     /* find the creature by its id and spawn it */
     unsigned int id = atoi(creatureName.c_str());
     if (id > 0)
-        m = xu4.creatureMgr->getById(id);
+        m = xu4.config->creature(id);
 
     if (!m)
-        m = xu4.creatureMgr->getByName(creatureName);
+        m = Creature::getByName(creatureName);
 
     if (m) {
         if (gameSpawnCreature(m))

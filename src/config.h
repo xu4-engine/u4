@@ -13,6 +13,7 @@
 class ImageSet;
 class Armor;
 class Weapon;
+class Creature;
 class Map;
 struct TileRule;
 class Tileset;
@@ -44,6 +45,8 @@ public:
     const Weapon* weapon( uint32_t id );
     int armorType( const char* name );
     int weaponType( const char* name );
+    const Creature* creature( uint32_t id ) const;
+    const Creature* const* creatureTable( uint32_t* plen ) const;
     const TileRule* tileRule( Symbol name ) const;
     const Tileset* tileset() const;
     const UltimaSaveIds* usaveIds() const;

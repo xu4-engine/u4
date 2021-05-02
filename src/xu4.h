@@ -7,7 +7,6 @@ class Config;
 class ImageMgr;
 class Image;
 class EventHandler;
-class CreatureMgr;
 class IntroController;
 class GameController;
 
@@ -25,7 +24,6 @@ struct XU4GameServices {
     void* gpu;
     Image* screenImage;
     EventHandler* eventHandler;
-    CreatureMgr* creatureMgr;
     IntroController* intro;
     GameController* game;
     int stage;

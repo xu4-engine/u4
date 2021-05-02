@@ -94,13 +94,16 @@ list<string> replySplit(const string &text) {
     return reply;
 }
 
-Person::Person(MapTile tile) : Creature(tile), start(0, 0) {
+Person::Person(const MapTile& tile) :
+    Creature(Creature::getByTile(tile)),
+    start(0, 0)
+{
     setType(Object::PERSON);
     dialogue = NULL;
     npcType = NPC_EMPTY;
 }
 
-Person::Person(const Person *p) : Creature(p->tile) {
+Person::Person(const Person *p) {
     *this = *p;
 }
 

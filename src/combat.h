@@ -117,6 +117,8 @@ private:
     const CombatController &operator=(const CombatController&);
 };
 
+typedef std::vector<Creature *> CreatureVector;
+
 /**
  * CombatMap class
  */

@@ -1,27 +1,18 @@
 /**
- * $Id$
+ * creature.h
  */
 
 #ifndef CREATURE_H
 #define CREATURE_H
 
-#include <map>
-#include <vector>
-
 #include "object.h"
 #include "movement.h"
-#include "savegame.h"
 #include "types.h"
 
 class CombatController;
-class ConfigElement;
 class Tile;
 
-typedef unsigned short CreatureId;
-typedef std::map<CreatureId, class Creature*> CreatureMap;
-typedef std::vector<class Creature *> CreatureVector;
-
-#define MAX_CREATURES 128
+typedef uint16_t CreatureId;
 
 /* Creatures on world map */
 
@@ -143,9 +134,14 @@ class Creature : public Object {
     typedef std::list<StatusType> StatusList;
 
 public:
-    Creature(MapTile tile = MapTile(0));
+    static const Creature* getByTile(const MapTile& tile);
+    static const Creature* getByName(const string& name);
+    static const Creature* randomForTile(const Tile *tile);
+    static const Creature* randomForDungeon(int dnglevel);
+    static const Creature* randomAmbushing();
 
-    void load(const ConfigElement &conf);
+    Creature();
+    Creature(const Creature* cproto);
 
     // Accessor methods
     virtual string getName() const              {return name;}
@@ -225,7 +221,7 @@ public:
     virtual bool dealDamage(Creature *m, int damage);
 
     // Properties
-protected:
+//protected:
     string          name;
     string          rangedhittile;
     string          rangedmisstile;
@@ -245,30 +241,6 @@ protected:
     int             encounterSize;
     unsigned char   resists;
     CreatureId      spawn;
-};
-
-/**
- * CreatureMgr Class Definition
- */
-class CreatureMgr {
-public:
-    CreatureMgr() {}
-    ~CreatureMgr();
-    void loadAll();
-
-    Creature *getByTile(MapTile tile);
-    Creature *getById(CreatureId id);
-    Creature *getByName(string name);
-    Creature *randomForTile(const Tile *tile);
-    Creature *randomForDungeon(int dnglevel);
-    Creature *randomAmbushing();
-
-private:
-    // disallow assignments, copy contruction
-    CreatureMgr(const CreatureMgr&);
-    const CreatureMgr &operator=(const CreatureMgr&);
-
-    CreatureMap creatures;
 };
 
 bool isCreature(Object *punknown);

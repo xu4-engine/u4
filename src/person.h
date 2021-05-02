@@ -41,7 +41,7 @@ typedef enum {
 
 class Person : public Creature {
 public:
-    Person(MapTile tile);
+    Person(const MapTile& tile);
     Person(const Person *p);
 
     bool canConverse() const;

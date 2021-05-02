@@ -183,16 +183,12 @@ void servicesInit(XU4GameServices* gs, Options* opt) {
 
     gs->eventHandler = new EventHandler;
 
-    gs->creatureMgr = new CreatureMgr;
-    gs->creatureMgr->loadAll();
-
     gs->stage = (opt->flags & OPT_NO_INTRO) ? StagePlay : StageIntro;
 }
 
 void servicesFree(XU4GameServices* gs) {
     delete gs->game;
     delete gs->intro;
-    delete gs->creatureMgr;
     delete gs->eventHandler;
     soundDelete();
     screenDelete();

@@ -165,7 +165,7 @@ void CombatController::initDungeonRoom(int room, Direction from) {
         for (i = 0; i < AREA_CREATURES; i++) {
             if (dng->rooms[room].creature_tiles[i] > 0) {
                 placeCreaturesOnMap = true;
-                creatureTable[i] = xu4.creatureMgr->getByTile(dng->rooms[room].creature_tiles[i]);
+                creatureTable[i] = Creature::getByTile(dng->rooms[room].creature_tiles[i]);
             }
             map->creature_start[i].x = dng->rooms[room].creature_start_x[i];
             map->creature_start[i].y = dng->rooms[room].creature_start_y[i];
@@ -345,7 +345,7 @@ void CombatController::fillCreatureTable(const Creature *creature) {
         int numCreatures = initialNumberOfCreatures(creature);
 
         if (baseCreature->getId() == PIRATE_ID)
-            baseCreature = xu4.creatureMgr->getById(ROGUE_ID);
+            baseCreature = xu4.config->creature(ROGUE_ID);
 
         for (i = 0; i < numCreatures; i++) {
             current = baseCreature;
@@ -354,13 +354,13 @@ void CombatController::fillCreatureTable(const Creature *creature) {
             do {j = xu4_random(AREA_CREATURES) ;} while (creatureTable[j] != NULL);
 
             /* see if creature is a leader or leader's leader */
-            if (xu4.creatureMgr->getById(baseCreature->getLeader()) != baseCreature && /* leader is a different creature */
+            if (xu4.config->creature(baseCreature->getLeader()) != baseCreature && /* leader is a different creature */
                 i != (numCreatures - 1)) { /* must have at least 1 creature of type encountered */
 
                 if (xu4_random(32) == 0)       /* leader's leader */
-                    current = xu4.creatureMgr->getById(xu4.creatureMgr->getById(baseCreature->getLeader())->getLeader());
+                    current = xu4.config->creature(xu4.config->creature(baseCreature->getLeader())->getLeader());
                 else if (xu4_random(8) == 0)   /* leader */
-                    current = xu4.creatureMgr->getById(baseCreature->getLeader());
+                    current = xu4.config->creature(baseCreature->getLeader());
             }
 
             /* place this creature in the creature table */

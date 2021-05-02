@@ -3034,7 +3034,7 @@ void GameController::checkSpecialCreatures(Direction dir) {
         c->location->coords.x == 0xdd &&
         c->location->coords.y == 0xe0) {
         for (i = 0; i < 8; i++) {
-            obj = c->location->map->addCreature(xu4.creatureMgr->getById(PIRATE_ID), MapCoords(pirateInfo[i].x, pirateInfo[i].y));
+            obj = c->location->map->addCreature(xu4.config->creature(PIRATE_ID), MapCoords(pirateInfo[i].x, pirateInfo[i].y));
             obj->setDirection(pirateInfo[i].dir);
         }
     }
@@ -3050,7 +3050,7 @@ void GameController::checkSpecialCreatures(Direction dir) {
         c->location->coords.y < 217 &&
         *c->aura != Aura::HORN) {
         for (i = 0; i < 8; i++)
-            c->location->map->addCreature(xu4.creatureMgr->getById(DAEMON_ID), MapCoords(231, c->location->coords.y + 1, c->location->coords.z));
+            c->location->map->addCreature(xu4.config->creature(DAEMON_ID), MapCoords(231, c->location->coords.y + 1, c->location->coords.z));
     }
 }
 
@@ -3120,7 +3120,7 @@ void gameFixupObjects(Map *map, const SaveGameMonsterRecord* table) {
                 tile = usaveIds->moduleId(it->tile);
 
             if (i < creatureLimit) {
-                const Creature *creature = xu4.creatureMgr->getByTile(tile);
+                const Creature *creature = Creature::getByTile(tile);
                 /* make sure we really have a creature */
                 if (creature) {
                     obj = map->addCreature(creature, coords);
@@ -3399,7 +3399,7 @@ void GameController::checkBridgeTrolls() {
 
     screenMessage("\nBridge Trolls!\n");
 
-    Creature *m = c->location->map->addCreature(xu4.creatureMgr->getById(TROLL_ID), c->location->coords);
+    Creature *m = c->location->map->addCreature(xu4.config->creature(TROLL_ID), c->location->coords);
     CombatController *cc = new CombatController(MAP_BRIDGE_CON);
     cc->init(m);
     cc->begin();
@@ -3507,9 +3507,9 @@ bool gameSpawnCreature(const Creature *m) {
     if (m)
         creature = m;
     else if (c->location->context & CTX_DUNGEON)
-        creature = xu4.creatureMgr->randomForDungeon(c->location->coords.z);
+        creature = Creature::randomForDungeon(c->location->coords.z);
     else
-        creature = xu4.creatureMgr->randomForTile(c->location->map->tileTypeAt(coords, WITHOUT_OBJECTS));
+        creature = Creature::randomForTile(c->location->map->tileTypeAt(coords, WITHOUT_OBJECTS));
 
     if (creature)
         c->location->map->addCreature(creature, coords);

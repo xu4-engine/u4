@@ -78,7 +78,7 @@ void CampController::begin() {
 
     /* Is the party ambushed during their rest? */
     if (xu4.settings->campingAlwaysCombat || (xu4_random(8) == 0)) {
-        const Creature *m = xu4.creatureMgr->randomAmbushing();
+        const Creature *m = Creature::randomAmbushing();
 
         musicPlayLocale();
         screenMessage("Ambushed!\n");
@@ -230,7 +230,7 @@ void InnController::maybeMeetIsaac()
 
             // Otherwise, we need to create Isaac
             Person *Isaac;
-            Isaac = new Person(xu4.creatureMgr->getById(GHOST_ID)->getTile());
+            Isaac = new Person(xu4.config->creature(GHOST_ID)->getTile());
 
             Isaac->setMovementBehavior(MOVEMENT_WANDER);
 
@@ -255,11 +255,11 @@ void InnController::maybeAmbush()
         if (xu4_random(4) == 0) {
             /* Rats! */
             mapid = MAP_BRICK_CON;
-            creature = c->location->map->addCreature(xu4.creatureMgr->getById(RAT_ID), c->location->coords);
+            creature = c->location->map->addCreature(xu4.config->creature(RAT_ID), c->location->coords);
         } else {
             /* While strolling down the street, attacked by rogues! */
             mapid = MAP_INN_CON;
-            creature = c->location->map->addCreature(xu4.creatureMgr->getById(ROGUE_ID), c->location->coords);
+            creature = c->location->map->addCreature(xu4.config->creature(ROGUE_ID), c->location->coords);
             screenMessage("\nIn the middle of the night while out on a stroll...\n\n");
             showMessage = false;
         }
