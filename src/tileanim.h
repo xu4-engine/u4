@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * tileanim.h
  */
 
 #ifndef TILEANIM_H
@@ -11,7 +11,6 @@
 
 #include "direction.h"
 
-class ConfigElement;
 class Image;
 class Tile;
 struct RGBA;
@@ -19,13 +18,10 @@ struct RGBA;
 /**
  * The interface for tile animation transformations.
  */
-class  TileAnimTransform {
+class TileAnimTransform {
 public:
-    static TileAnimTransform *create(const ConfigElement &config);
-    static RGBA loadColorFromConf(const ConfigElement &conf);
-
-    virtual void draw(Image *dest, const Tile *tile, const MapTile &mapTile) = 0;
     virtual ~TileAnimTransform() {}
+    virtual void draw(Image *dest, const Tile *tile, const MapTile &mapTile) = 0;
     virtual bool drawsTile() const = 0;
 
     // Properties
@@ -83,7 +79,7 @@ private:
  */
 class TileAnimFrameTransform : public TileAnimTransform {
 public:
-    TileAnimFrameTransform() : currentFrame(0){}
+    TileAnimFrameTransform() : currentFrame(0) {}
     virtual void draw(Image *dest, const Tile *tile, const MapTile &mapTile);
     virtual bool drawsTile() const;
 protected:
@@ -106,25 +102,17 @@ public:
 };
 
 /**
- * A context in which to perform the animation
+ * A context in which to perform the animation (controls if transforms are
+ * performed or not).
  */
 class TileAnimContext {
 public:
     typedef std::vector<TileAnimTransform *> TileAnimTransformList;
-    typedef enum {
-        FRAME,
-        DIR
-    } Type;
 
-    static TileAnimContext* create(const ConfigElement &config);
-
-    void add(TileAnimTransform*);
-    virtual bool isInContext(const Tile *t, const MapTile &mapTile, Direction d) = 0;
-    TileAnimTransformList& getTransforms() {return animTransforms;} /**< Returns a list of transformations under the context. */
     virtual ~TileAnimContext();
-private:
+    virtual bool isInContext(const Tile *t, const MapTile &mapTile, Direction d) = 0;
 
-    TileAnimTransformList animTransforms;
+    TileAnimTransformList transforms;
 };
 
 /**
@@ -158,16 +146,15 @@ private:
  */
 class TileAnim {
 public:
-    TileAnim(const ConfigElement &conf);
+    TileAnim() : random(0) {}
     ~TileAnim();
-
-    std::string name;
-    std::vector<TileAnimTransform *> transforms;
-    std::vector<TileAnimContext *> contexts;
 
     /* returns the frame to set the mapTile to (only relevent if persistent) */
     void draw(Image *dest, const Tile *tile, const MapTile &mapTile, Direction dir);
 
+    std::string name;
+    std::vector<TileAnimTransform *> transforms;
+    std::vector<TileAnimContext *> contexts;
     int random;   /* true if the tile animation occurs randomely */
 };
 
@@ -176,12 +163,10 @@ public:
  * specific image set which shares the same name.
  */
 class TileAnimSet {
+public:
     typedef std::map<std::string, TileAnim *> TileAnimMap;
 
-public:
-    TileAnimSet(const ConfigElement &conf);
     ~TileAnimSet();
-
     TileAnim *getByName(const std::string &name);
 
     std::string name;

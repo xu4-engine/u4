@@ -40,6 +40,7 @@
 #include "shrine.h"
 #include "sound.h"
 #include "tile.h"
+#include "tileanim.h"
 #include "tileset.h"
 #include "weapon.h"
 #include "u4file.h"
@@ -1412,6 +1413,169 @@ ImageSet* Config::newScheme( uint32_t id ) {
             if( n == id )
                 return loadImageSet(*it);
             ++n;
+        }
+    }
+    return NULL;
+}
+
+/**
+ * Loads a color from a config element
+ */
+static RGBA conf_loadColor(const ConfigElement &conf) {
+    RGBA rgba;
+    rgba.r = conf.getInt("red");
+    rgba.g = conf.getInt("green");
+    rgba.b = conf.getInt("blue");
+    rgba.a = IM_OPAQUE;
+    return rgba;
+}
+
+static TileAnimTransform* conf_createAnimTransform(const ConfigElement& conf) {
+    static const char* transformTypeStrings[] = {
+        "invert", "pixel", "scroll", "frame", "pixel_color", NULL
+    };
+    TileAnimTransform *transform;
+
+    int type = conf.getEnum("type", transformTypeStrings);
+    switch (type) {
+    case 0:
+        transform = new TileAnimInvertTransform(conf.getInt("x"),
+                                                conf.getInt("y"),
+                                                conf.getInt("width"),
+                                                conf.getInt("height"));
+        break;
+    case 1:
+        {
+            TileAnimPixelTransform* pixelTf;
+            transform = pixelTf = new TileAnimPixelTransform(conf.getInt("x"),
+                                                             conf.getInt("y"));
+
+            vector<ConfigElement> children = conf.getChildren();
+            vector<ConfigElement>::iterator it;
+            foreach (it, children) {
+                if (it->getName() == "color") {
+                    RGBA rgba = conf_loadColor(*it);
+                    pixelTf->colors.push_back(rgba);
+                }
+            }
+        }
+        break;
+    case 2:
+        transform = new TileAnimScrollTransform(conf.getInt("increment"));
+        break;
+    case 3:
+        transform = new TileAnimFrameTransform();
+        break;
+    case 4:
+        {
+            TileAnimPixelColorTransform* pixColTf;
+            transform = pixColTf =
+                new TileAnimPixelColorTransform(conf.getInt("x"),
+                                                conf.getInt("y"),
+                                                conf.getInt("width"),
+                                                conf.getInt("height"));
+
+            vector<ConfigElement> children = conf.getChildren();
+            vector<ConfigElement>::iterator it;
+            foreach (it, children) {
+                if (it->getName() == "color") {
+                    RGBA rgba = conf_loadColor(*it);
+                    if (it == children.begin())
+                        pixColTf->start = rgba;
+                    else
+                        pixColTf->end = rgba;
+                }
+            }
+        }
+        break;
+    default:
+        return NULL;
+    }
+
+    /**
+     * See if the transform is performed randomely
+     */
+    transform->random = 0;
+    if (conf.exists("random"))
+        transform->random = conf.getInt("random");
+
+    return transform;
+}
+
+static TileAnimContext* conf_createAnimContext(const ConfigElement& conf) {
+    static const char* contextTypeStrings[] = { "frame", "dir", NULL };
+    static const char* dirStrings[] = {
+        "none", "west", "north", "east", "south", NULL
+    };
+    TileAnimContext* ctx;
+    int type = conf.getEnum("type", contextTypeStrings);
+    switch(type) {
+    case 0:     // frame
+        ctx = new TileAnimFrameContext(conf.getInt("frame"));
+        break;
+    case 1:     // dir
+        ctx = new TileAnimPlayerDirContext(Direction(conf.getEnum("dir", dirStrings)));
+        break;
+    default:
+        return NULL;
+    }
+
+    // Add the transforms to the ctx
+    vector<ConfigElement> children = conf.getChildren();
+    vector<ConfigElement>::iterator it;
+    foreach (it, children) {
+        if (it->getName() == "transform") {
+            TileAnimTransform* tf = conf_createAnimTransform(*it);
+            ctx->transforms.push_back(tf);
+        }
+    }
+    return ctx;
+}
+
+static void conf_loadTileAnimSet(TileAnimSet* ts, const ConfigElement &conf) {
+    ts->name = conf.getString("name");
+
+    vector<ConfigElement> children = conf.getChildren();
+    vector<ConfigElement>::iterator it;
+    foreach (it, children) {
+        if (it->getName() == "tileanim") {
+            TileAnim* anim = new TileAnim;
+
+            const ConfigElement& ce = *it;
+            anim->name = ce.getString("name");
+            if (ce.exists("random"))
+                anim->random = ce.getInt("random");
+            vector<ConfigElement> achildren = ce.getChildren();
+            vector<ConfigElement>::iterator ait;
+            foreach (ait, achildren) {
+                if (ait->getName() == "transform") {
+                    TileAnimTransform* tf = conf_createAnimTransform(*ait);
+                    anim->transforms.push_back(tf);
+                } else if (ait->getName() == "context") {
+                    TileAnimContext* context = conf_createAnimContext(*ait);
+                    anim->contexts.push_back(context);
+                }
+            }
+
+            ts->tileanims[anim->name] = anim;
+        }
+    }
+}
+
+/*
+ * Return TileAnimSet pointer which caller must delete.
+ */
+TileAnimSet* Config::newTileAnims(const char* name) const {
+    vector<ConfigElement> ce = getElement("graphics").getChildren();
+    vector<ConfigElement>::iterator it;
+    foreach (it, ce) {
+        if (it->getName() == "tileanimset") {
+            /* find the tile animations for our tileset */
+            if (it->getString("name") == name) {
+                TileAnimSet* tanim = new TileAnimSet;
+                conf_loadTileAnimSet(tanim, *it);
+                return tanim;
+            }
         }
     }
     return NULL;

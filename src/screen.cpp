@@ -38,7 +38,7 @@
 
 using std::vector;
 
-static void screenLoadGraphicsFromConf(void);
+static void screenLoadLayoutsFromConf();
 
 static Scaler filterScaler;
 static vector<string> gemLayoutNames;
@@ -93,10 +93,12 @@ static void screenInit_data(Settings& settings) {
 #endif
 
     assert(tileanims == NULL);
+    tileanims = xu4.config->newTileAnims( settings.videoType.c_str() );
+    if (! tileanims)
+        errorFatal("Unable to find \"%s\" tile animations", settings.videoType.c_str());
+
     gemTilesInfo = NULL;
-    screenLoadGraphicsFromConf();
-    if (!tileanims)
-        errorFatal("unable to find tile animations for \"%s\" video mode in graphics.xml", settings.videoType.c_str());
+    screenLoadLayoutsFromConf();
 
     if (verbose)
         printf("using %s scaler\n", screenGetFilterNames()[ settings.filter ]);
@@ -292,18 +294,8 @@ const char** screenGetLineOfSightStyles() {
     return lineOfSightStyles;
 }
 
-static void screenLoadGraphicsFromConf() {
-    vector<ConfigElement> graphicsConf = xu4.config->getElement("graphics").getChildren();
-    for (std::vector<ConfigElement>::iterator conf = graphicsConf.begin(); conf != graphicsConf.end(); conf++) {
-        if (conf->getName() == "tileanimset") {
-            /* find the tile animations for our tileset */
-            if (conf->getString("name") == xu4.settings->videoType)
-                tileanims = new TileAnimSet(*conf);
-        }
-    }
-
+static void screenLoadLayoutsFromConf() {
     // Save gem layout names and find one to use.
-    {
     uint32_t count;
     uint32_t i;
     const Layout* layout = xu4.config->layouts(&count);
@@ -322,7 +314,6 @@ static void screenLoadGraphicsFromConf() {
             if (! dungeonGemLayout)
                 dungeonGemLayout = layout + i;
         }
-    }
     }
 
     if (! gemLayout)
