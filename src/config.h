@@ -11,6 +11,7 @@
 #include "types.h"
 
 class ImageSet;
+struct Layout;
 class Armor;
 class Weapon;
 class Creature;
@@ -37,6 +38,7 @@ public:
 
     // Primary configurable elements.
     const RGBA* egaPalette();
+    const Layout* layouts( uint32_t* plen ) const;
     const char* musicFile( uint32_t id );
     const char* soundFile( uint32_t id );
     const char** schemeNames();

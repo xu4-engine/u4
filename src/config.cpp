@@ -35,6 +35,7 @@
 #include "names.h"
 #include "portal.h"
 #include "savegame.h"
+#include "screen.h"
 #include "settings.h"
 #include "shrine.h"
 #include "sound.h"
@@ -71,6 +72,7 @@ struct XMLConfig
     string sbuf;        // Temporary buffer for const char* return values.
     vector<const char*> sarray;   // Temp. buffer for const char** values.
     RGBA* egaColors;
+    vector<Layout> layouts;
     vector<string> musicFiles;
     vector<string> soundFiles;
     vector<string> schemeNames;
@@ -156,6 +158,32 @@ static void conf_accumError(void *l, const char *fmt, ...) {
     va_end(args);
 
     errorMessage->append(buffer);
+}
+
+//--------------------------------------
+// Graphics
+
+static void conf_loadLayout(SymbolTable& sym, Layout* layout, const ConfigElement &conf) {
+    static const char* layoutTypes[] = {
+        "standard", "gem", "dungeon_gem", NULL
+    };
+
+    layout->name = propertySymbol(sym, conf, "name");
+    layout->type = static_cast<LayoutType>(conf.getEnum("type", layoutTypes));
+
+    vector<ConfigElement> children = conf.getChildren();
+    vector<ConfigElement>::iterator it;
+    foreach (it, children) {
+        if (it->getName() == "tileshape") {
+            layout->tileshape.width  = it->getInt("width");
+            layout->tileshape.height = it->getInt("height");
+        } else if (it->getName() == "viewport") {
+            layout->viewport.x = it->getInt("x");
+            layout->viewport.y = it->getInt("y");
+            layout->viewport.width  = it->getInt("width");
+            layout->viewport.height = it->getInt("height");
+        }
+    }
 }
 
 //--------------------------------------
@@ -832,6 +860,10 @@ ConfigXML::ConfigXML() {
             ImageSet *set = loadImageSet(ce);
             imageSets[set->name] = set;
             */
+        } else if (it->getName() == "layout") {
+            Layout lo;
+            conf_loadLayout(xcd.sym, &lo, *it);
+            xcd.layouts.push_back(lo);
         }
     }
     }
@@ -1074,6 +1106,11 @@ const RGBA* Config::egaPalette() {
         }
     }
     return CB->egaColors;
+}
+
+const Layout* Config::layouts( uint32_t* plen ) const {
+    *plen = CB->layouts.size();
+    return &CB->layouts.front();
 }
 
 /*

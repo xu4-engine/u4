@@ -68,6 +68,24 @@ enum ScreenFilter {
     ScreenFilter_Scale2x
 };
 
+enum LayoutType {
+    LAYOUT_STANDARD,
+    LAYOUT_GEM,
+    LAYOUT_DUNGEONGEM
+};
+
+struct Layout {
+    Symbol name;
+    LayoutType type;
+    struct {
+        int16_t width, height;
+    } tileshape;
+    struct {
+        int16_t x, y;
+        int16_t width, height;
+    } viewport;
+};
+
 typedef enum {
     MC_DEFAULT,
     MC_WEST,

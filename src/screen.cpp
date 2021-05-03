@@ -36,36 +36,14 @@
 #include "ios_helpers.h"
 #endif
 
-enum LayoutType {
-    LAYOUT_STANDARD,
-    LAYOUT_GEM,
-    LAYOUT_DUNGEONGEM
-};
-
-struct Layout {
-    string name;
-    LayoutType type;
-    struct {
-        int width, height;
-    } tileshape;
-    struct {
-        int x, y;
-        int width, height;
-    } viewport;
-};
-
-
-
 using std::vector;
 
 static void screenLoadGraphicsFromConf(void);
-static Layout *screenLoadLayoutFromConf(const ConfigElement &conf);
-static void screenShowGemTile(Layout *layout, Map *map, MapTile &t, bool focus, int x, int y);
 
 static Scaler filterScaler;
-vector<Layout *> layouts;
-vector<string> gemLayoutNames;
-Layout *gemlayout = NULL;
+static vector<string> gemLayoutNames;
+static const Layout* gemLayout = NULL;
+static const Layout* dungeonGemLayout = NULL;
 std::map<string, int> dungeonTileChars;
 TileAnimSet *tileanims = NULL;
 ImageInfo *charsetInfo = NULL;
@@ -156,11 +134,6 @@ static void screenDelete_data() {
 
     delete tileanims;
     tileanims = NULL;
-
-    std::vector<Layout *>::const_iterator i;
-    for (i = layouts.begin(); i != layouts.end(); i++)
-        delete(*i);
-    layouts.clear();
 
     delete xu4.screenImage;
     xu4.screenImage = NULL;
@@ -322,67 +295,41 @@ const char** screenGetLineOfSightStyles() {
 static void screenLoadGraphicsFromConf() {
     vector<ConfigElement> graphicsConf = xu4.config->getElement("graphics").getChildren();
     for (std::vector<ConfigElement>::iterator conf = graphicsConf.begin(); conf != graphicsConf.end(); conf++) {
-
-        if (conf->getName() == "layout") {
-            layouts.push_back(screenLoadLayoutFromConf(*conf));
-        }
-        else if (conf->getName() == "tileanimset") {
+        if (conf->getName() == "tileanimset") {
             /* find the tile animations for our tileset */
             if (conf->getString("name") == xu4.settings->videoType)
                 tileanims = new TileAnimSet(*conf);
         }
     }
 
+    // Save gem layout names and find one to use.
+    {
+    uint32_t count;
+    uint32_t i;
+    const Layout* layout = xu4.config->layouts(&count);
+
+    gemLayout = dungeonGemLayout = NULL;
     gemLayoutNames.clear();
-    std::vector<Layout *>::const_iterator i;
-    for (i = layouts.begin(); i != layouts.end(); i++) {
-        Layout *layout = *i;
-        if (layout->type == LAYOUT_GEM) {
-            gemLayoutNames.push_back(layout->name);
+
+    for (i = 0; i < count; ++i) {
+        if (layout[i].type == LAYOUT_GEM) {
+            const char* name = xu4.config->symbolName( layout[i].name );
+            gemLayoutNames.push_back(name);
+
+            if (! gemLayout && xu4.settings->gemLayout == name)
+                gemLayout = layout + i;
+        } else if (layout[i].type == LAYOUT_DUNGEONGEM) {
+            if (! dungeonGemLayout)
+                dungeonGemLayout = layout + i;
         }
     }
-
-    /*
-     * Find gem layout to use.
-     */
-    for (i = layouts.begin(); i != layouts.end(); i++) {
-        Layout *layout = *i;
-
-        if (layout->type == LAYOUT_GEM && layout->name == xu4.settings->gemLayout) {
-            gemlayout = layout;
-            break;
-        }
     }
-    if (!gemlayout)
+
+    if (! gemLayout)
         errorFatal("no gem layout named %s found!\n", xu4.settings->gemLayout.c_str());
+    if (! dungeonGemLayout)
+        errorFatal("no dungeon gem layout found!\n");
 }
-
-static Layout *screenLoadLayoutFromConf(const ConfigElement &conf) {
-    Layout *layout;
-    static const char *typeEnumStrings[] = { "standard", "gem", "dungeon_gem", NULL };
-
-    layout = new Layout;
-    layout->name = conf.getString("name");
-    layout->type = static_cast<LayoutType>(conf.getEnum("type", typeEnumStrings));
-
-    vector<ConfigElement> children = conf.getChildren();
-    for (std::vector<ConfigElement>::iterator i = children.begin(); i != children.end(); i++) {
-        if (i->getName() == "tileshape") {
-            layout->tileshape.width = i->getInt("width");
-            layout->tileshape.height = i->getInt("height");
-        }
-        else if (i->getName() == "viewport") {
-            layout->viewport.x = i->getInt("x");
-            layout->viewport.y = i->getInt("y");
-            layout->viewport.width = i->getInt("width");
-            layout->viewport.height = i->getInt("height");
-        }
-    }
-
-    return layout;
-}
-
-
 
 vector<MapTile> screenViewportTile(unsigned int width, unsigned int height, int x, int y, bool &focus) {
     MapCoords center = c->location->coords;
@@ -1216,7 +1163,7 @@ void screenShake(int iterations) {
 /**
  * Draw a tile graphic on the screen.
  */
-static void screenShowGemTile(Layout *layout, Map *map, MapTile &t, bool focus, int x, int y) {
+static void screenShowGemTile(const Layout *layout, Map *map, MapTile &t, bool focus, int x, int y) {
     unsigned int scale = xu4.settings->scale;
     unsigned int tile = xu4.config->usaveIds()->ultimaId(t);
 
@@ -1256,23 +1203,6 @@ static void screenShowGemTile(Layout *layout, Map *map, MapTile &t, bool focus, 
     }
 }
 
-Layout *screenGetGemLayout(const Map *map) {
-    if (map->type == Map::DUNGEON) {
-        std::vector<Layout *>::const_iterator i;
-        for (i = layouts.begin(); i != layouts.end(); i++) {
-            Layout *layout = *i;
-
-            if (layout->type == LAYOUT_DUNGEONGEM)
-                return layout;
-        }
-        errorFatal("no dungeon gem layout found!\n");
-        return NULL;
-    }
-    else
-        return gemlayout;
-}
-
-
 void screenGemUpdate() {
     MapTile tile;
     int x, y;
@@ -1284,7 +1214,11 @@ void screenGemUpdate() {
                               VIEWPORT_H * TILE_HEIGHT * scale,
                               0, 0, 0);
 
-    Layout *layout = screenGetGemLayout(c->location->map);
+    const Layout *layout;
+    if (c->location->map->type == Map::DUNGEON)
+        layout = dungeonGemLayout;
+    else
+        layout = gemLayout;
 
 
     //TODO, move the code responsible for determining 'peer' visibility to a non SDL specific part of the code.
