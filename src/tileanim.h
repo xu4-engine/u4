@@ -5,7 +5,6 @@
 #ifndef TILEANIM_H
 #define TILEANIM_H
 
-#include <string>
 #include <map>
 #include <vector>
 
@@ -121,9 +120,9 @@ public:
     /* returns the frame to set the mapTile to (only relevent if persistent) */
     void draw(Image *dest, const Tile *tile, const MapTile &mapTile, Direction dir);
 
-    std::string name;
     std::vector<TileAnimTransform *> transforms;
     std::vector<TileAnimContext *> contexts;
+    Symbol name;
     int random;   /* true if the tile animation occurs randomely */
 };
 
@@ -133,12 +132,12 @@ public:
  */
 class TileAnimSet {
 public:
-    typedef std::map<std::string, TileAnim *> TileAnimMap;
+    typedef std::map<Symbol, TileAnim *> TileAnimMap;
 
     ~TileAnimSet();
-    TileAnim *getByName(const std::string &name);
+    TileAnim* getByName(Symbol name);
 
-    std::string name;
+    Symbol name;
     TileAnimMap tileanims;
 };
 

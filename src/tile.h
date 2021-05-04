@@ -141,7 +141,7 @@ public:
     uint8_t directionCount;
     uint8_t directions[7];  /**< Directions used = frames (if present) */
 
-    string animationRule;
+    Symbol animationRule;
 
     // Prevent copying.
     Tile(const Tile&);

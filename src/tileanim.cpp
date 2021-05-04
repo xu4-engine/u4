@@ -147,7 +147,7 @@ TileAnimSet::~TileAnimSet() {
 /**
  * Returns the tile animation with the given name from the current set
  */
-TileAnim *TileAnimSet::getByName(const std::string &name) {
+TileAnim* TileAnimSet::getByName(Symbol name) {
     TileAnimMap::iterator i = tileanims.find(name);
     if (i == tileanims.end())
         return NULL;

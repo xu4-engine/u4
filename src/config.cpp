@@ -318,7 +318,7 @@ static void conf_tileLoad(const ConfigXML* cfg, Tile* tile, const ConfigElement 
 
     /* get the animation for the tile, if one is specified */
     if (conf.exists("animation"))
-        tile->animationRule = conf.getString("animation");
+        tile->animationRule = cfg->propSymbol(conf, "animation");
 
     /* see if the tile is opaque */
     tile->opaque = conf.getBool("opaque");
@@ -1575,8 +1575,8 @@ static TileAnimContext* conf_createAnimContext(const ConfigElement& conf) {
     return ctx;
 }
 
-static void conf_loadTileAnimSet(TileAnimSet* ts, const ConfigElement &conf) {
-    ts->name = conf.getString("name");
+static void conf_loadTileAnimSet(SymbolTable& sym, TileAnimSet* ts, const ConfigElement &conf) {
+    ts->name = propertySymbol(sym, conf, "name");
 
     vector<ConfigElement> children = conf.getChildren();
     vector<ConfigElement>::iterator it;
@@ -1585,7 +1585,7 @@ static void conf_loadTileAnimSet(TileAnimSet* ts, const ConfigElement &conf) {
             TileAnim* anim = new TileAnim;
 
             const ConfigElement& ce = *it;
-            anim->name = ce.getString("name");
+            anim->name = propertySymbol(sym, ce, "name");
             if (ce.exists("random"))
                 anim->random = ce.getInt("random");
             vector<ConfigElement> achildren = ce.getChildren();
@@ -1616,7 +1616,7 @@ TileAnimSet* Config::newTileAnims(const char* name) const {
             /* find the tile animations for our tileset */
             if (it->getString("name") == name) {
                 TileAnimSet* tanim = new TileAnimSet;
-                conf_loadTileAnimSet(tanim, *it);
+                conf_loadTileAnimSet(CB->sym, tanim, *it);
                 return tanim;
             }
         }

@@ -34,7 +34,7 @@ Tile::Tile(int tid)
     , image(NULL)
     , tiledInDungeon(false)
     , directionCount(0)
-    , animationRule("") {
+    , animationRule(0) {
 }
 
 Tile::~Tile() {
@@ -116,14 +116,15 @@ void Tile::loadImage() {
                 Image::enableBlend(1);
         }
 
-        if (animationRule.size() > 0) {
+        if (animationRule) {
             extern TileAnimSet *tileanims;
 
             anim = NULL;
             if (tileanims)
                 anim = tileanims->getByName(animationRule);
             if (anim == NULL)
-                errorWarning("Warning: animation style '%s' not found", animationRule.c_str());
+                errorWarning("animation '%s' not found",
+                             xu4.config->symbolName(animationRule));
         }
     }
 }
