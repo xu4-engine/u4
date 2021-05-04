@@ -663,10 +663,10 @@ void GameController::flashTile(const Coords &coords, MapTile tile, int frames) {
     screenTileUpdate(&xu4.game->mapArea, coords, false);
 }
 
-void GameController::flashTile(const Coords &coords, const string &tilename, int timeFactor) {
-    const Tile *tile = c->location->map->tileset->getByName(tilename);
-    ASSERT(tile, "no tile named '%s' found in tileset", tilename.c_str());
-    flashTile(coords, tile->getId(), timeFactor);
+void GameController::flashTile(const Coords &coords, Symbol tilename, int timeFactor) {
+    const Tile *tile = Tileset::findTileByName(tilename);
+    ASSERT(tile, "no tile named '%s' found in tileset", xu4.config->symbolName(tilename));
+    flashTile(coords, MapTile(tile->getId()), timeFactor);
 }
 
 
@@ -1221,7 +1221,7 @@ bool GameController::keyPressed(int key) {
                 if (c->transportContext == TRANSPORT_SHIP)
                     c->lastShip = obj;
 
-                const Tile *avatar = c->location->map->tileset->getByName("avatar");
+                const Tile *avatar = c->location->map->tileset->getByName(Tile::sym.avatar);
                 ASSERT(avatar, "no avatar tile found in tileset");
                 c->party->setTransport(avatar->getId());
                 c->horseSpeed = 0;
@@ -1585,7 +1585,7 @@ bool destroyAt(const Coords &coords) {
         }
         else {
             const Tile *t = c->location->map->tileset->get(obj->getTile().id);
-            screenMessage("%s Destroyed!\n", t->getName().c_str());
+            screenMessage("%s Destroyed!\n", t->nameStr());
         }
 
         c->location->map->removeObject(obj);
@@ -1856,7 +1856,7 @@ bool fireAt(const Coords &coords, bool originAvatar) {
     Object *obj = NULL;
 
 
-    MapTile tile(c->location->map->tileset->getByName("miss_flash")->getId());
+    MapTile tile(c->location->map->tileset->getByName(Tile::sym.missFlash)->getId());
     GameController::flashTile(coords, tile, 1);
 
     obj = c->location->map->objectAt(coords);
@@ -1881,7 +1881,7 @@ bool fireAt(const Coords &coords, bool originAvatar) {
 
         /* Is is a pirate ship firing at US? */
         if (hitsAvatar) {
-            GameController::flashTile(coords, "hit_flash", 4);
+            GameController::flashTile(coords, Tile::sym.hitFlash, 4);
 
             if (c->transportContext == TRANSPORT_SHIP)
                 gameDamageShip(-1, 10);
@@ -1889,13 +1889,13 @@ bool fireAt(const Coords &coords, bool originAvatar) {
         }
         /* inanimate objects get destroyed instantly, while creatures get a chance */
         else if (obj->getType() == Object::UNKNOWN) {
-            GameController::flashTile(coords, "hit_flash", 4);
+            GameController::flashTile(coords, Tile::sym.hitFlash, 4);
             c->location->map->removeObject(obj);
         }
 
         /* only the avatar can hurt other creatures with cannon fire */
         else if (originAvatar) {
-            GameController::flashTile(coords, "hit_flash", 4);
+            GameController::flashTile(coords, Tile::sym.hitFlash, 4);
             if (xu4_random(4) == 0) /* reverse-engineered from u4dos */
                 c->location->map->removeObject(obj);
         }
@@ -2320,16 +2320,17 @@ void jimmy() {
  * tile.
  */
 bool jimmyAt(const Coords &coords) {
-    const MapTile *tile = c->location->map->tileAt(coords, WITH_OBJECTS);
+    Map* map = c->location->map;
+    const MapTile *tile = map->tileAt(coords, WITH_OBJECTS);
 
     if (!tile->getTileType()->isLockedDoor())
         return false;
 
     if (c->saveGame->keys) {
-        const Tile *door = c->location->map->tileset->getByName("door");
+        const Tile *door = map->tileset->getByName(Tile::sym.door);
         ASSERT(door, "no door tile found in tileset");
         c->saveGame->keys--;
-        c->location->map->annotations->add(coords, door->getId());
+        map->annotations->add(coords, door->getId());
         screenMessage("\nUnlocked!\n");
     } else
         screenMessage("%cNo keys left!%c\n", FG_GREY, FG_WHITE);
@@ -2378,7 +2379,7 @@ bool openAt(const Coords &coords) {
         return true;
     }
 
-    const Tile *floor = c->location->map->tileset->getByName("brick_floor");
+    const Tile *floor = c->location->map->tileset->getByName(Tile::sym.brickFloor);
     ASSERT(floor, "no floor tile found in tileset");
     c->location->map->annotations->add(coords, floor->getId(), false, true)->setTTL(4);
 
@@ -3133,7 +3134,7 @@ void gameFixupObjects(Map *map, const SaveGameMonsterRecord* table) {
                     Coords pc(it->prevx, it->prevy);
                     obj->setPrevCoords(pc);
                 } else {
-                    fprintf(stderr, "Error: A non-creature object was found in the creature section of the monster table. (Tile: %s)\n", tile.getTileType()->getName().c_str());
+                    fprintf(stderr, "Error: A non-creature object was found in the creature section of the monster table. (Tile: %s)\n", tile.getTileType()->nameStr());
                     obj = map->addObject(tile, oldTile, coords);
                 }
             }
@@ -3181,9 +3182,10 @@ bool creatureRangeAttack(const Coords &coords, Creature *m) {
 //    int attackdelay = MAX_BATTLE_SPEED - settings.battleSpeed;
 
     // Figure out what the ranged attack should look like
-    MapTile tile(c->location->map->tileset->getByName((m && !m->getWorldrangedtile().empty()) ?
-                                                      m->getWorldrangedtile() :
-                                                      "hit_flash")->getId());
+    Symbol tname = Tile::sym.hitFlash;
+    if (m && m->getWorldrangedtile())
+        tname = m->getWorldrangedtile();
+    MapTile tile(c->location->map->tileset->getByName(tname)->getId());
 
     GameController::flashTile(coords, tile, 1);
 
@@ -3387,7 +3389,7 @@ void GameController::checkRandomCreatures() {
  * Handles trolls under bridges
  */
 void GameController::checkBridgeTrolls() {
-    const Tile *bridge = c->location->map->tileset->getByName("bridge");
+    const Tile *bridge = c->location->map->tileset->getByName(Tile::sym.bridge);
     if (!bridge)
         return;
 
@@ -3572,7 +3574,7 @@ bool GameController::createBalloon(Map *map) {
             return false;
     }
 
-    const Tile *balloon = map->tileset->getByName("balloon");
+    const Tile *balloon = map->tileset->getByName(Tile::sym.balloon);
     ASSERT(balloon, "no balloon tile found in tileset");
     map->addObject(balloon->getId(), balloon->getId(), map->getLabel("balloon"));
     return true;

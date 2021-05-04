@@ -35,6 +35,7 @@ static bool isChunkCompressed(Map *map, int chunk) {
 static bool loadMapData(Map *map, U4FILE *uf) {
     unsigned int x, xch, y, ych;
     const UltimaSaveIds* usaveIds = xu4.config->usaveIds();
+    Symbol sym_sea = SYM_UNSET;
 
     /* allocate the space we need for the map data */
     map->data.resize(map->height * map->width, MapTile(0));
@@ -54,7 +55,9 @@ static bool loadMapData(Map *map, U4FILE *uf) {
     for(ych = 0; ych < (map->height / map->chunk_height); ++ych) {
         for(xch = 0; xch < (map->width / map->chunk_width); ++xch) {
             if (isChunkCompressed(map, ych * map->chunk_width + xch)) {
-                MapTile water = map->tileset->getByName("sea")->getId();
+                if (! sym_sea)
+                    sym_sea = xu4.config->intern("sea");
+                MapTile water = map->tileset->getByName(sym_sea)->getId();
                 for(y = 0; y < map->chunk_height; ++y) {
                     for(x = 0; x < map->chunk_width; ++x) {
                         map->data[x + (y * map->width) + (xch * map->chunk_width) + (ych * map->chunk_height * map->width)] = water;

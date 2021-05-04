@@ -34,6 +34,9 @@ bool isCreature(Object *punknown) {
  * Creature class implementation
  */
 Creature::Creature() : Object(Object::CREATURE) {
+    rangedhittile  =
+    rangedmisstile =
+    camouflageTile = SYM_UNSET;
 }
 
 Creature::Creature(const Creature* cproto) : Object(Object::CREATURE) {
@@ -67,20 +70,7 @@ int Creature::setInitialHp(int points) {
 }
 
 void Creature::setRandomRanged() {
-    switch(xu4_random(4)) {
-    case 0:
-        rangedhittile = rangedmisstile = "poison_field";
-        break;
-    case 1:
-        rangedhittile = rangedmisstile = "energy_field";
-        break;
-    case 2:
-        rangedhittile = rangedmisstile = "fire_field";
-        break;
-    case 3:
-        rangedhittile = rangedmisstile = "sleep_field";
-        break;
-    }
+    rangedhittile = rangedmisstile = Tile::sym.fields[ xu4_random(4) ];
 }
 
 CreatureStatus Creature::getState() const {
@@ -296,7 +286,7 @@ void Creature::act(CombatController *controller) {
     // creatures who ranged attack do so 1/4 of the time.  Make sure
     // their ranged attack is not negated!
     else if (ranged != 0 && xu4_random(4) == 0 &&
-             (rangedhittile != "magic_flash" || (*c->aura != Aura::NEGATE)))
+             (rangedhittile != Tile::sym.magicFlash || (*c->aura != Aura::NEGATE)))
         action = CA_RANGED;
     // creatures who cast sleep do so 1/4 of the time they don't ranged attack
     else if (castsSleep() && (*c->aura != Aura::NEGATE) && (xu4_random(4) == 0))
@@ -328,7 +318,7 @@ void Creature::act(CombatController *controller) {
 
         if (controller->attackHit(this, target)) {
             soundPlay(SOUND_PC_STRUCK, false);                                 // PC_STRUCK, melee and ranged
-            GameController::flashTile(target->getCoords(), "hit_flash", 4);
+            GameController::flashTile(target->getCoords(), Tile::sym.hitFlash, 4);
 
 
             if (!dealDamage(target, getDamage()))
@@ -348,7 +338,7 @@ void Creature::act(CombatController *controller) {
                 }
             }
         } else {
-            GameController::flashTile(target->getCoords(), "miss_flash", 1);
+            GameController::flashTile(target->getCoords(), Tile::sym.missFlash, 1);
         }
         break;
 

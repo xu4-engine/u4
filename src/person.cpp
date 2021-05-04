@@ -132,9 +132,9 @@ void Person::goToStartLocation() {
 
 void Person::setDialogue(Dialogue *d) {
     dialogue = d;
-    if (tile.getTileType()->getName() == "beggar")
+    if (tile.getTileType()->name == Tile::sym.beggar)
         npcType = NPC_TALKER_BEGGAR;
-    else if (tile.getTileType()->getName() == "guard")
+    else if (tile.getTileType()->name == Tile::sym.guard)
         npcType = NPC_TALKER_GUARD;
     else
         npcType = NPC_TALKER;

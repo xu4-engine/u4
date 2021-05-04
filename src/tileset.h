@@ -19,18 +19,18 @@ class Tile;
  */
 class Tileset {
 public:
-    typedef std::map<string, const Tile*> TileStrMap;
+    typedef std::map<Symbol, const Tile*> TileNameMap;
 
     static void loadImages();
     static void unloadImages();
-    static const Tile* findTileByName(const string &name);
+    static const Tile* findTileByName(Symbol name);
     static const Tile* findTileById(TileId id);
 
     Tileset() : totalFrames(0) {}
     ~Tileset();
 
     const Tile* get(TileId id) const;
-    const Tile* getByName(const string &name) const;
+    const Tile* getByName(Symbol name) const;
 
     string getImageName() const { return imageName; }
     unsigned int numTiles() const { return tiles.size(); }
@@ -38,7 +38,7 @@ public:
 
 //private:
     std::vector<Tile*> tiles;
-    TileStrMap nameMap;
+    TileNameMap nameMap;
     unsigned int totalFrames;
     string imageName;
 };

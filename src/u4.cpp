@@ -177,6 +177,7 @@ void servicesInit(XU4GameServices* gs, Options* opt) {
     gs->config = configInit();
     gs->imageMgr = new ImageMgr;
     screenInit();
+    Tile::initSymbols(gs->config);
 
     if (! (opt->flags & OPT_NO_AUDIO))
         soundInit();

@@ -5,15 +5,21 @@
 #ifndef TILE_H
 #define TILE_H
 
-#include <string>
-
 #include "direction.h"
 #include "types.h"
 
-using std::string;
-
+class Config;
 class Image;
 class TileAnim;
+
+#define SYM_UP_LADDER       Tile::sym.dungeonTiles[1]
+#define SYM_DOWN_LADDER     Tile::sym.dungeonTiles[2]
+#define SYM_UP_DOWN_LADDER  Tile::sym.dungeonTiles[3]
+#define SYM_MAGIC_ORB       Tile::sym.dungeonTiles[7]
+#define SYM_POISON_FIELD    Tile::sym.fields[0]
+#define SYM_ENERGY_FIELD    Tile::sym.fields[1]
+#define SYM_FIRE_FIELD      Tile::sym.fields[2]
+#define SYM_SLEEP_FIELD     Tile::sym.fields[3]
 
 /* attr masks */
 #define MASK_SHIP                   0x0001
@@ -51,24 +57,54 @@ struct TileRule {
     int walkoffDirs;
 };
 
+struct TileSymbols {
+    Symbol brickFloor;
+    Symbol dungeonFloor;
+    Symbol avatar;
+    Symbol black;
+    Symbol beggar;
+    Symbol bridge;
+    Symbol chest;
+    Symbol corpse;
+    Symbol door;
+    Symbol guard;
+    Symbol grass;
+    Symbol horse;
+    Symbol balloon;
+    Symbol ship;
+    Symbol pirateShip;
+    Symbol wisp;
+    Symbol moongate;
+    Symbol whirlpool;
+    Symbol hitFlash;
+    Symbol missFlash;
+    Symbol magicFlash;
+    Symbol classTiles[8];
+    Symbol dungeonTiles[17];
+    Symbol fields[5];
+    Symbol dungeonMaps[6];
+    Symbol combatMaps[20];
+};
+
 /**
  * A Tile object represents a specific tile type.  Every tile is a
  * member of a Tileset.
  */
 class Tile {
 public:
-    static TileId dungeonFloorId;
+    static TileSymbols sym;
 
+    static void initSymbols(Config*);
     static bool canTalkOverTile(const Tile *tile)   {return tile->canTalkOver() != 0;}
     static bool canAttackOverTile(const Tile *tile) {return tile->canAttackOver() != 0;}
 
 
     Tile(int tid);
     ~Tile();
-    void setDirections(const string& dirs);
+    void setDirections(const char* dirs);
+    const char* nameStr() const;
 
     TileId getId() const                {return id;}
-    const string &getName() const       {return name;}
     int getWidth() const                {return w;}
     int getHeight() const               {return h;}
     int getFrames() const               {return frames;}
@@ -105,7 +141,7 @@ public:
     int  isLockedDoor() const       {return rule->mask & MASK_LOCKEDDOOR;}
     int  isChest() const            {return rule->mask & MASK_CHEST;}
     int  isShip() const             {return rule->mask & MASK_SHIP;}
-    bool isPirateShip() const       {return name == "pirate_ship";}
+    bool isPirateShip() const       {return name == sym.pirateShip;}
     int  isHorse() const            {return rule->mask & MASK_HORSE;}
     int  isBalloon() const          {return rule->mask & MASK_BALLOON;}
     int  canDispel() const          {return rule->mask & MASK_DISPEL;}
@@ -121,12 +157,12 @@ public:
     void loadImage();
     void deleteImage();
 
-//private:
     TileId id;          /**< an id that is unique across all tilesets */
-    string name;        /**< The name of this tile */
-    int w, h;           /**< width and height of the tile */
-    int frames;         /**< The number of frames this tile has */
-    int scale;          /**< The scale of the tile */
+    Symbol name;        /**< The name of this tile */
+    Symbol imageName;   /**< The name of the image that belongs to this tile */
+    int16_t w, h;       /**< width and height of the tile */
+    int16_t frames;     /**< The number of frames this tile has */
+    int16_t scale;      /**< The scale of the tile */
     TileAnim *anim;     /**< The tile animation for this tile */
     bool opaque;        /**< Is this tile opaque? */
 
@@ -134,8 +170,6 @@ public:
     bool waterForeground;/**< As a maptile, is a foreground that will search neighbour maptiles for a water-based background replacement. ex: chests */
 
     const TileRule *rule; /**< The rules that govern the behavior of this tile */
-    string imageName;   /**< The name of the image that belongs to this tile */
-
     Image *image;       /**< The original image for this tile (with all of its frames) */
     bool tiledInDungeon;
     uint8_t directionCount;
@@ -143,6 +177,7 @@ public:
 
     Symbol animationRule;
 
+private:
     // Prevent copying.
     Tile(const Tile&);
     const Tile &operator=(const Tile&);

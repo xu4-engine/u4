@@ -53,26 +53,16 @@ string Dungeon::getName() {
  * Returns the dungeon token associated with the given dungeon tile
  */
 DungeonToken Dungeon::tokenForTile(const MapTile& tile) const {
-    const static std::string tileNames[] = {
-        "brick_floor", "up_ladder", "down_ladder", "up_down_ladder", "chest",
-        "unimpl_ceiling_hole", "unimpl_floor_hole", "magic_orb",
-        "ceiling_hole", "fountain",
-        "brick_floor", "dungeon_altar", "dungeon_door", "dungeon_room",
-        "secret_door", "brick_wall", ""
-    };
-
-    const static std::string fieldNames[] = { "poison_field", "energy_field", "fire_field", "sleep_field", "" };
-
     int i;
     const Tile *t = tileset->get(tile.getId());
 
-    for (i = 0; !tileNames[i].empty(); i++) {
-        if (t->getName() == tileNames[i])
+    for (i = 0; Tile::sym.dungeonTiles[i]; i++) {
+        if (t->name == Tile::sym.dungeonTiles[i])
             return DungeonToken(i<<4);
     }
 
-    for (i = 0; !fieldNames[i].empty(); i++) {
-        if (t->getName() == fieldNames[i])
+    for (i = 0; Tile::sym.fields[i]; i++) {
+        if (t->name == Tile::sym.fields[i])
             return DUNGEON_FIELD;
     }
 
@@ -216,7 +206,7 @@ void dungeonTouchOrb() {
 
     /* Get current position and find a replacement tile for it */
     Location* loc = c->location;
-    const Tile * orb_tile = loc->map->tileset->getByName("magic_orb");
+    const Tile * orb_tile = loc->map->tileset->getByName(SYM_MAGIC_ORB);
     MapTile replacementTile(loc->getReplacementTile(loc->coords, orb_tile));
 
     switch(loc->map->id) {
@@ -293,7 +283,7 @@ bool Dungeon::ladderUpAt(MapCoords coords) {
     if (a.size() > 0) {
         Annotation::List::iterator i;
         for (i = a.begin(); i != a.end(); i++) {
-            if (i->getTile() == tileset->getByName("up_ladder")->getId())
+            if (i->getTile() == tileset->getByName(SYM_UP_LADDER)->getId())
                 return true;
         }
     }
@@ -313,7 +303,7 @@ bool Dungeon::ladderDownAt(MapCoords coords) {
     if (a.size() > 0) {
         Annotation::List::iterator i;
         for (i = a.begin(); i != a.end(); i++) {
-            if (i->getTile() == tileset->getByName("down_ladder")->getId())
+            if (i->getTile() == tileset->getByName(SYM_DOWN_LADDER)->getId())
                 return true;
         }
     }

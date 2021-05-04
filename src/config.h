@@ -33,6 +33,8 @@ public:
     //void setGame(const char* name);
 
     const char* symbolName( Symbol s ) const;
+    Symbol intern( const char* name );
+    void internSymbols( Symbol* table, uint16_t count, const char* name );
 
     // Primary configurable elements.
     const RGBA* egaPalette();

@@ -245,30 +245,25 @@ bool CheatMenuController::keyPressed(int key) {
     case 't':
         if (c->location->map->isWorldMap()) {
             MapCoords coords = c->location->coords;
-            static MapTile horse = c->location->map->tileset->getByName("horse")->getId(),
-                ship = c->location->map->tileset->getByName("ship")->getId(),
-                balloon = c->location->map->tileset->getByName("balloon")->getId();
-            MapTile *choice;
-            const Tile *tile;
+            const char* name = NULL;
 
             screenMessage("Create transport!\nWhich? ");
 
             // Get the transport of choice
             char transport = ReadChoiceController::get("shb \033\015");
             switch(transport) {
-                case 's': choice = &ship; break;
-                case 'h': choice = &horse; break;
-                case 'b': choice = &balloon; break;
-                default:
-                    choice = NULL;
-                    break;
+                case 's': name = "ship";    break;
+                case 'h': name = "horse";   break;
+                case 'b': name = "balloon"; break;
             }
 
-            if (choice) {
+            if (name) {
                 ReadDirController readDir;
-                tile = c->location->map->tileset->get(choice->getId());
+                const Tile *tile;
+                Symbol symbol = xu4.config->intern(name);
 
-                screenMessage("%s\n", tile->getName().c_str());
+                tile = c->location->map->tileset->getByName(symbol);
+                screenMessage("%s\n", tile->nameStr());
 
                 // Get the direction in which to create the transport
                 xu4.eventHandler->pushController(&readDir);
@@ -285,16 +280,14 @@ bool CheatMenuController::keyPressed(int key) {
                     case 's': ok = ground->getTileType()->isSailable(); break;
                     case 'h': ok = ground->getTileType()->isWalkable(); break;
                     case 'b': ok = ground->getTileType()->isWalkable(); break;
-                    default: break;
                     }
 
-                    if (choice && ok) {
-                        c->location->map->addObject(*choice, *choice, coords);
-                        screenMessage("%s created!\n", tile->getName().c_str());
-                    }
-                    else if (!choice)
-                        screenMessage("Invalid transport!\n");
-                    else screenMessage("Can't place %s there!\n", tile->getName().c_str());
+                    if (ok) {
+                        MapTile choice(tile->getId());
+                        c->location->map->addObject(choice, choice, coords);
+                        screenMessage("%s created!\n", tile->nameStr());
+                    } else
+                        screenMessage("Can't place %s there!\n", tile->nameStr());
                 }
             }
             else screenMessage("None!\n");

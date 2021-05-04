@@ -124,6 +124,8 @@ struct ConfigXML : public Config {
     Symbol propSymbol(const ConfigElement& ce, const char* name) const;
 
     XMLConfig xcd;
+    Symbol sym_hitFlash;
+    Symbol sym_missFlash;
 };
 
 #define CB  static_cast<XMLConfig*>(backend)
@@ -311,10 +313,8 @@ static void conf_tileRule(SymbolTable& sym, TileRule* rule, const ConfigElement 
     rule->effect = static_cast<TileEffect>(conf.getEnum("effect", effectsEnumStrings));
 }
 
-static void conf_tileLoad(const ConfigXML* cfg, Tile* tile, const ConfigElement &conf) {
-    tile->name = conf.getString("name"); /* get the name of the tile */
-    if (tile->name == "brick_floor")
-        Tile::dungeonFloorId = tile->getId();
+static void conf_tileLoad(ConfigXML* cfg, Tile* tile, const ConfigElement &conf) {
+    tile->name = cfg->propSymbol(conf, "name");
 
     /* get the animation for the tile, if one is specified */
     if (conf.exists("animation"))
@@ -337,15 +337,18 @@ static void conf_tileLoad(const ConfigXML* cfg, Tile* tile, const ConfigElement 
 
     /* get the name of the image that belongs to this tile */
     if (conf.exists("image"))
-        tile->imageName = conf.getString("image");
-    else
-        tile->imageName = string("tile_") + tile->name;
+        tile->imageName = cfg->propSymbol(conf, "image");
+    else {
+        string tname("tile_");
+        tname += conf.getString("name");
+        tile->imageName = cfg->xcd.sym.intern(tname.c_str());
+    }
 
     tile->tiledInDungeon = conf.getBool("tiledInDungeon");
 
     /* Fill directions if they are specified. */
     if (conf.exists("directions"))
-        tile->setDirections(conf.getString("directions"));
+        tile->setDirections(conf.getString("directions").c_str());
 }
 
 static void conf_tilesetLoad(ConfigXML* cfg, Tileset* ts, const ConfigElement& conf) {
@@ -366,14 +369,14 @@ static void conf_tilesetLoad(ConfigXML* cfg, Tileset* ts, const ConfigElement& c
 
         /* add the tile to our tileset */
         ts->tiles.push_back( tile );
-        ts->nameMap[tile->getName()] = tile;
+        ts->nameMap[tile->name] = tile;
 
         index += tile->getFrames();
     }
     ts->totalFrames = index;
 }
 
-static void conf_ultimaSaveIds(UltimaSaveIds* usaveIds, Tileset* ts, const ConfigElement &conf) {
+static void conf_ultimaSaveIds(ConfigXML* cfg, UltimaSaveIds* usaveIds, Tileset* ts, const ConfigElement &conf) {
     int frames;
     int uid = 0;
 
@@ -386,10 +389,10 @@ static void conf_ultimaSaveIds(UltimaSaveIds* usaveIds, Tileset* ts, const Confi
             continue;
 
         /* find the tile this references */
-        string tile = it->getString("tile");
+        Symbol tile = cfg->propSymbol(*it, "tile");
         const Tile *t = ts->getByName(tile);
         if (! t)
-            errorFatal("Error: tile '%s' was not found in tileset", tile.c_str());
+            errorFatal("Error: tile '%s' was not found in tileset", cfg->xcd.sym.name(tile));
 
         if (it->exists("index"))
             uid = it->getInt("index");
@@ -653,7 +656,7 @@ struct Attribute {
     unsigned int mask;
 };
 
-static void conf_creatureLoad(Creature* cr, Tileset* ts, const ConfigElement &conf) {
+static void conf_creatureLoad(ConfigXML* cfg, Creature* cr, Tileset* ts, const ConfigElement &conf) {
     static const Attribute booleanAttributes[] = {
         { "undead",         MATTR_UNDEAD },
         { "good",           MATTR_GOOD },
@@ -711,10 +714,10 @@ static void conf_creatureLoad(Creature* cr, Tileset* ts, const ConfigElement &co
 
     cr->xp = conf.getInt("exp");
     cr->ranged = conf.getBool("ranged");
-    cr->setTile(ts->getByName(conf.getString("tile")));
+    cr->setTile(ts->getByName(cfg->propSymbol(conf, "tile")));
 
-    cr->setHitTile("hit_flash");
-    cr->setMissTile("miss_flash");
+    cr->setHitTile(cfg->sym_hitFlash);
+    cr->setMissTile(cfg->sym_missFlash);
 
     cr->resists = 0;
 
@@ -731,18 +734,18 @@ static void conf_creatureLoad(Creature* cr, Tileset* ts, const ConfigElement &co
 
     /* get the camouflaged tile */
     if (conf.exists("camouflageTile"))
-        cr->camouflageTile = conf.getString("camouflageTile");
+        cr->camouflageTile = cfg->propSymbol(conf, "camouflageTile");
 
     /* get the ranged tile for world map attacks */
     if (conf.exists("worldrangedtile"))
-        cr->worldrangedtile = conf.getString("worldrangedtile");
+        cr->worldrangedtile = cfg->propSymbol(conf, "worldrangedtile");
 
     /* get ranged hit tile */
     if (conf.exists("rangedhittile")) {
         if (conf.getString("rangedhittile") == "random")
             attr |= MATTR_RANDOMRANGED;
         else
-            cr->setHitTile(conf.getString("rangedhittile"));
+            cr->setHitTile(cfg->propSymbol(conf, "rangedhittile"));
     }
 
     /* get ranged miss tile */
@@ -750,7 +753,7 @@ static void conf_creatureLoad(Creature* cr, Tileset* ts, const ConfigElement &co
         if (conf.getString("rangedmisstile") ==  "random")
             attr |= MATTR_RANDOMRANGED;
         else
-            cr->setMissTile(conf.getString("rangedmisstile"));
+            cr->setMissTile(cfg->propSymbol(conf, "rangedmisstile"));
     }
 
     /* find out if the creature leaves a tile behind on ranged attacks */
@@ -811,7 +814,7 @@ static void conf_creatureLoad(Creature* cr, Tileset* ts, const ConfigElement &co
 //--------------------------------------
 
 static Armor*  conf_armor(int type, const ConfigElement&);
-static Weapon* conf_weapon(int type, const ConfigElement&);
+static Weapon* conf_weapon(ConfigXML*, int type, const ConfigElement& conf);
 
 ConfigXML::ConfigXML() {
     backend = &xcd;
@@ -820,6 +823,9 @@ ConfigXML::ConfigXML() {
     memset(&xcd.usaveIds, 0, sizeof(xcd.usaveIds));
 
     xcd.sym.intern("unset!");   // Symbol 0 can be used as nil/unset/unknown.
+
+    sym_hitFlash  = xcd.sym.intern("hit_flash");
+    sym_missFlash = xcd.sym.intern("miss_flash");
 
     xmlRegisterInputCallbacks(&xmlFileMatch, &conf_fileOpen, xmlFileRead, xmlFileClose);
 
@@ -915,7 +921,7 @@ ConfigXML::ConfigXML() {
     ce = getElement("weapons").getChildren();
     foreach (it, ce) {
         if (it->getName() == "weapon")
-            xcd.weapons.push_back(conf_weapon(xcd.weapons.size(), *it));
+            xcd.weapons.push_back(conf_weapon(this, xcd.weapons.size(), *it));
     }
 
     // tileRules
@@ -951,7 +957,7 @@ ConfigXML::ConfigXML() {
     if (xcd.tileset) {
         foreach (it, ce) {
             if (it->getName() == "tilemap") {
-                conf_ultimaSaveIds(&xcd.usaveIds, xcd.tileset, *it);
+                conf_ultimaSaveIds(this, &xcd.usaveIds, xcd.tileset, *it);
                 break;
             }
         }
@@ -975,7 +981,7 @@ ConfigXML::ConfigXML() {
         if (it->getName() != "creature")
             continue;
         Creature* cr = new Creature;
-        conf_creatureLoad(cr, xcd.tileset, *it);
+        conf_creatureLoad(this, cr, xcd.tileset, *it);
         xcd.creatures[cr->getId()] = cr;
     }
     }
@@ -1114,6 +1120,21 @@ vector<ConfigElement> ConfigElement::getChildren() const {
 
 const char* Config::symbolName( Symbol s ) const {
     return CB->sym.name(s);
+}
+
+Symbol Config::intern( const char* name ) {
+    return CB->sym.intern(name);
+}
+
+/**
+ * Get symbols of the given names.
+ *
+ * \param table     Return area for symbols of the names.
+ * \param count     Maximum number of symbols table can hold.
+ * \param names     String containing names separated by whitespace.
+ */
+void Config::internSymbols(Symbol* table, uint16_t count, const char* names) {
+    return CB->sym.internSymbols(table, count, names);
 }
 
 /*
@@ -1661,7 +1682,7 @@ static Armor* conf_armor(int type, const ConfigElement& conf) {
     return arm;
 }
 
-static Weapon* conf_weapon(int type, const ConfigElement& conf) {
+static Weapon* conf_weapon(ConfigXML* cfg, int type, const ConfigElement& conf) {
     static const struct {
         const char *name;
         unsigned int flag;
@@ -1683,9 +1704,6 @@ static Weapon* conf_weapon(int type, const ConfigElement& conf) {
     wpn->canuse = 0xFF;
     wpn->range  = 0;
     wpn->damage = conf.getInt("damage");
-    wpn->hittile   = "hit_flash";
-    wpn->misstile  = "miss_flash";
-    //wpn->leavetile = "";
     wpn->flags = 0;
 
 
@@ -1709,15 +1727,21 @@ static Weapon* conf_weapon(int type, const ConfigElement& conf) {
 
     /* Load hit tiles */
     if (conf.exists("hittile"))
-        wpn->hittile = conf.getString("hittile");
+        wpn->hitTile = cfg->propSymbol(conf, "hittile");
+    else
+        wpn->hitTile = cfg->sym_hitFlash;
 
     /* Load miss tiles */
     if (conf.exists("misstile"))
-        wpn->misstile = conf.getString("misstile");
+        wpn->missTile = cfg->propSymbol(conf, "misstile");
+    else
+        wpn->missTile = cfg->sym_missFlash;
 
     /* Load leave tiles */
     if (conf.exists("leavetile"))
-        wpn->leavetile = conf.getString("leavetile");
+        wpn->leaveTile = cfg->propSymbol(conf, "leavetile");
+    else
+        wpn->leaveTile = SYM_UNSET;
 
     vector<ConfigElement> contraintConfs = conf.getChildren();
     for (std::vector<ConfigElement>::iterator i = contraintConfs.begin(); i != contraintConfs.end(); i++) {

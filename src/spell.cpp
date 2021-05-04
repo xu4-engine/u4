@@ -31,7 +31,6 @@
 SpellEffectCallback spellEffectCallback = NULL;
 
 CombatController *spellCombatController();
-void spellMagicAttack(const string &tilename, Direction dir, int minDamage, int maxDamage);
 bool spellMagicAttackAt(const Coords &coords, MapTile attackTile, int attackDamage);
 
 static int spellAwaken(int player);
@@ -336,7 +335,7 @@ CombatController *spellCombatController() {
 /**
  * Makes a special magic ranged attack in the given direction
  */
-void spellMagicAttack(const string &tilename, Direction dir, int minDamage, int maxDamage) {
+void spellMagicAttack(Symbol tilename, Direction dir, int minDamage, int maxDamage) {
     CombatController *controller = spellCombatController();
     PartyMemberVector *party = controller->getParty();
 
@@ -445,7 +444,7 @@ static int spellBlink(int dir) {
 static int spellCure(int player) {
     ASSERT(player < 8, "player out of range: %d", player);
 
-    GameController::flashTile(c->party->member(player)->getCoords(), "wisp", 1);
+    GameController::flashTile(c->party->member(player)->getCoords(), Tile::sym.wisp, 1);
     return c->party->member(player)->heal(HT_CURE);
 }
 
@@ -464,7 +463,7 @@ static int spellDispel(int dir) {
      */
     fpos.move((Direction)dir, loc->map);
 
-    GameController::flashTile(fpos, "wisp", 2);
+    GameController::flashTile(fpos, Tile::sym.wisp, 2);
     /*
      * if there is a field annotation, remove it and replace it with a valid
      * replacement annotation.  We do this because sometimes dungeon triggers
@@ -500,10 +499,10 @@ static int spellDispel(int dir) {
 }
 
 static int spellEField(int param) {
-    MapTile fieldTile(0);
     int fieldType;
     int dir;
     MapCoords coords;
+    Symbol fsym;
 
     /* Unpack fieldType and direction */
     fieldType = param >> 4;
@@ -511,11 +510,12 @@ static int spellEField(int param) {
 
     /* Make sure params valid */
     switch (fieldType) {
-        case ENERGYFIELD_FIRE: fieldTile = c->location->map->tileset->getByName("fire_field")->getId(); break;
-        case ENERGYFIELD_LIGHTNING: fieldTile = c->location->map->tileset->getByName("energy_field")->getId(); break;
-        case ENERGYFIELD_POISON: fieldTile = c->location->map->tileset->getByName("poison_field")->getId(); break;
-        case ENERGYFIELD_SLEEP: fieldTile = c->location->map->tileset->getByName("sleep_field")->getId(); break;
-        default: return 0; break;
+        case ENERGYFIELD_FIRE:      fsym = SYM_FIRE_FIELD;   break;
+        case ENERGYFIELD_LIGHTNING: fsym = SYM_ENERGY_FIELD; break;
+        case ENERGYFIELD_POISON:    fsym = SYM_POISON_FIELD; break;
+        case ENERGYFIELD_SLEEP:     fsym = SYM_SLEEP_FIELD;  break;
+        default:
+            return 0;
     }
 
     c->location->getCurrentPosition(&coords);
@@ -545,6 +545,8 @@ static int spellEField(int param) {
             }
         }
 
+        MapTile fieldTile;
+        fieldTile = c->location->map->tileset->getByName(fsym)->getId();
         c->location->map->annotations->add(coords, fieldTile);
     }
 
@@ -552,14 +554,14 @@ static int spellEField(int param) {
 }
 
 static int spellFireball(int dir) {
-    spellMagicAttack("hit_flash", (Direction)dir, 24, 128);
+    spellMagicAttack(Tile::sym.hitFlash, (Direction)dir, 24, 128);
     return 1;
 }
 
 static int spellGate(int phase) {
     const Coords *moongate;
 
-    GameController::flashTile(c->location->coords, "moongate", 2);
+    GameController::flashTile(c->location->coords, Tile::sym.moongate, 2);
 
     moongate = moongateGetGateCoordsForPhase(phase);
     if (moongate)
@@ -571,13 +573,13 @@ static int spellGate(int phase) {
 static int spellHeal(int player) {
     ASSERT(player < 8, "player out of range: %d", player);
 
-    GameController::flashTile(c->party->member(player)->getCoords(), "wisp", 1);
+    GameController::flashTile(c->party->member(player)->getCoords(), Tile::sym.wisp, 1);
     c->party->member(player)->heal(HT_HEAL);
     return 1;
 }
 
 static int spellIceball(int dir) {
-    spellMagicAttack("magic_flash", (Direction)dir, 32, 224);
+    spellMagicAttack(Tile::sym.magicFlash, (Direction)dir, 32, 224);
     return 1;
 }
 
@@ -587,7 +589,7 @@ static int spellJinx(int unused) {
 }
 
 static int spellKill(int dir) {
-    spellMagicAttack("whirlpool", (Direction)dir, -1, 232);
+    spellMagicAttack(Tile::sym.whirlpool, (Direction)dir, -1, 232);
     return 1;
 }
 
@@ -597,7 +599,7 @@ static int spellLight(int unused) {
 }
 
 static int spellMMissle(int dir) {
-    spellMagicAttack("miss_flash", (Direction)dir, 64, 16);
+    spellMagicAttack(Tile::sym.missFlash, (Direction)dir, 64, 16);
     return 1;
 }
 
@@ -637,13 +639,13 @@ static int spellSleep(int unused) {
     for (i = creatures.begin(); i != creatures.end(); i++) {
         Creature *m = *i;
         Coords coords = m->getCoords();
-        GameController::flashTile(coords, "wisp", 1);
+        GameController::flashTile(coords, Tile::sym.wisp, 1);
         if ((m->getResists() != EFFECT_SLEEP) &&
             xu4_random(0xFF) >= m->getHp())
         {
             soundPlay(SOUND_POISON_EFFECT);
             m->putToSleep();
-            GameController::flashTile(coords, "sleep_field", 3);
+            GameController::flashTile(coords, SYM_SLEEP_FIELD, 3);
         }
         else
             soundPlay(SOUND_EVADE);
@@ -673,13 +675,13 @@ static int spellTremor(int unused) {
             /* Deal maximum damage to creature */
             if (xu4_random(2) == 0) {
                 soundPlay(SOUND_NPC_STRUCK);
-                GameController::flashTile(coords, "hit_flash", 3);
+                GameController::flashTile(coords, Tile::sym.hitFlash, 3);
                 ct->getCurrentPlayer()->dealDamage(m, 0xFF);
             }
             /* Deal enough damage to creature to make it flee */
             else if (xu4_random(2) == 0) {
                 soundPlay(SOUND_NPC_STRUCK);
-                GameController::flashTile(coords, "hit_flash", 2);
+                GameController::flashTile(coords, Tile::sym.hitFlash, 2);
                 if (m->getHp() > 23)
                     ct->getCurrentPlayer()->dealDamage(m, m->getHp()-23);
             }

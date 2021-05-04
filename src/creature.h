@@ -145,21 +145,21 @@ public:
 
     // Accessor methods
     virtual string getName() const              {return name;}
-    virtual const string &getHitTile() const    {return rangedhittile;}
-    virtual const string &getMissTile() const   {return rangedmisstile;}
+    virtual Symbol getHitTile() const   {return rangedhittile;}
+    virtual Symbol getMissTile() const  {return rangedmisstile;}
     CreatureId getId() const                    {return id;}
     CreatureId getLeader() const                {return leader;}
     virtual int getHp() const                   {return hp;}
     virtual int getXp() const                   {return xp;}
-    virtual const string &getWorldrangedtile() const {return worldrangedtile;}
+    virtual Symbol getWorldrangedtile() const {return worldrangedtile;}
     SlowedType getSlowedType() const            {return slowedType;}
     int getEncounterSize() const                {return encounterSize;}
     unsigned char getResists() const            {return resists;}
 
     // Setters
     void setName(string s)                      {name = s;}
-    void setHitTile(const string &t)            {rangedhittile = t;}
-    void setMissTile(const string &t)           {rangedmisstile = t;}
+    void setHitTile(Symbol t)           {rangedhittile = t;}
+    void setMissTile(Symbol t)          {rangedmisstile = t;}
     virtual void setHp(int points)              {hp = points;}
 
     // Query methods
@@ -192,7 +192,7 @@ public:
     bool castsSleep() const             {return mattr & MATTR_CASTS_SLEEP;}
     bool isForceOfNature() const        {return mattr & MATTR_FORCE_OF_NATURE;}
     int getDamage() const;
-    const string &getCamouflageTile() const {return camouflageTile;}
+    Symbol getCamouflageTile() const    {return camouflageTile;}
     void setRandomRanged();
     int setInitialHp(int hp = -1);
 
@@ -223,17 +223,17 @@ public:
     // Properties
 //protected:
     string          name;
-    string          rangedhittile;
-    string          rangedmisstile;
+    Symbol          rangedhittile;
+    Symbol          rangedmisstile;
+    Symbol          camouflageTile;
     CreatureId      id;
-    string          camouflageTile;
     CreatureId      leader;
     int             basehp;
     int             hp;
     StatusList      status;
     int             xp;
     unsigned char   ranged;
-    string          worldrangedtile;
+    Symbol          worldrangedtile;
     bool            leavestile;
     CreatureAttrib  mattr;
     CreatureMovementAttrib movementAttr;

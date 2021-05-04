@@ -324,7 +324,7 @@ static void screenLoadLayoutsFromConf() {
 
 vector<MapTile> screenViewportTile(unsigned int width, unsigned int height, int x, int y, bool &focus) {
     MapCoords center = c->location->coords;
-    static MapTile grass = c->location->map->tileset->getByName("grass")->getId();
+    static MapTile grass = c->location->map->tileset->getByName(Tile::sym.grass)->getId();
 
     if (c->location->map->width <= width &&
         c->location->map->height <= height) {
@@ -488,13 +488,10 @@ raster_update:
         screenRedrawMapArea();
     }
     else if (showmap) {
-        static MapTile black = c->location->map->tileset->getByName("black")->getId();
-        //static MapTile avatar = c->location->map->tileset->getByName("avatar")->getId();
-
-        int x, y;
-
+        MapTile black = c->location->map->tileset->getByName(Tile::sym.black)->getId();
         vector<MapTile> viewportTiles[VIEWPORT_W][VIEWPORT_H];
         bool viewportFocus[VIEWPORT_W][VIEWPORT_H];
+        int x, y;
 
         for (y = 0; y < VIEWPORT_H; y++) {
             for (x = 0; x < VIEWPORT_W; x++) {
@@ -1160,7 +1157,7 @@ static void screenShowGemTile(const Layout *layout, Map *map, MapTile &t, bool f
 
     if (map->type == Map::DUNGEON) {
         ASSERT(charsetInfo, "charset not initialized");
-        std::map<string, int>::iterator charIndex = dungeonTileChars.find(t.getTileType()->getName());
+        std::map<string, int>::iterator charIndex = dungeonTileChars.find(t.getTileType()->nameStr());
         if (charIndex != dungeonTileChars.end()) {
             charsetInfo->image->drawSubRect((layout->viewport.x + (x * layout->tileshape.width)) * scale,
                                             (layout->viewport.y + (y * layout->tileshape.height)) * scale,
@@ -1252,7 +1249,7 @@ void screenGemUpdate() {
                                                        layout->viewport.height, x - center_x + avt_x, y - center_y + avt_y, focus);
             tile = tiles.front();
 
-            TileId avatarTileId = c->location->map->tileset->getByName("avatar")->getId();
+            TileId avatarTileId = c->location->map->tileset->getByName(Tile::sym.avatar)->getId();
 
 
             if (!weAreDrawingTheAvatarTile)

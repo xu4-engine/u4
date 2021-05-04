@@ -35,7 +35,7 @@ void Tileset::unloadImages() {
 /**
  * Returns the tile that has the given name from any tileset, if there is one
  */
-const Tile* Tileset::findTileByName(const string &name) {
+const Tile* Tileset::findTileByName(Symbol name) {
     return xu4.config->tileset()->getByName(name);
 }
 
@@ -62,8 +62,8 @@ const Tile* Tileset::get(TileId id) const {
 /**
  * Returns the tile with the given name from the tileset, if it exists
  */
-const Tile* Tileset::getByName(const string &name) const {
-    TileStrMap::const_iterator it = nameMap.find(name);
+const Tile* Tileset::getByName(Symbol name) const {
+    TileNameMap::const_iterator it = nameMap.find(name);
     if (it != nameMap.end())
         return it->second;
     return NULL;

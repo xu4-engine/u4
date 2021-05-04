@@ -443,7 +443,7 @@ bool PartyMember::applyDamage(int damage, bool) {
     if (isCombatMap(c->location->map) && getStatus() == STAT_DEAD) {
         Coords p = getCoords();
         Map *map = getMap();
-        map->annotations->add(p, Tileset::findTileByName("corpse")->getId())->setTTL(party->size() * 2);
+        map->annotations->add(p, Tileset::findTileByName(Tile::sym.corpse)->getId())->setTTL(party->size() * 2);
 
         if (party) {
             party->setChanged();
@@ -501,16 +501,16 @@ int PartyMember::getDamage() {
  * Returns the tile that will be displayed when the party
  * member's attack hits
  */
-const string &PartyMember::getHitTile() const {
-    return getWeapon()->getHitTile();
+Symbol PartyMember::getHitTile() const {
+    return getWeapon()->hitTile;
 }
 
 /**
  * Returns the tile that will be displayed when the party
  * member's attack fails
  */
-const string &PartyMember::getMissTile() const {
-    return getWeapon()->getMissTile();
+Symbol PartyMember::getMissTile() const {
+    return getWeapon()->missTile;
 }
 
 bool PartyMember::isDead() {
@@ -547,7 +547,7 @@ void PartyMember::putToSleep() {
     if (getStatus() != STAT_DEAD) {
         soundPlay(SOUND_SLEEP, false);
         addStatus(STAT_SLEEPING);
-        setTile(Tileset::findTileByName("corpse")->getId());
+        setTile(Tileset::findTileByName(Tile::sym.corpse)->getId());
     }
 }
 
@@ -560,37 +560,8 @@ void PartyMember::wakeUp() {
 }
 
 MapTile PartyMember::tileForClass(int klass) {
-    const char *name = NULL;
-
-    switch (klass) {
-    case CLASS_MAGE:
-        name = "mage";
-        break;
-    case CLASS_BARD:
-        name = "bard";
-        break;
-    case CLASS_FIGHTER:
-        name = "fighter";
-        break;
-    case CLASS_DRUID:
-        name = "druid";
-        break;
-    case CLASS_TINKER:
-        name = "tinker";
-        break;
-    case CLASS_PALADIN:
-        name = "paladin";
-        break;
-    case CLASS_RANGER:
-        name = "ranger";
-        break;
-    case CLASS_SHEPHERD:
-        name = "shepherd";
-        break;
-    default:
-        ASSERT(0, "invalid class %d in tileForClass", klass);
-    }
-
+    ASSERT(klass < 8, "invalid class %d in tileForClass", klass);
+    Symbol name = Tile::sym.classTiles[klass];
     const Tile *tile = xu4.config->tileset()->getByName(name);
     ASSERT(tile, "no tile found for class %d", klass);
     return tile->getId();
@@ -1178,7 +1149,7 @@ void Party::reviveParty() {
         saveGame->weapons[i] = 0;
     saveGame->food = 20099;
     saveGame->gold = 200;
-    setTransport(Tileset::findTileByName("avatar")->getId());
+    setTransport(Tileset::findTileByName(Tile::sym.avatar)->getId());
     setChanged();
     PartyEvent event(PartyEvent::PARTY_REVIVED, 0);
     notifyObservers(event);

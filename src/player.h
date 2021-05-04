@@ -134,8 +134,8 @@ public:
     virtual int getDefense() const;
     virtual bool dealDamage(Creature *m, int damage);
     int getDamage();
-    virtual const string &getHitTile() const;
-    virtual const string &getMissTile() const;
+    virtual Symbol getHitTile() const;
+    virtual Symbol getMissTile() const;
     bool isDead();
     bool isDisabled();
     int  loseWeapon();

@@ -29,9 +29,6 @@ public:
     bool canReady(ClassType klass) const{return (canuse & (1 << klass)) != 0;}
     int getRange() const                {return range;}
     int getDamage() const               {return damage;}
-    const std::string &getHitTile() const    {return hittile;}
-    const std::string &getMissTile() const   {return misstile;}
-    const std::string &leavesTile() const    {return leavetile;}
     unsigned short getFlags() const     {return flags;}
 
     bool loseWhenUsed() const           {return flags & WEAP_LOSE;}
@@ -48,9 +45,9 @@ public:
     WeaponType type;
     std::string name;
     std::string abbr;       /**< abbreviation for the weapon */
-    std::string hittile;    /**< tile to display a hit */
-    std::string misstile;   /**< tile to display a miss */
-    std::string leavetile;  /**< if the weapon leaves a tile, the tile #, zero otherwise */
+    Symbol hitTile;         /**< tile to display a hit */
+    Symbol missTile;        /**< tile to display a miss */
+    Symbol leaveTile;       /**< if the weapon leaves a tile, the tile #, zero otherwise */
     uint16_t canuse;        /**< bitmask of classes that can use weapon */
     uint16_t range;         /**< range of weapon */
     uint16_t damage;        /**< damage of weapon */

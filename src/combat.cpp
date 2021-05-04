@@ -500,20 +500,21 @@ bool CombatController::setActivePlayer(int player) {
 
 void CombatController::awardLoot() {
     Coords coords = creature->getCoords();
-    const Tile *ground = c->location->map->tileTypeAt(coords, WITHOUT_OBJECTS);
+    Location* loc = c->location;
+    const Tile *ground = loc->map->tileTypeAt(coords, WITHOUT_OBJECTS);
 
     /* add a chest, if the creature leaves one */
     if (creature->leavesChest() &&
         ground->isCreatureWalkable() &&
-        (!(c->location->context & CTX_DUNGEON) || ground->isDungeonFloor())) {
-        MapTile chest = c->location->map->tileset->getByName("chest")->getId();
-        c->location->map->addObject(chest, chest, coords);
+        (!(loc->context & CTX_DUNGEON) || ground->isDungeonFloor())) {
+        MapTile chest = loc->map->tileset->getByName(Tile::sym.chest)->getId();
+        loc->map->addObject(chest, chest, coords);
     }
     /* add a ship if you just defeated a pirate ship */
     else if (creature->getTile().getTileType()->isPirateShip()) {
-        MapTile ship = c->location->map->tileset->getByName("ship")->getId();
+        MapTile ship = loc->map->tileset->getByName(Tile::sym.ship)->getId();
         ship.setDirection(creature->getTile().getDirection());
-        c->location->map->addObject(ship, ship, coords);
+        loc->map->addObject(ship, ship, coords);
     }
 }
 
@@ -531,8 +532,8 @@ bool CombatController::attackAt(const Coords &coords, PartyMember *attacker, int
     const Weapon *weapon = attacker->getWeapon();
     bool wrongRange = weapon->rangeAbsolute() && (distance != range);
 
-    MapTile hittile = map->tileset->getByName(weapon->getHitTile())->getId();
-    MapTile misstile = map->tileset->getByName(weapon->getMissTile())->getId();
+    MapTile hittile  = map->tileset->getByName(weapon->hitTile)->getId();
+    MapTile misstile = map->tileset->getByName(weapon->missTile)->getId();
 
     // Check to see if something hit
     Creature *creature = map->creatureAt(coords);
@@ -643,7 +644,7 @@ bool CombatController::rangedAttack(const Coords &coords, Creature *attacker) {
     default:
         /* show the appropriate 'hit' message */
         // soundPlay(SOUND_PC_STRUCK, false);
-        if (hittile == Tileset::findTileByName("magic_flash")->getId())
+        if (hittile == Tileset::findTileByName(Tile::sym.magicFlash)->getId())
             screenMessage("\n%s %cMagical Hit%c!\n", target->getName().c_str(), FG_BLUE, FG_WHITE);
         else screenMessage("\n%s Hit!\n", target->getName().c_str());
         attacker->dealDamage(target, attacker->getDamage());
@@ -663,7 +664,7 @@ void CombatController::rangedMiss(const Coords &coords, Creature *attacker) {
 bool CombatController::returnWeaponToOwner(const Coords &coords, int distance, int dir, const Weapon *weapon) {
     MapCoords new_coords = coords;
 
-    MapTile misstile = map->tileset->getByName(weapon->getMissTile())->getId();
+    MapTile misstile = map->tileset->getByName(weapon->missTile)->getId();
 
     /* reverse the direction of the weapon */
     Direction returnDir = dirReverse(dirFromMask(dir));
@@ -1120,12 +1121,12 @@ void CombatController::attack() {
 
     // does weapon leave a tile behind? (e.g. flaming oil)
     const Tile *ground = map->tileTypeAt(targetCoords, WITHOUT_OBJECTS);
-    if (!weapon->leavesTile().empty() && ground->isWalkable())
-        map->annotations->add(targetCoords, map->tileset->getByName(weapon->leavesTile())->getId());
+    if (weapon->leaveTile && ground->isWalkable())
+        map->annotations->add(targetCoords, map->tileset->getByName(weapon->leaveTile)->getId());
 
     /* show the 'miss' tile */
     if (!foundTarget) {
-        GameController::flashTile(targetCoords, weapon->getMissTile(), 1);
+        GameController::flashTile(targetCoords, weapon->missTile, 1);
         /* This goes here so messages are shown in the original order */
         screenMessage("Missed!\n");
     }
@@ -1201,6 +1202,41 @@ Creature *CombatMap::creatureAt(Coords coords) {
     return NULL;
 }
 
+// These coincide with Tile::sym.dungeonMaps[]
+static const uint8_t dungeonMapId[6] = {
+    MAP_DNG0_CON,   // brick_floor
+    MAP_DNG1_CON,   // up_ladder
+    MAP_DNG2_CON,   // down_ladder
+    MAP_DNG3_CON,   // up_down_ladder
+ // MAP_DNG4_CON,   // chest          // chest tile doesn't work that well
+    MAP_DNG5_CON,   // dungeon_door
+    MAP_DNG6_CON,   // secret_door
+};
+
+// These coincide with Tile::sym.combatMaps[]
+static const uint8_t combatMapId[20] = {
+    MAP_GRASS_CON,  // horse
+    MAP_MARSH_CON,  // swamp
+    MAP_GRASS_CON,  // grass
+    MAP_BRUSH_CON,  // brush
+    MAP_FOREST_CON, // forest
+    MAP_HILL_CON,   // hills
+    MAP_DUNGEON_CON,// dungeon
+    MAP_GRASS_CON,  // city
+    MAP_GRASS_CON,  // castle
+    MAP_GRASS_CON,  // town
+    MAP_GRASS_CON,  // lcb_entrance
+    MAP_BRIDGE_CON, // bridge
+    MAP_GRASS_CON,  // balloon
+    MAP_BRIDGE_CON, // bridge_pieces
+    MAP_GRASS_CON,  // shrine
+    MAP_GRASS_CON,  // chest
+    MAP_BRICK_CON,  // brick_floor
+    MAP_GRASS_CON,  // moongate
+    MAP_GRASS_CON,  // moongate_opening
+    MAP_GRASS_CON,  // dungeon_floor
+};
+
 /**
  * Returns a valid combat map given the provided information
  */
@@ -1214,14 +1250,10 @@ MapId CombatMap::mapForTile(const Tile *groundTile, const Tile *transport, Objec
     if (loc->context & CTX_DUNGEON) {
         if (dungeontileMap.empty()) {
             const Tileset* ts = xu4.config->tileset();
-            dungeontileMap[ts->getByName("brick_floor")]    = MAP_DNG0_CON;
-            dungeontileMap[ts->getByName("up_ladder")]      = MAP_DNG1_CON;
-            dungeontileMap[ts->getByName("down_ladder")]    = MAP_DNG2_CON;
-            dungeontileMap[ts->getByName("up_down_ladder")] = MAP_DNG3_CON;
-            // dungeontileMap[ts->getByName("chest")]       = MAP_DNG4_CON;
-            // chest tile doesn't work that well
-            dungeontileMap[ts->getByName("dungeon_door")]   = MAP_DNG5_CON;
-            dungeontileMap[ts->getByName("secret_door")]    = MAP_DNG6_CON;
+            for (size_t i = 0; i < sizeof(dungeonMapId); ++i) {
+                dungeontileMap[ ts->getByName(Tile::sym.dungeonMaps[i]) ] =
+                    dungeonMapId[i];
+            }
         }
 
         if (dungeontileMap.find(groundTile) != dungeontileMap.end())
@@ -1232,26 +1264,8 @@ MapId CombatMap::mapForTile(const Tile *groundTile, const Tile *transport, Objec
 
     if (tileMap.empty()) {
         const Tileset* ts = xu4.config->tileset();
-        tileMap[ts->getByName("horse")] = MAP_GRASS_CON;
-        tileMap[ts->getByName("swamp")] = MAP_MARSH_CON;
-        tileMap[ts->getByName("grass")] = MAP_GRASS_CON;
-        tileMap[ts->getByName("brush")] = MAP_BRUSH_CON;
-        tileMap[ts->getByName("forest")] = MAP_FOREST_CON;
-        tileMap[ts->getByName("hills")] = MAP_HILL_CON;
-        tileMap[ts->getByName("dungeon")] = MAP_DUNGEON_CON;
-        tileMap[ts->getByName("city")] = MAP_GRASS_CON;
-        tileMap[ts->getByName("castle")] = MAP_GRASS_CON;
-        tileMap[ts->getByName("town")] = MAP_GRASS_CON;
-        tileMap[ts->getByName("lcb_entrance")] = MAP_GRASS_CON;
-        tileMap[ts->getByName("bridge")] = MAP_BRIDGE_CON;
-        tileMap[ts->getByName("balloon")] = MAP_GRASS_CON;
-        tileMap[ts->getByName("bridge_pieces")] = MAP_BRIDGE_CON;
-        tileMap[ts->getByName("shrine")] = MAP_GRASS_CON;
-        tileMap[ts->getByName("chest")] = MAP_GRASS_CON;
-        tileMap[ts->getByName("brick_floor")] = MAP_BRICK_CON;
-        tileMap[ts->getByName("moongate")] = MAP_GRASS_CON;
-        tileMap[ts->getByName("moongate_opening")] = MAP_GRASS_CON;
-        tileMap[ts->getByName("dungeon_floor")] = MAP_GRASS_CON;
+        for (size_t i = 0; i < sizeof(combatMapId); ++i)
+            tileMap[ ts->getByName(Tile::sym.combatMaps[i]) ] = combatMapId[i];
     }
 
     fromShip = toShip = false;

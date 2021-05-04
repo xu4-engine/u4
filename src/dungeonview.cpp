@@ -18,13 +18,13 @@
 DungeonView::DungeonView(int x, int y, int columns, int rows) : TileView(x, y, rows, columns)
 , screen3dDungeonViewEnabled(true)
 {
-    black  = tileset->getByName("black")->getId();
-    avatar = tileset->getByName("avatar")->getId();
+    black  = tileset->getByName(Tile::sym.black)->getId();
+    avatar = tileset->getByName(Tile::sym.avatar)->getId();
 
-    corridor      = tileset->getByName("brick_floor")->getId();
-    up_ladder     = tileset->getByName("up_ladder")->getId();
-    down_ladder   = tileset->getByName("down_ladder")->getId();
-    updown_ladder = tileset->getByName("up_down_ladder")->getId();
+    corridor      = tileset->getByName(Tile::sym.dungeonFloor)->getId();
+    up_ladder     = tileset->getByName(SYM_UP_LADDER)->getId();
+    down_ladder   = tileset->getByName(SYM_DOWN_LADDER)->getId();
+    updown_ladder = tileset->getByName(SYM_UP_DOWN_LADDER)->getId();
 }
 
 
