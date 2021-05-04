@@ -1465,46 +1465,58 @@ static TileAnimTransform* conf_createAnimTransform(const ConfigElement& conf) {
     static const char* transformTypeStrings[] = {
         "invert", "pixel", "scroll", "frame", "pixel_color", NULL
     };
-    TileAnimTransform *transform;
+    TileAnimTransform* trans;
 
     int type = conf.getEnum("type", transformTypeStrings);
     switch (type) {
     case 0:
-        transform = new TileAnimInvertTransform(conf.getInt("x"),
-                                                conf.getInt("y"),
-                                                conf.getInt("width"),
-                                                conf.getInt("height"));
+        trans = new TileAnimTransform;
+        trans->animType = ATYPE_INVERT;
+        trans->var.invert.x = conf.getInt("x");
+        trans->var.invert.y = conf.getInt("y");
+        trans->var.invert.w = conf.getInt("width");
+        trans->var.invert.h = conf.getInt("height");
         break;
+#if 0
     case 1:
         {
-            TileAnimPixelTransform* pixelTf;
-            transform = pixelTf = new TileAnimPixelTransform(conf.getInt("x"),
-                                                             conf.getInt("y"));
+            trans = new TileAnimTransform;
+            trans->animType = ATYPE_PIXEL;
+            trans->var.pixel.x = conf.getInt("x");
+            trans->var.pixel.y = conf.getInt("y");
 
             vector<ConfigElement> children = conf.getChildren();
             vector<ConfigElement>::iterator it;
+            int n = 0;
             foreach (it, children) {
                 if (it->getName() == "color") {
                     RGBA rgba = conf_loadColor(*it);
-                    pixelTf->colors.push_back(rgba);
+                    trans->var.pixel.color[n++] = rgba;
                 }
             }
         }
         break;
+#endif
     case 2:
-        transform = new TileAnimScrollTransform(conf.getInt("increment"));
+        trans = new TileAnimTransform;
+        trans->animType = ATYPE_SCROLL;
+        trans->var.scroll.increment = conf.getInt("increment");
+        trans->var.scroll.current = 0;
+        trans->var.scroll.lastOffset = 0;
         break;
     case 3:
-        transform = new TileAnimFrameTransform();
+        trans = new TileAnimTransform;
+        trans->animType = ATYPE_FRAME;
+        trans->var.frame.current = 0;
         break;
     case 4:
         {
-            TileAnimPixelColorTransform* pixColTf;
-            transform = pixColTf =
-                new TileAnimPixelColorTransform(conf.getInt("x"),
-                                                conf.getInt("y"),
-                                                conf.getInt("width"),
-                                                conf.getInt("height"));
+            trans = new TileAnimTransform;
+            trans->animType = ATYPE_PIXEL_COLOR;
+            trans->var.pcolor.x = conf.getInt("x");
+            trans->var.pcolor.y = conf.getInt("y");
+            trans->var.pcolor.w = conf.getInt("width");
+            trans->var.pcolor.h = conf.getInt("height");
 
             vector<ConfigElement> children = conf.getChildren();
             vector<ConfigElement>::iterator it;
@@ -1512,9 +1524,9 @@ static TileAnimTransform* conf_createAnimTransform(const ConfigElement& conf) {
                 if (it->getName() == "color") {
                     RGBA rgba = conf_loadColor(*it);
                     if (it == children.begin())
-                        pixColTf->start = rgba;
+                        trans->var.pcolor.start = rgba;
                     else
-                        pixColTf->end = rgba;
+                        trans->var.pcolor.end = rgba;
                 }
             }
         }
@@ -1526,11 +1538,11 @@ static TileAnimTransform* conf_createAnimTransform(const ConfigElement& conf) {
     /**
      * See if the transform is performed randomely
      */
-    transform->random = 0;
+    trans->random = 0;
     if (conf.exists("random"))
-        transform->random = conf.getInt("random");
+        trans->random = conf.getInt("random");
 
-    return transform;
+    return trans;
 }
 
 static TileAnimContext* conf_createAnimContext(const ConfigElement& conf) {

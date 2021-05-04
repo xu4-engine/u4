@@ -13,92 +13,102 @@
 #include "utils.h"
 #include "tile.h"
 
-TileAnimInvertTransform::TileAnimInvertTransform(int x, int y, int w, int h) {
-    this->x = x;
-    this->y = y;
-    this->w = w;
-    this->h = h;
-}
-bool TileAnimInvertTransform::drawsTile() const { return false; }
-void TileAnimInvertTransform::draw(Image *dest, const Tile *tile, const MapTile &mapTile) {
-    int scale = tile->getScale();
-    tile->getImage()->drawSubRectInvertedOn(dest, x * scale, y * scale, x * scale,
-        (tile->getHeight() * mapTile.frame) + (y * scale), w * scale, h * scale);
+
+static bool drawsTile(const TileAnimTransform* tf)
+{
+    return (tf->animType == ATYPE_SCROLL || tf->animType == ATYPE_FRAME);
 }
 
+void TileAnimTransform::draw(Image* dest, const Tile* tile,
+                             const MapTile& mapTile)
+{
+    switch(animType) {
+    case ATYPE_INVERT:
+    {
+        int scale = tile->getScale();
+        int x = var.invert.x * scale;
+        int y = var.invert.y * scale;
 
-TileAnimPixelTransform::TileAnimPixelTransform(int x, int y) {
-    this->x = x;
-    this->y = y;
-}
-bool TileAnimPixelTransform::drawsTile() const { return false; }
-void TileAnimPixelTransform::draw(Image *dest, const Tile *tile, const MapTile &mapTile) {
-    RGBA color = colors[xu4_random(colors.size())];
-    int scale = tile->getScale();
-    dest->fillRect(x * scale, y * scale, scale, scale, color.r, color.g, color.b, color.a);
-}
-
-
-TileAnimScrollTransform::TileAnimScrollTransform(int i) : increment(i), current(0), lastOffset(0) {}
-bool TileAnimScrollTransform::drawsTile() const { return true; }
-void TileAnimScrollTransform::draw(Image *dest, const Tile *tile, const MapTile &mapTile) {
-    if (increment == 0)
-        increment = tile->getScale();
-
-    int offset = screenCurrentCycle * 4 / SCR_CYCLE_PER_SECOND * tile->getScale();
-    if (lastOffset != offset) {
-        lastOffset = offset;
-        current += increment;
-        if (current >= tile->getHeight())
-            current = 0;
+        tile->getImage()->drawSubRectInvertedOn(dest, x, y,
+                x, (tile->getHeight() * mapTile.frame) + y,
+                var.invert.w * scale, var.invert.h * scale);
     }
+        break;
 
-    tile->getImage()->drawSubRectOn(dest, 0, current, 0, tile->getHeight() * mapTile.frame, tile->getWidth(), tile->getHeight() - current);
-    if (current != 0)
-        tile->getImage()->drawSubRectOn(dest, 0, 0, 0, (tile->getHeight() * mapTile.frame) + tile->getHeight() - current, tile->getWidth(), current);
-}
+    case ATYPE_SCROLL:
+    {
+        if (var.scroll.increment == 0)
+            var.scroll.increment = tile->getScale();
 
+        int offset = screenCurrentCycle * 4 / SCR_CYCLE_PER_SECOND * tile->getScale();
+        if (var.scroll.lastOffset != offset) {
+            var.scroll.lastOffset = offset;
+            var.scroll.current += var.scroll.increment;
+            if (var.scroll.current >= tile->getHeight())
+                var.scroll.current = 0;
+        }
 
-/**
- * Advance the frame by one and draw it!
- */
-bool TileAnimFrameTransform::drawsTile() const { return true; }
-void TileAnimFrameTransform::draw(Image *dest, const Tile *tile, const MapTile &mapTile) {
-    if (++currentFrame >= tile->getFrames())
-        currentFrame = 0;
-    tile->getImage()->drawSubRectOn(dest, 0, 0, 0, currentFrame * tile->getHeight(), tile->getWidth(), tile->getHeight());
+        tile->getImage()->drawSubRectOn(dest, 0, var.scroll.current,
+                0, tile->getHeight() * mapTile.frame,
+                tile->getWidth(), tile->getHeight() - var.scroll.current);
+        if (var.scroll.current != 0) {
+            tile->getImage()->drawSubRectOn(dest, 0, 0,
+                    0, (tile->getHeight() * mapTile.frame) + tile->getHeight() - var.scroll.current,
+                    tile->getWidth(), var.scroll.current);
+        }
+    }
+        break;
 
+    case ATYPE_FRAME:
+        // Advance the frame by one and draw it!
+        if (++var.frame.current >= tile->getFrames())
+            var.frame.current = 0;
+        tile->getImage()->drawSubRectOn(dest, 0, 0,
+                0, var.frame.current * tile->getHeight(),
+                tile->getWidth(), tile->getHeight());
+        break;
+#if 0
+    case ATYPE_PIXEL:
+    {
+        RGBA color = var.pixel.colors[ xu4_random(colors.size()) ];
+        int scale = tile->getScale();
+        dest->fillRect(x * scale, y * scale, scale, scale,
+                       color.r, color.g, color.b, color.a);
+    }
+        break;
+#endif
+    case ATYPE_PIXEL_COLOR:
+    {
+        const Image *tileImage = tile->getImage();
+        int scale = tile->getScale();
+        int x = var.pcolor.x * scale;
+        int y = var.pcolor.y * scale;
+        int w = var.pcolor.w * scale;
+        int h = var.pcolor.h * scale;
+        RGBA start = var.pcolor.start;
+        RGBA end   = var.pcolor.end;
+        RGBA diff  = end;
 
-}
+        diff.r -= start.r;
+        diff.g -= start.g;
+        diff.b -= start.b;
 
-TileAnimPixelColorTransform::TileAnimPixelColorTransform(int x, int y, int w, int h) {
-    this->x = x;
-    this->y = y;
-    this->w = w;
-    this->h = h;
-}
-
-bool TileAnimPixelColorTransform::drawsTile() const { return false; }
-void TileAnimPixelColorTransform::draw(Image *dest, const Tile *tile, const MapTile &mapTile) {
-    RGBA diff = end;
-    int scale = tile->getScale();
-    diff.r -= start.r;
-    diff.g -= start.g;
-    diff.b -= start.b;
-
-    const Image *tileImage = tile->getImage();
-
-    for (int j = y * scale; j < (y * scale) + (h * scale); j++) {
-        for (int i = x * scale; i < (x * scale) + (w * scale); i++) {
-            RGBA pixelAt;
-
-            tileImage->getPixel(i, j + (mapTile.frame * tile->getHeight()), pixelAt);
-            if (pixelAt.r >= start.r && pixelAt.r <= end.r &&
-                pixelAt.g >= start.g && pixelAt.g <= end.g &&
-                pixelAt.b >= start.b && pixelAt.b <= end.b) {
-                dest->putPixel(i, j, start.r + xu4_random(diff.r), start.g + xu4_random(diff.g), start.b + xu4_random(diff.b), pixelAt.a);
+        for (int j = y; j < y + h; j++) {
+            for (int i = x; i < x + w; i++) {
+                RGBA pixelAt;
+                tileImage->getPixel(i, j + (mapTile.frame * tile->getHeight()), pixelAt);
+                if (pixelAt.r >= start.r && pixelAt.r <= end.r &&
+                    pixelAt.g >= start.g && pixelAt.g <= end.g &&
+                    pixelAt.b >= start.b && pixelAt.b <= end.b) {
+                    dest->putPixel(i, j, start.r + xu4_random(diff.r),
+                                         start.g + xu4_random(diff.g),
+                                         start.b + xu4_random(diff.b),
+                                         pixelAt.a);
+                }
             }
         }
+    }
+        break;
     }
 }
 
@@ -175,7 +185,7 @@ void TileAnim::draw(Image *dest, const Tile *tile, const MapTile &mapTile, Direc
         TileAnimTransform *transform = *t;
 
         if (!transform->random || xu4_random(100) < transform->random) {
-            if (!transform->drawsTile() && !drawn) {
+            if (!drawsTile(transform) && !drawn) {
                 tile->getImage()->drawSubRectOn(dest, 0, 0, 0,
                         mapTile.frame * tile->getHeight(),
                         tile->getWidth(), tile->getHeight());
@@ -195,7 +205,7 @@ void TileAnim::draw(Image *dest, const Tile *tile, const MapTile &mapTile, Direc
                 TileAnimTransform *transform = *t;
 
                 if (!transform->random || xu4_random(100) < transform->random) {
-                    if (!transform->drawsTile() && !drawn) {
+                    if (!drawsTile(transform) && !drawn) {
                         tile->getImage()->drawSubRectOn(dest, 0, 0, 0,
                                 mapTile.frame * tile->getHeight(),
                                 tile->getWidth(), tile->getHeight());

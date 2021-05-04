@@ -15,90 +15,59 @@ class Image;
 class Tile;
 struct RGBA;
 
-/**
- * The interface for tile animation transformations.
- */
-class TileAnimTransform {
-public:
-    virtual ~TileAnimTransform() {}
-    virtual void draw(Image *dest, const Tile *tile, const MapTile &mapTile) = 0;
-    virtual bool drawsTile() const = 0;
+enum TileAnimType {
+    ATYPE_INVERT,
+    // Turn part of a tile upside down. Used for flags on buildings and ships.
 
-    // Properties
-    int random;
+    ATYPE_SCROLL,
+    // Scroll the tile's contents vertically within the tile's boundaries.
 
-private:
-    bool replaces;
+    ATYPE_FRAME,
+    // A transformation that advances the tile's frame by 1.
+
+#if 0
+    ATYPE_PIXEL,
+    // Change single pixels to a random color selected from a list.
+    // Used for animating the campfire in EGA mode.
+#endif
+
+    ATYPE_PIXEL_COLOR,
+    // Changes pixels with colors that fall in a given range to another color.
+    // Used to animate the campfire in VGA mode.
+
+    ATYPE_COUNT
 };
 
 /**
- * A tile animation transformation that turns a piece of the tile
- * upside down.  Used for animating the flags on building and ships.
+ * Properties for tile animation transformations.
  */
-class TileAnimInvertTransform : public TileAnimTransform {
-public:
-    TileAnimInvertTransform(int x, int y, int w, int h);
-    virtual void draw(Image *dest, const Tile *tile, const MapTile &mapTile);
-    virtual bool drawsTile() const;
+struct TileAnimTransform {
+    uint8_t animType;   // TileAnimType
+    uint8_t random;
+    union {
+        struct {
+            int16_t x, y, w, h;
+        } invert;
+        struct {
+            int16_t increment, current, lastOffset;
+        } scroll;
+        struct {
+            int16_t current;
+        } frame;
+#if 0
+        struct {
+            int16_t x, y;
+            RGBA color[?];
+        } pixel;
+#endif
+        struct {
+            int16_t x, y, w, h;
+            RGBA start;
+            RGBA end;
+        } pcolor;
+    } var;
 
-private:
-    int x, y, w, h;
-};
-
-/**
- * A tile animation transformation that changes a single pixels to a
- * random color selected from a list.  Used for animating the
- * campfire in EGA mode.
- */
-class TileAnimPixelTransform : public TileAnimTransform {
-public:
-    TileAnimPixelTransform(int x, int y);
-    virtual void draw(Image *dest, const Tile *tile, const MapTile &mapTile);
-    virtual bool drawsTile() const;
-
-    int x, y;
-    std::vector<RGBA> colors;
-};
-
-/**
- * A tile animation transformation that scrolls the tile's contents
- * vertically within the tile's boundaries.
- */
-class TileAnimScrollTransform : public TileAnimTransform {
-public:
-    TileAnimScrollTransform(int increment);
-    virtual void draw(Image *dest, const Tile *tile, const MapTile &mapTile);
-    virtual bool drawsTile() const;
-private:
-    int increment, current, lastOffset;
-};
-
-/**
- * A tile animation transformation that advances the tile's frame
- * by 1.
- */
-class TileAnimFrameTransform : public TileAnimTransform {
-public:
-    TileAnimFrameTransform() : currentFrame(0) {}
-    virtual void draw(Image *dest, const Tile *tile, const MapTile &mapTile);
-    virtual bool drawsTile() const;
-protected:
-    int currentFrame;
-};
-
-/**
- * A tile animation transformation that changes pixels with colors
- * that fall in a given range to another color.  Used to animate
- * the campfire in VGA mode.
- */
-class TileAnimPixelColorTransform : public TileAnimTransform {
-public:
-    TileAnimPixelColorTransform(int x, int y, int w, int h);
-    virtual void draw(Image *dest, const Tile *tile, const MapTile &mapTile);
-    virtual bool drawsTile() const;
-
-    int x, y, w, h;
-    RGBA start, end;
+    void draw(Image* dest, const Tile* tile, const MapTile& mapTile);
 };
 
 /**
