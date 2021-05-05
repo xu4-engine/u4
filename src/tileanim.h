@@ -37,12 +37,20 @@ enum TileAnimType {
     ATYPE_COUNT
 };
 
+enum TileAnimContext {
+    ACON_NONE,
+    ACON_FRAME,     // Only animate if MapTile::frame matches.
+    ACON_DIR        // Only animate if object facing direction matches.
+};
+
 /**
  * Properties for tile animation transformations.
  */
 struct TileAnimTransform {
-    uint8_t animType;   // TileAnimType
+    uint8_t animType;       // TileAnimType
     uint8_t random;
+    uint8_t context;        // TileAnimContext
+    uint8_t contextSelect;
     union {
         struct {
             int16_t x, y, w, h;
@@ -66,45 +74,11 @@ struct TileAnimTransform {
         } pcolor;
     } var;
 
+    void init(int type) {
+        animType = type;
+        random = context = contextSelect = 0;
+    }
     void draw(Image* dest, const Tile* tile, const MapTile& mapTile);
-};
-
-/**
- * A context in which to perform the animation (controls if transforms are
- * performed or not).
- */
-class TileAnimContext {
-public:
-    typedef std::vector<TileAnimTransform *> TileAnimTransformList;
-
-    virtual ~TileAnimContext();
-    virtual bool isInContext(const Tile *t, const MapTile &mapTile, Direction d) = 0;
-
-    TileAnimTransformList transforms;
-};
-
-/**
- * An animation context which changes the animation based on the tile's current frame
- */
-class TileAnimFrameContext : public TileAnimContext {
-public:
-    TileAnimFrameContext(int frame);
-    virtual bool isInContext(const Tile *t, const MapTile &mapTile, Direction d);
-
-private:
-    int frame;
-};
-
-/**
- * An animation context which changes the animation based on the player's current facing direction
- */
-class TileAnimPlayerDirContext : public TileAnimContext {
-public:
-    TileAnimPlayerDirContext(Direction dir);
-    virtual bool isInContext(const Tile *t, const MapTile &mapTile, Direction d);
-
-private:
-    Direction dir;
 };
 
 /**
@@ -117,13 +91,11 @@ public:
     TileAnim() : random(0) {}
     ~TileAnim();
 
-    /* returns the frame to set the mapTile to (only relevent if persistent) */
     void draw(Image *dest, const Tile *tile, const MapTile &mapTile, Direction dir);
 
     std::vector<TileAnimTransform *> transforms;
-    std::vector<TileAnimContext *> contexts;
     Symbol name;
-    int random;   /* true if the tile animation occurs randomely */
+    int16_t random;     /* Non-zero if the animation occurs randomly */
 };
 
 /**

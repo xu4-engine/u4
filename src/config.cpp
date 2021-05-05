@@ -1501,7 +1501,7 @@ static TileAnimTransform* conf_createAnimTransform(const ConfigElement& conf) {
     switch (type) {
     case 0:
         trans = new TileAnimTransform;
-        trans->animType = ATYPE_INVERT;
+        trans->init(ATYPE_INVERT);
         trans->var.invert.x = conf.getInt("x");
         trans->var.invert.y = conf.getInt("y");
         trans->var.invert.w = conf.getInt("width");
@@ -1511,7 +1511,7 @@ static TileAnimTransform* conf_createAnimTransform(const ConfigElement& conf) {
     case 1:
         {
             trans = new TileAnimTransform;
-            trans->animType = ATYPE_PIXEL;
+            trans->init(ATYPE_PIXEL);
             trans->var.pixel.x = conf.getInt("x");
             trans->var.pixel.y = conf.getInt("y");
 
@@ -1529,20 +1529,20 @@ static TileAnimTransform* conf_createAnimTransform(const ConfigElement& conf) {
 #endif
     case 2:
         trans = new TileAnimTransform;
-        trans->animType = ATYPE_SCROLL;
+        trans->init(ATYPE_SCROLL);
         trans->var.scroll.increment = conf.getInt("increment");
         trans->var.scroll.current = 0;
         trans->var.scroll.lastOffset = 0;
         break;
     case 3:
         trans = new TileAnimTransform;
-        trans->animType = ATYPE_FRAME;
+        trans->init(ATYPE_FRAME);
         trans->var.frame.current = 0;
         break;
     case 4:
         {
             trans = new TileAnimTransform;
-            trans->animType = ATYPE_PIXEL_COLOR;
+            trans->init(ATYPE_PIXEL_COLOR);
             trans->var.pcolor.x = conf.getInt("x");
             trans->var.pcolor.y = conf.getInt("y");
             trans->var.pcolor.w = conf.getInt("width");
@@ -1568,30 +1568,30 @@ static TileAnimTransform* conf_createAnimTransform(const ConfigElement& conf) {
     /**
      * See if the transform is performed randomely
      */
-    trans->random = 0;
     if (conf.exists("random"))
         trans->random = conf.getInt("random");
 
     return trans;
 }
 
-static TileAnimContext* conf_createAnimContext(const ConfigElement& conf) {
+static void conf_animContext(TileAnim* anim, const ConfigElement& conf) {
     static const char* contextTypeStrings[] = { "frame", "dir", NULL };
     static const char* dirStrings[] = {
         "none", "west", "north", "east", "south", NULL
     };
-    TileAnimContext* ctx;
     int type = conf.getEnum("type", contextTypeStrings);
+    int select;
     switch(type) {
     case 0:     // frame
-        ctx = new TileAnimFrameContext(conf.getInt("frame"));
+        select = conf.getInt("frame");
         break;
     case 1:     // dir
-        ctx = new TileAnimPlayerDirContext(Direction(conf.getEnum("dir", dirStrings)));
+        select = conf.getEnum("dir", dirStrings);
         break;
     default:
-        return NULL;
+        return;
     }
+    type += 1;  // Convert to TileAnimContext.
 
     // Add the transforms to the ctx
     vector<ConfigElement> children = conf.getChildren();
@@ -1599,10 +1599,11 @@ static TileAnimContext* conf_createAnimContext(const ConfigElement& conf) {
     foreach (it, children) {
         if (it->getName() == "transform") {
             TileAnimTransform* tf = conf_createAnimTransform(*it);
-            ctx->transforms.push_back(tf);
+            tf->context = type;
+            tf->contextSelect = select;
+            anim->transforms.push_back(tf);
         }
     }
-    return ctx;
 }
 
 static void conf_loadTileAnimSet(SymbolTable& sym, TileAnimSet* ts, const ConfigElement &conf) {
@@ -1625,8 +1626,7 @@ static void conf_loadTileAnimSet(SymbolTable& sym, TileAnimSet* ts, const Config
                     TileAnimTransform* tf = conf_createAnimTransform(*ait);
                     anim->transforms.push_back(tf);
                 } else if (ait->getName() == "context") {
-                    TileAnimContext* context = conf_createAnimContext(*ait);
-                    anim->contexts.push_back(context);
+                    conf_animContext(anim, *ait);
                 }
             }
 

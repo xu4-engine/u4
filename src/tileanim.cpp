@@ -14,11 +14,6 @@
 #include "tile.h"
 
 
-static bool drawsTile(const TileAnimTransform* tf)
-{
-    return (tf->animType == ATYPE_SCROLL || tf->animType == ATYPE_FRAME);
-}
-
 void TileAnimTransform::draw(Image* dest, const Tile* tile,
                              const MapTile& mapTile)
 {
@@ -112,33 +107,59 @@ void TileAnimTransform::draw(Image* dest, const Tile* tile,
     }
 }
 
-TileAnimContext::~TileAnimContext() {
-    TileAnimTransformList::iterator it;
-    foreach (it, transforms)
-        delete *it;
+//--------------------------------------
+
+TileAnim::~TileAnim()
+{
+    std::vector<TileAnimTransform *>::iterator ti;
+    foreach (ti, transforms)
+        delete *ti;
 }
 
-/**
- * A context which depends on the tile's current frame for animation
- */
-TileAnimFrameContext::TileAnimFrameContext(int f) : frame(f) {}
-
-bool TileAnimFrameContext::isInContext(const Tile *t, const MapTile &mapTile, Direction dir) {
-    return (mapTile.frame == frame);
+static bool drawsTile(const TileAnimTransform* tf)
+{
+    return (tf->animType == ATYPE_SCROLL || tf->animType == ATYPE_FRAME);
 }
 
-/**
- * An animation context which changes the animation based on the player's current facing direction
- */
-TileAnimPlayerDirContext::TileAnimPlayerDirContext(Direction d) : dir(d) {}
-bool TileAnimPlayerDirContext::isInContext(const Tile *t, const MapTile &mapTile, Direction d) {
-    return (d == dir);
+void TileAnim::draw(Image *dest, const Tile *tile, const MapTile &mapTile, Direction dir)
+{
+    if (mapTile.freezeAnimation || (random && xu4_random(100) > random)) {
+        // Nothing to do; draw the tile and return!
+        tile->getImage()->drawSubRectOn(dest, 0, 0, 0,
+                mapTile.frame * tile->getHeight(),
+                tile->getWidth(), tile->getHeight());
+        return;
+    }
+
+    bool drawn = false;
+    std::vector<TileAnimTransform *>::const_iterator it;
+    foreach (it, transforms) {
+        TileAnimTransform* trans = *it;
+
+        if (trans->context == ACON_FRAME) {
+            if (mapTile.frame != trans->contextSelect)
+                continue;
+        } else if (trans->context == ACON_DIR) {
+            if (dir != trans->contextSelect)
+                continue;
+        }
+
+        if (! trans->random || xu4_random(100) < trans->random) {
+            if (! drawsTile(trans) && ! drawn) {
+                tile->getImage()->drawSubRectOn(dest, 0, 0, 0,
+                        mapTile.frame * tile->getHeight(),
+                        tile->getWidth(), tile->getHeight());
+            }
+            trans->draw(dest, tile, mapTile);
+            drawn = true;
+        }
+    }
 }
 
-/**
- * ~TileAnimSet
- */
-TileAnimSet::~TileAnimSet() {
+//--------------------------------------
+
+TileAnimSet::~TileAnimSet()
+{
     TileAnimMap::iterator it;
     foreach (it, tileanims)
         delete it->second;
@@ -147,73 +168,10 @@ TileAnimSet::~TileAnimSet() {
 /**
  * Returns the tile animation with the given name from the current set
  */
-TileAnim* TileAnimSet::getByName(Symbol name) {
+TileAnim* TileAnimSet::getByName(Symbol name)
+{
     TileAnimMap::iterator i = tileanims.find(name);
     if (i == tileanims.end())
         return NULL;
     return i->second;
-}
-
-TileAnim::~TileAnim() {
-    std::vector<TileAnimTransform *>::iterator ti;
-    foreach (ti, transforms)
-        delete *ti;
-
-    std::vector<TileAnimContext *>::iterator ci;
-    foreach (ci, contexts)
-        delete *ci;
-}
-
-void TileAnim::draw(Image *dest, const Tile *tile, const MapTile &mapTile, Direction dir) {
-    std::vector<TileAnimTransform *>::const_iterator t;
-    std::vector<TileAnimContext *>::const_iterator c;
-    bool drawn = false;
-
-    /* nothing to do, draw the tile and return! */
-    if ((random && xu4_random(100) > random) ||
-        (!transforms.size() && !contexts.size()) || mapTile.freezeAnimation) {
-        tile->getImage()->drawSubRectOn(dest, 0, 0, 0,
-                mapTile.frame * tile->getHeight(),
-                tile->getWidth(), tile->getHeight());
-        return;
-    }
-
-    /**
-     * Do global transforms
-     */
-    for (t = transforms.begin(); t != transforms.end(); t++) {
-        TileAnimTransform *transform = *t;
-
-        if (!transform->random || xu4_random(100) < transform->random) {
-            if (!drawsTile(transform) && !drawn) {
-                tile->getImage()->drawSubRectOn(dest, 0, 0, 0,
-                        mapTile.frame * tile->getHeight(),
-                        tile->getWidth(), tile->getHeight());
-            }
-            transform->draw(dest, tile, mapTile);
-            drawn = true;
-        }
-    }
-
-    /**
-     * Do contextual transforms
-     */
-    for (c = contexts.begin(); c != contexts.end(); c++) {
-        if ((*c)->isInContext(tile, mapTile, dir)) {
-            TileAnimContext::TileAnimTransformList& ctx_transforms = (*c)->transforms;
-            for (t = ctx_transforms.begin(); t != ctx_transforms.end(); t++) {
-                TileAnimTransform *transform = *t;
-
-                if (!transform->random || xu4_random(100) < transform->random) {
-                    if (!drawsTile(transform) && !drawn) {
-                        tile->getImage()->drawSubRectOn(dest, 0, 0, 0,
-                                mapTile.frame * tile->getHeight(),
-                                tile->getWidth(), tile->getHeight());
-                    }
-                    transform->draw(dest, tile, mapTile);
-                    drawn = true;
-                }
-            }
-        }
-    }
 }
