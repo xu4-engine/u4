@@ -77,19 +77,20 @@ void Tile::initSymbols(Config* cfg) {
 
 Tile::Tile(int tid)
     : id(tid)
+    , animationRule(0)
     , w(0)
     , h(0)
     , frames(0)
     , scale(1)
-    , anim(NULL)
     , opaque(false)
     , foreground()
     , waterForeground()
+    , tiledInDungeon(false)
     , rule(NULL)
     , image(NULL)
-    , tiledInDungeon(false)
+    , anim(NULL)
     , directionCount(0)
-    , animationRule(0) {
+{
 }
 
 Tile::~Tile() {

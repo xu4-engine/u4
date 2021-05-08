@@ -204,6 +204,7 @@ int main(int argc, char *argv[]) {
 #if defined(MACOSX)
     osxInit(argv[0]);
 #endif
+    //printf("sizeof(Tile) %ld\n", sizeof(Tile));
 
     {
     Options opt;

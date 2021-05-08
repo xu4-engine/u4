@@ -590,16 +590,17 @@ static Map* conf_makeMap(Tileset* tiles, const ConfigElement& conf) {
     if (! map)
         return NULL;
 
+    map->fname  = conf.getString("fname");
     map->id     = static_cast<MapId>(conf.getInt("id"));
     map->type   = mtype;
-    map->fname  = conf.getString("fname");
+    map->border_behavior = conf.getEnum("borderbehavior", borderBehaviorStrings);
     map->width  = conf.getInt("width");
     map->height = conf.getInt("height");
     map->levels = conf.getInt("levels");
     map->chunk_width  = conf.getInt("chunkwidth");
     map->chunk_height = conf.getInt("chunkheight");
-    map->offset       = conf.getInt("offset");
-    map->border_behavior = static_cast<Map::BorderBehavior>(conf.getEnum("borderbehavior", borderBehaviorStrings));
+    map->music  = conf.getInt("music");
+    map->offset = conf.getInt("offset");
 
     if (isCombatMap(map)) {
         CombatMap *cm = dynamic_cast<CombatMap*>(map);
@@ -614,8 +615,6 @@ static Map* conf_makeMap(Tileset* tiles, const ConfigElement& conf) {
 
     if (conf.getBool("firstperson"))
         map->flags |= FIRST_PERSON;
-
-    map->music = conf.getInt("music");
 
     map->tileset = tiles;
 

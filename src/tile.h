@@ -51,10 +51,10 @@ struct TileRule {
     Symbol name;
     uint16_t mask;
     uint16_t movementMask;
-    TileSpeed speed;
-    TileEffect effect;
-    int walkonDirs;
-    int walkoffDirs;
+    uint16_t speed;         // TileSpeed
+    uint16_t effect;        // TileEffect
+    uint16_t walkonDirs;
+    uint16_t walkoffDirs;
 };
 
 struct TileSymbols {
@@ -146,8 +146,8 @@ public:
     int  isBalloon() const          {return rule->mask & MASK_BALLOON;}
     int  canDispel() const          {return rule->mask & MASK_DISPEL;}
     int  canTalkOver() const        {return rule->mask & MASK_TALKOVER;}
-    TileSpeed getSpeed() const      {return rule->speed;}
-    TileEffect getEffect() const    {return rule->effect;}
+    TileSpeed getSpeed() const      {return (TileSpeed) rule->speed;}
+    TileEffect getEffect() const    {return (TileEffect) rule->effect;}
 
     bool isOpaque() const;
     bool isForeground() const;
@@ -160,22 +160,22 @@ public:
     TileId id;          /**< an id that is unique across all tilesets */
     Symbol name;        /**< The name of this tile */
     Symbol imageName;   /**< The name of the image that belongs to this tile */
-    int16_t w, h;       /**< width and height of the tile */
+    Symbol animationRule;
+    int16_t w;          /**< Pixel width of the tile */
+    int16_t h;          /**< Pixel height of the tile */
     int16_t frames;     /**< The number of frames this tile has */
     int16_t scale;      /**< The scale of the tile */
-    TileAnim *anim;     /**< The tile animation for this tile */
     bool opaque;        /**< Is this tile opaque? */
 
     bool foreground;    /**< As a maptile, is a foreground that will search neighbour maptiles for a land-based background replacement. ex: chests */
     bool waterForeground;/**< As a maptile, is a foreground that will search neighbour maptiles for a water-based background replacement. ex: chests */
+    bool tiledInDungeon;
 
     const TileRule *rule; /**< The rules that govern the behavior of this tile */
     Image *image;       /**< The original image for this tile (with all of its frames) */
-    bool tiledInDungeon;
+    TileAnim *anim;     /**< The tile animation for this tile */
     uint8_t directionCount;
     uint8_t directions[7];  /**< Directions used = frames (if present) */
-
-    Symbol animationRule;
 
 private:
     // Prevent copying.

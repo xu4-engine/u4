@@ -243,12 +243,13 @@ int MapCoords::distance(const MapCoords &c, const Map *map) const {
 
 Map::Map() {
     annotations = new AnnotationMgr();
-    flags = 0;
+    _pad = 0;
     width = 0;
     height = 0;
     levels = 1;
     chunk_width = 0;
     chunk_height = 0;
+    flags = 0;
     offset = 0;
     id = 0;
     tileset = NULL;

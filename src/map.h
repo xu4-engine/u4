@@ -126,23 +126,23 @@ public:
     void fillMonsterTableDungeon(SaveGameMonsterRecord* table) const;
 
 public:
-    MapId           id;
     string          fname;
-    Type            type;
+    MapId           id;
+    uint8_t         type;
+    uint8_t         border_behavior;    // BorderBehavior
+    uint8_t         _pad;
     uint16_t        width,
                     height,
                     levels;
     uint16_t        chunk_width,
                     chunk_height;
-    unsigned int    offset;
-
-    CompressedChunkList     compressed_chunks;
-    BorderBehavior          border_behavior;
-
-    PortalList      portals;
-    AnnotationMgr  *annotations;
     uint16_t        flags;
     uint16_t        music;
+    unsigned int    offset;
+
+    CompressedChunkList compressed_chunks;
+    PortalList      portals;
+    AnnotationMgr  *annotations;
     MapData         data;
 #ifdef USE_GL
     uint8_t* chunks;

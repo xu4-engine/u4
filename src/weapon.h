@@ -56,6 +56,7 @@ struct Armor {
     uint16_t  type;         // ArmorType
     uint16_t  canuse;
     int16_t   defense;
+    uint16_t  _pad;
 
     /** Returns the name of the armor */
     const char* getName() const;
