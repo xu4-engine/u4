@@ -24,7 +24,8 @@
     <mapping tile="dungeon_floor"/>    
     <mapping tile="bridge"/>
     <mapping tile="balloon"/>
-    <mapping frames="2" tile="bridge_pieces"/>
+    <mapping tile="bridge_n"/>
+    <mapping tile="bridge_s"/>
     <mapping tile="up_ladder"/>
     <mapping tile="down_ladder"/>
     <mapping tile="ruins"/>    
@@ -39,7 +40,10 @@
     <mapping frames="2" tile="ranger"/>
     <mapping frames="2" tile="shepherd"/>
     <mapping tile="column"/>
-    <mapping frames="4" tile="solids"/>
+    <mapping tile="waterside_sw"/>
+    <mapping tile="waterside_se"/>
+    <mapping tile="waterside_nw"/>
+    <mapping tile="waterside_ne"/>
     <mapping tile="shipmast"/>
     <mapping tile="shipwheel"/>
     <mapping tile="rocks"/>
@@ -100,7 +104,9 @@
     <mapping tile="Y"/>
     <mapping tile="Z"/>
     <mapping tile="space"/>
-    <mapping frames="3" tile="spacers"/>
+    <mapping tile="space_r"/>
+    <mapping tile="space_l"/>
+    <mapping tile="window"/>
     <mapping tile="black"/>
     <mapping tile="brick_wall"/>
 

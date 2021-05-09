@@ -83,7 +83,7 @@ struct TileSymbols {
     Symbol dungeonTiles[17];
     Symbol fields[5];
     Symbol dungeonMaps[6];
-    Symbol combatMaps[20];
+    Symbol combatMaps[21];
 };
 
 /**

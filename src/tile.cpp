@@ -66,12 +66,13 @@ void Tile::initSymbols(Config* cfg) {
         "dungeon_door secret_door\n");
 
     // These coincide with combatMapId[].
-    cfg->internSymbols(sym.combatMaps, 20,
+    cfg->internSymbols(sym.combatMaps, 21,
         "horse swamp grass brush\n"
         "forest hills dungeon city\n"
         "castle town lcb_entrance bridge\n"
-        "balloon bridge_pieces shrine chest\n"
-        "brick_floor moongate moongate_opening dungeon_floor\n");
+        "balloon bridge_n bridge_s shrine\n"
+        "chest brick_floor moongate moongate_opening\n"
+        "dungeon_floor\n");
 }
 
 Tile::Tile(int tid)

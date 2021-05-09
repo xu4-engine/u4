@@ -26,7 +26,8 @@
             <subimage name="tile_dungeon_floor" width="16" height="16"/>    
             <subimage name="tile_bridge"        width="16" height="16"/>
             <subimage name="tile_balloon"       width="16" height="16"/>
-            <subimage name="tile_bridge_pieces" width="16" height="32"/>
+            <subimage name="tile_bridge_n"      width="16" height="16"/>
+            <subimage name="tile_bridge_s"      width="16" height="16"/>
             <subimage name="tile_up_ladder"     width="16" height="16"/>
             <subimage name="tile_down_ladder"   width="16" height="16"/>
             <subimage name="tile_ruins"         width="16" height="16"/>    
@@ -41,7 +42,10 @@
             <subimage name="tile_ranger"        width="16" height="32"/>
             <subimage name="tile_shepherd"      width="16" height="32"/>
             <subimage name="tile_column"        width="16" height="16"/>
-            <subimage name="tile_solids"        width="16" height="64"/>
+            <subimage name="tile_waterside_sw"  width="16" height="16"/>
+            <subimage name="tile_waterside_se"  width="16" height="16"/>
+            <subimage name="tile_waterside_nw"  width="16" height="16"/>
+            <subimage name="tile_waterside_ne"  width="16" height="16"/>
             <subimage name="tile_shipmast"      width="16" height="16"/>
             <subimage name="tile_shipwheel"     width="16" height="16"/>
             <subimage name="tile_rocks"         width="16" height="16"/>
@@ -102,7 +106,9 @@
             <subimage name="tile_Y"             width="16" height="16"/>
             <subimage name="tile_Z"             width="16" height="16"/>
             <subimage name="tile_space"         width="16" height="16"/>
-            <subimage name="tile_spacers"       width="16" height="48"/>
+            <subimage name="tile_space_r"       width="16" height="16"/>
+            <subimage name="tile_space_l"       width="16" height="16"/>
+            <subimage name="tile_window"        width="16" height="16"/>
             <subimage name="tile_black"         width="16" height="16"/>
             <subimage name="tile_brick_wall"    width="16" height="16"/>
 
@@ -427,7 +433,8 @@
             <subimage name="tile_dungeon_floor" width="16" height="16"/>    
             <subimage name="tile_bridge"        width="16" height="16"/>
             <subimage name="tile_balloon"       width="16" height="16"/>
-            <subimage name="tile_bridge_pieces" width="16" height="32"/>
+            <subimage name="tile_bridge_n"      width="16" height="16"/>
+            <subimage name="tile_bridge_s"      width="16" height="16"/>
             <subimage name="tile_up_ladder"     width="16" height="16"/>
             <subimage name="tile_down_ladder"   width="16" height="16"/>
             <subimage name="tile_ruins"         width="16" height="16"/>    
@@ -442,7 +449,10 @@
             <subimage name="tile_ranger"        width="16" height="32"/>
             <subimage name="tile_shepherd"      width="16" height="32"/>
             <subimage name="tile_column"        width="16" height="16"/>
-            <subimage name="tile_solids"        width="16" height="64"/>
+            <subimage name="tile_waterside_sw"  width="16" height="16"/>
+            <subimage name="tile_waterside_se"  width="16" height="16"/>
+            <subimage name="tile_waterside_nw"  width="16" height="16"/>
+            <subimage name="tile_waterside_ne"  width="16" height="16"/>
             <subimage name="tile_shipmast"      width="16" height="16"/>
             <subimage name="tile_shipwheel"     width="16" height="16"/>
             <subimage name="tile_rocks"         width="16" height="16"/>
@@ -503,7 +513,9 @@
             <subimage name="tile_Y"             width="16" height="16"/>
             <subimage name="tile_Z"             width="16" height="16"/>
             <subimage name="tile_space"         width="16" height="16"/>
-            <subimage name="tile_spacers"       width="16" height="48"/>
+            <subimage name="tile_space_r"       width="16" height="16"/>
+            <subimage name="tile_space_l"       width="16" height="16"/>
+            <subimage name="tile_window"        width="16" height="16"/>
             <subimage name="tile_black"         width="16" height="16"/>
             <subimage name="tile_brick_wall"    width="16" height="16"/>
 
@@ -759,7 +771,8 @@
             <subimage name="tile_dungeon_floor" width="16" height="16"/>    
             <subimage name="tile_bridge"        width="16" height="16"/>
             <subimage name="tile_balloon"       width="16" height="16"/>
-            <subimage name="tile_bridge_pieces" width="16" height="32"/>
+            <subimage name="tile_bridge_n"      width="16" height="16"/>
+            <subimage name="tile_bridge_s"      width="16" height="16"/>
             <subimage name="tile_up_ladder"     width="16" height="16"/>
             <subimage name="tile_down_ladder"   width="16" height="16"/>
             <subimage name="tile_ruins"         width="16" height="16"/>    
@@ -774,7 +787,10 @@
             <subimage name="tile_ranger"        width="16" height="32"/>
             <subimage name="tile_shepherd"      width="16" height="32"/>
             <subimage name="tile_column"        width="16" height="16"/>
-            <subimage name="tile_solids"        width="16" height="64"/>
+            <subimage name="tile_waterside_sw"  width="16" height="16"/>
+            <subimage name="tile_waterside_se"  width="16" height="16"/>
+            <subimage name="tile_waterside_nw"  width="16" height="16"/>
+            <subimage name="tile_waterside_ne"  width="16" height="16"/>
             <subimage name="tile_shipmast"      width="16" height="16"/>
             <subimage name="tile_shipwheel"     width="16" height="16"/>
             <subimage name="tile_rocks"         width="16" height="16"/>
@@ -835,7 +851,9 @@
             <subimage name="tile_Y"             width="16" height="16"/>
             <subimage name="tile_Z"             width="16" height="16"/>
             <subimage name="tile_space"         width="16" height="16"/>
-            <subimage name="tile_spacers"       width="16" height="48"/>
+            <subimage name="tile_space_r"       width="16" height="16"/>
+            <subimage name="tile_space_l"       width="16" height="16"/>
+            <subimage name="tile_window"        width="16" height="16"/>
             <subimage name="tile_black"         width="16" height="16"/>
             <subimage name="tile_brick_wall"    width="16" height="16"/>
 
@@ -1021,7 +1039,12 @@
         <image name="tile_ranger" filename="png/tile_ranger.png"/>
         <image name="tile_shepherd" filename="png/tile_shepherd.png"/>
         <image name="tile_column" filename="png/tile_column.png"/>
-        <image name="tile_solids" filename="png/tile_solids.png"/>
+        <image name="tile_solids" filename="png/tile_solids.png" tiles="4">
+            <subimage name="tile_waterside_sw" x="0" y="0" width="16" height="16"/>
+            <subimage name="tile_waterside_se" width="16" height="16"/>
+            <subimage name="tile_waterside_nw" width="16" height="16"/>
+            <subimage name="tile_waterside_ne" width="16" height="16"/>
+        </image>
         <image name="tile_shipmast" filename="png/tile_shipmast.png"/>
         <image name="tile_shipwheel" filename="png/tile_shipwheel.png"/>
         <image name="tile_rocks" filename="png/tile_rocks.png"/>
@@ -1082,7 +1105,11 @@
         <image name="tile_Y" filename="png/tile_Y.png"/>
         <image name="tile_Z" filename="png/tile_Z.png"/>
         <image name="tile_space" filename="png/tile_space.png"/>
-        <image name="tile_spacers" filename="png/tile_spacers.png"/>
+        <image name="tile_spacers" filename="png/tile_spacers.png" tiles="3">
+            <subimage name="tile_space_r" x="0" y="0" width="16" height="16"/>
+            <subimage name="tile_space_l" width="16" height="16"/>
+            <subimage name="tile_window"  width="16" height="16"/>
+        </image>
         <image name="tile_black" filename="png/tile_black.png"/>
         <image name="tile_brick_wall" filename="png/tile_brick_wall.png"/>
         <!-- Water monsters -->
@@ -1312,7 +1339,8 @@
             <subimage name="tile_dungeon_floor" width="16" height="16"/>    
             <subimage name="tile_bridge"        width="16" height="16"/>
             <subimage name="tile_balloon"       width="16" height="16"/>
-            <subimage name="tile_bridge_pieces" width="16" height="32"/>
+            <subimage name="tile_bridge_n"      width="16" height="16"/>
+            <subimage name="tile_bridge_s"      width="16" height="16"/>
             <subimage name="tile_up_ladder"     width="16" height="16"/>
             <subimage name="tile_down_ladder"   width="16" height="16"/>
             <subimage name="tile_ruins"         width="16" height="16"/>    
@@ -1327,7 +1355,10 @@
             <subimage name="tile_ranger"        width="16" height="32"/>
             <subimage name="tile_shepherd"      width="16" height="32"/>
             <subimage name="tile_column"        width="16" height="16"/>
-            <subimage name="tile_solids"        width="16" height="64"/>
+            <subimage name="tile_waterside_sw"  width="16" height="16"/>
+            <subimage name="tile_waterside_se"  width="16" height="16"/>
+            <subimage name="tile_waterside_nw"  width="16" height="16"/>
+            <subimage name="tile_waterside_ne"  width="16" height="16"/>
             <subimage name="tile_shipmast"      width="16" height="16"/>
             <subimage name="tile_shipwheel"     width="16" height="16"/>
             <subimage name="tile_rocks"         width="16" height="16"/>

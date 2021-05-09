@@ -1214,7 +1214,7 @@ static const uint8_t dungeonMapId[6] = {
 };
 
 // These coincide with Tile::sym.combatMaps[]
-static const uint8_t combatMapId[20] = {
+static const uint8_t combatMapId[21] = {
     MAP_GRASS_CON,  // horse
     MAP_MARSH_CON,  // swamp
     MAP_GRASS_CON,  // grass
@@ -1228,7 +1228,8 @@ static const uint8_t combatMapId[20] = {
     MAP_GRASS_CON,  // lcb_entrance
     MAP_BRIDGE_CON, // bridge
     MAP_GRASS_CON,  // balloon
-    MAP_BRIDGE_CON, // bridge_pieces
+    MAP_BRIDGE_CON, // bridge_n
+    MAP_BRIDGE_CON, // bridge_s
     MAP_GRASS_CON,  // shrine
     MAP_GRASS_CON,  // chest
     MAP_BRICK_CON,  // brick_floor

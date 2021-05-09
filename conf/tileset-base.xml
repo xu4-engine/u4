@@ -32,7 +32,8 @@
     <tile name="dungeon_floor" rule="floors"/>
     <tile name="bridge" usesWaterReplacementTileAsBackground="true" usesReplacementTileAsBackground="true"/>
     <tile name="balloon" rule="balloon"/>
-    <tile name="bridge_pieces" frames="2" usesWaterReplacementTileAsBackground="true" usesReplacementTileAsBackground="true"/>
+    <tile name="bridge_n" usesWaterReplacementTileAsBackground="true" usesReplacementTileAsBackground="true"/>
+    <tile name="bridge_s" usesWaterReplacementTileAsBackground="true" usesReplacementTileAsBackground="true"/>
     <tile name="up_ladder" usesReplacementTileAsBackground="true"/>
     <tile name="down_ladder" usesReplacementTileAsBackground="true"/>
     <tile name="ruins" usesReplacementTileAsBackground="true"/>
@@ -47,7 +48,10 @@
     <tile name="ranger" rule="person" frames="2" animation="frame"/>
     <tile name="shepherd" rule="person" frames="2" animation="frame"/>
     <tile name="column" rule="solid" usesReplacementTileAsBackground="true" /> 
-    <tile name="solids" rule="solid_attackover" frames="4" usesReplacementTileAsBackground="true" usesWaterReplacementTileAsBackground="true"/>
+    <tile name="waterside_sw" rule="solid_attackover" usesReplacementTileAsBackground="true" usesWaterReplacementTileAsBackground="true"/>
+    <tile name="waterside_se" rule="solid_attackover" usesReplacementTileAsBackground="true" usesWaterReplacementTileAsBackground="true"/>
+    <tile name="waterside_nw" rule="solid_attackover" usesReplacementTileAsBackground="true" usesWaterReplacementTileAsBackground="true"/>
+    <tile name="waterside_ne" rule="solid_attackover" usesReplacementTileAsBackground="true" usesWaterReplacementTileAsBackground="true"/>
     <tile name="shipmast" rule="solid"/>
     <tile name="shipwheel" rule="solid"/>
     <tile name="rocks" rule="solid" usesReplacementTileAsBackground="true"/>
@@ -108,7 +112,9 @@
     <tile name="Y" rule="signs"/>
     <tile name="Z" rule="signs"/>
     <tile name="space" rule="signs"/>
-    <tile name="spacers" rule="spacers" frames="3"/> <!-- sign spacers -->
+    <tile name="space_r" rule="spacers"/> <!-- sign spacers -->
+    <tile name="space_l" rule="spacers"/>
+    <tile name="window" rule="spacers"/>
     <tile name="black" rule="spacers"/> <!-- black square -->
     <tile name="brick_wall" rule="walls" opaque="true"/>
 
