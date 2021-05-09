@@ -54,9 +54,9 @@ string Dungeon::getName() {
 /**
  * Returns the dungeon token associated with the given dungeon tile
  */
-DungeonToken Dungeon::tokenForTile(const MapTile& tile) const {
+DungeonToken Dungeon::tokenForTile(TileId tid) const {
     int i;
-    const Tile *t = tileset->get(tile.getId());
+    const Tile *t = tileset->get(tid);
 
     for (i = 0; Tile::sym.dungeonTiles[i]; i++) {
         if (t->name == Tile::sym.dungeonTiles[i])
@@ -95,7 +95,7 @@ uint8_t Dungeon::currentSubToken() {
  * Returns the dungeon token for the given coordinates
  */
 DungeonToken Dungeon::tokenAt(const MapCoords& coords) const {
-    return tokenForTile(*getTileFromData(coords));
+    return tokenForTile(getTileFromData(coords));
 }
 
 /**
@@ -209,7 +209,6 @@ void dungeonTouchOrb() {
     /* Get current position and find a replacement tile for it */
     Location* loc = c->location;
     const Tile * orb_tile = loc->map->tileset->getByName(SYM_MAGIC_ORB);
-    MapTile replacementTile(loc->getReplacementTile(loc->coords, orb_tile));
 
     switch(loc->map->id) {
     case MAP_DECEIT:    stats = STATSBONUS_INT; break;
@@ -243,7 +242,8 @@ void dungeonTouchOrb() {
     c->party->member(player)->applyDamage(damage);
 
     /* remove the orb from the map */
-    loc->map->setTileAt(loc->coords, replacementTile);
+    loc->map->setTileAt(loc->coords,
+                        loc->getReplacementTile(loc->coords, orb_tile));
 }
 
 /**
@@ -313,8 +313,8 @@ bool Dungeon::ladderDownAt(MapCoords coords) {
 }
 
 bool Dungeon::validTeleportLocation(const MapCoords& coords) const {
-    const MapTile *tile = tileAt(coords, WITH_OBJECTS);
-    return tokenForTile(*tile) == DUNGEON_CORRIDOR;
+    const Tile* tile = tileTypeAt(coords, WITH_OBJECTS);
+    return tokenForTile(tile->id) == DUNGEON_CORRIDOR;
 }
 
 
@@ -337,7 +337,7 @@ static int u4DngMonster(CreatureId cid) {
 
 uint8_t* Dungeon::fillRawMap() {
     uint32_t x, y, z;
-    const MapTile* mt;
+    TileId tid;
     const UltimaSaveIds* usaveIds = xu4.config->usaveIds();
     uint8_t* dp = (uint8_t*) &rawMap.front();
     int uid, dngId;
@@ -354,9 +354,9 @@ uint8_t* Dungeon::fillRawMap() {
                     continue;
                 }
 
-                mt = getTileFromData(MapCoords(x, y, z));
-                dngId = usaveIds->moduleToDngMap(mt->id);
-                //printf("KR %d,%d,%d %d => %d\n", x, y, z, mt->id, dngId);
+                tid = getTileFromData(MapCoords(x, y, z));
+                dngId = usaveIds->moduleToDngMap(tid);
+                //printf("KR %d,%d,%d %d => %d\n", x, y, z, tid, dngId);
 
                 // Add the creature to the tile
                 const Object *obj = objectAt(MapCoords(x, y, z));

@@ -272,14 +272,14 @@ bool CheatMenuController::keyPressed(int key) {
                 coords.move(readDir.waitFor(), c->location->map);
                 if (coords != c->location->coords) {
                     bool ok = false;
-                    const MapTile *ground = c->location->map->tileAt(coords, WITHOUT_OBJECTS);
+                    const Tile* ground = c->location->map->tileTypeAt(coords, WITHOUT_OBJECTS);
 
                     screenMessage("%s\n", getDirectionName(readDir.getValue()));
 
                     switch(transport) {
-                    case 's': ok = ground->getTileType()->isSailable(); break;
-                    case 'h': ok = ground->getTileType()->isWalkable(); break;
-                    case 'b': ok = ground->getTileType()->isWalkable(); break;
+                    case 's': ok = ground->isSailable(); break;
+                    case 'h': ok = ground->isWalkable(); break;
+                    case 'b': ok = ground->isWalkable(); break;
                     }
 
                     if (ok) {

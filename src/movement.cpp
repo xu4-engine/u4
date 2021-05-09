@@ -119,7 +119,7 @@ void moveAvatarInDungeon(MoveEvent &event) {
     Direction realDir = dirNormalize((Direction)c->saveGame->orientation, event.dir); /* get our real direction */
     int advancing = realDir == c->saveGame->orientation,
         retreating = realDir == dirReverse((Direction)c->saveGame->orientation);
-    const MapTile *tile;
+    const Tile* tile;
 
     /* we're not in a dungeon, failed! */
     ASSERT(c->location->context & CTX_DUNGEON, "moveAvatarInDungeon() called outside of dungeon, failed!");
@@ -135,7 +135,7 @@ void moveAvatarInDungeon(MoveEvent &event) {
     newCoords = c->location->coords;
     newCoords.move(realDir, c->location->map);
 
-    tile = c->location->map->tileAt(newCoords, WITH_OBJECTS);
+    tile = c->location->map->tileTypeAt(newCoords, WITH_OBJECTS);
 
     /* see if we moved off the map (really, this should never happen in a dungeon) */
     if (MAP_IS_OOB(c->location->map, newCoords)) {
@@ -146,9 +146,9 @@ void moveAvatarInDungeon(MoveEvent &event) {
     if (!collisionOverride) {
         int movementMask = c->location->map->getValidMoves(c->location->coords, c->party->getTransport());
 
-        if (advancing && !tile->getTileType()->canWalkOn(DIR_ADVANCE))
+        if (advancing && !tile->canWalkOn(DIR_ADVANCE))
             movementMask = DIR_REMOVE_FROM_MASK(realDir, movementMask);
-        else if (retreating && !tile->getTileType()->canWalkOn(DIR_RETREAT))
+        else if (retreating && !tile->canWalkOn(DIR_RETREAT))
             movementMask = DIR_REMOVE_FROM_MASK(realDir, movementMask);
 
         if (!DIR_IN_MASK(realDir, movementMask)) {

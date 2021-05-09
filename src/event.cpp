@@ -524,10 +524,11 @@ bool KeyHandler::defaultHandler(int key, void *data) {
     case '`':
         if (c && c->location) {
             const Location* loc = c->location;
+            const Tile* tile = loc->map->tileTypeAt(loc->coords, WITH_OBJECTS);
             printf("x = %d, y = %d, level = %d, tile = %d (%s)\n",
                     loc->coords.x, loc->coords.y, loc->coords.z,
-                    xu4.config->usaveIds()->ultimaId(*loc->map->tileAt(loc->coords, WITH_OBJECTS)),
-                    loc->map->tileTypeAt(loc->coords, WITH_OBJECTS)->nameStr());
+                    xu4.config->usaveIds()->ultimaId( MapTile(tile->id) ),
+                    tile->nameStr());
         }
         break;
     default:

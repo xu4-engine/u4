@@ -29,7 +29,7 @@ public:
 
     // Getters
     const Coords& getCoords() const {return coords; } /**< Returns the coordinates of the annotation */
-    MapTile& getTile()              {return tile;   } /**< Returns the annotation's tile */
+    const MapTile& getTile() const {return tile; } /**< Returns the annotation's tile */
     bool isVisualOnly() const {return visual; } /**< Returns true for visual-only annotations */
     int getTTL() const        {return ttl;    } /**< Returns the number of turns the annotation has left to live */
     bool isCoverUp()                {return coverUp;}

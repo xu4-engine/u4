@@ -783,7 +783,6 @@ bool GameController::keyPressed(int key) {
     bool valid = true;
     int endTurn = 1;
     Object *obj;
-    const MapTile *tile;
 
     /* Translate context-sensitive action key into a useful command */
     if (key == U4_ENTER && settings.enhancements && settings.enhancementsOptions.smartEnterKey) {
@@ -845,9 +844,10 @@ bool GameController::keyPressed(int key) {
 
         /* Get Chest? */
         if (!c->party->isFlying()) {
-            tile = c->location->map->tileAt(c->location->coords, WITH_GROUND_OBJECTS);
-
-            if (tile->getTileType()->isChest()) key = 'g';
+            const Tile* tile;
+            tile = c->location->map->tileTypeAt(c->location->coords, WITH_GROUND_OBJECTS);
+            if (tile->isChest())
+                key = 'g';
         }
 
         /* None of these? Default to search */
@@ -1922,11 +1922,12 @@ void getChest(int player)
     // first check to see if a chest exists at the current location
     // if one exists, prompt the player for the opener, if necessary
     MapCoords coords;
-    c->location->getCurrentPosition(&coords);
-    const Tile *tile = c->location->map->tileTypeAt(coords, WITH_GROUND_OBJECTS);
+    Location* loc = c->location;
+    loc->getCurrentPosition(&coords);
+    const Tile *tile = loc->map->tileTypeAt(coords, WITH_GROUND_OBJECTS);
 
     /* get the object for the chest, if it is indeed an object */
-    Object *obj = c->location->map->objectAt(coords);
+    Object *obj = loc->map->objectAt(coords);
     if (obj && !obj->getTile().getTileType()->isChest())
         obj = NULL;
 
@@ -1946,11 +1947,10 @@ void getChest(int player)
 
         if (obj) {
             //printf( "KR getChest obj\n" );
-            c->location->map->removeObject(obj);
+            loc->map->removeObject(obj);
         } else {
             //printf( "KR getChest tile\n" );
-            TileId newTile = c->location->getReplacementTile(coords, tile);
-            c->location->map->setTileAt(coords, newTile);
+            loc->map->setTileAt(coords, loc->getReplacementTile(coords, tile));
         }
 
         // see if the chest is trapped and handle it
@@ -1960,7 +1960,7 @@ void getChest(int player)
 
         screenPrompt();
 
-        if (isCity(c->location->map) && obj == NULL)
+        if (isCity(loc->map) && obj == NULL)
             c->party->adjustKarma(KA_STOLE_CHEST);
     }
     else
@@ -2191,15 +2191,15 @@ void GameController::avatarMoved(MoveEvent &event) {
             /* if shortcuts are enabled, try them! */
             if (xu4.settings->shortcutCommands) {
                 MapCoords new_coords = c->location->coords;
-                const MapTile *tile;
+                const Tile* tile;
 
                 new_coords.move(event.dir, c->location->map);
-                tile = c->location->map->tileAt(new_coords, WITH_OBJECTS);
+                tile = c->location->map->tileTypeAt(new_coords, WITH_OBJECTS);
 
-                if (tile->getTileType()->isDoor()) {
+                if (tile->isDoor()) {
                     openAt(new_coords);
                     event.result = (MoveResult)(MOVE_SUCCEEDED | MOVE_END_TURN);
-                } else if (tile->getTileType()->isLockedDoor()) {
+                } else if (tile->isLockedDoor()) {
                     jimmyAt(new_coords);
                     event.result = (MoveResult)(MOVE_SUCCEEDED | MOVE_END_TURN);
                 } /*else if (mapPersonAt(c->location->map, new_coords) != NULL) {
@@ -2321,9 +2321,9 @@ void jimmy() {
  */
 bool jimmyAt(const Coords &coords) {
     Map* map = c->location->map;
-    const MapTile *tile = map->tileAt(coords, WITH_OBJECTS);
+    const Tile* tile = map->tileTypeAt(coords, WITH_OBJECTS);
 
-    if (!tile->getTileType()->isLockedDoor())
+    if (! tile->isLockedDoor())
         return false;
 
     if (c->saveGame->keys) {
@@ -3389,19 +3389,17 @@ void GameController::checkRandomCreatures() {
  * Handles trolls under bridges
  */
 void GameController::checkBridgeTrolls() {
-    const Tile *bridge = c->location->map->tileset->getByName(Tile::sym.bridge);
-    if (!bridge)
-        return;
+    Map* map = c->location->map;
 
     // TODO: CHEST: Make a user option to not make chests block bridge trolls
-    if (!c->location->map->isWorldMap() ||
-        c->location->map->tileAt(c->location->coords, WITH_OBJECTS)->id != bridge->getId() ||
+    if (! map->isWorldMap() ||
+        map->tileTypeAt(c->location->coords, WITH_OBJECTS)->name != Tile::sym.bridge ||
         xu4_random(8) != 0)
         return;
 
     screenMessage("\nBridge Trolls!\n");
 
-    Creature *m = c->location->map->addCreature(xu4.config->creature(TROLL_ID), c->location->coords);
+    Creature *m = map->addCreature(xu4.config->creature(TROLL_ID), c->location->coords);
     CombatController *cc = new CombatController(MAP_BRIDGE_CON);
     cc->init(m);
     cc->begin();

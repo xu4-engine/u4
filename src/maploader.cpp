@@ -38,7 +38,7 @@ static bool loadMapData(Map *map, U4FILE *uf) {
     Symbol sym_sea = SYM_UNSET;
 
     /* allocate the space we need for the map data */
-    map->data.resize(map->height * map->width, MapTile(0));
+    map->data.resize(map->height * map->width, 0);
 
     if (map->chunk_height == 0)
         map->chunk_height = map->height;
@@ -60,7 +60,7 @@ static bool loadMapData(Map *map, U4FILE *uf) {
                 MapTile water = map->tileset->getByName(sym_sea)->getId();
                 for(y = 0; y < map->chunk_height; ++y) {
                     for(x = 0; x < map->chunk_width; ++x) {
-                        map->data[x + (y * map->width) + (xch * map->chunk_width) + (ych * map->chunk_height * map->width)] = water;
+                        map->data[x + (y * map->width) + (xch * map->chunk_width) + (ych * map->chunk_height * map->width)] = water.id;
                     }
                 }
             }
@@ -80,7 +80,7 @@ static bool loadMapData(Map *map, U4FILE *uf) {
                             return false;
 #endif
                         MapTile mt = usaveIds->moduleId(c);
-                        map->data[x + (y * map->width) + (xch * map->chunk_width) + (ych * map->chunk_height * map->width)] = mt;
+                        map->data[x + (y * map->width) + (xch * map->chunk_width) + (ych * map->chunk_height * map->width)] = mt.id;
                     }
                 }
             }
@@ -306,7 +306,7 @@ static bool loadDungeonMap(Map *map, U4FILE *uf, FILE *sav) {
     for (i = 0; i < bytes; i++) {
         j = *rawMap++;
         MapTile tile(usaveIds->dngMapToModule(j), 0);
-        dungeon->data.push_back(tile);
+        dungeon->data.push_back(tile.id);
         //printf( "KR dng tile %d: %d => %d\n", i, j, tile.id);
     }
 
@@ -361,7 +361,7 @@ static bool loadDungeonMap(Map *map, U4FILE *uf, FILE *sav) {
 
         /* translate each map tile to a tile id */
         for (j = 0; j < sizeof(room_tiles); j++)
-            dungeon->rooms[i].map_data.push_back(usaveIds->moduleId(room_tiles[j]));
+            dungeon->rooms[i].map_data.push_back(usaveIds->moduleId(room_tiles[j]).id);
 
         //
         // dungeon room fixup
@@ -419,7 +419,7 @@ static bool loadDungeonMap(Map *map, U4FILE *uf, FILE *sav) {
                 for (int j=0; j < int(sizeof(tile)/sizeof(Coords)); j++)
                 {
                     const int index = (tile[j].y * CON_WIDTH) + tile[j].x;
-                    dungeon->rooms[i].map_data[index] = usaveIds->moduleId(tile[j].z);
+                    dungeon->rooms[i].map_data[index] = usaveIds->moduleId(tile[j].z).id;
                 }
             }
         }

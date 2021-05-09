@@ -73,7 +73,7 @@ public:
     // Members
     virtual string getName();
 
-    DungeonToken tokenForTile(const MapTile& tile) const;
+    DungeonToken tokenForTile(TileId tid) const;
     DungeonToken currentToken();
     uint8_t currentSubToken();
     DungeonToken tokenAt(const MapCoords& coords) const;

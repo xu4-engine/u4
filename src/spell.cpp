@@ -449,7 +449,7 @@ static int spellCure(int player) {
 }
 
 static int spellDispel(int dir) {
-    const MapTile *tile;
+    const Tile* tile;
     Location* loc = c->location;
     MapCoords fpos;
 
@@ -489,12 +489,11 @@ static int spellDispel(int dir) {
     /*
      * If the map tile itself is a field then replace it.
      */
-    tile = loc->map->tileAt(fpos, WITHOUT_OBJECTS);
-    if (! tile->getTileType()->canDispel())
+    tile = loc->map->tileTypeAt(fpos, WITHOUT_OBJECTS);
+    if (! tile->canDispel())
         return 0;
 
-    MapTile newTile(loc->getReplacementTile(fpos, tile->getTileType()));
-    loc->map->setTileAt(fpos, newTile);
+    loc->map->setTileAt(fpos, loc->getReplacementTile(fpos, tile));
     return 1;
 }
 

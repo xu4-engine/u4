@@ -32,7 +32,7 @@ struct _Dungeon;
 
 typedef std::vector<Portal *> PortalList;
 typedef std::list<int> CompressedChunkList;
-typedef std::vector<MapTile> MapData;
+typedef std::vector<TileId> MapData;
 
 /* flags */
 #define SHOW_AVATAR (1 << 0)
@@ -103,11 +103,10 @@ public:
         return (Object*) static_cast<const Map*>(this)->objectAt(coords);
     }
     const Portal *portalAt(const Coords &coords, int actionFlags);
-    const MapTile* getTileFromData(const Coords &coords) const;
-    const MapTile* tileAt(const Coords &coords, int withObjects) const;
-    const Tile *tileTypeAt(const Coords &coords, int withObjects);
-    void setTileAt(const Coords &coords, const MapTile& tile);
-    bool isWorldMap();
+    TileId getTileFromData(const Coords &coords) const;
+    const Tile* tileTypeAt(const Coords &coords, int withObjects) const;
+    void setTileAt(const Coords &coords, TileId tid);
+    bool isWorldMap() const;
     bool isEnclosed(const Coords &party);
     class Creature *addCreature(const class Creature *m, Coords coords);
     class Object *addObject(MapTile tile, MapTile prevTile, Coords coords);

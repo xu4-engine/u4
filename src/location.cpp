@@ -60,7 +60,7 @@ std::vector<MapTile> Location::tilesAt(MapCoords coords, bool &focus) {
         if (avatar)
             tiles.push_back(c->party->getTransport());
         else
-            tiles.push_back(*map->getTileFromData(coords));
+            tiles.push_back(MapTile(map->getTileFromData(coords)));
 
         return tiles;
     }
@@ -124,21 +124,14 @@ std::vector<MapTile> Location::tilesAt(MapCoords coords, bool &focus) {
     }
 
     /* finally the base tile */
-    MapTile tileFromMapData = *map->getTileFromData(coords);
-    const Tile * tileType = map->getTileFromData(coords)->getTileType();
-    if (tileType->isLivingObject())
-    {
-        //This animation should be frozen because a living object represented on the map data is usually a statue of a monster or something
-        tileFromMapData.freezeAnimation = true;
-    }
-    tiles.push_back(tileFromMapData);
+    MapTile terrainTile(map->getTileFromData(coords));
+    tiles.push_back(terrainTile);
 
     /* But if the base tile requires a background, we must find it */
-    if (tileType->isLandForeground()    ||
-        tileType->isWaterForeground()   ||
-        tileType->isLivingObject())
-    {
-
+    const Tile* tileType = terrainTile.getTileType();
+    if (tileType->isLandForeground() ||
+        tileType->isWaterForeground() ||
+        tileType->isLivingObject()) {
         tiles.push_back(getReplacementTile(coords, tileType));
     }
 
