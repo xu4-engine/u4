@@ -379,31 +379,34 @@ bool CheatMenuController::keyPressed(int key) {
  */
 void CheatMenuController::summonCreature(const string &name) {
     const Creature *m = NULL;
-    string creatureName = name;
+    string tname( name );
 
-    trim(creatureName);
-    if (creatureName.empty()) {
+    trim(tname);
+    if (tname.empty()) {
         screenMessage("\n");
         return;
     }
+    const char* cname = tname.c_str();
 
     /* find the creature by its id and spawn it */
-    unsigned int id = atoi(creatureName.c_str());
+    unsigned int id = atoi(cname);
     if (id > 0)
         m = xu4.config->creature(id);
 
     if (!m)
-        m = Creature::getByName(creatureName);
+        m = Creature::getByName(cname);
 
     if (m) {
+        tname = m->getName();
+        cname = tname.c_str();
         if (gameSpawnCreature(m))
-            screenMessage("\n%s summoned!\n", m->getName().c_str());
-        else screenMessage("\n\nNo place to put %s!\n\n", m->getName().c_str());
-
+            screenMessage("\n%s summoned!\n", cname);
+        else
+            screenMessage("\n\nNo place to put %s!\n\n", cname);
         return;
     }
 
-    screenMessage("\n%s not found\n", creatureName.c_str());
+    screenMessage("\n%s not found\n", cname);
 }
 
 bool WindCmdController::keyPressed(int key) {

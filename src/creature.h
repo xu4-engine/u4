@@ -135,7 +135,7 @@ class Creature : public Object {
 
 public:
     static const Creature* getByTile(const MapTile& tile);
-    static const Creature* getByName(const string& name);
+    static const Creature* getByName(const char* name);
     static const Creature* randomForTile(const Tile *tile);
     static const Creature* randomForDungeon(int dnglevel);
     static const Creature* randomAmbushing();
@@ -144,7 +144,7 @@ public:
     Creature(const Creature* cproto);
 
     // Accessor methods
-    virtual string getName() const              {return name;}
+    virtual std::string getName() const;
     virtual Symbol getHitTile() const   {return rangedhittile;}
     virtual Symbol getMissTile() const  {return rangedmisstile;}
     CreatureId getId() const                    {return id;}
@@ -152,12 +152,11 @@ public:
     virtual int getHp() const                   {return hp;}
     virtual int getXp() const                   {return xp;}
     virtual Symbol getWorldrangedtile() const {return worldrangedtile;}
-    SlowedType getSlowedType() const            {return slowedType;}
+    SlowedType getSlowedType() const    {return (SlowedType) slowedType;}
     int getEncounterSize() const                {return encounterSize;}
     unsigned char getResists() const            {return resists;}
 
     // Setters
-    void setName(string s)                      {name = s;}
     void setHitTile(Symbol t)           {rangedhittile = t;}
     void setMissTile(Symbol t)          {rangedmisstile = t;}
     virtual void setHp(int points)              {hp = points;}
@@ -222,25 +221,25 @@ public:
 
     // Properties
 //protected:
-    string          name;
+    StringId        name;
     Symbol          rangedhittile;
     Symbol          rangedmisstile;
     Symbol          camouflageTile;
+    Symbol          worldrangedtile;
     CreatureId      id;
     CreatureId      leader;
-    int             basehp;
-    int             hp;
-    StatusList      status;
-    int             xp;
-    unsigned char   ranged;
-    Symbol          worldrangedtile;
-    bool            leavestile;
-    CreatureAttrib  mattr;
-    CreatureMovementAttrib movementAttr;
-    SlowedType      slowedType;
-    int             encounterSize;
-    unsigned char   resists;
     CreatureId      spawn;
+    int16_t         basehp;
+    int16_t         hp;
+    int16_t         xp;
+    int16_t         encounterSize;
+    uint8_t         ranged;
+    uint8_t         resists;
+    uint8_t         slowedType;
+    bool            leavestile;
+    uint32_t        mattr;          // CreatureAttrib
+    uint16_t        movementAttr;   // CreatureMovementAttrib
+    StatusList      status;
 };
 
 bool isCreature(Object *punknown);

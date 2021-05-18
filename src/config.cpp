@@ -707,7 +707,7 @@ static void conf_creatureLoad(ConfigXML* cfg, Creature* cr, Tileset* ts, const C
     int moveAttr = 0;
 
 
-    cr->name = conf.getString("name");
+    cr->name = cfg->propSymbol(conf, "name");
     cr->id = conf.getInt("id");
 
     /* Get the leader if it's been included, otherwise the leader is itself */

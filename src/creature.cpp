@@ -22,6 +22,8 @@
 #include "utils.h"
 #include "xu4.h"
 
+#define CSTR(ID)    xu4.config->confString(ID)
+
 bool isCreature(Object *punknown) {
     Creature *m;
     if ((m = dynamic_cast<Creature*>(punknown)) != NULL)
@@ -41,6 +43,10 @@ Creature::Creature() : Object(Object::CREATURE) {
 
 Creature::Creature(const Creature* cproto) : Object(Object::CREATURE) {
     *this = *cproto;
+}
+
+std::string Creature::getName() const {
+    return CSTR(name);
 }
 
 bool Creature::isAttackable() const  {
@@ -422,7 +428,7 @@ void Creature::act(CombatController *controller) {
             Coords coords = getCoords();
 
             if (MAP_IS_OOB(map, coords)) {
-                screenMessage("\n%c%s Flees!%c\n", FG_YELLOW, name.c_str(), FG_WHITE);
+                screenMessage("\n%c%s Flees!%c\n", FG_YELLOW, CSTR(name), FG_WHITE);
 
                 /* Congrats, you have a heart! */
                 if (isGood())
@@ -504,7 +510,7 @@ bool Creature::divide() {
     if (d != DIR_NONE) {
         MapCoords coords(getCoords());
 
-        screenMessage("%s Divides!\n", name.c_str());
+        screenMessage("%s Divides!\n", CSTR(name));
 
         /* find a spot to put our new creature */
         coords.move(d, map);
@@ -651,13 +657,15 @@ bool Creature::applyDamage(int damage, bool byplayer) {
     if (id != LORDBRITISH_ID)
         AdjustValueMin(hp, -damage, 0);
 
+    const char* nameStr = CSTR(name);
+
     switch (getState()) {
 
     case MSTAT_DEAD:
         if (byplayer)
-            screenMessage("%c%s Killed!%c\nExp. %d\n", FG_RED, name.c_str(), FG_WHITE, xp);
+            screenMessage("%c%s Killed!%c\nExp. %d\n", FG_RED, nameStr, FG_WHITE, xp);
         else
-            screenMessage("%c%s Killed!%c\n", FG_RED, name.c_str(), FG_WHITE);
+            screenMessage("%c%s Killed!%c\n", FG_RED, nameStr, FG_WHITE);
 
         /*
          * the creature is dead; let it spawns something else on
@@ -672,23 +680,23 @@ bool Creature::applyDamage(int damage, bool byplayer) {
         return false;
 
     case MSTAT_FLEEING:
-        screenMessage("%c%s Fleeing!%c\n", FG_YELLOW, name.c_str(), FG_WHITE);
+        screenMessage("%c%s Fleeing!%c\n", FG_YELLOW, nameStr, FG_WHITE);
         break;
 
     case MSTAT_CRITICAL:
-        screenMessage("%s Critical!\n", name.c_str());
+        screenMessage("%s Critical!\n", nameStr);
         break;
 
     case MSTAT_HEAVILYWOUNDED:
-        screenMessage("%s Heavily Wounded!\n", name.c_str());
+        screenMessage("%s Heavily Wounded!\n", nameStr);
         break;
 
     case MSTAT_LIGHTLYWOUNDED:
-        screenMessage("%s Lightly Wounded!\n", name.c_str());
+        screenMessage("%s Lightly Wounded!\n", nameStr);
         break;
 
     case MSTAT_BARELYWOUNDED:
-        screenMessage("%s Barely Wounded!\n", name.c_str());
+        screenMessage("%s Barely Wounded!\n", nameStr);
         break;
     }
 
@@ -728,20 +736,17 @@ const Creature* Creature::getByTile(const MapTile& tile) {
 }
 
 /**
- * Returns the creature that has the corresponding name
- * or returns NULL if no creature can be found with
- * that name (case insensitive)
+ * Returns the creature with the corresponding name (case insensitive) or
+ * NULL if none is found.
  */
-const Creature* Creature::getByName(const string& name) {
+const Creature* Creature::getByName(const char* name) {
     uint32_t i;
     uint32_t count;
-    const Creature* const* creatures = xu4.config->creatureTable(&count);
-    const Creature* cp;
+    const Creature* const* cp = xu4.config->creatureTable(&count);
 
     for (i = 0; i < count; ++i) {
-        cp = creatures[i];
-        if (strcasecmp(cp->getName().c_str(), name.c_str()) == 0)
-            return cp;
+        if (strcasecmp(CSTR(cp[i]->name), name) == 0)
+            return cp[i];
     }
     return NULL;
 }
