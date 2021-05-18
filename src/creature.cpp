@@ -24,6 +24,12 @@
 
 #define CSTR(ID)    xu4.config->confString(ID)
 
+enum StatusBits {
+    StatPoisoned = 0x01,
+    StatSleeping = 0x02,
+    StatDead     = 0x04
+};
+
 bool isCreature(Object *punknown) {
     Creature *m;
     if ((m = dynamic_cast<Creature*>(punknown)) != NULL)
@@ -39,6 +45,7 @@ Creature::Creature() : Object(Object::CREATURE) {
     rangedhittile  =
     rangedmisstile =
     camouflageTile = SYM_UNSET;
+    status = 0;
 }
 
 Creature::Creature(const Creature* cproto) : Object(Object::CREATURE) {
@@ -444,19 +451,6 @@ void Creature::act(CombatController *controller) {
     this->animateMovement();
 }
 
-/**
- * Add status effects to the creature, in order of importance
- */
-void Creature::addStatus(StatusType s) {
-    if (status.size() && status.back() > s) {
-        StatusType prev = status.back();
-        status.pop_back();
-        status.push_back(s);
-        status.push_back(prev);
-    }
-    else status.push_back(s);
-}
-
 void Creature::applyTileEffect(TileEffect effect) {
     if (effect != EFFECT_NONE) {
         gameUpdateScreen();
@@ -541,19 +535,6 @@ bool Creature::spawnOnDeath() {
     return true;
 }
 
-StatusType Creature::getStatus() const {
-    return status.back();
-}
-
-bool Creature::isAsleep() const {
-    for (StatusList::const_iterator itr = this->status.begin();
-        itr != this->status.end();
-        ++itr)
-        if (*itr == STAT_SLEEPING)
-            return true;
-    return false;
-}
-
 /**
  * Hides or shows a camouflaged creature, depending on its distance from
  * the nearest opponent
@@ -619,27 +600,73 @@ void Creature::putToSleep() {
     }
 }
 
-void Creature::removeStatus(StatusType s) {
-    StatusList::iterator i;
-    for (i = status.begin(); i != status.end();) {
-        if (*i == s)
-            i = status.erase(i);
-        else i++;
+/**
+ * Add status effects to the creature.
+ */
+void Creature::addStatus(StatusType s) {
+    switch (s) {
+        case STAT_POISONED:
+            status |= StatPoisoned;
+            break;
+        case STAT_SLEEPING:
+            status |= StatSleeping;
+            break;
+        case STAT_DEAD:
+            status |= StatDead;
+            break;
+        default:
+            break;
     }
+}
 
-    // Just to be sure, if a player is poisoned from a savegame, then they won't have
-    // a STAT_GOOD in the stack yet.
-    if (status.empty())
-        addStatus(STAT_GOOD);
+void Creature::removeStatus(StatusType s) {
+    switch (s) {
+        case STAT_POISONED:
+            status &= ~StatPoisoned;
+            break;
+        case STAT_SLEEPING:
+            status &= ~StatSleeping;
+            break;
+        case STAT_DEAD:
+            status &= ~StatDead;
+            break;
+        default:
+            break;
+    }
 }
 
 void Creature::setStatus(StatusType s) {
-    status.clear();
-    this->addStatus(s);
+    status = 0;
+    addStatus(s);
+}
+
+/*
+ * Return status (of highest importance).
+ */
+StatusType Creature::getStatus() const {
+    if (status & StatDead)
+        return STAT_DEAD;
+    if (status & StatSleeping)
+        return STAT_SLEEPING;
+    if (status & StatPoisoned)
+        return STAT_POISONED;
+    return STAT_GOOD;
+}
+
+bool Creature::isAsleep() const {
+    return status & StatSleeping;
+}
+
+bool Creature::isDead() const {
+    return status & StatDead;
+}
+
+bool Creature::isDisabled() const {
+    return status & (StatSleeping | StatDead);
 }
 
 void Creature::wakeUp() {
-    removeStatus(STAT_SLEEPING);
+    status &= ~StatSleeping;
     setAnimated(); /* reanimate creature */
 }
 

@@ -136,8 +136,6 @@ public:
     int getDamage();
     virtual Symbol getHitTile() const;
     virtual Symbol getMissTile() const;
-    bool isDead();
-    bool isDisabled();
     int  loseWeapon();
     virtual void putToSleep();
     virtual void wakeUp();

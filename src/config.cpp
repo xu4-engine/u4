@@ -669,8 +669,7 @@ static void conf_creatureLoad(ConfigXML* cfg, Creature* cr, Tileset* ts, const C
         { "ambushes",       MATTR_AMBUSHES },
         { "incorporeal",    MATTR_INCORPOREAL },
         { "nochest",        MATTR_NOCHEST },
-        { "divides",        MATTR_DIVIDES },
-        { "forceOfNature",  MATTR_FORCE_OF_NATURE }
+        { "divides",        MATTR_DIVIDES }
     };
     static const Attribute steals[] = {
         { "food", MATTR_STEALFOOD },
@@ -691,7 +690,8 @@ static void conf_creatureLoad(ConfigXML* cfg, Creature* cr, Tileset* ts, const C
         { "flies", MATTR_FLIES },
         { "teleports", MATTR_TELEPORT },
         { "canMoveOntoCreatures", MATTR_CANMOVECREATURES },
-        { "canMoveOntoAvatar", MATTR_CANMOVEAVATAR }
+        { "canMoveOntoAvatar", MATTR_CANMOVEAVATAR },
+        { "forceOfNature",  MATTR_FORCE_OF_NATURE }
     };
     static const struct {
         const char *name;

@@ -110,7 +110,7 @@ string PartyMember::translate(std::vector<string>& parts) {
                 else return "false";
             }
             else if (parts[1] == "resurrect") {
-                if (getStatus() == STAT_DEAD)
+                if (isDead())
                     return "true";
                 else return "false";
             }
@@ -212,7 +212,7 @@ int PartyMember::getMaxLevel() const {
  */
 void PartyMember::addStatus(StatusType s) {
     Creature::addStatus(s);
-    player->status = status.back();
+    player->status = getStatus();
     notifyOfChange();
 }
 
@@ -255,7 +255,7 @@ void PartyMember::advanceLevel() {
  * Apply an effect to the party member
  */
 void PartyMember::applyEffect(TileEffect effect) {
-    if (getStatus() == STAT_DEAD)
+    if (isDead())
         return;
 
     switch (effect) {
@@ -311,36 +311,32 @@ bool PartyMember::heal(HealType type) {
         break;
 
     case HT_FULLHEAL:
-        if (getStatus() == STAT_DEAD ||
-            player->hp == player->hpMax)
+        if (isDead() || player->hp == player->hpMax)
             return false;
         player->hp = player->hpMax;
         break;
 
     case HT_RESURRECT:
-        if (getStatus() != STAT_DEAD)
+        if (! isDead())
             return false;
         setStatus(STAT_GOOD);
         break;
 
     case HT_HEAL:
-        if (getStatus() == STAT_DEAD ||
-            player->hp == player->hpMax)
+        if (isDead() || player->hp == player->hpMax)
             return false;
 
         player->hp += 75 + (xu4_random(0x100) % 0x19);
         break;
 
     case HT_CAMPHEAL:
-        if (getStatus() == STAT_DEAD ||
-            player->hp == player->hpMax)
+        if (isDead() || player->hp == player->hpMax)
             return false;
         player->hp += 99 + (xu4_random(0x100) & 0x77);
         break;
 
     case HT_INNHEAL:
-        if (getStatus() == STAT_DEAD ||
-            player->hp == player->hpMax)
+        if (isDead() || player->hp == player->hpMax)
             return false;
         player->hp += 100 + (xu4_random(50) * 2);
         break;
@@ -362,7 +358,7 @@ bool PartyMember::heal(HealType type) {
  */
 void PartyMember::removeStatus(StatusType s) {
     Creature::removeStatus(s);
-    player->status = status.back();
+    player->status = getStatus();
     notifyOfChange();
 }
 
@@ -427,7 +423,7 @@ EquipError PartyMember::setWeapon(const Weapon *w) {
 bool PartyMember::applyDamage(int damage, bool) {
     int newHp = player->hp;
 
-    if (getStatus() == STAT_DEAD)
+    if (isDead())
         return false;
 
     newHp -= damage;
@@ -440,7 +436,7 @@ bool PartyMember::applyDamage(int damage, bool) {
     player->hp = newHp;
     notifyOfChange();
 
-    if (isCombatMap(c->location->map) && getStatus() == STAT_DEAD) {
+    if (isCombatMap(c->location->map) && isDead()) {
         Coords p = getCoords();
         Map *map = getMap();
         map->annotations->add(p, Tileset::findTileByName(Tile::sym.corpse)->getId())->setTTL(party->size() * 2);
@@ -513,15 +509,6 @@ Symbol PartyMember::getMissTile() const {
     return getWeapon()->missTile;
 }
 
-bool PartyMember::isDead() {
-    return getStatus() == STAT_DEAD;
-}
-
-bool PartyMember::isDisabled() {
-    return (getStatus() == STAT_GOOD ||
-        getStatus() == STAT_POISONED) ? false : true;
-}
-
 /**
  * Lose the equipped weapon for the player (flaming oil, ranged daggers, etc.)
  * Returns the number of weapons left of that type, including the one in
@@ -544,7 +531,7 @@ int PartyMember::loseWeapon() {
  * Put the party member to sleep
  */
 void PartyMember::putToSleep() {
-    if (getStatus() != STAT_DEAD) {
+    if (! isDead()) {
         soundPlay(SOUND_SLEEP, false);
         addStatus(STAT_SLEEPING);
         setTile(Tileset::findTileByName(Tile::sym.corpse)->getId());

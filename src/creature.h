@@ -97,7 +97,6 @@ typedef enum {
     MATTR_NOCHEST       = 0x2000,
     MATTR_DIVIDES       = 0x4000,
     MATTR_SPAWNSONDEATH = 0x8000,
-    MATTR_FORCE_OF_NATURE = 0x10000
 } CreatureAttrib;
 
 typedef enum {
@@ -108,7 +107,8 @@ typedef enum {
     MATTR_FLIES             = 0x10,
     MATTR_TELEPORT          = 0x20,
     MATTR_CANMOVECREATURES  = 0x40,
-    MATTR_CANMOVEAVATAR     = 0x80
+    MATTR_CANMOVEAVATAR     = 0x80,
+    MATTR_FORCE_OF_NATURE   = 0x100
 } CreatureMovementAttrib;
 
 typedef enum {
@@ -131,8 +131,6 @@ typedef enum {
  * </ul>
  */
 class Creature : public Object {
-    typedef std::list<StatusType> StatusList;
-
 public:
     static const Creature* getByTile(const MapTile& tile);
     static const Creature* getByName(const char* name);
@@ -189,7 +187,7 @@ public:
     bool hasRandomRanged() const        {return mattr & MATTR_RANDOMRANGED;}
     bool leavesTile() const             {return leavestile;}
     bool castsSleep() const             {return mattr & MATTR_CASTS_SLEEP;}
-    bool isForceOfNature() const        {return mattr & MATTR_FORCE_OF_NATURE;}
+    bool isForceOfNature() const        {return movementAttr & MATTR_FORCE_OF_NATURE;}
     int getDamage() const;
     Symbol getCamouflageTile() const    {return camouflageTile;}
     void setRandomRanged();
@@ -209,6 +207,8 @@ public:
     virtual CreatureStatus getState() const;
     StatusType getStatus() const;
     bool isAsleep() const;
+    bool isDisabled() const;
+    bool isDead() const;
     bool hideOrShow();
     Creature *nearestOpponent(int *dist, bool ranged);
     virtual void putToSleep();
@@ -237,9 +237,9 @@ public:
     uint8_t         resists;
     uint8_t         slowedType;
     bool            leavestile;
-    uint32_t        mattr;          // CreatureAttrib
+    uint16_t        mattr;          // CreatureAttrib
     uint16_t        movementAttr;   // CreatureMovementAttrib
-    StatusList      status;
+    uint16_t        status;
 };
 
 bool isCreature(Object *punknown);
