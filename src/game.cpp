@@ -865,7 +865,7 @@ bool GameController::keyPressed(int key) {
         case U4_RIGHT:
             {
                 /* move the avatar */
-                string previous_map = c->location->map->fname;
+                StringId previous_map = c->location->map->fname;
                 MoveResult retval = c->location->move(keyToDirection(key), true);
 
                 /* horse doubles speed (make sure we're on the same map as the previous move first) */
@@ -3574,7 +3574,7 @@ bool GameController::createBalloon(Map *map) {
 
     const Tile *balloon = map->tileset->getByName(Tile::sym.balloon);
     ASSERT(balloon, "no balloon tile found in tileset");
-    map->addObject(balloon->getId(), balloon->getId(), map->getLabel("balloon"));
+    map->addObject(balloon->getId(), balloon->getId(), map->getLabel(Tile::sym.balloon));
     return true;
 }
 

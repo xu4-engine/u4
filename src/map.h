@@ -1,11 +1,10 @@
 /*
- * $Id$
+ * map.h
  */
 
 #ifndef MAP_H
 #define MAP_H
 
-#include <list>
 #include <map>
 #include <string>
 #include <vector>
@@ -31,7 +30,7 @@ struct Portal;
 struct _Dungeon;
 
 typedef std::vector<Portal *> PortalList;
-typedef std::list<int> CompressedChunkList;
+//typedef std::list<int> CompressedChunkList;
 typedef std::vector<TileId> MapData;
 
 /* flags */
@@ -93,7 +92,7 @@ public:
     virtual ~Map();
 
     // Member functions
-    virtual string getName();
+    virtual std::string getName();
 
     void queryVisible(const Coords &coords, int radius,
                       void (*func)(const Coords*, VisualId, void*),
@@ -119,14 +118,15 @@ public:
     int getValidMoves(const MapCoords& from, MapTile transport);
     bool move(Object *obj, Direction d);
     void alertGuards();
-    const MapCoords &getLabel(const string &name) const;
+    const MapCoords &getLabel(Symbol name) const;
+    const char* labelAt(const MapCoords&) const;
 
     // u4dos compatibility
     void fillMonsterTable(SaveGameMonsterRecord* table) const;
     void fillMonsterTableDungeon(SaveGameMonsterRecord* table) const;
 
 public:
-    string          fname;
+    StringId        fname;
     MapId           id;
     uint8_t         type;
     uint8_t         border_behavior;    // BorderBehavior
@@ -140,7 +140,7 @@ public:
     uint16_t        music;
     unsigned int    offset;
 
-    CompressedChunkList compressed_chunks;
+    //CompressedChunkList compressed_chunks;
     PortalList      portals;
     AnnotationMgr  *annotations;
     MapData         data;
@@ -148,7 +148,7 @@ public:
     uint8_t* chunks;
 #endif
     ObjectDeque     objects;
-    std::map<string, MapCoords> labels;
+    std::map<Symbol, MapCoords> labels;
     const Tileset  *tileset;
 
 private:

@@ -109,7 +109,8 @@ bool CheatMenuController::keyPressed(int key) {
             }
         }
         if (!found) {
-            MapCoords coords = c->location->map->getLabel(dest);
+            Symbol destSym = xu4.config->intern(dest.c_str());
+            MapCoords coords = c->location->map->getLabel(destSym);
             if (coords != MapCoords::nowhere) {
                 screenMessage("\n%s\n", dest.c_str());
                 c->location->coords = coords;

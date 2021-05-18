@@ -221,7 +221,7 @@ bool Creature::specialEffect() {
                 gameDamageShip(-1, 10);
 
                 /* Send the party to Locke Lake */
-                c->location->coords = c->location->map->getLabel("lockelake");
+                c->location->coords = c->location->map->getLabel(Tile::sym.lockelake);
 
                 /* Teleport the whirlpool that sent you there far away from lockelake */
                 this->setCoords(Coords(0,0,0));

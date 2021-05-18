@@ -40,6 +40,7 @@ void Tile::initSymbols(Config* cfg) {
     sym.wisp         = cfg->intern("wisp");
     sym.moongate     = cfg->intern("moongate");
     sym.whirlpool    = cfg->intern("whirlpool");
+    sym.lockelake    = cfg->intern("lockelake");
     sym.hitFlash     = cfg->intern("hit_flash");
     sym.missFlash    = cfg->intern("miss_flash");
     sym.magicFlash   = cfg->intern("magic_flash");

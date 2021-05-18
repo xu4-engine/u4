@@ -643,13 +643,14 @@ bool itemConditionsMet(unsigned char conditions) {
  * the given location. NULL is returned if nothing is there.
  */
 const ItemLocation *itemAtLocation(const Map *map, const Coords &coords) {
-    unsigned int i;
-    for (i = 0; i < N_ITEMS; i++) {
-        if (!items[i].locationLabel)
-            continue;
-        if (map->getLabel(items[i].locationLabel) == coords &&
-            itemConditionsMet(items[i].conditions))
-            return &(items[i]);
+    const char* name = map->labelAt(coords);
+    if (name) {
+        for (unsigned int i = 0; i < N_ITEMS; i++) {
+            if (items[i].locationLabel &&
+                strcasecmp(items[i].locationLabel, name) == 0 &&
+                itemConditionsMet(items[i].conditions))
+                return &items[i];
+        }
     }
     return NULL;
 }

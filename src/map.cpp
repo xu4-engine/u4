@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * map.cpp
  */
 
 #include "u4.h"
@@ -271,7 +271,7 @@ Map::~Map() {
 }
 
 string Map::getName() {
-    return fname;
+    return string( xu4.config->confString(fname) );
 }
 
 /*
@@ -797,11 +797,20 @@ void Map::alertGuards() {
     }
 }
 
-const MapCoords &Map::getLabel(const string &name) const {
-    std::map<string, MapCoords>::const_iterator i = labels.find(name);
+const MapCoords &Map::getLabel(Symbol name) const {
+    std::map<Symbol, MapCoords>::const_iterator i = labels.find(name);
     if (i == labels.end())
         return MapCoords::nowhere;
     return i->second;
+}
+
+const char* Map::labelAt(const MapCoords& pos) const {
+    std::map<Symbol, MapCoords>::const_iterator it;
+    for (it = labels.begin(); it != labels.end(); ++it) {
+        if (it->second == pos)
+            return xu4.config->symbolName(it->first);
+    }
+    return NULL;
 }
 
 void Map::fillMonsterTable(SaveGameMonsterRecord* table) const {

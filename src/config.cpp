@@ -552,12 +552,12 @@ static void conf_createMoongate(const ConfigElement& conf) {
     moongateAdd(phase, coords);
 }
 
-static pair<string, MapCoords> conf_initLabel(const ConfigElement& conf) {
-    return pair<string, MapCoords> (conf.getString("name"),
+static pair<Symbol, MapCoords> conf_initLabel(ConfigXML* cfg, const ConfigElement& conf) {
+    return pair<Symbol, MapCoords> (cfg->propSymbol(conf, "name"),
          MapCoords(conf.getInt("x"), conf.getInt("y"), conf.getInt("z", 0)));
 }
 
-static Map* conf_makeMap(Tileset* tiles, const ConfigElement& conf) {
+static Map* conf_makeMap(ConfigXML* cfg, Tileset* tiles, const ConfigElement& conf) {
     static const char *mapTypeStrings[] = {
         "world", "city", "shrine", "combat", "dungeon", NULL
     };
@@ -590,7 +590,7 @@ static Map* conf_makeMap(Tileset* tiles, const ConfigElement& conf) {
     if (! map)
         return NULL;
 
-    map->fname  = conf.getString("fname");
+    map->fname  = cfg->propSymbol(conf, "fname");
     map->id     = static_cast<MapId>(conf.getInt("id"));
     map->type   = mtype;
     map->border_behavior = conf.getEnum("borderbehavior", borderBehaviorStrings);
@@ -638,10 +638,12 @@ static Map* conf_makeMap(Tileset* tiles, const ConfigElement& conf) {
             map->portals.push_back(conf_initPortal(*it));
         else if (cname == "moongate")
             conf_createMoongate(*it);
+        /*
         else if (cname == "compressedchunk")
             map->compressed_chunks.push_back( (*it).getInt("index") );
+        */
         else if (cname == "label")
-            map->labels.insert( conf_initLabel(*it) );
+            map->labels.insert( conf_initLabel(cfg, *it) );
     }
 
     return map;
@@ -967,7 +969,7 @@ ConfigXML::ConfigXML() {
     xcd.mapList.resize(ce.size(), NULL);
     foreach (it, ce) {
         /* Register map; the contents get loaded later, as needed. */
-        Map* map = conf_makeMap(xcd.tileset, *it);
+        Map* map = conf_makeMap(this, xcd.tileset, *it);
         if (xcd.mapList[map->id])
             errorFatal("A map with id '%d' already exists", map->id);
         xcd.mapList[map->id] = map;
@@ -1296,7 +1298,7 @@ Map* Config::map(uint32_t id) {
     if (! rmap->data.size()) {
         if (! loadMap(rmap, NULL))
             errorFatal("loadMap failed to read \"%s\" (type %d)",
-                       rmap->fname.c_str(), rmap->type);
+                       confString(rmap->fname), rmap->type);
     }
     return rmap;
 }
@@ -1320,7 +1322,7 @@ Map* Config::restoreMap(uint32_t id) {
             fclose(sav);
         if (! ok)
             errorFatal("loadMap failed to read \"%s\" (type %d)",
-                       rmap->fname.c_str(), rmap->type);
+                       confString(rmap->fname), rmap->type);
     }
     return rmap;
 }
@@ -1332,7 +1334,7 @@ void Config::unloadMap(uint32_t id) {
     vector<ConfigElement>::const_iterator it;
     foreach (it, maps) {
         if (id == (uint32_t) (*it).getInt("id")) {
-            Map* map = conf_makeMap(CB->tileset, *it);
+            Map* map = conf_makeMap((ConfigXML*) this, CB->tileset, *it);
             CB->mapList[id] = map;
             break;
         }

@@ -76,6 +76,7 @@ struct TileSymbols {
     Symbol wisp;
     Symbol moongate;
     Symbol whirlpool;
+    Symbol lockelake;
     Symbol hitFlash;
     Symbol missFlash;
     Symbol magicFlash;

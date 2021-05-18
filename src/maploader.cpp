@@ -20,6 +20,7 @@
 #include "xu4.h"
 
 
+#ifdef U5_DAT
 static bool isChunkCompressed(Map *map, int chunk) {
     CompressedChunkList::iterator i;
     for (i = map->compressed_chunks.begin(); i != map->compressed_chunks.end(); i++) {
@@ -28,6 +29,7 @@ static bool isChunkCompressed(Map *map, int chunk) {
     }
     return false;
 }
+#endif
 
 /**
  * Loads raw data from the given file.
@@ -35,7 +37,9 @@ static bool isChunkCompressed(Map *map, int chunk) {
 static bool loadMapData(Map *map, U4FILE *uf) {
     unsigned int x, xch, y, ych;
     const UltimaSaveIds* usaveIds = xu4.config->usaveIds();
+#ifdef U5_DAT
     Symbol sym_sea = SYM_UNSET;
+#endif
 
     /* allocate the space we need for the map data */
     map->data.resize(map->height * map->width, 0);
@@ -54,6 +58,7 @@ static bool loadMapData(Map *map, U4FILE *uf) {
 #endif
     for(ych = 0; ych < (map->height / map->chunk_height); ++ych) {
         for(xch = 0; xch < (map->width / map->chunk_width); ++xch) {
+#ifdef U5_DAT
             if (isChunkCompressed(map, ych * map->chunk_width + xch)) {
                 if (! sym_sea)
                     sym_sea = xu4.config->intern("sea");
@@ -64,7 +69,9 @@ static bool loadMapData(Map *map, U4FILE *uf) {
                     }
                 }
             }
-            else {
+            else
+#endif
+            {
 #ifdef USE_GL
                 size_t n = u4fread(cp, 1, chunkLen, uf);
                 if (n != chunkLen)
@@ -434,7 +441,8 @@ static bool loadDungeonMap(Map *map, U4FILE *uf, FILE *sav) {
 
 bool loadMap(Map *map, FILE* sav) {
     bool ok = false;
-    U4FILE* uf = u4fopen(map->fname);
+    string fname( xu4.config->confString(map->fname) );
+    U4FILE* uf = u4fopen(fname);
     if (uf) {
         switch (map->type) {
             case Map::CITY:
