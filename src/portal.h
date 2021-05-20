@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * portal.h
  */
 
 #ifndef PORTAL_H
@@ -8,10 +8,6 @@
 #include <string.h>
 #include "context.h"
 #include "map.h"
-
-class Map;
-class Location;
-struct _Portal;
 
 typedef enum {
     ACTION_NONE         = 0x0,
@@ -26,21 +22,21 @@ typedef enum {
 
 typedef bool (*PortalConditionsMet)(const Portal *p);
 
-typedef struct _PortalDestination {
+struct PortalDestination {
     MapCoords coords;
     MapId mapid;
-} PortalDestination;
+};
 
 struct Portal {
-    MapCoords coords;
-    MapId destid;
-    MapCoords start;
-    PortalTriggerAction trigger_action;
     PortalConditionsMet portalConditionsMet;
-    struct _PortalDestination *retroActiveDest;
-    bool saveLocation;
-    std::string message;
+    PortalDestination* retroActiveDest;
+    MapCoords coords;
+    MapCoords start;
+    StringId message;
+    PortalTriggerAction trigger_action;
     TransportContext portalTransportRequisites;
+    MapId destid;
+    bool saveLocation;
     bool exitPortal;
 };
 

@@ -36,6 +36,6 @@ public:
     std::string shrineName;     // Temporary storage for name.
 };
 
-bool shrineCanEnter(const struct _Portal *p);
+bool shrineCanEnter(const Portal *p);
 
 #endif

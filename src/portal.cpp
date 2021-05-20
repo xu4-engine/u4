@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * portal.cpp
  */
 
 #include "portal.h"
@@ -21,15 +21,15 @@
  * Creates a dungeon ladder portal based on the action given
  */
 void createDngLadder(Location *location, PortalTriggerAction action, Portal *p) {
-    if (!p) return;
-    else {
+    if (p) {
         p->destid = location->map->id;
         if (action == ACTION_KLIMB && location->coords.z == 0) {
             p->exitPortal = true;
             p->destid = 1;
-        }
-        else p->exitPortal = false;
-        p->message = "";
+        } else
+            p->exitPortal = false;
+
+        p->message = 0;
         p->portalConditionsMet = NULL;
         p->portalTransportRequisites = TRANSPORT_FOOT_OR_HORSE;
         p->retroActiveDest = NULL;
@@ -78,8 +78,7 @@ int usePortalAt(Location *location, MapCoords coords, PortalTriggerAction action
 
     destination = xu4.config->map(portal->destid);
 
-    if (portal->message.empty()) {
-
+    if (! portal->message) {
         switch(action) {
         case ACTION_DESCEND:
             sprintf(msg, "Descend down to level %d\n", portal->start.z+1);
@@ -87,7 +86,8 @@ int usePortalAt(Location *location, MapCoords coords, PortalTriggerAction action
         case ACTION_KLIMB:
             if (portal->exitPortal)
                 sprintf(msg, "Klimb up!\nLeaving...\n");
-            else sprintf(msg, "Klimb up!\nTo level %d\n", portal->start.z+1);
+            else
+                sprintf(msg, "Klimb up!\nTo level %d\n", portal->start.z+1);
             break;
         case ACTION_ENTER:
             switch (destination->type) {
@@ -120,9 +120,12 @@ int usePortalAt(Location *location, MapCoords coords, PortalTriggerAction action
         screenMessage("Only on foot!\n");
         return 1;
     }
+
     /* ok, we know the portal is going to work -- now display the custom message, if any */
-    else if (!portal->message.empty() || strlen(msg))
-        screenMessage("%s", portal->message.empty() ? msg : portal->message.c_str());
+    if (portal->message)
+        screenMessage(xu4.config->confString(portal->message));
+    else if (msg[0])
+        screenMessage(msg);
 
     /* portal just exits to parent map */
     if (portal->exitPortal) {
@@ -132,7 +135,6 @@ int usePortalAt(Location *location, MapCoords coords, PortalTriggerAction action
     }
     else if (portal->destid == location->map->id)
         location->coords = portal->start;
-
     else {
         xu4.game->setMap(destination, portal->saveLocation, portal);
         musicPlayLocale();

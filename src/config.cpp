@@ -450,7 +450,7 @@ static void conf_initCity(ConfigXML* cfg, const ConfigElement& conf, City *city)
     }
 }
 
-Portal* conf_initPortal(const ConfigElement& conf) {
+Portal* conf_initPortal(ConfigXML* cfg, const ConfigElement& conf) {
     Portal* portal = new Portal;
 
     portal->portalConditionsMet = NULL;
@@ -498,7 +498,7 @@ Portal* conf_initPortal(const ConfigElement& conf) {
 
     portal->saveLocation = conf.getBool("savelocation");
 
-    portal->message = conf.getString("message");
+    portal->message = cfg->propSymbol(conf, "message");
 
     prop = conf.getString("transport");
     if (prop == "foot")
@@ -633,7 +633,7 @@ static Map* conf_makeMap(ConfigXML* cfg, Tileset* tiles, const ConfigElement& co
             conf_initDungeon(cfg, *it, dungeon);
         }
         else if (cname == "portal")
-            map->portals.push_back(conf_initPortal(*it));
+            map->portals.push_back(conf_initPortal(cfg, *it));
         else if (cname == "moongate")
             conf_createMoongate(*it);
         /*
