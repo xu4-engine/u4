@@ -28,6 +28,14 @@ public:
     Virtue virtue;
 };
 
+class ShrineState {
+public:
+    int cycles;
+    int completedCycles;
+    std::vector<std::string> advice;
+    std::string shrineName;     // Temporary storage for name.
+};
+
 bool shrineCanEnter(const struct _Portal *p);
 
 #endif

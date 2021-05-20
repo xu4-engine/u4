@@ -14,6 +14,7 @@
 #include "script.h"
 #include "types.h"
 #include "savegame.h"
+#include "shrine.h"
 
 class Object;
 class Party;
@@ -53,6 +54,7 @@ public:
     TransportContext transportContext;
     time_t lastCommandTime;
     class Object *lastShip;
+    ShrineState shrineState;
 
     /**
      * Provides scripts with information

@@ -29,10 +29,6 @@
 #include "ios_helpers.h"
 #endif
 
-int cycles, completedCycles;
-std::vector<string> shrineAdvice;
-std::string shrineName;
-
 /**
  * Returns true if the player can use the portal to the shrine
  */
@@ -46,9 +42,10 @@ bool shrineCanEnter(const Portal *p) {
 }
 
 const char* Shrine::getName() const {
-    shrineName = "Shrine of ";
-    shrineName += getVirtueName(virtue);
-    return shrineName.c_str();
+    string& str = c->shrineState.shrineName;
+    str = "Shrine of ";
+    str += getVirtueName(virtue);
+    return str.c_str();
 }
 
 const char* Shrine::mantraStr() const {
@@ -59,12 +56,15 @@ const char* Shrine::mantraStr() const {
  * Enter the shrine
  */
 void Shrine::enter() {
+    string input;
+    ShrineState* ss = &c->shrineState;
+    int choice;
 
-    if (shrineAdvice.empty()) {
+    if (ss->advice.empty()) {
         U4FILE *avatar = u4fopen("avatar.exe");
         if (!avatar)
             return;
-        shrineAdvice = u4read_stringtable(avatar, 93682, 24);
+        ss->advice = u4read_stringtable(avatar, 93682, 24);
         u4fclose(avatar);
     }
 #ifdef IOS
@@ -77,7 +77,6 @@ void Shrine::enter() {
         screenMessage("You enter the ancient shrine and sit before the altar...");
 
     screenMessage("\nUpon which virtue dost thou meditate?\n");
-    string input;
 #ifdef IOS
     {
     U4IOS::IOSConversationHelper inputVirture;
@@ -88,7 +87,6 @@ void Shrine::enter() {
     }
 #endif
 
-    int choice;
     screenMessage("\n\nFor how many Cycles (0-3)? ");
 #ifdef IOS
     {
@@ -100,15 +98,15 @@ void Shrine::enter() {
     }
 #endif
     if (choice == '\033' || choice == '\015')
-        cycles = 0;
+        ss->cycles = 0;
     else
-        cycles = choice - '0';
-    completedCycles = 0;
+        ss->cycles = choice - '0';
+    ss->completedCycles = 0;
 
     screenMessage("\n\n");
 
     // ensure the player chose the right virtue and entered a valid number for cycles
-    if (strncasecmp(input.c_str(), getVirtueName(virtue), 6) != 0 || cycles == 0) {
+    if (strncasecmp(input.c_str(), getVirtueName(virtue), 6) != 0 || ss->cycles == 0) {
         screenMessage("Thou art unable to focus thy thoughts on this subject!\n");
         eject();
         return;
@@ -177,9 +175,12 @@ void Shrine::meditationCycle() {
 }
 
 void Shrine::askMantra() {
+    string input;
+    ShrineState* ss = &c->shrineState;
+
     screenEnableCursor();
     screenMessage("\nMantra: ");
-    string input;
+
 #ifdef IOS
     {
     U4IOS::IOSConversationHelper mantraHelper;
@@ -196,16 +197,16 @@ void Shrine::askMantra() {
         screenMessage("Thou art not able to focus thy thoughts with that Mantra!\n");
         eject();
     }
-    else if (--cycles > 0) {
-        completedCycles++;
+    else if (--ss->cycles > 0) {
+        ss->completedCycles++;
         c->party->adjustKarma(KA_MEDITATION);
         meditationCycle();
     }
     else {
-        completedCycles++;
+        ss->completedCycles++;
         c->party->adjustKarma(KA_MEDITATION);
 
-        bool elevated = completedCycles == 3 && c->party->attemptElevation(virtue);
+        bool elevated = ss->completedCycles == 3 && c->party->attemptElevation(virtue);
         if (elevated)
             screenMessage("\nThou hast achieved partial Avatarhood in the Virtue of %s\n\n",
                           getVirtueName(virtue));
@@ -239,7 +240,8 @@ void Shrine::showVision(bool elevated) {
         screenDrawImageInMapArea(visionImageNames[virtue]);
     }
     else {
-        screenMessage("\n%s", shrineAdvice[virtue * 3 + completedCycles - 1].c_str());
+        ShrineState* ss = &c->shrineState;
+        screenMessage("\n%s", ss->advice[virtue * 3 + ss->completedCycles - 1].c_str());
     }
 }
 

@@ -148,10 +148,8 @@ int usePortalAt(Location *location, MapCoords coords, PortalTriggerAction action
         c->location->prev->map = xu4.config->map(portal->retroActiveDest->mapid);
     }
 
-    if (destination->type == Map::SHRINE) {
-        Shrine *shrine = dynamic_cast<Shrine*>(destination);
-        shrine->enter();
-    }
+    if (destination->type == Map::SHRINE)
+        static_cast<Shrine*>(destination)->enter();
 
     return 1;
 }
