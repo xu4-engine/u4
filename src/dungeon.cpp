@@ -1,8 +1,7 @@
 /*
- * $Id$
+ * dungeon.cpp
  */
 
-#include <string>
 #include "dungeon.h"
 
 #include "annotation.h"
@@ -20,17 +19,6 @@
 #include "utils.h"
 #include "xu4.h"
 
-/**
- * Returns true if 'map' points to a dungeon map
- */
-bool isDungeon(Map *punknown) {
-    Dungeon *pd;
-    if ((pd = dynamic_cast<Dungeon*>(punknown)) != NULL)
-        return true;
-    else
-        return false;
-}
-
 Dungeon::~Dungeon() {
     if (roomMaps) {
         CombatMap** it  = roomMaps;
@@ -47,8 +35,8 @@ Dungeon::~Dungeon() {
 /**
  * Returns the name of the dungeon
  */
-string Dungeon::getName() {
-    return name;
+const char* Dungeon::getName() const {
+    return xu4.config->confString(name);
 }
 
 /**

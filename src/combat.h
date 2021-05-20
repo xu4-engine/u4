@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * combat.h
  */
 
 #ifndef COMBAT_H
@@ -155,7 +155,6 @@ public:
     Coords player_start[AREA_PLAYERS];
 };
 
-bool isCombatMap(Map *punknown);
 CombatMap *getCombatMap(Map *punknown = NULL);
 
 #endif

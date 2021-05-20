@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * shrine.h
  */
 
 #ifndef SHRINE_H
@@ -11,23 +11,11 @@
 #define SHRINE_MEDITATION_INTERVAL  100
 #define MEDITATION_MANTRAS_PER_CYCLE 16
 
-/*typedef struct _Shrine {
-    Virtue virtue;
-    const char *mantra;
-} Shrine;*/
-
 class Shrine : public Map {
 public:
-    Shrine();
-
     // Methods
-    virtual string  getName();
-    Virtue          getVirtue() const;
-    string          getMantra() const;
-
-    void            setVirtue(Virtue v);
-    void            setMantra(string mantra);
-
+    virtual const char* getName() const;
+    const char* mantraStr() const;
     void enter();
     void enhancedSequence();
     void meditationCycle();
@@ -36,13 +24,10 @@ public:
     void showVision(bool elevated);
 
     // Properties
-private:
-    string name;
+    Symbol mantra;
     Virtue virtue;
-    string mantra;
 };
 
 bool shrineCanEnter(const struct _Portal *p);
-bool isShrine(Map *punknown);
 
 #endif

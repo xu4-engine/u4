@@ -1,30 +1,22 @@
 /*
- * $Id$
+ * city.cpp
  */
 
-#include <string>
-#include <typeinfo>
 #include "city.h"
 
+#include "config.h"
 #include "context.h"
 #include "conversation.h"
 #include "creature.h"
 #include "object.h"
 #include "person.h"
 #include "player.h"
-
-using std::string;
-
-City::City() : Map() {
-
-}
+#include "xu4.h"
 
 
 City::~City() {
     for (PersonList::iterator i = persons.begin(); i != persons.end(); i++)
         delete *i;
-    for (PersonRoleList::iterator j = personroles.begin(); j != personroles.end(); j++)
-        delete *j;
 
     std::vector<Dialogue *>::iterator k;
     for (k = dialogueStore.begin(); k != dialogueStore.end(); k++)
@@ -36,8 +28,12 @@ City::~City() {
 /**
  * Returns the name of the city
  */
-string City::getName() {
-    return name;
+const char* City::getName() const {
+    return xu4.config->confString(name);
+}
+
+const char* City::cityTypeStr() const {
+    return xu4.config->symbolName(cityType);
 }
 
 /**
@@ -100,16 +96,4 @@ Person *City::personAt(const Coords &coords) {
         return dynamic_cast<Person*>(obj);
     else
         return NULL;
-}
-
-/**
- * Returns true if the Map pointed to by 'punknown'
- * is a City map
- */
-bool isCity(Map *punknown) {
-    City *pCity;
-    if ((pCity = dynamic_cast<City*>(punknown)) != NULL)
-        return true;
-    else
-        return false;
 }

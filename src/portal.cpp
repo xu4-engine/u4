@@ -94,17 +94,17 @@ int usePortalAt(Location *location, MapCoords coords, PortalTriggerAction action
             case Map::CITY:
                 {
                     City *city = dynamic_cast<City*>(destination);
-                    screenMessage("Enter %s!\n\n%s\n\n", city->type.c_str(), city->getName().c_str());
+                    screenMessage("Enter %s!\n\n%s\n\n", city->cityTypeStr(), city->getName());
                 }
                 break;
             case Map::SHRINE:
-                screenMessage("Enter the %s!\n\n", destination->getName().c_str());
+                screenMessage("Enter the %s!\n\n", destination->getName());
                 break;
             case Map::DUNGEON:
 #ifdef IOS
                 U4IOS::testFlightPassCheckPoint("Enter " + destination->getName());
 #endif
-                screenMessage("Enter dungeon!\n\n%s\n\n", destination->getName().c_str());
+                screenMessage("Enter dungeon!\n\n%s\n\n", destination->getName());
                 break;
             default:
                 break;

@@ -1,51 +1,42 @@
 /*
- * $Id$
+ * city.h
  */
 
 #ifndef CITY_H
 #define CITY_H
 
-#include <list>
-#include <string>
-#include <vector>
+#include "map.h"
 
-using std::string;
+struct PersonRole {
+    int16_t role;   // PersonNpcType
+    int16_t id;
+};
 
 class Person;
 class Dialogue;
 
-#include "map.h"
-
-struct PersonRole {
-    int role;
-    int id;
-};
-
 typedef std::vector<Person *> PersonList;
-typedef std::list<PersonRole*> PersonRoleList;
 
 class City : public Map {
 public:
-    City();
     ~City();
 
     // Members
-    virtual string getName();
+    virtual const char* getName() const;
+    const char* cityTypeStr() const;
     Person *addPerson(Person *p);
     void addPeople();
     void removeAllPeople();
     Person *personAt(const Coords &coords);
 
     // Properties
-    string name;
-    string type;
+    StringId name;
+    StringId tlk_fname;
+    Symbol cityType;
     PersonList persons;
-    string tlk_fname;
-    PersonRoleList personroles;
+    std::vector<PersonRole> personroles;
     std::vector<Dialogue *> dialogueStore;  // Only used to delete Dialogues.
     std::vector<Dialogue *> extraDialogues;
 };
-
-bool isCity(Map *punknown);
 
 #endif

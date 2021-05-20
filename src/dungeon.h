@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * dungeon.h
  */
 
 #ifndef DUNGEON_H
@@ -71,7 +71,7 @@ public:
     ~Dungeon();
 
     // Members
-    virtual string getName();
+    virtual const char* getName() const;
 
     DungeonToken tokenForTile(TileId tid) const;
     DungeonToken currentToken();
@@ -85,7 +85,7 @@ public:
     uint8_t* fillRawMap();
 
     // Properties
-    string name;
+    StringId name;
     std::vector<uint8_t> rawMap;
     DngRoom *rooms;
     CombatMap **roomMaps;
@@ -123,7 +123,5 @@ void dungeonSearch(void);
 void dungeonDrinkFountain();
 void dungeonTouchOrb();
 bool dungeonHandleTrap(TrapType trap);
-
-bool isDungeon(Map *punknown);
 
 #endif

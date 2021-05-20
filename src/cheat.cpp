@@ -102,7 +102,7 @@ bool CheatMenuController::keyPressed(int key) {
             string destNameLower = xu4.config->map(destid)->getName();
             lowercase(destNameLower);
             if (destNameLower.find(dest) != string::npos) {
-                screenMessage("\n%s\n", xu4.config->map(destid)->getName().c_str());
+                screenMessage("\n%s\n", xu4.config->map(destid)->getName());
                 c->location->coords = c->location->map->portals[p]->coords;
                 found = true;
                 break;
@@ -206,7 +206,7 @@ bool CheatMenuController::keyPressed(int key) {
         if (c->location->map->isWorldMap())
             screenMessage("\nLocation:\n%s\nx: %d\ny: %d\n", "World Map", c->location->coords.x, c->location->coords.y);
         else
-            screenMessage("\nLocation:\n%s\nx: %d\ny: %d\nz: %d\n", c->location->map->getName().c_str(), c->location->coords.x, c->location->coords.y, c->location->coords.z);
+            screenMessage("\nLocation:\n%s\nx: %d\ny: %d\nz: %d\n", c->location->map->getName(), c->location->coords.x, c->location->coords.y, c->location->coords.z);
         break;
 
     case 'm':

@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * combat.cpp
  */
 
 #include <ctime>
@@ -36,17 +36,6 @@
 #ifdef IOS
 #include "ios_helpers.h"
 #endif
-
-/**
- * Returns true if 'map' points to a Combat Map
- */
-bool isCombatMap(Map *punknown) {
-    CombatMap *ps;
-    if ((ps = dynamic_cast<CombatMap*>(punknown)) != NULL)
-        return true;
-    else
-        return false;
-}
 
 /**
  * Returns a CombatMap pointer to the map

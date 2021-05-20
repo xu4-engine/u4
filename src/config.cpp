@@ -426,29 +426,27 @@ static void conf_ultimaSaveIds(ConfigXML* cfg, UltimaSaveIds* usaveIds, Tileset*
 extern bool isAbyssOpened(const Portal*);
 extern bool shrineCanEnter(const Portal*);
 
-static PersonRole* conf_initPersonRole(const ConfigElement& conf) {
-    static const char *roleEnumStrings[] = {
-        "companion", "weaponsvendor", "armorvendor", "foodvendor", "tavernkeeper",
-        "reagentsvendor", "healer", "innkeeper", "guildvendor", "horsevendor",
-        "lordbritish", "hawkwind", NULL
+static void conf_initCity(ConfigXML* cfg, const ConfigElement& conf, City *city) {
+    static const char* roleEnumStrings[] = {
+        "companion", "weaponsvendor", "armorvendor", "foodvendor",
+        "tavernkeeper", "reagentsvendor", "healer", "innkeeper",
+        "guildvendor", "horsevendor", "lordbritish", "hawkwind",
+        NULL
     };
+    PersonRole role;
 
-    PersonRole* role = new PersonRole;
-    role->role = conf.getEnum("role", roleEnumStrings) + NPC_TALKER_COMPANION;
-    role->id   = conf.getInt("id");
-    return role;
-}
-
-static void conf_initCity(const ConfigElement& conf, City *city) {
-    city->name = conf.getString("name");
-    city->type = conf.getString("type");
-    city->tlk_fname = conf.getString("tlk_fname");
+    city->name      = cfg->propSymbol(conf, "name");
+    city->tlk_fname = cfg->propSymbol(conf, "tlk_fname");
+    city->cityType  = cfg->propSymbol(conf, "type");
 
     vector<ConfigElement> children = conf.getChildren();
     vector<ConfigElement>::iterator it;
     foreach (it, children) {
-        if (it->getName() == "personrole")
-            city->personroles.push_back(conf_initPersonRole(*it));
+        if (it->getName() == "personrole") {
+            role.role = (*it).getEnum("role", roleEnumStrings) + NPC_TALKER_COMPANION;
+            role.id   = (*it).getInt("id");
+            city->personroles.push_back(role);
+        }
     }
 }
 
@@ -528,21 +526,21 @@ Portal* conf_initPortal(const ConfigElement& conf) {
     return portal;
 }
 
-static void conf_initShrine(const ConfigElement& conf, Shrine *shrine) {
+static void conf_initShrine(ConfigXML* cfg, const ConfigElement& conf, Shrine *shrine) {
     static const char *virtues[] = {
         "Honesty", "Compassion", "Valor", "Justice", "Sacrifice",
         "Honor", "Spirituality", "Humility", NULL
     };
 
-    shrine->setVirtue(static_cast<Virtue>(conf.getEnum("virtue", virtues)));
-    shrine->setMantra(conf.getString("mantra"));
+    shrine->mantra = cfg->propSymbol(conf, "mantra");
+    shrine->virtue = static_cast<Virtue>(conf.getEnum("virtue", virtues));
 }
 
-static void conf_initDungeon(const ConfigElement &conf, Dungeon *dungeon) {
+static void conf_initDungeon(ConfigXML* cfg, const ConfigElement &conf, Dungeon *dungeon) {
     dungeon->n_rooms = conf.getInt("rooms");
     dungeon->rooms = NULL;
     dungeon->roomMaps = NULL;
-    dungeon->name = conf.getString("name");
+    dungeon->name = cfg->propSymbol(conf, "name");
 }
 
 static void conf_createMoongate(const ConfigElement& conf) {
@@ -624,15 +622,15 @@ static Map* conf_makeMap(ConfigXML* cfg, Tileset* tiles, const ConfigElement& co
         const string& cname = it->getName();
         if (cname == "city") {
             City *city = dynamic_cast<City*>(map);
-            conf_initCity(*it, city);
+            conf_initCity(cfg, *it, city);
         }
         else if (cname == "shrine") {
             Shrine *shrine = dynamic_cast<Shrine*>(map);
-            conf_initShrine(*it, shrine);
+            conf_initShrine(cfg, *it, shrine);
         }
         else if (cname == "dungeon") {
             Dungeon *dungeon = dynamic_cast<Dungeon*>(map);
-            conf_initDungeon(*it, dungeon);
+            conf_initDungeon(cfg, *it, dungeon);
         }
         else if (cname == "portal")
             map->portals.push_back(conf_initPortal(*it));

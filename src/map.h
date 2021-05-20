@@ -6,7 +6,6 @@
 #define MAP_H
 
 #include <map>
-#include <string>
 #include <vector>
 
 #include "coords.h"
@@ -15,8 +14,6 @@
 #include "savegame.h"
 #include "types.h"
 #include "u4file.h"
-
-using std::string;
 
 #define MAP_IS_OOB(mapptr, c) (((c).x) < 0 || ((c).x) >= (static_cast<int>((mapptr)->width)) || ((c).y) < 0 || ((c).y) >= (static_cast<int>((mapptr)->height)) || ((c).z) < 0 || ((c).z) >= (static_cast<int>((mapptr)->levels)))
 
@@ -92,7 +89,7 @@ public:
     virtual ~Map();
 
     // Member functions
-    virtual std::string getName();
+    virtual const char* getName() const;
 
     void queryVisible(const Coords &coords, int radius,
                       void (*func)(const Coords*, VisualId, void*),
@@ -159,5 +156,9 @@ private:
 
     void findWalkability(Coords coords, int *path_data);
 };
+
+inline bool isCity(const Map* map)      { return map->type == Map::CITY; }
+inline bool isCombatMap(const Map* map) { return map->type == Map::COMBAT; }
+inline bool isDungeon(const Map* map)   { return map->type == Map::DUNGEON; }
 
 #endif

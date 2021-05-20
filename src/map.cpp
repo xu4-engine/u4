@@ -270,8 +270,8 @@ Map::~Map() {
 #endif
 }
 
-string Map::getName() {
-    return string( xu4.config->confString(fname) );
+const char* Map::getName() const {
+    return xu4.config->confString(fname);
 }
 
 /*

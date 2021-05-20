@@ -1,11 +1,9 @@
 /*
- * $Id$
+ * shrine.cpp
  */
 
 #include <string>
 #include <vector>
-
-#include "u4.h"
 
 #include "shrine.h"
 
@@ -24,58 +22,38 @@
 #include "settings.h"
 #include "tileset.h"
 #include "types.h"
+#include "u4.h"
 #include "xu4.h"
 
 #ifdef IOS
 #include "ios_helpers.h"
 #endif
 
-using std::string;
-using std::vector;
-
 int cycles, completedCycles;
-vector<string> shrineAdvice;
+std::vector<string> shrineAdvice;
+std::string shrineName;
 
 /**
  * Returns true if the player can use the portal to the shrine
  */
 bool shrineCanEnter(const Portal *p) {
     Shrine *shrine = dynamic_cast<Shrine*>(xu4.config->map(p->destid));
-    if (!c->party->canEnterShrine(shrine->getVirtue())) {
+    if (!c->party->canEnterShrine(shrine->virtue)) {
         screenMessage("Thou dost not bear the rune of entry!  A strange force keeps you out!\n");
         return 0;
     }
     return 1;
 }
 
-/**
- * Returns true if 'map' points to a Shrine map
- */
-bool isShrine(Map *punknown) {
-    Shrine *ps;
-    if ((ps = dynamic_cast<Shrine*>(punknown)) != NULL)
-        return true;
-    else
-        return false;
+const char* Shrine::getName() const {
+    shrineName = "Shrine of ";
+    shrineName += getVirtueName(virtue);
+    return shrineName.c_str();
 }
 
-/**
- * Shrine class implementation
- */
-Shrine::Shrine() {}
-
-string Shrine::getName() {
-    if (name.empty()) {
-        name = "Shrine of ";
-        name += getVirtueName(virtue);
-    }
-    return name;
+const char* Shrine::mantraStr() const {
+    return xu4.config->symbolName(mantra);
 }
-Virtue Shrine::getVirtue() const    { return virtue; }
-string Shrine::getMantra() const    { return mantra; }
-
-void Shrine::setVirtue(Virtue v)    { virtue = v; }
-void Shrine::setMantra(string m)    { mantra = m; }
 
 /**
  * Enter the shrine
@@ -99,13 +77,13 @@ void Shrine::enter() {
         screenMessage("You enter the ancient shrine and sit before the altar...");
 
     screenMessage("\nUpon which virtue dost thou meditate?\n");
-    string virtue;
+    string input;
 #ifdef IOS
     {
     U4IOS::IOSConversationHelper inputVirture;
     inputVirture.beginConversation(U4IOS::UIKeyboardTypeDefault, "Upon which virtue dost thou meditate?");
 #endif
-    virtue = ReadStringController::get(32, TEXT_AREA_X + c->col, TEXT_AREA_Y + c->line);
+    input = ReadStringController::get(32, TEXT_AREA_X + c->col, TEXT_AREA_Y + c->line);
 #ifdef IOS
     }
 #endif
@@ -130,7 +108,7 @@ void Shrine::enter() {
     screenMessage("\n\n");
 
     // ensure the player chose the right virtue and entered a valid number for cycles
-    if (strncasecmp(virtue.c_str(), getVirtueName(getVirtue()), 6) != 0 || cycles == 0) {
+    if (strncasecmp(input.c_str(), getVirtueName(virtue), 6) != 0 || cycles == 0) {
         screenMessage("Thou art unable to focus thy thoughts on this subject!\n");
         eject();
         return;
@@ -194,19 +172,19 @@ void Shrine::meditationCycle() {
 void Shrine::askMantra() {
     screenEnableCursor();
     screenMessage("\nMantra: ");
-    string mantra;
+    string input;
 #ifdef IOS
     {
     U4IOS::IOSConversationHelper mantraHelper;
     mantraHelper.beginConversation(U4IOS::UIKeyboardTypeASCIICapable, "Mantra?");
 #endif
-    mantra = ReadStringController::get(4, TEXT_AREA_X + c->col, TEXT_AREA_Y + c->line);
+    input = ReadStringController::get(4, TEXT_AREA_X + c->col, TEXT_AREA_Y + c->line);
     screenMessage("\n");
 #ifdef IOS
     }
 #endif
 
-    if (strcasecmp(mantra.c_str(), getMantra().c_str()) != 0) {
+    if (strcasecmp(input.c_str(), mantraStr()) != 0) {
         c->party->adjustKarma(KA_BAD_MANTRA);
         screenMessage("Thou art not able to focus thy thoughts with that Mantra!\n");
         eject();
@@ -220,10 +198,10 @@ void Shrine::askMantra() {
         completedCycles++;
         c->party->adjustKarma(KA_MEDITATION);
 
-        bool elevated = completedCycles == 3 && c->party->attemptElevation(getVirtue());
+        bool elevated = completedCycles == 3 && c->party->attemptElevation(virtue);
         if (elevated)
             screenMessage("\nThou hast achieved partial Avatarhood in the Virtue of %s\n\n",
-                          getVirtueName(getVirtue()));
+                          getVirtueName(virtue));
         else
             screenMessage("\nThy thoughts are pure. "
                           "Thou art granted a vision!\n");
@@ -232,7 +210,7 @@ void Shrine::askMantra() {
         U4IOS::IOSConversationChoiceHelper choiceDialog;
         choiceDialog.updateChoices(" ");
         U4IOS::testFlightPassCheckPoint(std::string("Gained avatarhood in: ")
-                                        + getVirtueName(getVirtue()));
+                                        + getVirtueName(virtue));
 #endif
         ReadChoiceController::get("");
         showVision(elevated);
@@ -251,10 +229,10 @@ void Shrine::showVision(bool elevated) {
     if (elevated) {
         screenMessage("Thou art granted a vision!\n");
         gameSetViewMode(VIEW_RUNE);
-        screenDrawImageInMapArea(visionImageNames[getVirtue()]);
+        screenDrawImageInMapArea(visionImageNames[virtue]);
     }
     else {
-        screenMessage("\n%s", shrineAdvice[getVirtue() * 3 + completedCycles - 1].c_str());
+        screenMessage("\n%s", shrineAdvice[virtue * 3 + completedCycles - 1].c_str());
     }
 }
 

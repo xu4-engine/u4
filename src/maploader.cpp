@@ -170,7 +170,7 @@ static bool loadCityMap(Map *map, U4FILE *ult) {
 
     {
     const uint8_t* conv_idx = data + PD_CONV;
-    U4FILE *tlk = u4fopen(city->tlk_fname);
+    U4FILE *tlk = u4fopen(xu4.config->confString(city->tlk_fname));
     if (! tlk)
         errorFatal("Unable to open .TLK file");
 
@@ -211,20 +211,20 @@ static bool loadCityMap(Map *map, U4FILE *ult) {
      * Assign roles to certain people
      */
     {
-    PersonRoleList::iterator ri;
+    vector<PersonRole>::iterator ri;
     foreach (ri, city->personroles) {
-        per = people[ (*ri)->id - 1 ];
+        per = people[ (*ri).id - 1 ];
         if (per) {
-            if ((*ri)->role == NPC_LORD_BRITISH) {
+            if ((*ri).role == NPC_LORD_BRITISH) {
                 dlg = DialogueLoader::getLoader("application/x-u4lbtlk")->load(NULL);
 set_dialog:
                 per->setDialogue(dlg);
                 city->dialogueStore.push_back(dlg);
-            } else if ((*ri)->role == NPC_HAWKWIND) {
+            } else if ((*ri).role == NPC_HAWKWIND) {
                 dlg = DialogueLoader::getLoader("application/x-u4hwtlk")->load(NULL);
                 goto set_dialog;
             }
-            per->setNpcType(static_cast<PersonNpcType>((*ri)->role));
+            per->setNpcType(static_cast<PersonNpcType>((*ri).role));
         }
     }
     }
