@@ -11,6 +11,7 @@ class ImageSet;
 struct Layout;
 struct Armor;
 struct Weapon;
+class Coords;
 class Creature;
 class Map;
 struct TileRule;
@@ -57,6 +58,7 @@ public:
     Map* map(uint32_t id);
     Map* restoreMap(uint32_t id);
     void unloadMap(uint32_t id);
+    const Coords* moongateCoords(int phase) const;
 
 protected:
     void* backend;

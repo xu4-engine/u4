@@ -32,7 +32,6 @@
 #include "mapmgr.h"
 #include "menu.h"
 #include "creature.h"
-#include "moongate.h"
 #include "movement.h"
 #include "names.h"
 #include "person.h"
@@ -2096,57 +2095,57 @@ void GameController::updateMoons(bool showmoongates)
 
             /* update the moongates if trammel changed */
             if (trammelSubphase == 0) {
-                gate = moongateGetGateCoordsForPhase(oldTrammel);
+                gate = xu4.config->moongateCoords(oldTrammel);
                 if (gate)
                     annot->remove(*gate, usaveIds->moduleId(0x40));
-                gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
+                gate = xu4.config->moongateCoords(c->saveGame->trammelphase);
                 if (gate)
                     annot->add(*gate, usaveIds->moduleId(0x40));
             }
             else if (trammelSubphase == 1) {
-                gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
+                gate = xu4.config->moongateCoords(c->saveGame->trammelphase);
                 if (gate) {
                     annot->remove(*gate, usaveIds->moduleId(0x40));
                     annot->add(*gate, usaveIds->moduleId(0x41));
                 }
             }
             else if (trammelSubphase == 2) {
-                gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
+                gate = xu4.config->moongateCoords(c->saveGame->trammelphase);
                 if (gate) {
                     annot->remove(*gate, usaveIds->moduleId(0x41));
                     annot->add(*gate, usaveIds->moduleId(0x42));
                 }
             }
             else if (trammelSubphase == 3) {
-                gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
+                gate = xu4.config->moongateCoords(c->saveGame->trammelphase);
                 if (gate) {
                     annot->remove(*gate, usaveIds->moduleId(0x42));
                     annot->add(*gate, usaveIds->moduleId(0x43));
                 }
             }
             else if ((trammelSubphase > 3) && (trammelSubphase < (MOON_SECONDS_PER_PHASE * 4 * 3) - 3)) {
-                gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
+                gate = xu4.config->moongateCoords(c->saveGame->trammelphase);
                 if (gate) {
                     annot->remove(*gate, usaveIds->moduleId(0x43));
                     annot->add(*gate, usaveIds->moduleId(0x43));
                 }
             }
             else if (trammelSubphase == (MOON_SECONDS_PER_PHASE * 4 * 3) - 3) {
-                gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
+                gate = xu4.config->moongateCoords(c->saveGame->trammelphase);
                 if (gate) {
                     annot->remove(*gate, usaveIds->moduleId(0x43));
                     annot->add(*gate, usaveIds->moduleId(0x42));
                 }
             }
             else if (trammelSubphase == (MOON_SECONDS_PER_PHASE * 4 * 3) - 2) {
-                gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
+                gate = xu4.config->moongateCoords(c->saveGame->trammelphase);
                 if (gate) {
                     annot->remove(*gate, usaveIds->moduleId(0x42));
                     annot->add(*gate, usaveIds->moduleId(0x41));
                 }
             }
             else if (trammelSubphase == (MOON_SECONDS_PER_PHASE * 4 * 3) - 1) {
-                gate = moongateGetGateCoordsForPhase(c->saveGame->trammelphase);
+                gate = xu4.config->moongateCoords(c->saveGame->trammelphase);
                 if (gate) {
                     annot->remove(*gate, usaveIds->moduleId(0x41));
                     annot->add(*gate, usaveIds->moduleId(0x40));
@@ -3055,39 +3054,49 @@ void GameController::checkSpecialCreatures(Direction dir) {
     }
 }
 
+static bool activeMoongateAt(int trammel, int felucca, const Coords& src,
+                             Coords& dest) {
+    const Coords* mc = xu4.config->moongateCoords(trammel);
+    if (mc && (src == *mc)) {
+        mc = xu4.config->moongateCoords(felucca);
+        if (mc) {
+            dest = *mc;
+            return true;
+        }
+    }
+    return false;
+}
+
 /**
  * Checks for and handles when the avatar steps on a moongate
  */
 bool GameController::checkMoongates() {
     Coords dest;
 
-    if (moongateFindActiveGateAt(c->saveGame->trammelphase, c->saveGame->feluccaphase, c->location->coords, dest)) {
+    if (! activeMoongateAt(c->saveGame->trammelphase,
+                           c->saveGame->feluccaphase,
+                           c->location->coords, dest))
+        return false;
 
-        gameSpellEffect(-1, -1, SOUND_MOONGATE); // Default spell effect (screen inversion without 'spell' sound effects)
+    // Default spell effect (screen inversion without 'spell' sound effects)
+    gameSpellEffect(-1, -1, SOUND_MOONGATE);
 
-        if (c->location->coords != dest) {
-            c->location->coords = dest;
-            gameSpellEffect(-1, -1, SOUND_MOONGATE); // Again, after arriving
-        }
-
-        if (moongateIsEntryToShrineOfSpirituality(c->saveGame->trammelphase, c->saveGame->feluccaphase)) {
-            Shrine *shrine_spirituality;
-
-            shrine_spirituality = dynamic_cast<Shrine*>(xu4.config->map(MAP_SHRINE_SPIRITUALITY));
-
-            if (!c->party->canEnterShrine(VIRT_SPIRITUALITY))
-                return true;
-
-            setMap(shrine_spirituality, 1, NULL);
-            musicPlayLocale();
-
-            shrine_spirituality->enter();
-        }
-
-        return true;
+    if (c->location->coords != dest) {
+        c->location->coords = dest;
+        gameSpellEffect(-1, -1, SOUND_MOONGATE); // Again, after arriving
     }
 
-    return false;
+    // Entry to shrine of Spirituality
+    if (c->saveGame->trammelphase == 4 &&
+        c->saveGame->feluccaphase == 4 &&
+        c->party->canEnterShrine(VIRT_SPIRITUALITY)) {
+        Shrine* shrine = static_cast<Shrine*>(xu4.config->map(MAP_SHRINE_SPIRITUALITY));
+        setMap(shrine, 1, NULL);
+        musicPlayLocale();
+        shrine->enter();
+    }
+
+    return true;
 }
 
 /**

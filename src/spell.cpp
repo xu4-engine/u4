@@ -9,6 +9,7 @@
 #include <cstring>
 #include "annotation.h"
 #include "combat.h"
+#include "config.h"
 #include "context.h"
 #include "debug.h"
 #include "direction.h"
@@ -19,7 +20,6 @@
 #include "map.h"
 #include "mapmgr.h"
 #include "creature.h"
-#include "moongate.h"
 #include "player.h"
 #include "screen.h"
 #include "settings.h"
@@ -562,7 +562,7 @@ static int spellGate(int phase) {
 
     GameController::flashTile(c->location->coords, Tile::sym.moongate, 2);
 
-    moongate = moongateGetGateCoordsForPhase(phase);
+    moongate = xu4.config->moongateCoords(phase);
     if (moongate)
         c->location->coords = *moongate;
 

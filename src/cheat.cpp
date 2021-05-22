@@ -9,7 +9,6 @@
 #include "context.h"
 #include "game.h"
 #include "mapmgr.h"
-#include "moongate.h"
 #include "portal.h"
 #include "player.h"
 #include "screen.h"
@@ -39,7 +38,7 @@ bool CheatMenuController::keyPressed(int key) {
         screenMessage("Gate %d!\n", key - '0');
 
         if (c->location->map->isWorldMap()) {
-            const Coords *moongate = moongateGetGateCoordsForPhase(key - '1');
+            const Coords *moongate = xu4.config->moongateCoords(key - '1');
             if (moongate)
                 c->location->coords = *moongate;
         }

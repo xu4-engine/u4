@@ -31,7 +31,6 @@
 #include "imageloader.h"
 #include "imagemgr.h"
 #include "map.h"
-#include "moongate.h"
 #include "names.h"
 #include "portal.h"
 #include "savegame.h"
@@ -81,6 +80,7 @@ struct XMLConfig
     vector<Weapon*> weapons;
     vector<Creature *> creatures;
     vector<Map *> mapList;
+    vector<Coords> moongateList;    // Moon phase map coordinates.
 
     TileRule* tileRules;
     uint16_t tileRuleCount;
@@ -543,11 +543,18 @@ static void conf_initDungeon(ConfigXML* cfg, const ConfigElement &conf, Dungeon 
     dungeon->name = cfg->propSymbol(conf, "name");
 }
 
-static void conf_createMoongate(const ConfigElement& conf) {
+static void conf_createMoongate(ConfigXML* cfg, const ConfigElement& conf) {
+    vector<Coords>& moongates = cfg->xcd.moongateList;
     int phase = conf.getInt("phase");
-    Coords coords(conf.getInt("x"), conf.getInt("y"));
-
-    moongateAdd(phase, coords);
+    if (phase >= (int) moongates.size()) {
+        size_t size = phase + 1;
+        if (size < 8)
+            size = 8;
+        moongates.resize(size);
+    }
+    Coords& coords = moongates[ phase ];
+    coords.x = conf.getInt("x");
+    coords.y = conf.getInt("y");
 }
 
 static pair<Symbol, MapCoords> conf_initLabel(ConfigXML* cfg, const ConfigElement& conf) {
@@ -635,7 +642,7 @@ static Map* conf_makeMap(ConfigXML* cfg, Tileset* tiles, const ConfigElement& co
         else if (cname == "portal")
             map->portals.push_back(conf_initPortal(cfg, *it));
         else if (cname == "moongate")
-            conf_createMoongate(*it);
+            conf_createMoongate(cfg, *it);
         /*
         else if (cname == "compressedchunk")
             map->compressed_chunks.push_back( (*it).getInt("index") );
@@ -1337,6 +1344,12 @@ void Config::unloadMap(uint32_t id) {
             break;
         }
     }
+}
+
+const Coords* Config::moongateCoords(int phase) const {
+    if (phase < (int) CB->moongateList.size())
+        return &CB->moongateList[ phase ];
+    return NULL;
 }
 
 //--------------------------------------

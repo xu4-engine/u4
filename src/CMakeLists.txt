@@ -39,7 +39,6 @@ set(XU4_INC
 	mapmgr.h
 	menu.h
 	menuitem.h
-	moongate.h
 	movement.h
 	names.h
 	object.h
@@ -113,7 +112,6 @@ set(XU4_SRC
 	maploader.cpp 
 	menu.cpp 
 	menuitem.cpp 
-	moongate.cpp 
 	movement.cpp
 	names.cpp 
 	object.cpp 

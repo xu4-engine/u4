@@ -98,7 +98,6 @@ exe %u4 [
 		%maploader.cpp
 		%menu.cpp
 		%menuitem.cpp
-		%moongate.cpp
 		%movement.cpp
 		%names.cpp
 		%object.cpp
