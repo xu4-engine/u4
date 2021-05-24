@@ -71,7 +71,7 @@ enum LayoutType {
 };
 
 struct Layout {
-    Symbol name;
+    StringId name;
     LayoutType type;
     struct {
         int16_t width, height;

@@ -7,6 +7,10 @@
 
 #include "types.h"
 
+#ifdef CONF_MODULE
+#include "cdi.h"
+#endif
+
 class ImageSet;
 struct Layout;
 struct Armor;
@@ -41,8 +45,15 @@ public:
     // Primary configurable elements.
     const RGBA* egaPalette();
     const Layout* layouts( uint32_t* plen ) const;
+#ifdef CONF_MODULE
+    const char* modulePath() const;
+    const CDIEntry* imageFile( const char* id ) const;
+    const CDIEntry* musicFile( uint32_t id ) const;
+    const CDIEntry* soundFile( uint32_t id ) const;
+#else
     const char* musicFile( uint32_t id );
     const char* soundFile( uint32_t id );
+#endif
     const char** schemeNames();
     ImageSet* newScheme( uint32_t id );
     TileAnimSet* newTileAnims(const char* name) const;

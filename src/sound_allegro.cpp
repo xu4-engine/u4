@@ -65,6 +65,10 @@ static ALLEGRO_MIXER* fxMixer = NULL;
 static ALLEGRO_AUDIO_STREAM* musicStream = NULL;
 static std::vector<ALLEGRO_SAMPLE *> sa_samples;
 
+#ifdef CONF_MODULE
+static ALLEGRO_FILE* moduleFile = NULL;
+#endif
+
 /*
  * Initialize sound & music service.
  */
@@ -160,6 +164,12 @@ void soundDelete(void)
         al_destroy_audio_stream(musicStream);
         musicStream = NULL;
     }
+#ifdef CONF_MODULE
+    if (moduleFile) {
+        al_fclose(moduleFile);
+        moduleFile = NULL;
+    }
+#endif
     if (fxMixer) {
         al_destroy_mixer(fxMixer);
         fxMixer = NULL;
@@ -181,15 +191,43 @@ void soundDelete(void)
     audioFunctional = false;
 }
 
+#ifdef CONF_MODULE
+static const char* audioExt(const CDIEntry* entry) {
+    switch (entry->cdi) {
+        case DA7A_AUDIO_WAVE:
+            return ".wav";
+        case DA7A_AUDIO_MP3:
+            return ".mp3";
+        case DA7A_AUDIO_OGG_VORBIS:
+            return ".ogg";
+    }
+    return NULL;
+}
+#endif
+
 static bool sound_load(Sound sound) {
     if (sa_samples[sound] == NULL) {
-        const char* pathname = config_soundFile(sound);
-        if (pathname) {
-            sa_samples[sound] = al_load_sample(pathname);
-            if (!sa_samples[sound]) {
-                errorWarning("Unable to load sound file %s", pathname);
-                return false;
+#ifdef CONF_MODULE
+        const CDIEntry* ent = config_soundFile(sound);
+        if (ent) {
+            ALLEGRO_FILE* slice;
+            ALLEGRO_FILE* af = al_fopen(xu4.config->modulePath(), "rb");
+            if (af) {
+                al_fseek(af, ent->offset, ALLEGRO_SEEK_SET);
+                slice = al_fopen_slice(af, ent->bytes, "r");
+                sa_samples[sound] = al_load_sample_f(slice, audioExt(ent));
+                al_fclose(slice);   // Does unwanted seek to slice end.
+                al_fclose(af);
             }
+        }
+#else
+        const char* pathname = config_soundFile(sound);
+        if (pathname)
+            sa_samples[sound] = al_load_sample(pathname);
+#endif
+        if (! sa_samples[sound]) {
+            errorWarning("Unable to load sound %d", (int) sound);
+            return false;
         }
     }
     return true;
@@ -242,15 +280,37 @@ static bool music_load(int music) {
             return true;
     }
 
+    if (musicStream) {
+        al_destroy_audio_stream(musicStream);
+        musicStream = NULL;
+    }
+
+#ifdef CONF_MODULE
+    const CDIEntry* ent = config_musicFile(music);
+    if (ent) {
+        if (! moduleFile)
+            moduleFile = al_fopen(xu4.config->modulePath(), "rb");
+
+        if (moduleFile) {
+            ALLEGRO_FILE* slice;
+            al_fseek(moduleFile, ent->offset, ALLEGRO_SEEK_SET);
+            slice = al_fopen_slice(moduleFile, ent->bytes, "r");
+            musicStream = al_load_audio_stream_f(slice, audioExt(ent), 4, 2048);
+
+            // NOTE: Stream takes ownership of ALLEGRO_FILE.
+            // Since we pass a slice, we must still close moduleFile ourselves.
+        }
+    }
+#else
     const char* pathname = config_musicFile(music);
     if (! pathname)
         return false;
 
-    if (musicStream)
-        al_destroy_audio_stream(musicStream);
     musicStream = al_load_audio_stream(pathname, 4, 2048);
-    if (!musicStream) {
-        errorWarning("unable to load music file %s", pathname );
+#endif
+
+    if (! musicStream) {
+        errorWarning("Unable to load music %d", music);
         return false;
     }
 

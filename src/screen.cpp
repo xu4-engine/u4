@@ -342,7 +342,7 @@ static void screenLoadLayoutsFromConf(Screen* scr) {
 
     for (i = 0; i < count; ++i) {
         if (layout[i].type == LAYOUT_GEM) {
-            const char* name = xu4.config->symbolName( layout[i].name );
+            const char* name = xu4.config->confString( layout[i].name );
             scr->gemLayoutNames.push_back(name);
 
             if (! scr->gemLayout && xu4.settings->gemLayout == name)

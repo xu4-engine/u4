@@ -24,7 +24,7 @@ using std::vector;
  */
 class U4FILE_stdio : public U4FILE {
 public:
-    static U4FILE *open(const string &fname);
+    static U4FILE *open(const char* fname);
 
     virtual void close();
     virtual int seek(long offset, int whence);
@@ -378,17 +378,13 @@ int U4FILE::getshort() {
     return byteLow | (getc() << 8);
 }
 
-U4FILE *U4FILE_stdio::open(const string &fname) {
-    U4FILE_stdio *u4f;
-    FILE *f;
-
-    f = fopen(fname.c_str(), "rb");
+U4FILE *U4FILE_stdio::open(const char* fname) {
+    FILE *f = fopen(fname, "rb");
     if (!f)
         return NULL;
 
-    u4f = new U4FILE_stdio;
+    U4FILE_stdio *u4f = new U4FILE_stdio;
     u4f->file = f;
-
     return u4f;
 }
 
@@ -569,7 +565,7 @@ U4FILE *u4fopen(const string &fname) {
     }
 
     if (!pathname.empty()) {
-        u4f = U4FILE_stdio::open(pathname);
+        u4f = U4FILE_stdio::open(pathname.c_str());
         if (verbose && u4f != NULL)
             printf("%s successfully opened\n", pathname.c_str());
     }
@@ -581,7 +577,7 @@ U4FILE *u4fopen(const string &fname) {
  * Opens a file with the standard C stdio facilities and wrap it in a
  * U4FILE.
  */
-U4FILE *u4fopen_stdio(const string &fname) {
+U4FILE *u4fopen_stdio(const char* fname) {
     return U4FILE_stdio::open(fname);
 }
 

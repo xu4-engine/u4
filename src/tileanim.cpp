@@ -111,9 +111,11 @@ void TileAnimTransform::draw(Image* dest, const Tile* tile,
 
 TileAnim::~TileAnim()
 {
+#ifndef USE_BORON
     std::vector<TileAnimTransform *>::iterator ti;
     foreach (ti, transforms)
         delete *ti;
+#endif
 }
 
 static bool drawsTile(const TileAnimTransform* tf)

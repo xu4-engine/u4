@@ -46,6 +46,8 @@
 #include "xu4.h"
 #include "support/SymbolTable.h"
 
+//#include "config_dump.cpp"
+
 using namespace std;
 
 extern bool verbose;
@@ -651,6 +653,9 @@ static Map* conf_makeMap(ConfigXML* cfg, Tileset* tiles, const ConfigElement& co
             map->labels.insert( conf_initLabel(cfg, *it) );
     }
 
+#ifdef DUMP_CONFIG
+    dumpMap(cfg, map);
+#endif
     return map;
 }
 
@@ -724,6 +729,7 @@ static void conf_creatureLoad(ConfigXML* cfg, Creature* cr, Tileset* ts, const C
 
     cr->setHitTile(cfg->sym_hitFlash);
     cr->setMissTile(cfg->sym_missFlash);
+    cr->worldrangedtile = SYM_UNSET;
 
     cr->resists = 0;
 
@@ -801,7 +807,8 @@ static void conf_creatureLoad(ConfigXML* cfg, Creature* cr, Tileset* ts, const C
     if (conf.exists("spawnsOnDeath")) {
         attr |= MATTR_SPAWNSONDEATH;
         cr->spawn = static_cast<unsigned char>(conf.getInt("spawnsOnDeath"));
-    }
+    } else
+        cr->spawn = 0;
 
     cr->mattr = static_cast<CreatureAttrib>(attr);
     cr->movementAttr = static_cast<CreatureMovementAttrib>(moveAttr);
@@ -815,6 +822,10 @@ static void conf_creatureLoad(ConfigXML* cfg, Creature* cr, Tileset* ts, const C
         cr->slowedType = SLOWED_BY_NOTHING;
     else
         cr->slowedType = SLOWED_BY_TILE;
+
+#ifdef DUMP_CONFIG
+    dumpCreature(cfg, cr);
+#endif
 }
 
 //--------------------------------------
@@ -935,6 +946,9 @@ ConfigXML::ConfigXML() {
     rule = xcd.tileRules = new TileRule[ xcd.tileRuleCount ];
     foreach (it, ce) {
         conf_tileRule(xcd.sym, rule, *it);
+#ifdef DUMP_CONFIG
+        dumpTileRule(this, rule);
+#endif
         if (rule->name == symDefault )
             xcd.tileRuleDefault = rule - xcd.tileRules;
         ++rule;
@@ -1726,6 +1740,10 @@ static Armor* conf_armor(ConfigXML* cfg, int type, const ConfigElement& conf) {
         else
             arm->canuse &= ~mask;
     }
+
+#ifdef DUMP_CONFIG
+    dumpArmor(cfg, arm);
+#endif
     return arm;
 }
 
@@ -1812,6 +1830,10 @@ static Weapon* conf_weapon(ConfigXML* cfg, int type, const ConfigElement& conf) 
         else
             wpn->canuse &= ~mask;
     }
+
+#ifdef DUMP_CONFIG
+    dumpWeapon(cfg, wpn);
+#endif
     return wpn;
 }
 

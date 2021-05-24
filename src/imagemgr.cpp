@@ -373,8 +373,7 @@ ImageInfo *ImageMgr::getInfoFromSet(Symbol name, ImageSet *imageset) {
 U4FILE * ImageMgr::getImageFile(ImageInfo *info)
 {
     U4FILE *file;
-    string filename = info->getFilename();
-    const char* fn = filename.c_str();
+    const char* fn = xu4.config->confString(info->filename);
 
     if (strncmp(fn, "u4/", 3) == 0 ||
         strncmp(fn, "u4u/", 4) == 0) {
@@ -402,12 +401,22 @@ U4FILE * ImageMgr::getImageFile(ImageInfo *info)
         }
 
         file = u4fopen(basename);
+#ifdef CONF_MODULE
+    } else if (fn[0] == 'I' && fn[2] < 0x20) {
+        const CDIEntry* ent = xu4.config->imageFile(fn);
+        if (ent) {
+            file = u4fopen_stdio(xu4.config->modulePath());
+            u4fseek(file, ent->offset, SEEK_SET);
+        } else
+            file = NULL;
+#endif
     } else {
+        string filename(fn);
         string pathname(u4find_graphics(filename));
         if (pathname.empty())
             file = NULL;
         else
-            file = u4fopen_stdio(pathname);
+            file = u4fopen_stdio(pathname.c_str());
     }
     return file;
 }

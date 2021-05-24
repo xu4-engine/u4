@@ -1,6 +1,7 @@
 options [
-	os_api: 'allegro	"Platform Hardware API ('allegro 'sdl)"
-	use_gl: true
+	os_api: 'allegro	"Platform API ('allegro 'sdl)"
+	use_gl: false
+	use_boron: true
 	make_util: true
 ]
 
@@ -46,6 +47,20 @@ exe %u4 [
 		]
 	]
 
+	either use_boron [
+		cflags "-DUSE_BORON -DCONF_MODULE"
+		unix  [libs %boron]
+		win32 [libs_from %../usr/lib [%libboron]]
+		sources_from %src [
+			%config_boron.cpp
+			%support/cdi.c
+		]
+	][
+		sources [
+			%src/config.cpp
+		]
+	]
+
 	unix [
 		cflags "-Wno-unused-parameter"
 		libs [%png %z]
@@ -69,7 +84,6 @@ exe %u4 [
 		%city.cpp
 		%codex.cpp
 		%combat.cpp
-		%config.cpp
 		%controller.cpp
 		%context.cpp
 		%conversation.cpp
