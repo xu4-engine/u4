@@ -350,74 +350,79 @@ string Person::getIntro(Conversation *cnv) {
 
 string Person::processResponse(Conversation *cnv, Response *response) {
     string text;
+    int cmd;
     const vector<ResponsePart> &parts = response->getParts();
-    for (vector<ResponsePart>::const_iterator i = parts.begin(); i != parts.end(); i++) {
+    vector<ResponsePart>::const_iterator it;
+    for (it = parts.begin(); it != parts.end(); it++) {
+        const ResponsePart& rp = *it;
+        text += rp.text();
 
-        // check for command triggers
-        if (i->isCommand())
-            runCommand(cnv, *i);
-
-        // otherwise, append response part to reply
-        else
-            text += *i;
+        // Execute any associated command triggers.
+        for(int c = 0; c < ResponsePart::MaxCommand; ++c) {
+            if ((cmd = rp.command(c)) == RC_NONE)
+                break;
+            runCommand(cnv, cmd);
+        }
     }
     return text;
 }
 
-void Person::runCommand(Conversation *cnv, const ResponsePart &command) {
-    if (command == ResponsePart::ASK) {
-        cnv->question = dialogue->getQuestion();
-        cnv->state = Conversation::ASK;
-    }
-    else if (command == ResponsePart::END) {
-        cnv->state = Conversation::DONE;
-    }
-    else if (command == ResponsePart::ATTACK) {
-        cnv->state = Conversation::ATTACK;
-    }
-    else if (command == ResponsePart::BRAGGED) {
-        c->party->adjustKarma(KA_BRAGGED);
-    }
-    else if (command == ResponsePart::HUMBLE) {
-        c->party->adjustKarma(KA_HUMBLE);
-    }
-    else if (command == ResponsePart::ADVANCELEVELS) {
-        cnv->state = Conversation::ADVANCELEVELS;
-    }
-    else if (command == ResponsePart::HEALCONFIRM) {
-        cnv->state = Conversation::CONFIRMATION;
-    }
-    else if (command == ResponsePart::STARTMUSIC_LB) {
-        musicPlay(MUSIC_RULEBRIT);
-    }
-    else if (command == ResponsePart::STARTMUSIC_HW) {
-        musicPlay(MUSIC_SHOPPING);
-    }
-    else if (command == ResponsePart::STOPMUSIC) {
-        musicPlayLocale();
-    }
-    else if (command == ResponsePart::HAWKWIND) {
-        c->party->adjustKarma(KA_HAWKWIND);
-    }
-    else {
-        ASSERT(0, "unknown command trigger in dialogue response: %s\n", string(command).c_str());
+void Person::runCommand(Conversation *cnv, int command) {
+    switch (command) {
+        case RC_ASK:
+            cnv->question = dialogue->getQuestion();
+            cnv->state = Conversation::ASK;
+            break;
+        case RC_END:
+            cnv->state = Conversation::DONE;
+            break;
+        case RC_ATTACK:
+            cnv->state = Conversation::ATTACK;
+            break;
+        case RC_BRAGGED:
+            c->party->adjustKarma(KA_BRAGGED);
+            break;
+        case RC_HUMBLE:
+            c->party->adjustKarma(KA_HUMBLE);
+            break;
+        case RC_ADVANCELEVELS:
+            cnv->state = Conversation::ADVANCELEVELS;
+            break;
+        case RC_HEALCONFIRM:
+            cnv->state = Conversation::CONFIRMATION;
+            break;
+        case RC_STARTMUSIC_LB:
+            musicPlay(MUSIC_RULEBRIT);
+            break;
+        case RC_STARTMUSIC_HW:
+            musicPlay(MUSIC_SHOPPING);
+            break;
+        case RC_STOPMUSIC:
+            musicPlayLocale();
+            break;
+        case RC_HAWKWIND:
+            c->party->adjustKarma(KA_HAWKWIND);
+            break;
+        default:
+            ASSERT(0, "Unknown dialogue response command: %d\n", command);
+            break;
     }
 }
 
 string Person::getResponse(Conversation *cnv, const char *inquiry) {
     string reply;
     Virtue v;
-    const ResponsePart &action = dialogue->getAction();
+    int cmd = dialogue->getAction();
 
     reply = "\n";
 
     /* Does the person take action during the conversation? */
-    if (action == ResponsePart::END) {
-        runCommand(cnv, action);
+    if (cmd == RC_END) {
+        runCommand(cnv, cmd);
         return dialogue->getPronoun() + " turns away!\n";
     }
-    else if (action == ResponsePart::ATTACK) {
-        runCommand(cnv, action);
+    if (cmd == RC_ATTACK) {
+        runCommand(cnv, cmd);
         return string("\n") + getName() + " says: On guard! Fool!";
     }
 

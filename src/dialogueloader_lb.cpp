@@ -65,7 +65,7 @@ Dialogue* U4LBDialogueLoader::load(void *source) {
                                  "of highest Virtue may enter this Chamber, one such as an Avatar!!!\n"));
 
     Response *heal = new Response("\n\n\n\n\n\nHe says: I am\nwell, thank ye.");
-    heal->add(ResponsePart::HEALCONFIRM);
+    heal->setCommand(RC_HEALCONFIRM);
     dlg->addKeyword("heal", heal);
 
     Response *bye;
@@ -73,8 +73,7 @@ Dialogue* U4LBDialogueLoader::load(void *source) {
         bye = new Response("Lord British says: Fare thee well my friends!");
     else
         bye = new Response("Lord British says: Fare thee well my friend!");
-    bye->add(ResponsePart::STOPMUSIC);
-    bye->add(ResponsePart::END);
+    bye->setCommand(RC_STOPMUSIC, RC_END);
     dlg->addKeyword("bye", bye);
     dlg->addKeyword("", bye);
 
@@ -161,40 +160,41 @@ Response *lordBritishGetHelp(const DynamicResponse *resp) {
 }
 
 Response *lordBritishGetIntro(const DynamicResponse *resp) {
-    Response *intro = new Response("");
-    intro->add(ResponsePart::STARTMUSIC_LB);
+    const Party* party = c->party;
+    string pcName( party->member(0)->getName() );
+    Response *intro = new Response;
 
     if (c->saveGame->lbintro) {
-        if (c->saveGame->members == 1) {
-            intro->add(string("\n\n\nLord British\nsays:  Welcome\n") +
-                       c->party->member(0)->getName() + "!\n\n");
-        }
-        else if (c->saveGame->members == 2) {
-            intro->add(string("\n\nLord British\nsays:  Welcome\n") +
-                       c->party->member(0)->getName() +
-                       " and thee also " +
-                       c->party->member(1)->getName() +
-                       "!\n\n");
-        }
-        else {
-            intro->add(string("\n\n\nLord British\nsays:  Welcome\n") +
-                       c->party->member(0)->getName() +
-                       " and thy\nworthy\nAdventurers!\n\n");
-        }
+        string welcome("\n\n\nLord British\nsays:  Welcome\n");
+        welcome += pcName;
 
-        // Lord British automatically adds "What would thou ask of me?"
+        switch (party->size()) {
+            case 1:
+                welcome += "!\n\n";
+                break;
+            case 2:
+                welcome += " and thee also " + party->member(1)->getName() +
+                           "!\n\n";
+                break;
+            default:
+                welcome += " and thy\nworthy\nAdventurers!\n\n";
+                break;
+        }
+        intro->add(welcome);
 
         // Check levels here, just like the original!
-        intro->add(ResponsePart::ADVANCELEVELS);
-    }
+        intro->setCommand(RC_STARTMUSIC_LB, RC_ADVANCELEVELS);
 
-    else {
+        // Lord British automatically adds "What would thou ask of me?"
+    } else {
         intro->add(string("\n\n\nLord British rises and says: At long last!\n") +
-                   c->party->member(0)->getName() +
+                   pcName +
                    " thou hast come!  We have waited such a long, long time...\n"
                    "\n\nLord British sits and says: A new age is upon Britannia. The great evil Lords are gone but our people lack direction and purpose in their lives...\n\n\n"
                    "A champion of virtue is called for. Thou may be this champion, but only time shall tell.  I will aid thee any way that I can!\n\n"
                    "How may I help thee?\n");
+        intro->setCommand(RC_STARTMUSIC_LB);
+
         c->saveGame->lbintro = 1;
     }
 

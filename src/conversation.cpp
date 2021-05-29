@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * conversation.cpp
  */
 
 #include <cstring>
@@ -13,19 +13,10 @@
 #endif
 
 /* Static variable initialization */
-const ResponsePart ResponsePart::NONE("<NONE>", "", true);
-const ResponsePart ResponsePart::ASK("<ASK>", "", true);
-const ResponsePart ResponsePart::END("<END>", "", true);
-const ResponsePart ResponsePart::ATTACK("<ATTACK>", "", true);
-const ResponsePart ResponsePart::BRAGGED("<BRAGGED>", "", true);
-const ResponsePart ResponsePart::HUMBLE("<HUMBLE>", "", true);
-const ResponsePart ResponsePart::ADVANCELEVELS("<ADVANCELEVELS>", "", true);
-const ResponsePart ResponsePart::HEALCONFIRM("<HEALCONFIRM>", "", true);
-const ResponsePart ResponsePart::STARTMUSIC_LB("<STARTMUSIC_LB>", "", true);
-const ResponsePart ResponsePart::STARTMUSIC_HW("<STARTMUSIC_HW>", "", true);
-const ResponsePart ResponsePart::STOPMUSIC("<STOPMUSIC>", "", true);
-const ResponsePart ResponsePart::HAWKWIND("<HAWKWIND>", "", true);
 const unsigned int Conversation::BUFFERLEN = 16;
+
+Response::Response() : references(0) {
+}
 
 Response::Response(const string &response) : references(0) {
     add(response);
@@ -35,14 +26,37 @@ void Response::add(const ResponsePart &part) {
     parts.push_back(part);
 }
 
+/* Set commands of last ResponsePart. */
+void Response::setCommand(int c1, int c2) {
+    size_t n = parts.size();
+    if (n) {
+        ResponsePart& rp = parts[n - 1];
+        rp.cmd[0] = c1;
+        rp.cmd[1] = c2;
+    }
+}
+
 const vector<ResponsePart> &Response::getParts() const {
     return parts;
 }
 
+// For debug output.
 Response::operator string() const {
     string result;
-    for (vector<ResponsePart>::const_iterator i = parts.begin(); i != parts.end(); i++) {
-        result += *i;
+    int cmd;
+    char buf[12];
+    vector<ResponsePart>::const_iterator it;
+
+    for (it = parts.begin(); it != parts.end(); it++) {
+        const ResponsePart& rp = *it;
+        result.append(rp.text());
+
+        for(int c = 0; c < ResponsePart::MaxCommand; ++c) {
+            if ((cmd = rp.command(c)) == RC_NONE)
+                break;
+            sprintf(buf, "<cmd_%d>", cmd);
+            result.append(buf);
+        }
     }
     return result;
 }
@@ -58,26 +72,17 @@ void Response::release() {
         delete this;
 }
 
-ResponsePart::ResponsePart(const string &value, const string &arg, bool command) {
-    this->value = value;
-    this->arg = arg;
-    this->command = command;
-}
-
-ResponsePart::operator string() const {
-    return value;
+ResponsePart::ResponsePart(const string& text) {
+    value = text;
+    cmd[0] = cmd[1] = RC_NONE;
 }
 
 bool ResponsePart::operator==(const ResponsePart &rhs) const {
     return value == rhs.value;
 }
 
-bool ResponsePart::isCommand() const {
-    return command;
-}
-
 DynamicResponse::DynamicResponse(Response *(*generator)(const DynamicResponse *), const string &param) :
-    Response(""), param(param) {
+    param(param) {
     this->generator = generator;
     currentResponse = NULL;
 }
@@ -168,18 +173,14 @@ Dialogue::Keyword *Dialogue::operator[](const string &kw) {
     return NULL;
 }
 
-const ResponsePart &Dialogue::getAction() const {
+ResponseCommand Dialogue::getAction() const {
     int prob = xu4_random(0x100);
 
     /* Does the person turn away from/attack you? */
     if (prob >= turnAwayProb)
-        return ResponsePart::NONE;
-    else {
-        if (attackProb - prob < 0x40)
-            return ResponsePart::END;
-        else
-            return ResponsePart::ATTACK;
-    }
+        return RC_NONE;
+
+    return (attackProb - prob < 0x40) ? RC_END : RC_ATTACK;
 }
 
 string Dialogue::dump(const string &arg) {

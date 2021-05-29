@@ -67,8 +67,7 @@ Dialogue* U4HWDialogueLoader::load(void *source) {
     }
 
     Response *bye = new Response(hawkwindText[HW_BYE]);
-    bye->add(ResponsePart::STOPMUSIC);
-    bye->add(ResponsePart::END);
+    bye->setCommand(RC_STOPMUSIC, RC_END);
     dlg->addKeyword("bye", bye);
     dlg->addKeyword("", bye);
 
@@ -103,8 +102,7 @@ Response *hawkwindGetAdvice(const DynamicResponse *dynResp) {
             text += hawkwindText[3 * 8 + virtue];
         else /* virtueLevel >= 99 */
             text = hawkwindText[4 * 8 + virtue] + hawkwindText[HW_GOTOSHRINE];
-    }
-    else {
+    } else {
         text = string("\n") + hawkwindText[HW_DEFAULT];
     }
 
@@ -112,22 +110,20 @@ Response *hawkwindGetAdvice(const DynamicResponse *dynResp) {
 }
 
 Response *hawkwindGetIntro(const DynamicResponse *dynResp) {
-    Response *intro = new Response("");
+    const PartyMember* pc = c->party->member(0);
+    string pcName( pc->getName() );
+    Response* intro = new Response;
 
-    if (c->party->member(0)->getStatus() == STAT_SLEEPING ||
-        c->party->member(0)->getStatus() == STAT_DEAD) {
-        intro->add(hawkwindText[HW_SPEAKONLYWITH] + c->party->member(0)->getName() +
-                   hawkwindText[HW_RETURNWHEN] + c->party->member(0)->getName() +
+    if (pc->isDisabled()) {
+        intro->add(hawkwindText[HW_SPEAKONLYWITH] + pcName  +
+                   hawkwindText[HW_RETURNWHEN] + pcName +
                    hawkwindText[HW_ISREVIVED]);
-        intro->add(ResponsePart::END);
-    }
-
-    else {
-        intro->add(ResponsePart::STARTMUSIC_HW);
-        intro->add(ResponsePart::HAWKWIND);
-
-        intro->add(hawkwindText[HW_WELCOME] + c->party->member(0)->getName() +
-                   hawkwindText[HW_GREETING1] + hawkwindText[HW_GREETING2]);
+        intro->setCommand(RC_END);
+    } else {
+        intro->add(hawkwindText[HW_WELCOME] + pcName +
+                   hawkwindText[HW_GREETING1] +
+                   hawkwindText[HW_GREETING2]);
+        intro->setCommand(RC_STARTMUSIC_HW, RC_HAWKWIND);
     }
 
     return intro;

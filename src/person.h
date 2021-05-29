@@ -59,7 +59,7 @@ public:
 
     string getIntro(Conversation *cnv);
     string processResponse(Conversation *cnv, Response *response);
-    void runCommand(Conversation *cnv, const ResponsePart &command);
+    void runCommand(Conversation *cnv, int command);
     string getResponse(Conversation *cnv, const char *inquiry);
     string talkerGetQuestionResponse(Conversation *cnv, const char *inquiry);
     string beggarGetQuantityResponse(Conversation *cnv, const char *response);

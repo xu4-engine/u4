@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * conversation.h
  */
 
 #ifndef CONVERSATION_H
@@ -20,35 +20,41 @@ class Debug;
 class Person;
 class Script;
 
+enum ResponseCommand {
+    RC_NONE,
+    RC_ASK,
+    RC_END,
+    RC_ATTACK,
+    RC_BRAGGED,
+    RC_HUMBLE,
+    RC_ADVANCELEVELS,
+    RC_HEALCONFIRM,
+    RC_STARTMUSIC_LB,
+    RC_STARTMUSIC_HW,
+    RC_STOPMUSIC,
+    RC_HAWKWIND
+};
+
 /**
  * A response part can be text or a "command" that triggers an
  * action.
  */
 class ResponsePart {
 public:
-    // the valid command response parts
-    static const ResponsePart NONE;
-    static const ResponsePart ASK;
-    static const ResponsePart END;
-    static const ResponsePart ATTACK;
-    static const ResponsePart BRAGGED;
-    static const ResponsePart HUMBLE;
-    static const ResponsePart ADVANCELEVELS;
-    static const ResponsePart HEALCONFIRM;
-    static const ResponsePart STARTMUSIC_LB;
-    static const ResponsePart STARTMUSIC_HW;
-    static const ResponsePart STOPMUSIC;
-    static const ResponsePart HAWKWIND;
+    enum { MaxCommand = 2 };
 
-    ResponsePart(const string &value, const string &arg="", bool command=false);
+    ResponsePart(const string& text);
 
-    operator string() const;
+    const string& text() const { return value; }
+    int command(int n) const { return cmd[n]; }
+
     bool operator==(const ResponsePart &rhs) const;
-    bool isCommand() const;
 
 private:
-    string value, arg;
-    bool command;
+    string value;
+    uint16_t cmd[ MaxCommand ];
+
+    friend class Response;
 };
 
 /**
@@ -57,10 +63,12 @@ private:
  */
 class Response {
 public:
+    Response();
     Response(const string &response);
     virtual ~Response() {}
 
     void add(const ResponsePart &part);
+    void setCommand(int command, int command2 = RC_NONE);
 
     virtual const vector<ResponsePart> &getParts() const;
 
@@ -188,7 +196,7 @@ public:
     }
     void addKeyword(const string &kw, Response *response);
 
-    const ResponsePart &getAction() const;
+    ResponseCommand getAction() const;
     string dump(const string &arg);
 
     /*
