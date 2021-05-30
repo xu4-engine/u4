@@ -15,8 +15,8 @@
 using std::string;
 using std::vector;
 
-Response *lordBritishGetHelp(const DynamicResponse *resp);
-Response *lordBritishGetIntro(const DynamicResponse *resp);
+Response* lordBritishGetHelp(DynamicResponse* resp);
+Response* lordBritishGetIntro(DynamicResponse* resp);
 
 DialogueLoader* U4LBDialogueLoader::instance = DialogueLoader::registerLoader(new U4LBDialogueLoader, "application/x-u4lbtlk");
 
@@ -88,7 +88,7 @@ Dialogue* U4LBDialogueLoader::load(void *source) {
  * one quest item is complete, Lord British provides some direction to
  * the next one.
  */
-Response *lordBritishGetHelp(const DynamicResponse *resp) {
+Response* lordBritishGetHelp(DynamicResponse* resp) {
     int v;
     bool fullAvatar, partialAvatar;
     string text;
@@ -156,13 +156,13 @@ Response *lordBritishGetHelp(const DynamicResponse *resp) {
                "\nThe hearts and souls of all Britannia go with thee now. Take care, my friend.\n";
     }
 
-    return new Response(string("He says: ") + text);
+    resp->setText(string("He says: ") + text);
+    return resp;
 }
 
-Response *lordBritishGetIntro(const DynamicResponse *resp) {
+Response* lordBritishGetIntro(DynamicResponse* resp) {
     const Party* party = c->party;
     string pcName( party->member(0)->getName() );
-    Response *intro = new Response;
 
     if (c->saveGame->lbintro) {
         string welcome("\n\n\nLord British\nsays:  Welcome\n");
@@ -180,23 +180,23 @@ Response *lordBritishGetIntro(const DynamicResponse *resp) {
                 welcome += " and thy\nworthy\nAdventurers!\n\n";
                 break;
         }
-        intro->add(welcome);
+        resp->setText(welcome);
 
         // Check levels here, just like the original!
-        intro->setCommand(RC_STARTMUSIC_LB, RC_ADVANCELEVELS);
+        resp->setCommand(RC_STARTMUSIC_LB, RC_ADVANCELEVELS);
 
         // Lord British automatically adds "What would thou ask of me?"
     } else {
-        intro->add(string("\n\n\nLord British rises and says: At long last!\n") +
+        resp->setText(string("\n\n\nLord British rises and says: At long last!\n") +
                    pcName +
                    " thou hast come!  We have waited such a long, long time...\n"
                    "\n\nLord British sits and says: A new age is upon Britannia. The great evil Lords are gone but our people lack direction and purpose in their lives...\n\n\n"
                    "A champion of virtue is called for. Thou may be this champion, but only time shall tell.  I will aid thee any way that I can!\n\n"
                    "How may I help thee?\n");
-        intro->setCommand(RC_STARTMUSIC_LB);
+        resp->setCommand(RC_STARTMUSIC_LB);
 
         c->saveGame->lbintro = 1;
     }
 
-    return intro;
+    return resp;
 }

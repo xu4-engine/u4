@@ -26,6 +26,18 @@ void Response::add(const ResponsePart &part) {
     parts.push_back(part);
 }
 
+/*
+ * Set the text of the last ResponsePart. The commands are not changed.
+ * If no parts exist, one is added.
+ */
+void Response::setText(const string& text) {
+    size_t n = parts.size();
+    if (n)
+        parts[n - 1].value = text;
+    else
+        parts.push_back(ResponsePart(text));
+}
+
 /* Set commands of last ResponsePart. */
 void Response::setCommand(int c1, int c2) {
     size_t n = parts.size();
@@ -36,7 +48,7 @@ void Response::setCommand(int c1, int c2) {
     }
 }
 
-const vector<ResponsePart> &Response::getParts() const {
+const vector<ResponsePart>& Response::getParts() {
     return parts;
 }
 
@@ -81,21 +93,13 @@ bool ResponsePart::operator==(const ResponsePart &rhs) const {
     return value == rhs.value;
 }
 
-DynamicResponse::DynamicResponse(Response *(*generator)(const DynamicResponse *), const string &param) :
+DynamicResponse::DynamicResponse(Response* (*generator)(DynamicResponse *), const string &param) :
     param(param) {
     this->generator = generator;
-    currentResponse = NULL;
 }
 
-DynamicResponse::~DynamicResponse() {
-    if (currentResponse)
-        delete currentResponse;
-}
-
-const vector<ResponsePart> &DynamicResponse::getParts() const {
-    // blah, must cast away constness
-    const_cast<DynamicResponse *>(this)->currentResponse = (*generator)(this);
-    return currentResponse->getParts();
+const vector<ResponsePart>& DynamicResponse::getParts() {
+    return (*generator)(this)->parts;
 }
 
 /*

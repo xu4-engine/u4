@@ -17,8 +17,8 @@
 using std::string;
 using std::vector;
 
-Response *hawkwindGetAdvice(const DynamicResponse *kw);
-Response *hawkwindGetIntro(const DynamicResponse *dynResp);
+Response *hawkwindGetAdvice(DynamicResponse *kw);
+Response *hawkwindGetIntro(DynamicResponse *dynResp);
 
 /* Hawkwind text indexes */
 #define HW_SPEAKONLYWITH 40
@@ -80,13 +80,13 @@ Dialogue* U4HWDialogueLoader::load(void *source) {
  * one quest item is complete, Lord British provides some direction to
  * the next one.
  */
-Response *hawkwindGetAdvice(const DynamicResponse *dynResp) {
+Response* hawkwindGetAdvice(DynamicResponse* resp) {
     string text;
     int virtue = -1, virtueLevel = -1;
 
     /* check if asking about a virtue */
     for (int v = 0; v < VIRT_MAX; v++) {
-        if (strncasecmp(dynResp->getParam().c_str(), getVirtueName((Virtue) v), 4) == 0) {
+        if (strncasecmp(resp->getParam().c_str(), getVirtueName((Virtue) v), 4) == 0) {
             virtue = v;
             virtueLevel = c->saveGame->karma[v];
             break;
@@ -106,25 +106,25 @@ Response *hawkwindGetAdvice(const DynamicResponse *dynResp) {
         text = string("\n") + hawkwindText[HW_DEFAULT];
     }
 
-    return new Response(text);
+    resp->setText(text);
+    return resp;
 }
 
-Response *hawkwindGetIntro(const DynamicResponse *dynResp) {
+Response* hawkwindGetIntro(DynamicResponse* resp) {
     const PartyMember* pc = c->party->member(0);
     string pcName( pc->getName() );
-    Response* intro = new Response;
 
     if (pc->isDisabled()) {
-        intro->add(hawkwindText[HW_SPEAKONLYWITH] + pcName  +
-                   hawkwindText[HW_RETURNWHEN] + pcName +
-                   hawkwindText[HW_ISREVIVED]);
-        intro->setCommand(RC_END);
+        resp->setText(hawkwindText[HW_SPEAKONLYWITH] + pcName  +
+                      hawkwindText[HW_RETURNWHEN] + pcName +
+                      hawkwindText[HW_ISREVIVED]);
+        resp->setCommand(RC_END);
     } else {
-        intro->add(hawkwindText[HW_WELCOME] + pcName +
-                   hawkwindText[HW_GREETING1] +
-                   hawkwindText[HW_GREETING2]);
-        intro->setCommand(RC_STARTMUSIC_HW, RC_HAWKWIND);
+        resp->setText(hawkwindText[HW_WELCOME] + pcName +
+                      hawkwindText[HW_GREETING1] +
+                      hawkwindText[HW_GREETING2]);
+        resp->setCommand(RC_STARTMUSIC_HW, RC_HAWKWIND);
     }
 
-    return intro;
+    return resp;
 }

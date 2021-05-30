@@ -68,9 +68,10 @@ public:
     virtual ~Response() {}
 
     void add(const ResponsePart &part);
+    void setText(const string&);
     void setCommand(int command, int command2 = RC_NONE);
 
-    virtual const vector<ResponsePart> &getParts() const;
+    virtual const vector<ResponsePart>& getParts();
 
     operator string() const;
 
@@ -80,6 +81,8 @@ public:
 private:
     int references;
     vector<ResponsePart> parts;
+
+    friend class DynamicResponse;
 };
 
 /**
@@ -89,16 +92,15 @@ private:
  */
 class DynamicResponse : public Response {
 public:
-    DynamicResponse(Response *(*generator)(const DynamicResponse *), const string &param = "");
-    virtual ~DynamicResponse();
+    DynamicResponse(Response* (*generator)(DynamicResponse*),
+                    const string &param = "");
 
-    virtual const vector<ResponsePart> &getParts() const;
+    virtual const vector<ResponsePart>& getParts();
 
     const string &getParam() const { return param; }
 
 private:
-    Response *(*generator)(const DynamicResponse *);
-    Response *currentResponse;
+    Response* (*generator)(DynamicResponse*);
     string param;
 };
 
