@@ -175,7 +175,6 @@ void servicesInit(XU4GameServices* gs, Options* opt) {
 
     xu4_srandom();
     gs->config = configInit();
-    gs->imageMgr = new ImageMgr;
     screenInit();
     Tile::initSymbols(gs->config);
 
@@ -193,7 +192,6 @@ void servicesFree(XU4GameServices* gs) {
     delete gs->eventHandler;
     soundDelete();
     screenDelete();
-    delete gs->imageMgr;
     configFree(gs->config);
     delete gs->settings;
     u4fcleanup();

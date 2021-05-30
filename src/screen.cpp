@@ -79,6 +79,8 @@ static void screenInit_data(Settings& settings) {
     xu4.screenImage = Image::create(320 * settings.scale, 200 * settings.scale);
     xu4.screenImage->fill(Image::black);
 
+    xu4.imageMgr = new ImageMgr;
+
     charsetInfo = xu4.imageMgr->get(BKGD_CHARSET);
     if (!charsetInfo)
         errorFatal("ERROR 1001: Unable to load the \"%s\" data file.\t\n\nIs %s installed?\n\nVisit the XU4 website for additional information.\n\thttp://xu4.sourceforge.net/", BKGD_CHARSET, settings.game.c_str());
@@ -136,6 +138,9 @@ static void screenDelete_data() {
 
     delete tileanims;
     tileanims = NULL;
+
+    delete xu4.imageMgr;
+    xu4.imageMgr = NULL;
 
     delete xu4.screenImage;
     xu4.screenImage = NULL;
