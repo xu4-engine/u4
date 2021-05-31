@@ -57,7 +57,6 @@ public:
     const UltimaSaveIds* usaveIds() const;
     Map* map(uint32_t id);
     Map* restoreMap(uint32_t id);
-    void unloadMap(uint32_t id);
     const Coords* moongateCoords(int phase) const;
 
 protected:

@@ -1332,7 +1332,12 @@ Map* Config::restoreMap(uint32_t id) {
     return rmap;
 }
 
+#if 0
 void Config::unloadMap(uint32_t id) {
+    // NOTE: Ideally this would only delete the map data so we don't have to
+    // access the config again.  This would allow the XML tree to be discarded
+    // after Config construction.
+
     delete CB->mapList[id];
 
     vector<ConfigElement> maps = CX->getElement("maps").getChildren();
@@ -1345,6 +1350,7 @@ void Config::unloadMap(uint32_t id) {
         }
     }
 }
+#endif
 
 const Coords* Config::moongateCoords(int phase) const {
     if (phase < (int) CB->moongateList.size())

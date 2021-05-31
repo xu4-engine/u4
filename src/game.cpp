@@ -1044,13 +1044,7 @@ bool GameController::keyPressed(int key) {
             castSpell();
             break;
 
-        case 'd': {
-            // unload the map for the second level of Lord British's Castle. The reason
-            // why is that Lord British's farewell is dependent on the number of party members.
-            // Instead of just redoing the dialog, it's a bit severe, but easier to unload the
-            // whole level.
-            bool cleanMap = (c->party->size() == 1 &&
-                             c->location->map->id == MAP_CASTLE_LB2);
+        case 'd':
             if (!usePortalAt(c->location, c->location->coords, ACTION_DESCEND)) {
                 if (c->transportContext == TRANSPORT_BALLOON) {
                     screenMessage("Land Balloon\n");
@@ -1063,12 +1057,8 @@ bool GameController::keyPressed(int key) {
                     else screenMessage("%cNot Here!%c\n", FG_GREY, FG_WHITE);
                 }
                 else screenMessage("%cDescend what?%c\n", FG_GREY, FG_WHITE);
-            } else {
-                if (cleanMap)
-                    xu4.config->unloadMap(MAP_CASTLE_LB2);
             }
             break;
-        }
 
         case 'e':
             if (!usePortalAt(c->location, c->location->coords, ACTION_ENTER)) {

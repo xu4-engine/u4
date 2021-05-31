@@ -20,6 +20,16 @@ Response* lordBritishGetIntro(DynamicResponse* resp);
 
 DialogueLoader* U4LBDialogueLoader::instance = DialogueLoader::registerLoader(new U4LBDialogueLoader, "application/x-u4lbtlk");
 
+// Farewell is dynamic just to switch between singular & plural "friend".
+static Response* lordBritishFarewell(DynamicResponse* resp) {
+    const char* cp = (c->party->size() > 1) ?
+        "Lord British says: Fare thee well my friends!" :
+        "Lord British says: Fare thee well my friend!";
+    resp->setText(cp);
+    resp->setCommand(RC_STOPMUSIC, RC_END);
+    return resp;
+}
+
 /**
  * A special case dialogue loader for Lord British.  Loads most of the
  * keyword/responses from a hardcoded location in avatar.exe.  The
@@ -68,12 +78,7 @@ Dialogue* U4LBDialogueLoader::load(void *source) {
     heal->setCommand(RC_HEALCONFIRM);
     dlg->addKeyword("heal", heal);
 
-    Response *bye;
-    if (c->party->size() > 1)
-        bye = new Response("Lord British says: Fare thee well my friends!");
-    else
-        bye = new Response("Lord British says: Fare thee well my friend!");
-    bye->setCommand(RC_STOPMUSIC, RC_END);
+    Response *bye = new DynamicResponse(&lordBritishFarewell);
     dlg->addKeyword("bye", bye);
     dlg->addKeyword("", bye);
 
