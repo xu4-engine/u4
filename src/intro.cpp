@@ -298,7 +298,9 @@ bool IntroController::init() {
     binData = new IntroBinData();
     binData->load();
 
-    xu4.imageMgr->get(BKGD_ANIMATE);    // Assign resource group.
+    beastiesImg = xu4.imageMgr->get(BKGD_ANIMATE);  // Assign resource group.
+    beastieSub[0] = beastiesImg->subImageIndex["beast0frame00"];
+    beastieSub[1] = beastiesImg->subImageIndex["beast1frame00"];
 
     if (bSkipTitles)
     {
@@ -361,6 +363,7 @@ void IntroController::deleteIntro() {
     objectStateTable = NULL;
 
     xu4.imageMgr->freeResourceGroup(StageIntro);
+    beastiesImg = NULL;
 }
 
 unsigned char *IntroController::getSigData() {
@@ -575,15 +578,11 @@ void IntroController::drawBeasties() {
  * of the screen.
  */
 void IntroController::drawBeastie(int beast, int vertoffset, int frame) {
-    char buffer[128];
-    int destx;
-
     ASSERT(beast == 0 || beast == 1, "invalid beast: %d", beast);
 
-    sprintf(buffer, "beast%dframe%02d", beast, frame);
-
-    destx = beast ? (320 - 48) : 0;
-    backgroundArea.draw(buffer, destx, vertoffset);
+    backgroundArea.draw(beastiesImg, beastieSub[beast] + frame,
+                        beast ? (320 - 48) : 0,
+                        vertoffset);
 }
 
 /**

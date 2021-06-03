@@ -223,10 +223,12 @@ private:
     int beastie1Cycle;
     int beastie2Cycle;
     int beastieOffset;
+    int beastieSub[2];
     bool beastiesVisible;
     int sleepCycles;
     int scrPos;  /* current position in the script table */
     IntroObjectState *objectStateTable;
+    ImageInfo* beastiesImg;
 
     bool justInitiatedNewGame;
 
