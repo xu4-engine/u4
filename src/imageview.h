@@ -18,7 +18,7 @@ public:
     virtual ~ImageView();
 
     void draw(const ImageInfo* info, int sub, int ox = 0, int oy = 0);
-    void draw(const string &imageName, int x = 0, int y = 0);
+    void draw(Symbol imageName, int x = 0, int y = 0);
 };
 
 #endif /* IMAGEVIEW_H */

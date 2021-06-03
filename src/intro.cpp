@@ -298,9 +298,11 @@ bool IntroController::init() {
     binData = new IntroBinData();
     binData->load();
 
+    Symbol sym[2];
+    xu4.config->internSymbols(sym, 2, "beast0frame00 beast1frame00");
     beastiesImg = xu4.imageMgr->get(BKGD_ANIMATE);  // Assign resource group.
-    beastieSub[0] = beastiesImg->subImageIndex["beast0frame00"];
-    beastieSub[1] = beastiesImg->subImageIndex["beast1frame00"];
+    beastieSub[0] = beastiesImg->subImageIndex[sym[0]];
+    beastieSub[1] = beastiesImg->subImageIndex[sym[1]];
 
     if (bSkipTitles)
     {
@@ -595,7 +597,7 @@ void IntroController::drawBeastie(int beast, int vertoffset, int frame) {
  *
  * TODO: Animate the moongate opening & closing to match the actual game.
  */
-void IntroController::animateTree(const string &frame) {
+void IntroController::animateTree(Symbol frame) {
     backgroundArea.draw(frame, 72, 68);
 }
 
@@ -611,7 +613,8 @@ void IntroController::drawCard(int pos, int card) {
     ASSERT(pos == 0 || pos == 1, "invalid pos: %d", pos);
     ASSERT(card < 8, "invalid card: %d", card);
 
-    backgroundArea.draw(cardNames[card], pos ? 218 : 12, 12);
+    backgroundArea.draw(xu4.config->intern(cardNames[card]),
+                        pos ? 218 : 12, 12);
 }
 
 /**
@@ -622,8 +625,8 @@ void IntroController::drawAbacusBeads(int row, int selectedVirtue, int rejectedV
     ASSERT(selectedVirtue < 8 && selectedVirtue >= 0, "invalid virtue: %d", selectedVirtue);
     ASSERT(rejectedVirtue < 8 && rejectedVirtue >= 0, "invalid virtue: %d", rejectedVirtue);
 
-    backgroundArea.draw("whitebead", 128 + (selectedVirtue * 9), 24 + (row * 15));
-    backgroundArea.draw("blackbead", 128 + (rejectedVirtue * 9), 24 + (row * 15));
+    backgroundArea.draw(IMG_WHITEBEAD, 128 + (selectedVirtue * 9), 24 + (row * 15));
+    backgroundArea.draw(IMG_BLACKBEAD, 128 + (rejectedVirtue * 9), 24 + (row * 15));
 }
 
 /**
@@ -832,9 +835,9 @@ void IntroController::showStory() {
         if (storyInd == 0)
             backgroundArea.draw(BKGD_TREE);
         else if (storyInd == 3)
-            animateTree("moongate");
+            animateTree(IMG_MOONGATE);
         else if (storyInd == 5)
-            animateTree("items");
+            animateTree(IMG_ITEMS);
         else if (storyInd == 6)
             backgroundArea.draw(BKGD_PORTAL);
         else if (storyInd == 11)
@@ -1601,14 +1604,14 @@ void IntroController::getTitleSourceData()
     // individually.  Afterward, the BKGD_INTRO image
     // will be scaled appropriately.
     ImageInfo *info = xu4.imageMgr->get(BKGD_INTRO, true);
-    if (!info) {
-        errorFatal("ERROR 1007: Unable to load the image \"%s\".\t\n\nIs %s installed?\n\nVisit the XU4 website for additional information.\n\thttp://xu4.sourceforge.net/", BKGD_INTRO, xu4.settings->game.c_str());
-    }
+    if (!info)
+        errorLoadImage(BKGD_INTRO);
 
-    if (info->width / info->prescale != 320 || info->height / info->prescale != 200)
+    if (info->width  / info->prescale != 320 ||
+        info->height / info->prescale != 200)
     {
         // the image appears to have been scaled already
-        errorWarning("ERROR 1008: The title image (\"%s\") has been scaled too early!\t\n\nVisit the XU4 website for additional information.\n\thttp://xu4.sourceforge.net/", BKGD_INTRO);
+        errorWarning("The title image has been scaled too early!");
     }
 
     // for each element, get the source data

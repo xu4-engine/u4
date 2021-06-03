@@ -229,17 +229,12 @@ void Shrine::askMantra() {
 }
 
 void Shrine::showVision(bool elevated) {
-    static const char *visionImageNames[] = {
-        BKGD_SHRINE_HON, BKGD_SHRINE_COM, BKGD_SHRINE_VAL, BKGD_SHRINE_JUS,
-        BKGD_SHRINE_SAC, BKGD_SHRINE_HNR, BKGD_SHRINE_SPI, BKGD_SHRINE_HUM
-    };
-
     if (elevated) {
         screenMessage("Thou art granted a vision!\n");
         gameSetViewMode(VIEW_RUNE);
-        screenDrawImageInMapArea(visionImageNames[virtue]);
-    }
-    else {
+        const Symbol* visionImageNames = &BKGD_SHRINE_HON;
+        screenDrawImageInMapArea(visionImageNames[virtue & 7]);
+    } else {
         ShrineState* ss = &c->shrineState;
         screenMessage("\n%s", ss->advice[virtue * 3 + ss->completedCycles - 1].c_str());
     }

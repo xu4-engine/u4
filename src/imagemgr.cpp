@@ -1,8 +1,7 @@
 /*
- * $Id$
+ * imagemgr.cpp
  */
 
-#include <vector>
 #include <string.h>
 
 #include "config.h"
@@ -20,14 +19,14 @@
 #include "gpu.h"
 #endif
 
-using std::map;
 using std::string;
-using std::vector;
 
 Image *screenScale(Image *src, int scale, int n, int filter);
 
 //#define dprint  printf
 
+
+ImageSymbols ImageMgr::sym;
 
 ImageMgr::ImageMgr() : vgaColors(NULL), resGroup(0) {
     logger = new Debug("debug/imagemgr.txt", "ImageMgr");
@@ -35,12 +34,23 @@ ImageMgr::ImageMgr() : vgaColors(NULL), resGroup(0) {
 
     update(xu4.settings);
     xu4.settings->addObserver(this);
+
+    xu4.config->internSymbols(&sym.tiles, 45,
+        "tiles charset borders title options_top\n"
+        "options_btm tree portal outside inside\n"
+        "wagon gypsy abacus honcom valjus\n"
+        "sachonor spirhum beasties key honesty\n"
+        "compassn valor justice sacrific honor\n"
+        "spirit humility truth love courage\n"
+        "stoncrcl rune0 rune1 rune2 rune3\n"
+        "rune4 rune5 rune6 rune7 rune8\n"
+        "gemtiles moongate items blackbead whitebead");
 }
 
 ImageMgr::~ImageMgr() {
     xu4.settings->deleteObserver(this);
 
-    std::map<string, ImageSet *>::iterator it;
+    std::map<Symbol, ImageSet *>::iterator it;
     foreach (it, imageSets)
         delete it->second;
 
@@ -172,9 +182,8 @@ void ImageMgr::fixupIntro(Image *im, int prescale) {
     if (xu4.settings->videoType == "VGA")
     {
         ImageInfo *borderInfo = ImageMgr::get(BKGD_BORDERS, true);
-//        ImageInfo *charsetInfo = ImageMgr::get(BKGD_CHARSET);
-        if (!borderInfo)
-            errorFatal("ERROR 1001: Unable to load the \"%s\" data file.\t\n\nIs %s installed?\n\nVisit the XU4 website for additional information.\n\thttp://xu4.sourceforge.net/", BKGD_BORDERS, xu4.settings->game.c_str());
+        if (! borderInfo)
+            errorLoadImage(BKGD_BORDERS);
 
         delete borderInfo->image;
         borderInfo->image = NULL;
@@ -318,16 +327,17 @@ void ImageMgr::fixupFMTowns(Image *im, int prescale) {
 /**
  * Returns information for the given image set.
  */
-ImageSet *ImageMgr::scheme(const string& name) {
-    std::map<string, ImageSet *>::iterator it = imageSets.find(name);
+ImageSet *ImageMgr::scheme(Symbol name) {
+    std::map<Symbol, ImageSet *>::iterator it = imageSets.find(name);
     if (it != imageSets.end())
         return it->second;
 
     // The ImageSet has not been cached yet, so get it from the Config.
+    const char* nameStr = xu4.config->symbolName(name);
     const char** names = xu4.config->schemeNames();
     const char** nit = names;
     while (*nit) {
-        if (name == *nit) {
+        if (strcmp(nameStr, *nit) == 0) {
             ImageSet* sp = xu4.config->newScheme(nit - names);
             if (! sp)
                 break;
@@ -342,17 +352,17 @@ ImageSet *ImageMgr::scheme(const string& name) {
 /**
  * Returns information for the given image set.
  */
-ImageInfo *ImageMgr::getInfoFromSet(const string &name, ImageSet *imageset) {
+ImageInfo *ImageMgr::getInfoFromSet(Symbol name, ImageSet *imageset) {
     if (!imageset)
         return NULL;
 
     /* if the image set contains the image we want, we are done */
-    std::map<string, ImageInfo *>::iterator i = imageset->info.find(name);
+    std::map<Symbol, ImageInfo *>::iterator i = imageset->info.find(name);
     if (i != imageset->info.end())
         return i->second;
 
     /* otherwise if this image set extends another, check the base image set */
-    while (imageset->extends != "") {
+    while (imageset->extends != SYM_UNSET) {
         imageset = scheme(imageset->extends);
         return getInfoFromSet(name, imageset);
     }
@@ -363,7 +373,7 @@ ImageInfo *ImageMgr::getInfoFromSet(const string &name, ImageSet *imageset) {
 U4FILE * ImageMgr::getImageFile(ImageInfo *info)
 {
     U4FILE *file;
-    string filename = info->filename;
+    string filename = info->getFilename();
     const char* fn = filename.c_str();
 
     if (strncmp(fn, "u4/", 3) == 0 ||
@@ -379,12 +389,15 @@ U4FILE * ImageMgr::getImageFile(ImageInfo *info)
          * and are not renamed in the upgrade installation process
          */
         if (u4isUpgradeInstalled()) {
-            string& vgaFile = getInfoFromSet(info->name, scheme("VGA"))->filename;
+            Symbol sname[2];
+            xu4.config->internSymbols(sname, 2, "VGA EGA");
+
+            string vgaFile = getInfoFromSet(info->name, scheme(sname[0]))->getFilename();
             if (vgaFile.find(".old") != string::npos) {
                 if (xu4.settings->videoType == "EGA")
                     basename = vgaFile;
                 else
-                    basename = getInfoFromSet(info->name, scheme("EGA"))->filename;
+                    basename = getInfoFromSet(info->name, scheme(sname[1]))->getFilename();
             }
         }
 
@@ -402,7 +415,7 @@ U4FILE * ImageMgr::getImageFile(ImageInfo *info)
 /**
  * Load in a background image from a ".ega" file.
  */
-ImageInfo *ImageMgr::get(const string &name, bool returnUnscaled) {
+ImageInfo *ImageMgr::get(Symbol name, bool returnUnscaled) {
     ImageInfo *info = getInfoFromSet(name, baseSet);
     if (!info)
         return NULL;
@@ -423,7 +436,7 @@ ImageInfo *ImageMgr::get(const string &name, bool returnUnscaled) {
 
         if (! unscaled) {
             errorWarning("Can't load image \"%s\" with type %d",
-                         info->filename.c_str(), info->filetype);
+                         xu4.config->confString(info->filename), info->filetype);
             return info;
         }
 
@@ -473,7 +486,8 @@ ImageInfo *ImageMgr::get(const string &name, bool returnUnscaled) {
     }
     else
     {
-        errorWarning("Failed to open file %s for reading.", info->filename.c_str());
+        errorWarning("Failed to open file %s for reading.",
+                     xu4.config->confString(info->filename));
         return NULL;
     }
 
@@ -513,7 +527,7 @@ ImageInfo *ImageMgr::get(const string &name, bool returnUnscaled) {
             int opacity = xu4.settings->enhancementsOptions.u4TileTransparencyHackPixelShadowOpacity;
 
             // NOTE: The first 16 tiles are landscape and must be fully opaque!
-            int f = (name == "tiles") ? 16 : 0;
+            int f = (name == BKGD_SHAPES) ? 16 : 0;
             int frames = info->tiles;
             for ( ; f < frames; ++f)
                 unscaled->performTransparencyHack(Image::black, frames, f, transparency_shadow_size, opacity);
@@ -537,7 +551,10 @@ ImageInfo *ImageMgr::get(const string &name, bool returnUnscaled) {
         int orig_scale = imageScale;
         xu4.settings->scale = info->prescale;
         xu4.settings->write();
-        errorFatal("image %s is prescaled to an incompatible size: %d\nResetting the scale to %d. Sorry about the inconvenience, please restart.", info->filename.c_str(), orig_scale, xu4.settings->scale);
+        errorFatal("image %s is prescaled to an incompatible size: %d\n"
+            "Resetting the scale to %d. Sorry about the inconvenience, please restart.",
+            xu4.config->confString(info->filename), orig_scale,
+            xu4.settings->scale);
     }
     imageScale /= info->prescale;
 
@@ -558,14 +575,14 @@ ImageInfo *ImageMgr::get(const string &name, bool returnUnscaled) {
 /**
  * Returns information for the given image set.
  */
-const SubImage* ImageMgr::getSubImage(const string &name) {
-    std::map<string, ImageInfo *>::iterator it;
+const SubImage* ImageMgr::getSubImage(Symbol name) {
+    std::map<Symbol, ImageInfo *>::iterator it;
     ImageSet *set = baseSet;
 
     while (set != NULL) {
         foreach (it, set->info) {
             ImageInfo *info = (ImageInfo *) it->second;
-            std::map<string, int>::iterator j = info->subImageIndex.find(name);
+            std::map<Symbol, int>::iterator j = info->subImageIndex.find(name);
             if (j != info->subImageIndex.end())
                 return info->subImages + j->second;
         }
@@ -589,8 +606,8 @@ uint16_t ImageMgr::setResourceGroup(uint16_t group) {
  * Free all images that are part of the specified group.
  */
 void ImageMgr::freeResourceGroup(uint16_t group) {
-    std::map<string, ImageSet *>::iterator si;
-    std::map<string, ImageInfo *>::iterator j;
+    std::map<Symbol, ImageSet *>::iterator si;
+    std::map<Symbol, ImageInfo *>::iterator j;
 
     foreach (si, imageSets) {
         foreach (j, si->second->info) {
@@ -636,11 +653,11 @@ const RGBA* ImageMgr::vgaPalette() {
 void ImageMgr::update(Settings *newSettings) {
     string setname = newSettings->videoType;
     TRACE(*logger, string("base image set is '") + setname + string("'"));
-    baseSet = scheme(setname);
+    baseSet = scheme( xu4.config->intern(setname.c_str()) );
 }
 
 ImageSet::~ImageSet() {
-    std::map<string, ImageInfo *>::iterator it;
+    std::map<Symbol, ImageInfo *>::iterator it;
     foreach (it, info)
         delete it->second;
 }
@@ -662,4 +679,8 @@ ImageInfo::~ImageInfo() {
         gpu_freeTexture(tex);
     delete[] tileTexCoord;
 #endif
+}
+
+string ImageInfo::getFilename() const {
+    return xu4.config->confString(filename);
 }

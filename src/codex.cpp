@@ -282,14 +282,9 @@ void codexHandleWOP(const string &word) {
  * Handles naming of virtues in the Chamber of the Codex
  */
 void codexHandleVirtues(const string &virtue) {
-    static const char *codexImageNames[] = {
-        BKGD_HONESTY, BKGD_COMPASSN, BKGD_VALOR, BKGD_JUSTICE,
-        BKGD_SACRIFIC, BKGD_HONOR, BKGD_SPIRIT, BKGD_HUMILITY,
-        BKGD_TRUTH, BKGD_LOVE, BKGD_COURAGE
-    };
-
     static int current = 0;
     static int tries = 1;
+    const Symbol* codexImageNames = &BKGD_HONESTY;
 
     xu4.eventHandler->popKeyHandler();
 

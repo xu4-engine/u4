@@ -408,11 +408,11 @@ const struct {
 void DungeonView::cacheGraphicData() {
     const ImageInfo* info;
     const SubImage* subimage;
-    const char* name;
+    Symbol name;
     int i;
 
     for (i = 0; i < GRAPHIC_COUNT; ++i) {
-        name = dngGraphicInfo[i].imageName;
+        name = xu4.config->intern(dngGraphicInfo[i].imageName);
 
         info = xu4.imageMgr->get(name);
         if (info) {

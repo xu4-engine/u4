@@ -898,12 +898,6 @@ ConfigXML::ConfigXML() {
     for (; it != end; ++it) {
         if (it->getName() == "imageset") {
             xcd.schemeNames.push_back(it->getString("name"));
-
-            /*
-            // register all the images declared in the config files
-            ImageSet *set = loadImageSet(ce);
-            imageSets[set->name] = set;
-            */
         } else if (it->getName() == "layout") {
             Layout lo;
             conf_loadLayout(xcd.sym, &lo, *it);
@@ -1361,16 +1355,16 @@ const Coords* Config::moongateCoords(int phase) const {
 //--------------------------------------
 // Graphics config
 
-static void loadSubImage(SubImage* subimage, const ImageInfo *info, const ConfigElement &conf) {
+static void loadSubImage(ConfigXML* cfg, SubImage* subimage, Symbol imgName, const ConfigElement &conf) {
     static int x = 0,
                y = 0,
                last_width = 0,
                last_height = 0;
 
-    subimage->name = conf.getString("name");
+    subimage->name = cfg->propSymbol(conf, "name");
     subimage->width = conf.getInt("width");
     subimage->height = conf.getInt("height");
-    subimage->srcImageName = info->name;
+    subimage->srcImageName = imgName;
     if (conf.exists("x") && conf.exists("y")) {
         x = subimage->x = conf.getInt("x");
         y = subimage->y = conf.getInt("y");
@@ -1392,7 +1386,7 @@ static void loadSubImage(SubImage* subimage, const ImageInfo *info, const Config
     last_height = subimage->height;
 }
 
-static uint8_t mapFiletype(const string& str, const string& file) {
+static uint8_t mapFiletype(const string& str, ImageInfo* info) {
     if (! str.empty()) {
         if (str == "image/x-u4raw")
             return FTYPE_U4RAW;
@@ -1413,6 +1407,7 @@ static uint8_t mapFiletype(const string& str, const string& file) {
     }
 
     // Guess at type based on filename.
+    std::string file(info->getFilename());
     size_t length = file.length();
     if (length >= 4 && file.compare(length - 4, 4, ".png") == 0)
         return FTYPE_PNG;
@@ -1421,7 +1416,7 @@ static uint8_t mapFiletype(const string& str, const string& file) {
     return FTYPE_UNKNOWN;
 }
 
-static ImageInfo* loadImageInfo(const ConfigElement &conf) {
+static ImageInfo* loadImageInfo(ConfigXML* cfg, const ConfigElement &conf) {
     static const char *fixupEnumStrings[] = {
         "none", "intro", "abyss", "abacus", "dungns",
         "blackTransparencyHack", "fmtownsscreen", NULL
@@ -1429,14 +1424,14 @@ static ImageInfo* loadImageInfo(const ConfigElement &conf) {
 
     ImageInfo *info = new ImageInfo;
 
-    info->name = conf.getString("name");
-    info->filename = conf.getString("filename");
+    info->name = cfg->propSymbol(conf, "name");
+    info->filename = cfg->propSymbol(conf, "filename");
     info->resGroup = 0;
     info->width = conf.getInt("width", -1);
     info->height = conf.getInt("height", -1);
     info->depth = conf.getInt("depth", -1);
     info->prescale = conf.getInt("prescale");
-    info->filetype = mapFiletype(conf.getString("filetype"), info->filename);
+    info->filetype = mapFiletype(conf.getString("filetype"), info);
     info->tiles = conf.getInt("tiles");
     info->transparentIndex = conf.getInt("transparentIndex", -1);
     info->fixup = static_cast<ImageFixup>(conf.getEnum("fixup", fixupEnumStrings));
@@ -1458,7 +1453,7 @@ static ImageInfo* loadImageInfo(const ConfigElement &conf) {
         count = 0;
         foreach (it, children) {
             if (it->getName() == "subimage") {
-                loadSubImage(simg, info, *it);
+                loadSubImage(cfg, simg, info->name, *it);
                 info->subImageIndex[ simg->name ] = count++;
                 ++simg;
             }
@@ -1468,19 +1463,19 @@ static ImageInfo* loadImageInfo(const ConfigElement &conf) {
     return info;
 }
 
-static ImageSet* loadImageSet(const ConfigElement &conf) {
+static ImageSet* loadImageSet(ConfigXML* cfg, const ConfigElement &conf) {
     ImageSet *set = new ImageSet;
 
-    set->name    = conf.getString("name");
-    set->extends = conf.getString("extends");
+    set->name    = cfg->propSymbol(conf, "name");
+    set->extends = cfg->propSymbol(conf, "extends");
 
     std::vector<ConfigElement>::iterator it;
-    std::map<string, ImageInfo *>::iterator dup;
+    std::map<Symbol, ImageInfo *>::iterator dup;
     vector<ConfigElement> children = conf.getChildren();
 
     foreach (it, children) {
         if (it->getName() == "image") {
-            ImageInfo *info = loadImageInfo(*it);
+            ImageInfo *info = loadImageInfo(cfg, *it);
             dup = set->info.find(info->name);
             if (dup != set->info.end()) {
                 delete dup->second;
@@ -1504,7 +1499,7 @@ ImageSet* Config::newScheme( uint32_t id ) {
     for (; it != end; ++it) {
         if (it->getName() == "imageset") {
             if( n == id )
-                return loadImageSet(*it);
+                return loadImageSet((ConfigXML*) this, *it);
             ++n;
         }
     }

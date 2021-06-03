@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * imagemgr.h
  */
 
 #ifndef IMAGEMGR_H
@@ -7,62 +7,125 @@
 
 #include <map>
 #include <string>
-#include <vector>
 
+#include "config.h"
 #include "image.h"
 #include "observer.h"
 #include "u4file.h"
+
+#define errorLoadImage(Sym) \
+    errorFatal("Unable to load image \"%s\"", xu4.config->symbolName(Sym));
 
 /*
  * The image manager is responsible for loading and keeping track of
  * the various images.
  */
 
-#define BKGD_SHAPES "tiles"
-#define BKGD_CHARSET "charset"
-#define BKGD_BORDERS "borders"
-#define BKGD_INTRO "title"
-#define BKGD_OPTIONS_TOP "options_top"
-#define BKGD_OPTIONS_BTM "options_btm"
-#define BKGD_TREE "tree"
-#define BKGD_PORTAL "portal"
-#define BKGD_OUTSIDE "outside"
-#define BKGD_INSIDE "inside"
-#define BKGD_WAGON "wagon"
-#define BKGD_GYPSY "gypsy"
-#define BKGD_ABACUS "abacus"
-#define BKGD_HONCOM "honcom"
-#define BKGD_VALJUS "valjus"
-#define BKGD_SACHONOR "sachonor"
-#define BKGD_SPIRHUM "spirhum"
-#define BKGD_ANIMATE "beasties"
-#define BKGD_KEY "key"
-#define BKGD_HONESTY "honesty"
-#define BKGD_COMPASSN "compassn"
-#define BKGD_VALOR "valor"
-#define BKGD_JUSTICE "justice"
-#define BKGD_SACRIFIC "sacrific"
-#define BKGD_HONOR "honor"
-#define BKGD_SPIRIT "spirit"
-#define BKGD_HUMILITY "humility"
-#define BKGD_TRUTH "truth"
-#define BKGD_LOVE "love"
-#define BKGD_COURAGE "courage"
-#define BKGD_STONCRCL "stoncrcl"
-#define BKGD_RUNE_INF "rune0"
-#define BKGD_SHRINE_HON "rune1"
-#define BKGD_SHRINE_COM "rune2"
-#define BKGD_SHRINE_VAL "rune3"
-#define BKGD_SHRINE_JUS "rune4"
-#define BKGD_SHRINE_SAC "rune5"
-#define BKGD_SHRINE_HNR "rune6"
-#define BKGD_SHRINE_SPI "rune7"
-#define BKGD_SHRINE_HUM "rune8"
-#define BKGD_GEMTILES "gemtiles"
+#define BKGD_SHAPES         ImageMgr::sym.tiles
+#define BKGD_CHARSET        ImageMgr::sym.charset
+#define BKGD_BORDERS        ImageMgr::sym.borders
+#define BKGD_INTRO          ImageMgr::sym.title
+#define BKGD_OPTIONS_TOP    ImageMgr::sym.options_top
+#define BKGD_OPTIONS_BTM    ImageMgr::sym.options_btm
+#define BKGD_TREE           ImageMgr::sym.tree
+#define BKGD_PORTAL         ImageMgr::sym.portal
+#define BKGD_OUTSIDE        ImageMgr::sym.outside
+#define BKGD_INSIDE         ImageMgr::sym.inside
+#define BKGD_WAGON          ImageMgr::sym.wagon
+#define BKGD_GYPSY          ImageMgr::sym.gypsy
+#define BKGD_ABACUS         ImageMgr::sym.abacus
+#define BKGD_HONCOM         ImageMgr::sym.honcom
+#define BKGD_VALJUS         ImageMgr::sym.valjus
+#define BKGD_SACHONOR       ImageMgr::sym.sachonor
+#define BKGD_SPIRHUM        ImageMgr::sym.spirhum
+#define BKGD_ANIMATE        ImageMgr::sym.beasties
+#define BKGD_KEY            ImageMgr::sym.key
+#define BKGD_HONESTY        ImageMgr::sym.honesty
+#define BKGD_COMPASSN       ImageMgr::sym.compassn
+#define BKGD_VALOR          ImageMgr::sym.valor
+#define BKGD_JUSTICE        ImageMgr::sym.justice
+#define BKGD_SACRIFIC       ImageMgr::sym.sacrific
+#define BKGD_HONOR          ImageMgr::sym.honor
+#define BKGD_SPIRIT         ImageMgr::sym.spirit
+#define BKGD_HUMILITY       ImageMgr::sym.humility
+#define BKGD_TRUTH          ImageMgr::sym.truth
+#define BKGD_LOVE           ImageMgr::sym.love
+#define BKGD_COURAGE        ImageMgr::sym.courage
+#define BKGD_STONCRCL       ImageMgr::sym.stoncrcl
+#define BKGD_RUNE_INF       ImageMgr::sym.rune0
+#define BKGD_SHRINE_HON     ImageMgr::sym.rune1
+#define BKGD_SHRINE_COM     ImageMgr::sym.rune2
+#define BKGD_SHRINE_VAL     ImageMgr::sym.rune3
+#define BKGD_SHRINE_JUS     ImageMgr::sym.rune4
+#define BKGD_SHRINE_SAC     ImageMgr::sym.rune5
+#define BKGD_SHRINE_HNR     ImageMgr::sym.rune6
+#define BKGD_SHRINE_SPI     ImageMgr::sym.rune7
+#define BKGD_SHRINE_HUM     ImageMgr::sym.rune8
+#define BKGD_GEMTILES       ImageMgr::sym.gemtiles
+#define IMG_MOONGATE        ImageMgr::sym.moongate
+#define IMG_ITEMS           ImageMgr::sym.items
+#define IMG_BLACKBEAD       ImageMgr::sym.blackbead
+#define IMG_WHITEBEAD       ImageMgr::sym.whitebead
+
+struct ImageSymbols {
+    Symbol tiles;
+    Symbol charset;
+    Symbol borders;
+    Symbol title;
+    Symbol options_top;
+    Symbol options_btm;
+    Symbol tree;
+    Symbol portal;
+    Symbol outside;
+    Symbol inside;
+    Symbol wagon;
+    Symbol gypsy;
+    Symbol abacus;
+    Symbol honcom;
+    Symbol valjus;
+    Symbol sachonor;
+    Symbol spirhum;
+    Symbol beasties;
+    Symbol key;
+
+    // These 8 are ordered to match enum Virtue (savegame.h)
+    Symbol honesty;
+    Symbol compassn;
+    Symbol valor;
+    Symbol justice;
+    Symbol sacrific;
+    Symbol honor;
+    Symbol spirit;
+    Symbol humility;
+
+    // codexHandleVirtues() expects these BaseVirtue to follow Virtue.
+    Symbol truth;
+    Symbol love;
+    Symbol courage;
+
+    Symbol stoncrcl;
+    Symbol rune0;
+
+    // These 8 are ordered to match visionImageNames (shrine.cpp)
+    Symbol rune1;
+    Symbol rune2;
+    Symbol rune3;
+    Symbol rune4;
+    Symbol rune5;
+    Symbol rune6;
+    Symbol rune7;
+    Symbol rune8;
+
+    Symbol gemtiles;
+    Symbol moongate;
+    Symbol items;
+    Symbol blackbead;
+    Symbol whitebead;
+};
 
 struct SubImage {
-    std::string name;
-    std::string srcImageName;
+    Symbol name;
+    Symbol srcImageName;
     int16_t x, y, width, height;
 };
 
@@ -84,8 +147,10 @@ public:
     ImageInfo();
     ~ImageInfo();
 
-    std::string name;
-    std::string filename;
+    std::string getFilename() const;
+
+    StringId filename;
+    Symbol name;
     uint16_t resGroup;          /**< resource group */
     uint16_t tiles;             /**< used to scale the without bleeding colors between adjacent tiles */
     int16_t width, height;
@@ -101,7 +166,7 @@ public:
     const float* tileTexCoord;  /**< Indexed by VisualId */
 #endif
     const SubImage* subImages;
-    std::map<std::string, int> subImageIndex;
+    std::map<Symbol, int> subImageIndex;
 };
 
 class Debug;
@@ -111,9 +176,9 @@ class ImageSet {
 public:
     ~ImageSet();
 
-    std::string name;
-    std::string extends;
-    std::map<std::string, ImageInfo *> info;
+    Symbol name;
+    Symbol extends;
+    std::map<Symbol, ImageInfo *> info;
 };
 
 /**
@@ -121,11 +186,13 @@ public:
  */
 class ImageMgr : Observer<Settings *> {
 public:
+    static ImageSymbols sym;
+
     ImageMgr();
     ~ImageMgr();
 
-    ImageInfo *get(const std::string &name, bool returnUnscaled=false);
-    const SubImage* getSubImage(const std::string &name);
+    ImageInfo *get(Symbol name, bool returnUnscaled=false);
+    const SubImage* getSubImage(Symbol name);
 
     uint16_t setResourceGroup(uint16_t group);
     void freeResourceGroup(uint16_t group);
@@ -134,8 +201,8 @@ public:
 
 private:
     U4FILE * getImageFile(ImageInfo *info);
-    ImageSet* scheme(const std::string &setname);
-    ImageInfo* getInfoFromSet(const std::string &name, ImageSet *set);
+    ImageSet* scheme(Symbol setname);
+    ImageInfo* getInfoFromSet(Symbol name, ImageSet *set);
 
     void fixupIntro(Image *im, int prescale);
     void fixupAbyssVision(Image *im, int prescale);
@@ -145,13 +212,11 @@ private:
 
     void update(Settings *newSettings);
 
-    std::map<std::string, ImageSet *> imageSets;
+    std::map<Symbol, ImageSet *> imageSets;
     ImageSet *baseSet;
     RGBA* vgaColors;
     Debug *logger;
     uint16_t resGroup;
 };
-
-extern ImageMgr* imageMgr;
 
 #endif /* IMAGEMGR_H */

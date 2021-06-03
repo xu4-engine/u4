@@ -135,10 +135,9 @@ void Tile::loadImage() {
 
         const SubImage* subimage = NULL;
 
-        string iname = xu4.config->symbolName(imageName);
-        ImageInfo *info = xu4.imageMgr->get(iname);
+        ImageInfo *info = xu4.imageMgr->get(imageName);
         if (!info) {
-            subimage = xu4.imageMgr->getSubImage(iname);
+            subimage = xu4.imageMgr->getSubImage(imageName);
             if (subimage)
                 info = xu4.imageMgr->get(subimage->srcImageName);
         }

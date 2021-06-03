@@ -128,7 +128,7 @@ static void screenInit_data(Screen* scr, Settings& settings) {
 
     scr->charsetInfo = xu4.imageMgr->get(BKGD_CHARSET);
     if (! scr->charsetInfo)
-        errorFatal("ERROR 1001: Unable to load the \"%s\" data file.\t\n\nIs %s installed?\n\nVisit the XU4 website for additional information.\n\thttp://xu4.sourceforge.net/", BKGD_CHARSET, settings.game.c_str());
+        errorLoadImage(BKGD_CHARSET);
 
     /* if we can't use vga, reset to default:ega */
     if (!u4isUpgradeAvailable() && settings.videoType == "VGA")
@@ -558,12 +558,12 @@ raster_update:
 #endif
 }
 
-void screenDrawImageInMapArea(const string &name) {
+void screenDrawImageInMapArea(Symbol name) {
     ImageInfo *info;
 
     info = xu4.imageMgr->get(name);
     if (!info)
-        errorFatal("ERROR 1004: Unable to load data files.\t\n\nIs %s installed?\n\nVisit the XU4 website for additional information.\n\thttp://xu4.sourceforge.net/", xu4.settings->game.c_str());
+        errorLoadImage(name);
 
     unsigned int scale = xu4.settings->scale;
     info->image->drawSubRect(BORDER_WIDTH * scale, BORDER_HEIGHT * scale,
@@ -1211,7 +1211,7 @@ static void screenShowGemTile(const Layout *layout, Map *map, MapTile &t, bool f
         if (scr->gemTilesInfo == NULL) {
             scr->gemTilesInfo = xu4.imageMgr->get(BKGD_GEMTILES);
             if (! scr->gemTilesInfo)
-                errorFatal("ERROR 1002: Unable to load the \"%s\" data file.\t\n\nIs %s installed?\n\nVisit the XU4 website for additional information.\n\thttp://xu4.sourceforge.net/", BKGD_GEMTILES, xu4.settings->game.c_str());
+                errorLoadImage(BKGD_GEMTILES);
         }
 
         if (tile < 128) {

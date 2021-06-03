@@ -111,7 +111,7 @@ private:
     void drawMapAnimated();
     void drawBeasties();
     void drawBeastie(int beast, int vertoffset, int frame);
-    void animateTree(const string &frame);
+    void animateTree(Symbol frame);
     void drawCard(int pos, int card);
     void drawAbacusBeads(int row, int selectedVirtue, int rejectedVirtue);
 
