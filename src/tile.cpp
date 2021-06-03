@@ -132,7 +132,7 @@ void Tile::loadImage() {
     if (!image) {
         scale = xu4.settings->scale;
 
-        SubImage *subimage = NULL;
+        const SubImage* subimage = NULL;
 
         string iname = xu4.config->symbolName(imageName);
         ImageInfo *info = xu4.imageMgr->get(iname);

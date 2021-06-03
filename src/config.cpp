@@ -1361,14 +1361,12 @@ const Coords* Config::moongateCoords(int phase) const {
 //--------------------------------------
 // Graphics config
 
-static SubImage* loadSubImage(const ImageInfo *info, const ConfigElement &conf) {
-    SubImage *subimage;
+static void loadSubImage(SubImage* subimage, const ImageInfo *info, const ConfigElement &conf) {
     static int x = 0,
                y = 0,
                last_width = 0,
                last_height = 0;
 
-    subimage = new SubImage;
     subimage->name = conf.getString("name");
     subimage->width = conf.getInt("width");
     subimage->height = conf.getInt("height");
@@ -1392,8 +1390,6 @@ static SubImage* loadSubImage(const ImageInfo *info, const ConfigElement &conf) 
     // "remember" the width and height of this subimage
     last_width = subimage->width;
     last_height = subimage->height;
-
-    return subimage;
 }
 
 static uint8_t mapFiletype(const string& str, const string& file) {
@@ -1426,10 +1422,13 @@ static uint8_t mapFiletype(const string& str, const string& file) {
 }
 
 static ImageInfo* loadImageInfo(const ConfigElement &conf) {
-    ImageInfo *info;
-    static const char *fixupEnumStrings[] = { "none", "intro", "abyss", "abacus", "dungns", "blackTransparencyHack", "fmtownsscreen", NULL };
+    static const char *fixupEnumStrings[] = {
+        "none", "intro", "abyss", "abacus", "dungns",
+        "blackTransparencyHack", "fmtownsscreen", NULL
+    };
 
-    info = new ImageInfo;
+    ImageInfo *info = new ImageInfo;
+
     info->name = conf.getString("name");
     info->filename = conf.getString("filename");
     info->resGroup = 0;
@@ -1444,10 +1443,25 @@ static ImageInfo* loadImageInfo(const ConfigElement &conf) {
     info->image = NULL;
 
     vector<ConfigElement> children = conf.getChildren();
-    for (std::vector<ConfigElement>::iterator i = children.begin(); i != children.end(); i++) {
-        if (i->getName() == "subimage") {
-            SubImage *subimage = loadSubImage(info, *i);
-            info->subImages[subimage->name] = subimage;
+    vector<ConfigElement>::iterator it;
+    int count = 0;
+    foreach (it, children) {
+        if (it->getName() == "subimage")
+            ++count;
+    }
+
+    SubImage* simg;
+    info->subImages = simg = new SubImage[ count ];
+    if (simg) {
+        info->subImageCount = count;
+
+        count = 0;
+        foreach (it, children) {
+            if (it->getName() == "subimage") {
+                loadSubImage(simg, info, *it);
+                info->subImageIndex[ simg->name ] = count++;
+                ++simg;
+            }
         }
     }
 

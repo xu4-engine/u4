@@ -89,6 +89,7 @@ public:
     uint16_t resGroup;          /**< resource group */
     uint16_t tiles;             /**< used to scale the without bleeding colors between adjacent tiles */
     int16_t width, height;
+    int16_t subImageCount;
     uint8_t depth;
     uint8_t prescale;
     uint8_t filetype;
@@ -99,7 +100,8 @@ public:
     uint32_t tex;               /**< OpenGL texture name */
     const float* tileTexCoord;  /**< Indexed by VisualId */
 #endif
-    std::map<std::string, SubImage *> subImages;
+    const SubImage* subImages;
+    std::map<std::string, int> subImageIndex;
 };
 
 class Debug;
@@ -123,7 +125,7 @@ public:
     ~ImageMgr();
 
     ImageInfo *get(const std::string &name, bool returnUnscaled=false);
-    SubImage *getSubImage(const std::string &name);
+    const SubImage* getSubImage(const std::string &name);
 
     uint16_t setResourceGroup(uint16_t group);
     void freeResourceGroup(uint16_t group);

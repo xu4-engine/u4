@@ -454,13 +454,14 @@ ImageInfo *ImageMgr::get(const string &name, bool returnUnscaled) {
             }
         }
         /*
-        std::map<std::string, SubImage *>::iterator it;
-        foreach (it, info->subImages) {
-            SubImage* simg = it->second;
+        SubImage* simg = (SubImage*) info->subImages;
+        SubImage* end = simg + info->subImageCount;
+        while (simg != end) {
             simg->u0 = simg->x / iwf;
             simg->v0 = simg->y / ihf;
             simg->u1 = (simg->x + simg->width) / iwf;
             simg->v1 = (simg->y + simg->height) / ihf;
+            ++simg;
         }
         */
 #endif
@@ -557,16 +558,16 @@ ImageInfo *ImageMgr::get(const string &name, bool returnUnscaled) {
 /**
  * Returns information for the given image set.
  */
-SubImage *ImageMgr::getSubImage(const string &name) {
+const SubImage* ImageMgr::getSubImage(const string &name) {
     std::map<string, ImageInfo *>::iterator it;
     ImageSet *set = baseSet;
 
     while (set != NULL) {
         foreach (it, set->info) {
             ImageInfo *info = (ImageInfo *) it->second;
-            std::map<string, SubImage *>::iterator j = info->subImages.find(name);
-            if (j != info->subImages.end())
-                return j->second;
+            std::map<string, int>::iterator j = info->subImageIndex.find(name);
+            if (j != info->subImageIndex.end())
+                return info->subImages + j->second;
         }
         set = scheme(set->extends);
     }
@@ -649,13 +650,12 @@ ImageInfo::ImageInfo() {
     tex = 0;
     tileTexCoord = NULL;
 #endif
+    subImageCount = 0;
+    subImages = NULL;
 }
 
 ImageInfo::~ImageInfo() {
-    std::map<string, SubImage *>::iterator it;
-    foreach (it, subImages)
-        delete it->second;
-
+    delete[] subImages;
     delete image;
 #ifdef USE_GL
     if (tex)

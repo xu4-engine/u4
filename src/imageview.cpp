@@ -26,7 +26,7 @@ void ImageView::draw(const string &imageName, int x, int y) {
         return;
     }
 
-    SubImage *subimage = xu4.imageMgr->getSubImage(imageName);
+    const SubImage* subimage = xu4.imageMgr->getSubImage(imageName);
     if (subimage) {
         info = xu4.imageMgr->get(subimage->srcImageName);
 

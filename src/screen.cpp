@@ -534,7 +534,7 @@ void screenDrawImage(const string &name, int x, int y) {
         return;
     }
 
-    SubImage *subimage = xu4.imageMgr->getSubImage(name);
+    const SubImage* subimage = xu4.imageMgr->getSubImage(name);
     if (subimage)
         info = xu4.imageMgr->get(subimage->srcImageName);
 

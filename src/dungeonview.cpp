@@ -408,7 +408,7 @@ void DungeonView::drawWall(int xoffset, int distance, Direction orientation, Dun
         return;
 
     int x = 0, y = 0;
-    SubImage *subimage = xu4.imageMgr->getSubImage(dngGraphicInfo[index].subimage);
+    const SubImage* subimage = xu4.imageMgr->getSubImage(dngGraphicInfo[index].subimage);
     if (subimage) {
         x = subimage->x;
         y = subimage->y;
