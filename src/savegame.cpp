@@ -399,14 +399,35 @@ int saveGameMonstersRead(SaveGameMonsterRecord *monsterTable, FILE *f) {
 
 //--------------------------------------
 
-void UltimaSaveIds::alloc(int ucount, int mcount) {
-    // Use one block of memory for both tables.
-    size_t msize = ucount * sizeof(TileId);
+#include "config.h"
+#include "tile.h"
+#include "tileset.h"
+
+static const int dngTableLen = 16+4;    // DungeonToken + Magic fields
+
+void UltimaSaveIds::alloc(int ucount, int mcount,
+                          Config* cfg, const Tileset* tiles) {
+    // Use one block of memory for all tables.
+    size_t msize = (ucount + dngTableLen) * sizeof(TileId);
     moduleIdTable = (TileId*) malloc( msize + mcount );
+    moduleIdDngTable = moduleIdTable + ucount;
     ultimaIdTable = ((uint8_t*) moduleIdTable) + msize;
 
     uiCount = ucount;
     miCount = mcount;
+
+    // Fill moduleIdDngTable to match DNGMAP.SAV values.
+    Symbol dngMapSymbols[dngTableLen];
+    cfg->internSymbols(dngMapSymbols, dngTableLen,
+        "brick_floor up_ladder down_ladder up_down_ladder\n"
+        "chest ceiling_hole floor_hole magic_orb\n"
+        "ceiling_hole fountain poison_field dungeon_altar\n"
+        "dungeon_door dungeon_room secret_door brick_wall\n"
+        "poison_field energy_field fire_field sleep_field\n");
+    for (int i = 0; i < dngTableLen; ++i) {
+        const Tile* tile = tiles->getByName(dngMapSymbols[i]);
+        moduleIdDngTable[i] = tile ? tile->id : 0;
+    }
 }
 
 void UltimaSaveIds::free() {
@@ -453,4 +474,32 @@ uint8_t UltimaSaveIds::ultimaId(const MapTile& tile) const {
         return uid;
 
     return uidF;
+}
+
+/*
+ * Convert DNGMAP.SAV encoded map values to their matching module id.
+ */
+TileId UltimaSaveIds::dngMapToModule(uint8_t u4DngId) const {
+    int i = u4DngId >> 4;
+    if (i == 0xA)
+        i = 16 + (u4DngId & 3);         // Magic fields at end of table.
+    return moduleIdDngTable[i];
+}
+
+/*
+ * Convert module TileIds to DNGMAP.SAV encoded map values.
+ * NOTE: This does not handle traps (0x8?), fountains (0x9?), & rooms (0xD?)!
+ * Return zero for any non-dungeon or unhandled tiles.
+ */
+uint8_t UltimaSaveIds::moduleToDngMap(TileId modId) const {
+    int i;
+    for (i = 0; i < dngTableLen; ++i) {
+        if (modId == moduleIdDngTable[i]) {
+            if (i < 16)
+                return i << 4;
+            else
+                return 0xA0 + (i - 16); // Magic fields at end of table.
+        }
+    }
+    return 0;
 }

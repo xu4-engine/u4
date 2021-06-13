@@ -247,9 +247,13 @@ struct SaveGame {
 int saveGameMonstersWrite(const SaveGameMonsterRecord *monsterTable, FILE *f);
 int saveGameMonstersRead(SaveGameMonsterRecord *monsterTable, FILE *f);
 
+class Config;
+class Tileset;
+
 struct UltimaSaveIds {
     uint8_t* ultimaIdTable;
     TileId*  moduleIdTable;
+    TileId*  moduleIdDngTable;
     uint16_t uiCount;       // Number of entries in moduleIdTable.
     uint16_t miCount;       // Number of entries in ultimaIdTable.
 
@@ -257,7 +261,10 @@ struct UltimaSaveIds {
     MapTile moduleId(uint8_t uid) const;
     uint8_t ultimaId(const MapTile& tile) const;
 
-    void alloc(int ucount, int mcount);
+    TileId  dngMapToModule(uint8_t u4DngId) const;
+    uint8_t moduleToDngMap(TileId modId) const;
+
+    void alloc(int ucount, int mcount, Config* cfg, const Tileset* tiles);
     void addId(uint8_t uid, int frames, TileId);
     void free();
 };

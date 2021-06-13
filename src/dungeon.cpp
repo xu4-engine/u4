@@ -6,6 +6,7 @@
 #include "dungeon.h"
 
 #include "annotation.h"
+#include "config.h"
 #include "context.h"
 #include "debug.h"
 #include "game.h"
@@ -17,6 +18,7 @@
 #include "stats.h"
 #include "tileset.h"
 #include "utils.h"
+#include "xu4.h"
 
 /**
  * Returns true if 'map' points to a dungeon map
@@ -333,11 +335,10 @@ static int u4DngMonster(CreatureId cid) {
     return 0;
 }
 
-extern int moduleToDngMap(TileId modId);
-
 uint8_t* Dungeon::fillRawMap() {
     uint32_t x, y, z;
     const MapTile* mt;
+    const UltimaSaveIds* usaveIds = xu4.config->usaveIds();
     uint8_t* dp = (uint8_t*) &rawMap.front();
     int uid, dngId;
 
@@ -354,7 +355,7 @@ uint8_t* Dungeon::fillRawMap() {
                 }
 
                 mt = getTileFromData(MapCoords(x, y, z));
-                dngId = moduleToDngMap(mt->id);
+                dngId = usaveIds->moduleToDngMap(mt->id);
                 //printf("KR %d,%d,%d %d => %d\n", x, y, z, mt->id, dngId);
 
                 // Add the creature to the tile

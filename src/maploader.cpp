@@ -276,48 +276,6 @@ static void initDungeonRoom(Dungeon *dng, int room) {
     cmap->tileset = xu4.config->tileset();
 }
 
-static const uint8_t ultima4Dng_to_module[16] = {
-     46,  // 0x00 brick_floor
-     22,  // 0x10 up_ladder
-     23,  // 0x20 down_ladder
-    135,  // 0x30 up_down_ladder
-     44,  // 0x40 chest
-    136,  // 0x50 ceiling_hole
-    137,  // 0x60 floor_hole
-    138,  // 0x70 magic_orb
-    136,  // 0x80 (trap) ceiling_hole
-    139,  // 0x90 fountain
-     50,  // 0xA0 poison_field
-    142,  // 0xB0 dungeon_altar
-    141,  // 0xC0 dungeon_door
-    140,  // 0xD0 dungeon_room
-     55,  // 0xE0 secret_door
-     99   // 0xF0 brick_wall
-};
-
-static TileId dngMapToModule(int u4DngId) {
-    TileId mid = ultima4Dng_to_module[ u4DngId >> 4 ];
-    if (mid == 50)
-        mid += u4DngId & 0x3;   // Magic fields.
-    return mid;
-}
-
-// NOTE: This does not handle traps, fountains, & rooms!
-int moduleToDngMap(TileId modId) {
-    int i;
-    for (i = 0; i < 16; ++i) {
-        if (modId == ultima4Dng_to_module[i])
-            return i << 4;
-    }
-    // Magic fields.
-    switch (modId) {
-        case 51: return 0xA1;
-        case 52: return 0xA2;
-        case 53: return 0xA3;
-    }
-    return 0;
-}
-
 /**
  * Loads a dungeon map from the 'dng' file (and dngmap.sav if provided).
  */
@@ -347,7 +305,7 @@ static bool loadDungeonMap(Map *map, U4FILE *uf, FILE *sav) {
 
     for (i = 0; i < bytes; i++) {
         j = *rawMap++;
-        MapTile tile(dngMapToModule(j), 0);
+        MapTile tile(usaveIds->dngMapToModule(j), 0);
         dungeon->data.push_back(tile);
         //printf( "KR dng tile %d: %d => %d\n", i, j, tile.id);
     }

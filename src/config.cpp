@@ -377,13 +377,13 @@ static void conf_tilesetLoad(ConfigXML* cfg, Tileset* ts, const ConfigElement& c
 }
 
 static void conf_ultimaSaveIds(ConfigXML* cfg, UltimaSaveIds* usaveIds, Tileset* ts, const ConfigElement &conf) {
+    vector<ConfigElement> children = conf.getChildren();
+    vector<ConfigElement>::iterator it;
     int frames;
     int uid = 0;
 
-    usaveIds->alloc(256, 135);
+    usaveIds->alloc(256, children.size(), cfg, ts);
 
-    vector<ConfigElement> children = conf.getChildren();
-    vector<ConfigElement>::iterator it;
     foreach (it, children) {
         if (it->getName() != "mapping")
             continue;
