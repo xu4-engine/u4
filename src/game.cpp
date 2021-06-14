@@ -497,6 +497,7 @@ void GameController::setMap(Map *map, bool saveLocation, const Portal *portal, T
         viewMode = VIEW_DUNGEON;
         if (portal)
             c->saveGame->orientation = DIR_EAST;
+        screenMakeDungeonView();
         break;
     case Map::COMBAT:
         context = CTX_COMBAT;
@@ -966,7 +967,7 @@ bool GameController::keyPressed(int key) {
         case 22:                    /* ctrl-V */
             {
                 if (settings.debug && c->location->context == CTX_DUNGEON) {
-                    screenMessage("3-D view %s\n", DungeonViewer.toggle3DDungeonView() ? "on" : "off");
+                    screenMessage("3-D view %s\n", screenToggle3DDungeonView() ? "on" : "off");
                     endTurn = 0;
                 }
                 else valid = false;

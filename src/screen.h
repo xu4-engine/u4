@@ -153,6 +153,8 @@ void screenHideCursor(void);
 void screenEnableCursor(void);
 void screenDisableCursor(void);
 void screenSetCursorPos(int x, int y);
+bool screenToggle3DDungeonView();
+void screenMakeDungeonView();
 
 void screenSetMouseCursor(MouseCursor cursor);
 void screenShowMouseCursor(bool visible);

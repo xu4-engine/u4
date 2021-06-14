@@ -42,6 +42,7 @@ struct Screen {
     vector<string> gemLayoutNames;
     const Layout* gemLayout;
     const Layout* dungeonGemLayout;
+    DungeonView* dungeonView;
     std::map<string, int> dungeonTileChars;
     ImageInfo* charsetInfo;
     ImageInfo* gemTilesInfo;
@@ -57,6 +58,7 @@ struct Screen {
     Screen() {
         gemLayout = NULL;
         dungeonGemLayout = NULL;
+        dungeonView = NULL;
         charsetInfo = NULL;
         gemTilesInfo = NULL;
         state.tileanims = NULL;
@@ -68,6 +70,10 @@ struct Screen {
         cursorStatus = 0;
         cursorEnabled = 1;
         needPrompt = 1;
+    }
+
+    ~Screen() {
+        delete dungeonView;
     }
 };
 
@@ -462,7 +468,7 @@ void screenUpdate(TileView *view, bool showmap, bool blackout) {
         goto raster_update;
     }
     else if (map->flags & FIRST_PERSON) {
-        DungeonViewer.display(c, view);
+        xu4.screen->dungeonView->display(c, view);
         xu4.game->mapArea.update();
 
 raster_update:
@@ -514,7 +520,7 @@ raster_update:
         screenEraseMapArea();
     }
     else if (c->location->map->flags & FIRST_PERSON) {
-        DungeonViewer.display(c, view);
+        xu4.screen->dungeonView->display(c, view);
         screenRedrawMapArea();
     }
     else if (showmap) {
@@ -735,6 +741,20 @@ void screenSetCursorPos(int x, int y) {
     Screen* scr = xu4.screen;
     scr->cursorX = x;
     scr->cursorY = y;
+}
+
+bool screenToggle3DDungeonView() {
+    DungeonView* view = xu4.screen->dungeonView;
+    if (view)
+        return view->toggle3DDungeonView();
+    return false;
+}
+
+void screenMakeDungeonView() {
+    if (xu4.screen->dungeonView)
+        return;
+    xu4.screen->dungeonView = new DungeonView(BORDER_WIDTH, BORDER_HEIGHT,
+                                              VIEWPORT_W, VIEWPORT_H);
 }
 
 /**

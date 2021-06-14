@@ -27,16 +27,6 @@ DungeonView::DungeonView(int x, int y, int columns, int rows) : TileView(x, y, r
     updown_ladder = tileset->getByName(SYM_UP_DOWN_LADDER)->getId();
 }
 
-
-DungeonView * DungeonView::instance(NULL);
-DungeonView * DungeonView::getInstance()
-{
-    if (!instance)  {
-        instance = new DungeonView(BORDER_WIDTH, BORDER_HEIGHT, VIEWPORT_W, VIEWPORT_H);
-    }
-    return instance;
-}
-
 void DungeonView::display(Context * c, TileView *view)
 {
     static const int8_t wallSides[3] = { -1, 1, 0 };
