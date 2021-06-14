@@ -8,10 +8,10 @@
 #include "error.h"
 #include "imageloader.h"
 #include "imagemgr.h"
+#include "screen.h"
 #include "u4file.h"
 #include "xu4.h"
 
-extern bool screenFormatIsABGR;
 
 // A black & white palette
 static RGBA bwPalette[2] = {{0,0,0,0}, {255,255,255,255}};
@@ -43,6 +43,7 @@ static void setFromRawData(Image *image, int width, int height, int bpp, unsigne
     uint32_t* cpix;
     int rowAdvance;
     int y, i;
+    bool screenFormatIsABGR = screenState()->formatIsABGR;
 
 // SDL format->Rmask = 0x00ff0000
 #define PIXEL_ARGB_4B(bp)   ((bp[3]<< 24) | (bp[0]<< 16) | (bp[1]<< 8) | bp[2])

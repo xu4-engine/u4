@@ -1,9 +1,5 @@
-/*
- * $Id$
- */
-
 /**
- * @file
+ * screen.h
  * @brief Declares interfaces for working with the screen
  *
  * This file declares interfaces for manipulating areas of the screen, or the
@@ -103,6 +99,16 @@ typedef struct _MouseArea {
     int command[3];
 } MouseArea;
 
+class TileAnimSet;
+
+// Expose a few Screen members via this struct.
+struct ScreenState {
+    const TileAnimSet* tileanims;
+    int currentCycle;
+    int vertOffset;
+    bool formatIsABGR;
+};
+
 #define SCR_CYCLE_PER_SECOND 4
 
 void screenInit(void);
@@ -154,8 +160,7 @@ int screenPointInMouseArea(int x, int y, MouseArea *area);
 
 Image *screenScale(Image *src, int scale, int n, int filter);
 Image *screenScaleDown(Image *src, int scale);
-
-extern int screenCurrentCycle;
+ScreenState* screenState();
 
 #define SCR_CYCLE_MAX 16
 

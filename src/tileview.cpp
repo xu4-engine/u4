@@ -170,7 +170,7 @@ void TileView::drawFocus(int x, int y) {
     /*
      * draw the focus rectangle around the tile
      */
-    if ((screenCurrentCycle * 4 / SCR_CYCLE_PER_SECOND) % 2) {
+    if ((screenState()->currentCycle * 4 / SCR_CYCLE_PER_SECOND) % 2) {
         /* left edge */
         screen->fillRect(SCALED(x * tileWidth + this->x),
                          SCALED(y * tileHeight + this->y),

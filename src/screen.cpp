@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * screen.cpp
  */
 
 #include <cstdio>
@@ -38,29 +38,43 @@
 
 using std::vector;
 
-static void screenLoadLayoutsFromConf();
+struct Screen {
+    vector<string> gemLayoutNames;
+    const Layout* gemLayout;
+    const Layout* dungeonGemLayout;
+    std::map<string, int> dungeonTileChars;
+    ImageInfo* charsetInfo;
+    ImageInfo* gemTilesInfo;
+    ScreenState state;
+    Scaler filterScaler;
+    int cursorX;
+    int cursorY;
+    int cursorStatus;
+    int cursorEnabled;
+    int needPrompt;
+    int screenLos[VIEWPORT_W][VIEWPORT_H];
 
-static Scaler filterScaler;
-static vector<string> gemLayoutNames;
-static const Layout* gemLayout = NULL;
-static const Layout* dungeonGemLayout = NULL;
-std::map<string, int> dungeonTileChars;
-TileAnimSet *tileanims = NULL;
-ImageInfo *charsetInfo = NULL;
-ImageInfo *gemTilesInfo = NULL;
+    Screen() {
+        gemLayout = NULL;
+        dungeonGemLayout = NULL;
+        charsetInfo = NULL;
+        gemTilesInfo = NULL;
+        state.tileanims = NULL;
+        state.currentCycle = 0;
+        state.vertOffset = 0;
+        state.formatIsABGR = true;
+        cursorX = 0;
+        cursorY = 0;
+        cursorStatus = 0;
+        cursorEnabled = 1;
+        needPrompt = 1;
+    }
+};
 
-void screenFindLineOfSight(vector<MapTile> viewportTiles[VIEWPORT_W][VIEWPORT_H]);
-void screenFindLineOfSightDOS(vector<MapTile> viewportTiles[VIEWPORT_W][VIEWPORT_H]);
-void screenFindLineOfSightEnhanced(vector<MapTile> viewportTiles[VIEWPORT_W][VIEWPORT_H]);
-
-int screenNeedPrompt = 1;
-int screenCurrentCycle = 0;
-int screenCursorX = 0;
-int screenCursorY = 0;
-int screenCursorStatus = 0;
-int screenCursorEnabled = 1;
-int screenVertOffset = 0;
-int screenLos[VIEWPORT_W][VIEWPORT_H];
+static void screenLoadLayoutsFromConf(Screen*);
+static void screenFindLineOfSight(vector<MapTile> viewportTiles[VIEWPORT_W][VIEWPORT_H]);
+static void screenFindLineOfSightDOS(vector<MapTile> viewportTiles[VIEWPORT_W][VIEWPORT_H]);
+static void screenFindLineOfSightEnhanced(vector<MapTile> viewportTiles[VIEWPORT_W][VIEWPORT_H]);
 
 static const int BufferSize = 1024;
 
@@ -70,43 +84,7 @@ extern bool verbose;
 extern void screenInit_sys(const Settings*, int reset);
 extern void screenDelete_sys();
 
-static void screenInit_data(Settings& settings) {
-    filterScaler = scalerGet(settings.filter);
-    if (!filterScaler)
-        errorFatal("Invalid filter %d", settings.filter);
-
-    // Create a special purpose image that represents the whole screen.
-    xu4.screenImage = Image::create(320 * settings.scale, 200 * settings.scale);
-    xu4.screenImage->fill(Image::black);
-
-    xu4.imageMgr = new ImageMgr;
-
-    charsetInfo = xu4.imageMgr->get(BKGD_CHARSET);
-    if (!charsetInfo)
-        errorFatal("ERROR 1001: Unable to load the \"%s\" data file.\t\n\nIs %s installed?\n\nVisit the XU4 website for additional information.\n\thttp://xu4.sourceforge.net/", BKGD_CHARSET, settings.game.c_str());
-
-    /* if we can't use vga, reset to default:ega */
-    if (!u4isUpgradeAvailable() && settings.videoType == "VGA")
-        settings.videoType = "EGA";
-
-#ifdef USE_GL
-    ImageInfo* shapes = xu4.imageMgr->get(BKGD_SHAPES);
-    gpu_setTilesTexture(xu4.gpu, shapes->tex);
-#endif
-
-    assert(tileanims == NULL);
-    tileanims = xu4.config->newTileAnims( settings.videoType.c_str() );
-    if (! tileanims)
-        errorFatal("Unable to find \"%s\" tile animations", settings.videoType.c_str());
-
-    gemTilesInfo = NULL;
-    screenLoadLayoutsFromConf();
-
-    if (verbose)
-        printf("using %s scaler\n", screenGetFilterNames()[ settings.filter ]);
-
-    EventHandler::setKeyRepeat(settings.keydelay, settings.keyinterval);
-
+static void initDungeonTileChars(std::map<string, int>& dungeonTileChars) {
     dungeonTileChars.clear();
     dungeonTileChars["brick_floor"] = CHARSET_FLOOR;
     dungeonTileChars["up_ladder"] = CHARSET_LADDER_UP;
@@ -129,15 +107,55 @@ static void screenInit_data(Settings& settings) {
     dungeonTileChars["fire_field"] = '^';
     dungeonTileChars["poison_field"] = '^';
     dungeonTileChars["sleep_field"] = '^';
+}
+
+static void screenInit_data(Screen* scr, Settings& settings) {
+    scr->filterScaler = scalerGet(settings.filter);
+    if (! scr->filterScaler)
+        errorFatal("Invalid filter %d", settings.filter);
+
+    // Create a special purpose image that represents the whole screen.
+    xu4.screenImage = Image::create(320 * settings.scale, 200 * settings.scale);
+    xu4.screenImage->fill(Image::black);
+
+    xu4.imageMgr = new ImageMgr;
+
+    scr->charsetInfo = xu4.imageMgr->get(BKGD_CHARSET);
+    if (! scr->charsetInfo)
+        errorFatal("ERROR 1001: Unable to load the \"%s\" data file.\t\n\nIs %s installed?\n\nVisit the XU4 website for additional information.\n\thttp://xu4.sourceforge.net/", BKGD_CHARSET, settings.game.c_str());
+
+    /* if we can't use vga, reset to default:ega */
+    if (!u4isUpgradeAvailable() && settings.videoType == "VGA")
+        settings.videoType = "EGA";
+
+#ifdef USE_GL
+    ImageInfo* shapes = xu4.imageMgr->get(BKGD_SHAPES);
+    gpu_setTilesTexture(xu4.gpu, shapes->tex);
+#endif
+
+    assert(scr->state.tileanims == NULL);
+    scr->state.tileanims = xu4.config->newTileAnims(settings.videoType.c_str());
+    if (! scr->state.tileanims)
+        errorFatal("Unable to find \"%s\" tile animations", settings.videoType.c_str());
+
+    scr->gemTilesInfo = NULL;
+    screenLoadLayoutsFromConf(scr);
+
+    if (verbose)
+        printf("using %s scaler\n", screenGetFilterNames()[ settings.filter ]);
+
+    EventHandler::setKeyRepeat(settings.keydelay, settings.keyinterval);
+
+    initDungeonTileChars(scr->dungeonTileChars);
 
     Tileset::loadImages();
 }
 
-static void screenDelete_data() {
+static void screenDelete_data(Screen* scr) {
     Tileset::unloadImages();
 
-    delete tileanims;
-    tileanims = NULL;
+    delete scr->state.tileanims;
+    scr->state.tileanims = NULL;
 
     delete xu4.imageMgr;
     xu4.imageMgr = NULL;
@@ -153,25 +171,30 @@ enum ScreenSystemStage {
 };
 
 /*
- * Sets xu4.screen & xu4.gpu pointers.
+ * Sets xu4.screen, xu4.screenSys, xu4.screenImage & xu4.gpu pointers.
  */
 void screenInit() {
+    xu4.screen = new Screen;
     screenInit_sys(xu4.settings, SYS_CLEAN);
-    screenInit_data(*xu4.settings);
+    screenInit_data(xu4.screen, *xu4.settings);
 }
 
 void screenDelete() {
-    screenDelete_data();
-    screenDelete_sys();
+    if (xu4.screen) {
+        screenDelete_data(xu4.screen);
+        screenDelete_sys();
+        delete xu4.screen;
+        xu4.screen = NULL;
+    }
 }
 
 /**
  * Re-initializes the screen and implements any changes made in settings
  */
 void screenReInit() {
-    screenDelete_data();
+    screenDelete_data(xu4.screen);
     screenInit_sys(xu4.settings, SYS_RESET);
-    screenInit_data(*xu4.settings); // Load new backgrounds, etc.
+    screenInit_data(xu4.screen, *xu4.settings); // Load new backgrounds, etc.
 }
 
 void screenTextAt(int x, int y, const char *fmt, ...) {
@@ -188,9 +211,10 @@ void screenTextAt(int x, int y, const char *fmt, ...) {
 }
 
 void screenPrompt() {
-    if (screenNeedPrompt && screenCursorEnabled && c->col == 0) {
+    Screen* scr = xu4.screen;
+    if (scr->needPrompt && scr->cursorEnabled && c->col == 0) {
         screenMessage("%c", CHARSET_PROMPT);
-        screenNeedPrompt = 0;
+        scr->needPrompt = 0;
     }
 }
 
@@ -280,11 +304,11 @@ void screenMessage(const char *fmt, ...) {
     screenSetCursorPos(TEXT_AREA_X + c->col, TEXT_AREA_Y + c->line);
     screenShowCursor();
 
-    screenNeedPrompt = 1;
+    xu4.screen->needPrompt = 1;
 }
 
-const vector<string> &screenGetGemLayoutNames() {
-    return gemLayoutNames;
+const vector<string>& screenGetGemLayoutNames() {
+    return xu4.screen->gemLayoutNames;
 }
 
 const char** screenGetFilterNames() {
@@ -299,31 +323,31 @@ const char** screenGetLineOfSightStyles() {
     return lineOfSightStyles;
 }
 
-static void screenLoadLayoutsFromConf() {
+static void screenLoadLayoutsFromConf(Screen* scr) {
     // Save gem layout names and find one to use.
     uint32_t count;
     uint32_t i;
     const Layout* layout = xu4.config->layouts(&count);
 
-    gemLayout = dungeonGemLayout = NULL;
-    gemLayoutNames.clear();
+    scr->gemLayout = scr->dungeonGemLayout = NULL;
+    scr->gemLayoutNames.clear();
 
     for (i = 0; i < count; ++i) {
         if (layout[i].type == LAYOUT_GEM) {
             const char* name = xu4.config->symbolName( layout[i].name );
-            gemLayoutNames.push_back(name);
+            scr->gemLayoutNames.push_back(name);
 
-            if (! gemLayout && xu4.settings->gemLayout == name)
-                gemLayout = layout + i;
+            if (! scr->gemLayout && xu4.settings->gemLayout == name)
+                scr->gemLayout = layout + i;
         } else if (layout[i].type == LAYOUT_DUNGEONGEM) {
-            if (! dungeonGemLayout)
-                dungeonGemLayout = layout + i;
+            if (! scr->dungeonGemLayout)
+                scr->dungeonGemLayout = layout + i;
         }
     }
 
-    if (! gemLayout)
+    if (! scr->gemLayout)
         errorFatal("no gem layout named %s found!\n", xu4.settings->gemLayout.c_str());
-    if (! dungeonGemLayout)
+    if (! scr->dungeonGemLayout)
         errorFatal("no dungeon gem layout found!\n");
 }
 
@@ -379,7 +403,8 @@ bool screenTileUpdate(TileView *view, const Coords &coords, bool redraw)
     }
 
     // Draw if it is on screen
-    if (x >= 0 && y >= 0 && x < VIEWPORT_W && y < VIEWPORT_H && screenLos[x][y])
+    if (x >= 0 && y >= 0 && x < VIEWPORT_W &&
+                            y < VIEWPORT_H && xu4.screen->screenLos[x][y])
     {
         view->drawTile(tiles, focus, x, y);
 
@@ -506,6 +531,7 @@ raster_update:
 
         screenFindLineOfSight(viewportTiles);
 
+        int (*screenLos)[VIEWPORT_H] = xu4.screen->screenLos;
         for (y = 0; y < VIEWPORT_H; y++) {
             for (x = 0; x < VIEWPORT_W; x++) {
                 if (screenLos[x][y]) {
@@ -585,7 +611,7 @@ void screenTextColor(int color) {
         case FG_RED:
         case FG_YELLOW:
         case FG_WHITE:
-            charsetInfo->image->setFontColorFG((ColorFG)color);
+            xu4.screen->charsetInfo->image->setFontColorFG((ColorFG)color);
     }
 }
 
@@ -593,6 +619,7 @@ void screenTextColor(int color) {
  * Draw a character from the charset onto the screen.
  */
 void screenShowChar(int chr, int x, int y) {
+    ImageInfo* charsetInfo = xu4.screen->charsetInfo;
     unsigned int scale = xu4.settings->scale;
     charsetInfo->image->drawSubRect(x * charsetInfo->image->width(), y * (CHAR_HEIGHT * scale),
                                     0, chr * (CHAR_HEIGHT * scale),
@@ -603,6 +630,7 @@ void screenShowChar(int chr, int x, int y) {
  * Scroll the text in the message area up one position.
  */
 void screenScrollMessageArea() {
+    ImageInfo* charsetInfo = xu4.screen->charsetInfo;
     ASSERT(charsetInfo != NULL && charsetInfo->image != NULL, "charset not initialized!");
 
     unsigned int scale = xu4.settings->scale;
@@ -625,17 +653,20 @@ void screenScrollMessageArea() {
 }
 
 void screenCycle() {
-    if (++screenCurrentCycle >= SCR_CYCLE_MAX)
-        screenCurrentCycle = 0;
+    int cycle = xu4.screen->state.currentCycle + 1;
+    if (cycle >= SCR_CYCLE_MAX)
+        cycle = 0;
+    xu4.screen->state.currentCycle = cycle;
 }
 
 void screenUpdateCursor() {
-    int phase = screenCurrentCycle * SCR_CYCLE_PER_SECOND / SCR_CYCLE_MAX;
+    Screen* scr = xu4.screen;
+    int phase = scr->state.currentCycle * SCR_CYCLE_PER_SECOND / SCR_CYCLE_MAX;
 
     ASSERT(phase >= 0 && phase < 4, "derived an invalid cursor phase: %d", phase);
 
-    if (screenCursorStatus) {
-        screenShowChar(31 - phase, screenCursorX, screenCursorY);
+    if (scr->cursorStatus) {
+        screenShowChar(31 - phase, scr->cursorX, scr->cursorY);
     }
 }
 
@@ -676,38 +707,42 @@ void screenUpdateWind() {
 }
 
 void screenShowCursor() {
-    if (!screenCursorStatus && screenCursorEnabled) {
-        screenCursorStatus = 1;
+    Screen* scr = xu4.screen;
+    if (! scr->cursorStatus && scr->cursorEnabled) {
+        scr->cursorStatus = 1;
         screenUpdateCursor();
     }
 }
 
 void screenHideCursor() {
-    if (screenCursorStatus) {
-        screenEraseTextArea(screenCursorX, screenCursorY, 1, 1);
+    Screen* scr = xu4.screen;
+    if (scr->cursorStatus) {
+        screenEraseTextArea(scr->cursorX, scr->cursorY, 1, 1);
     }
-    screenCursorStatus = 0;
+    scr->cursorStatus = 0;
 }
 
 void screenEnableCursor(void) {
-    screenCursorEnabled = 1;
+    xu4.screen->cursorEnabled = 1;
 }
 
 void screenDisableCursor(void) {
     screenHideCursor();
-    screenCursorEnabled = 0;
+    xu4.screen->cursorEnabled = 0;
 }
 
 void screenSetCursorPos(int x, int y) {
-    screenCursorX = x;
-    screenCursorY = y;
+    Screen* scr = xu4.screen;
+    scr->cursorX = x;
+    scr->cursorY = y;
 }
 
 /**
  * Finds which tiles in the viewport are visible from the avatars
  * location in the middle. (original DOS algorithm)
  */
-void screenFindLineOfSight(vector <MapTile> viewportTiles[VIEWPORT_W][VIEWPORT_H]) {
+static void screenFindLineOfSight(vector <MapTile> viewportTiles[VIEWPORT_W][VIEWPORT_H]) {
+    int (*screenLos)[VIEWPORT_H] = xu4.screen->screenLos;
     int x, y;
 
     if (!c)
@@ -745,7 +780,8 @@ void screenFindLineOfSight(vector <MapTile> viewportTiles[VIEWPORT_W][VIEWPORT_H
  * Finds which tiles in the viewport are visible from the avatars
  * location in the middle. (original DOS algorithm)
  */
-void screenFindLineOfSightDOS(vector <MapTile> viewportTiles[VIEWPORT_W][VIEWPORT_H]) {
+static void screenFindLineOfSightDOS(vector <MapTile> viewportTiles[VIEWPORT_W][VIEWPORT_H]) {
+    int (*screenLos)[VIEWPORT_H] = xu4.screen->screenLos;
     int x, y;
 
     screenLos[VIEWPORT_W / 2][VIEWPORT_H / 2] = 1;
@@ -843,7 +879,7 @@ void screenFindLineOfSightDOS(vector <MapTile> viewportTiles[VIEWPORT_W][VIEWPOR
  * viewport width and height are odd values and that the player
  * is always at the center of the screen.
  */
-void screenFindLineOfSightEnhanced(vector <MapTile> viewportTiles[VIEWPORT_W][VIEWPORT_H]) {
+static void screenFindLineOfSightEnhanced(vector <MapTile> viewportTiles[VIEWPORT_W][VIEWPORT_H]) {
     int x, y;
 
     /*
@@ -888,6 +924,7 @@ void screenFindLineOfSightEnhanced(vector <MapTile> viewportTiles[VIEWPORT_W][VI
 
     int octant;
     int xOrigin, yOrigin, xSign, ySign, reflect, xTile, yTile, xTileOffset, yTileOffset;
+    int (*screenLos)[VIEWPORT_H] = xu4.screen->screenLos;
 
     for (octant = 0; octant < _OCTANTS; octant++) {
         switch (octant) {
@@ -1019,8 +1056,7 @@ void screenFindLineOfSightEnhanced(vector <MapTile> viewportTiles[VIEWPORT_W][VI
             //
             if ((screenLos[x][y] & __VCH) == __VCH) {
                 screenLos[x][y] = 0;
-            }
-            else {
+            } else {
                 screenLos[x][y] = 1;
             }
         }
@@ -1139,15 +1175,16 @@ void screenEraseTextArea(int x, int y, int width, int height) {
  */
 void screenShake(int iterations) {
     if (xu4.settings->screenShakes) {
+        Screen* scr = xu4.screen;
         int shakeOffset = SCALED(1);
 
         for (int i = 0; i < iterations; i++) {
             // shift the screen down and make the top row black
-            screenVertOffset = shakeOffset;
+            scr->state.vertOffset = shakeOffset;
             EventHandler::sleep(xu4.settings->shakeInterval);
 
             // shift the screen back up
-            screenVertOffset = 0;
+            scr->state.vertOffset = 0;
             EventHandler::sleep(xu4.settings->shakeInterval);
         }
     }
@@ -1157,41 +1194,47 @@ void screenShake(int iterations) {
  * Draw a tile graphic on the screen.
  */
 static void screenShowGemTile(const Layout *layout, Map *map, MapTile &t, bool focus, int x, int y) {
+    Screen* scr = xu4.screen;
     unsigned int scale = xu4.settings->scale;
     unsigned int tile = xu4.config->usaveIds()->ultimaId(t);
 
     if (map->type == Map::DUNGEON) {
+        ImageInfo* charsetInfo = scr->charsetInfo;
         ASSERT(charsetInfo, "charset not initialized");
-        std::map<string, int>::iterator charIndex = dungeonTileChars.find(t.getTileType()->nameStr());
-        if (charIndex != dungeonTileChars.end()) {
-            charsetInfo->image->drawSubRect((layout->viewport.x + (x * layout->tileshape.width)) * scale,
-                                            (layout->viewport.y + (y * layout->tileshape.height)) * scale,
-                                            0,
-                                            charIndex->second * layout->tileshape.height * scale,
-                                            layout->tileshape.width * scale,
-                                            layout->tileshape.height * scale);
+
+        std::map<string, int>::iterator charIndex = scr->dungeonTileChars.find(t.getTileType()->nameStr());
+        if (charIndex != scr->dungeonTileChars.end()) {
+            charsetInfo->image->drawSubRect(
+                (layout->viewport.x + (x * layout->tileshape.width)) * scale,
+                (layout->viewport.y + (y * layout->tileshape.height)) * scale,
+                0,
+                charIndex->second * layout->tileshape.height * scale,
+                layout->tileshape.width * scale,
+                layout->tileshape.height * scale);
         }
     }
     else {
-        if (gemTilesInfo == NULL) {
-            gemTilesInfo = xu4.imageMgr->get(BKGD_GEMTILES);
-            if (!gemTilesInfo)
+        if (scr->gemTilesInfo == NULL) {
+            scr->gemTilesInfo = xu4.imageMgr->get(BKGD_GEMTILES);
+            if (! scr->gemTilesInfo)
                 errorFatal("ERROR 1002: Unable to load the \"%s\" data file.\t\n\nIs %s installed?\n\nVisit the XU4 website for additional information.\n\thttp://xu4.sourceforge.net/", BKGD_GEMTILES, xu4.settings->game.c_str());
         }
 
         if (tile < 128) {
-            gemTilesInfo->image->drawSubRect((layout->viewport.x + (x * layout->tileshape.width)) * scale,
-                                             (layout->viewport.y + (y * layout->tileshape.height)) * scale,
-                                             0,
-                                             tile * layout->tileshape.height * scale,
-                                             layout->tileshape.width * scale,
-                                             layout->tileshape.height * scale);
+            scr->gemTilesInfo->image->drawSubRect(
+                (layout->viewport.x + (x * layout->tileshape.width)) * scale,
+                (layout->viewport.y + (y * layout->tileshape.height)) * scale,
+                0,
+                tile * layout->tileshape.height * scale,
+                layout->tileshape.width * scale,
+                layout->tileshape.height * scale);
         } else {
-            xu4.screenImage->fillRect((layout->viewport.x + (x * layout->tileshape.width)) * scale,
-                             (layout->viewport.y + (y * layout->tileshape.height)) * scale,
-                             layout->tileshape.width * scale,
-                             layout->tileshape.height * scale,
-                             0, 0, 0);
+            xu4.screenImage->fillRect(
+                (layout->viewport.x + (x * layout->tileshape.width)) * scale,
+                (layout->viewport.y + (y * layout->tileshape.height)) * scale,
+                layout->tileshape.width * scale,
+                layout->tileshape.height * scale,
+                0, 0, 0);
         }
     }
 }
@@ -1209,9 +1252,9 @@ void screenGemUpdate() {
 
     const Layout *layout;
     if (c->location->map->type == Map::DUNGEON)
-        layout = dungeonGemLayout;
+        layout = xu4.screen->dungeonGemLayout;
     else
-        layout = gemLayout;
+        layout = xu4.screen->gemLayout;
 
 
     //TODO, move the code responsible for determining 'peer' visibility to a non SDL specific part of the code.
@@ -1320,15 +1363,18 @@ Image *screenScale(Image *src, int scale, int n, int filter) {
     if (n == 0)
         n = 1;
 
-    while (filter && filterScaler && (scale % 2 == 0)) {
-        dest = (*filterScaler)(src, 2, n);
-        src = dest;
-        scale /= 2;
-    }
-    if (scale == 3 && scaler3x(xu4.settings->filter)) {
-        dest = (*filterScaler)(src, 3, n);
-        src = dest;
-        scale /= 3;
+    Scaler filterScaler = xu4.screen->filterScaler;
+    if (filterScaler) {
+        while (filter && (scale % 2 == 0)) {
+            dest = (*filterScaler)(src, 2, n);
+            src = dest;
+            scale /= 2;
+        }
+        if (scale == 3 && scaler3x(xu4.settings->filter)) {
+            dest = (*filterScaler)(src, 3, n);
+            src = dest;
+            scale /= 3;
+        }
     }
 
     if (scale != 1)
@@ -1361,6 +1407,10 @@ Image *screenScaleDown(Image *src, int scale) {
     }
 
     return dest;
+}
+
+ScreenState* screenState() {
+    return &xu4.screen->state;
 }
 
 #ifdef IOS

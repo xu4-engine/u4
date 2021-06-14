@@ -107,7 +107,7 @@ public:
     typedef std::map<Symbol, TileAnim *> TileAnimMap;
 
     ~TileAnimSet();
-    TileAnim* getByName(Symbol name);
+    TileAnim* getByName(Symbol name) const;
 
     Symbol name;
     TileAnimMap tileanims;

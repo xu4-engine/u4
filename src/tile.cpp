@@ -13,6 +13,7 @@
 #include "imagemgr.h"
 #include "location.h"
 #include "settings.h"
+#include "screen.h"
 #include "tileanim.h"
 #include "tileset.h"
 #include "utils.h"
@@ -179,7 +180,7 @@ void Tile::loadImage() {
         }
 
         if (animationRule) {
-            extern TileAnimSet *tileanims;
+            const TileAnimSet* tileanims = screenState()->tileanims;
 
             anim = NULL;
             if (tileanims)

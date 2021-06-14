@@ -17,4 +17,4 @@ struct ScreenAllegro {
 #endif
 };
 
-#define SA  ((ScreenAllegro*) xu4.screen)
+#define SA  ((ScreenAllegro*) xu4.screenSys)

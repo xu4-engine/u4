@@ -35,7 +35,7 @@ void TileAnimTransform::draw(Image* dest, const Tile* tile,
         if (var.scroll.increment == 0)
             var.scroll.increment = tile->getScale();
 
-        int offset = screenCurrentCycle * 4 / SCR_CYCLE_PER_SECOND * tile->getScale();
+        int offset = screenState()->currentCycle * 4 / SCR_CYCLE_PER_SECOND * tile->getScale();
         if (var.scroll.lastOffset != offset) {
             var.scroll.lastOffset = offset;
             var.scroll.current += var.scroll.increment;
@@ -168,9 +168,9 @@ TileAnimSet::~TileAnimSet()
 /**
  * Returns the tile animation with the given name from the current set
  */
-TileAnim* TileAnimSet::getByName(Symbol name)
+TileAnim* TileAnimSet::getByName(Symbol name) const
 {
-    TileAnimMap::iterator i = tileanims.find(name);
+    TileAnimMap::const_iterator i = tileanims.find(name);
     if (i == tileanims.end())
         return NULL;
     return i->second;

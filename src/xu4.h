@@ -5,6 +5,7 @@
 class Settings;
 class Config;
 class ImageMgr;
+struct Screen;
 class Image;
 class EventHandler;
 class IntroController;
@@ -20,7 +21,8 @@ struct XU4GameServices {
     Settings* settings;
     Config* config;
     ImageMgr* imageMgr;
-    void* screen;
+    Screen* screen;
+    void* screenSys;
     void* gpu;
     Image* screenImage;
     EventHandler* eventHandler;

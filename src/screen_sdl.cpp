@@ -20,10 +20,7 @@
 #endif
 
 extern bool verbose;
-extern int screenVertOffset;
 extern unsigned int refresh_callback(unsigned int, void*);
-
-bool screenFormatIsABGR = true;
 
 struct ScreenSDL {
     SDL_Cursor *cursors[5];
@@ -32,7 +29,7 @@ struct ScreenSDL {
     int currentCursor;
 };
 
-#define SD  ((ScreenSDL*) xu4.screen)
+#define SD  ((ScreenSDL*) xu4.screenSys)
 
 SDL_Cursor *screenInitCursor(const char * const xpm[]);
 
@@ -73,7 +70,7 @@ void screenInit_sys(const Settings* settings, int reset) {
 #ifdef ICON_FILE
         SDL_WM_SetIcon(SDL_LoadBMP(ICON_FILE), NULL);
 #endif
-        xu4.screen = sd = new ScreenSDL;
+        xu4.screenSys = sd = new ScreenSDL;
         memset(sd, 0, sizeof(ScreenSDL));
     }
 
@@ -102,6 +99,7 @@ void screenInit_sys(const Settings* settings, int reset) {
     }
 
     {
+    ScreenState* state = screenState();
     SDL_Surface* ss = SDL_GetVideoSurface();
 #if 0
     printf( "SDL color masks: R:%08x G:%08x B:%08x A:%08x\n",
@@ -114,10 +112,10 @@ void screenInit_sys(const Settings* settings, int reset) {
                          ss->format->BitsPerPixel, ss->format->Rmask);
             // Fall through...
         case 0x00ff0000:
-            screenFormatIsABGR = false;
+            state->formatIsABGR = false;
             break;
         case 0x000000ff:
-            screenFormatIsABGR = true;
+            state->formatIsABGR = true;
             break;
     }
     }
@@ -140,7 +138,7 @@ void screenDelete_sys() {
     u4_SDL_QuitSubSystem(SDL_INIT_VIDEO | SDL_INIT_TIMER);
 
     delete sd;
-    xu4.screen = NULL;
+    xu4.screenSys = NULL;
 }
 
 /**
@@ -260,7 +258,7 @@ static void updateDisplay( int x, int y, int w, int h ) {
         int dpitch = ss->pitch / sizeof(uint32_t);
         int screenImageW = xu4.screenImage->width();
         int cr;
-        int offset = screenVertOffset;
+        int offset = screenState()->vertOffset;
 
 #if 0
         printf( "KR redraw format:(%d %08x %08x %d,%d pitch:%d\n",

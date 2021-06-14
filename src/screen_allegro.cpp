@@ -14,10 +14,6 @@
 #include "xu4.h"
 
 extern bool verbose;
-extern int screenVertOffset;
-
-
-bool screenFormatIsABGR = true;
 
 #if defined(MACOSX)
 #define CURSORSIZE 16
@@ -79,7 +75,6 @@ void screenInit_sys(const Settings* settings, int reset) {
     int dflags = ALLEGRO_OPENGL | ALLEGRO_OPENGL_3_0 |
                  ALLEGRO_OPENGL_FORWARD_COMPATIBLE;
 #else
-    int format;
     int dflags = 0;
 #endif
     int dw = 320 * settings->scale;
@@ -106,7 +101,7 @@ void screenInit_sys(const Settings* settings, int reset) {
         if (source)
             al_unregister_event_source(sa->queue, source);
     } else {
-        xu4.screen = sa = new ScreenAllegro;
+        xu4.screenSys = sa = new ScreenAllegro;
 #ifdef USE_GL
         xu4.gpu = &sa->gpu;
 #endif
@@ -142,17 +137,20 @@ void screenInit_sys(const Settings* settings, int reset) {
     //al_set_new_bitmap_format(ALLEGRO_PIXEL_FORMAT_ABGR_8888);
     //al_set_new_bitmap_flags(ALLEGRO_VIDEO_BITMAP);
 
-    format = al_get_display_format(sa->disp);
+    {
+    ScreenState* state = screenState();
+    int format = al_get_display_format(sa->disp);
     switch (format) {
         default:
             errorWarning("Unsupported Allegro pixel format: %d", format);
             // Fall through...
         case ALLEGRO_PIXEL_FORMAT_ARGB_8888:
-            screenFormatIsABGR = false;
+            state->formatIsABGR = false;
             break;
         case ALLEGRO_PIXEL_FORMAT_ABGR_8888:
-            screenFormatIsABGR = true;
+            state->formatIsABGR = true;
             break;
+    }
     }
 #endif
 
@@ -229,7 +227,7 @@ void screenDelete_sys() {
     sa->disp = NULL;
 
     delete sa;
-    xu4.screen = NULL;
+    xu4.screenSys = NULL;
 }
 
 /**
@@ -258,7 +256,7 @@ static void updateDisplay(int x, int y, int w, int h) {
     const uint32_t* sp;
     int dpitch, cr;
     int screenImageW = xu4.screenImage->width();
-    int offset = screenVertOffset;
+    int offset = screenState()->vertOffset;
 
 #if 0
     static uint32_t dt = 0;

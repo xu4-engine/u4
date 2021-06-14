@@ -8,16 +8,15 @@
 #include <list>
 #include "image.h"
 #include "settings.h"
+#include "screen.h"
 #include "xu4.h"
 
 #include "support/image32.c"
 
 #define CHANNEL_REMAP
 #ifdef CHANNEL_REMAP
-extern bool screenFormatIsABGR;
-
 static void screenColor(RGBA* col, int r, int g, int b, int a) {
-    if (screenFormatIsABGR) {
+    if (screenState()->formatIsABGR) {
         col->r = r;
         col->b = b;
     } else {
