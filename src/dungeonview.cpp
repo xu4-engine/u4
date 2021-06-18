@@ -25,6 +25,8 @@ DungeonView::DungeonView(int x, int y, int columns, int rows) : TileView(x, y, r
     up_ladder     = tileset->getByName(SYM_UP_LADDER)->getId();
     down_ladder   = tileset->getByName(SYM_DOWN_LADDER)->getId();
     updown_ladder = tileset->getByName(SYM_UP_DOWN_LADDER)->getId();
+
+    cacheGraphicData();
 }
 
 void DungeonView::display(Context * c, TileView *view)
@@ -300,68 +302,70 @@ DungeonGraphicType DungeonView::tilesToGraphic(const std::vector<MapTile> &tiles
     }
 }
 
+#define GRAPHIC_COUNT   78
+
 const struct {
-    const char *subimage;
-    int ega_x2, ega_y2;
-    int vga_x2, vga_y2;
-    const char *subimage2;
-} dngGraphicInfo[] = {
+    const char* imageName;
+    uint8_t ega_x2, ega_y2;
+    uint8_t vga_x2, vga_y2;
+    uint8_t subimage2;
+} dngGraphicInfo[GRAPHIC_COUNT] = {
     { "dung0_lft_ew", 0,0,0,0,0 },
     { "dung0_lft_ns", 0,0,0,0,0 },
     { "dung0_mid_ew", 0,0,0,0,0 },
     { "dung0_mid_ns", 0,0,0,0,0 },
     { "dung0_rgt_ew", 0,0,0,0,0 },
     { "dung0_rgt_ns", 0,0,0,0,0 },
-
-    { "dung1_lft_ew", 0, 32, 0, 8, "dung1_xxx_ew" },
-    { "dung1_lft_ns", 0, 32, 0, 8, "dung1_xxx_ns" },
+        // 6
+    { "dung1_lft_ew", 0, 32, 0, 8, 72 },        // + "dung1_xxx_ew"
+    { "dung1_lft_ns", 0, 32, 0, 8, 73 },        // + "dung1_xxx_ns"
     { "dung1_mid_ew", 0,0,0,0,0 },
     { "dung1_mid_ns", 0,0,0,0,0 },
-    { "dung1_rgt_ew", 144, 32, 160, 8, "dung1_xxx_ew" },
-    { "dung1_rgt_ns", 144, 32, 160, 8, "dung1_xxx_ns" },
-
-    { "dung2_lft_ew", 0, 64, 0, 48, "dung2_xxx_ew" },
-    { "dung2_lft_ns", 0, 64, 0, 48, "dung2_xxx_ns" },
+    { "dung1_rgt_ew", 144, 32, 160, 8, 72 },    // + "dung1_xxx_ew"
+    { "dung1_rgt_ns", 144, 32, 160, 8, 73 },    // + "dung1_xxx_ns"
+        // 12
+    { "dung2_lft_ew", 0, 64, 0, 48, 74 },       // + "dung2_xxx_ew"
+    { "dung2_lft_ns", 0, 64, 0, 48, 75 },       // + "dung2_xxx_ns"
     { "dung2_mid_ew", 0,0,0,0,0 },
     { "dung2_mid_ns", 0,0,0,0,0 },
-    { "dung2_rgt_ew", 112, 64, 128, 48, "dung2_xxx_ew" },
-    { "dung2_rgt_ns", 112, 64, 128, 48, "dung2_xxx_ns" },
-
-    { "dung3_lft_ew", 0, 80, 48, 72, "dung3_xxx_ew" },
-    { "dung3_lft_ns", 0, 80, 48, 72, "dung3_xxx_ns" },
+    { "dung2_rgt_ew", 112, 64, 128, 48, 74 },   // + "dung2_xxx_ew"
+    { "dung2_rgt_ns", 112, 64, 128, 48, 75 },   // + "dung2_xxx_ns"
+        // 18
+    { "dung3_lft_ew", 0, 80, 48, 72, 76 },      // + "dung3_xxx_ew"
+    { "dung3_lft_ns", 0, 80, 48, 72, 77 },      // + "dung3_xxx_ns"
     { "dung3_mid_ew", 0,0,0,0,0 },
     { "dung3_mid_ns", 0,0,0,0,0 },
-    { "dung3_rgt_ew", 96, 80, 104, 72, "dung3_xxx_ew" },
-    { "dung3_rgt_ns", 96, 80, 104, 72, "dung3_xxx_ns" },
-
+    { "dung3_rgt_ew", 96, 80, 104, 72, 76 },    // + "dung3_xxx_ew"
+    { "dung3_rgt_ns", 96, 80, 104, 72, 77 },    // + "dung3_xxx_ns"
+        // 24
     { "dung0_lft_ew_door", 0,0,0,0,0 },
     { "dung0_lft_ns_door", 0,0,0,0,0 },
     { "dung0_mid_ew_door", 0,0,0,0,0 },
     { "dung0_mid_ns_door", 0,0,0,0,0 },
     { "dung0_rgt_ew_door", 0,0,0,0,0 },
     { "dung0_rgt_ns_door", 0,0,0,0,0 },
-
-    { "dung1_lft_ew_door", 0, 32, 0, 8, "dung1_xxx_ew" },
-    { "dung1_lft_ns_door", 0, 32, 0, 8, "dung1_xxx_ns" },
+        // 30
+    { "dung1_lft_ew_door", 0, 32, 0, 8, 72 },       // + "dung1_xxx_ew"
+    { "dung1_lft_ns_door", 0, 32, 0, 8, 73 },       // + "dung1_xxx_ns"
     { "dung1_mid_ew_door", 0,0,0,0,0 },
     { "dung1_mid_ns_door", 0,0,0,0,0 },
-    { "dung1_rgt_ew_door", 144, 32, 160, 8, "dung1_xxx_ew" },
-    { "dung1_rgt_ns_door", 144, 32, 160, 8, "dung1_xxx_ns" },
-
-    { "dung2_lft_ew_door", 0, 64, 0, 48, "dung2_xxx_ew" },
-    { "dung2_lft_ns_door", 0, 64, 0, 48, "dung2_xxx_ns" },
+    { "dung1_rgt_ew_door", 144, 32, 160, 8, 72 },   // + "dung1_xxx_ew"
+    { "dung1_rgt_ns_door", 144, 32, 160, 8, 73 },   // + "dung1_xxx_ns"
+        // 36
+    { "dung2_lft_ew_door", 0, 64, 0, 48, 74 },      // + "dung2_xxx_ew"
+    { "dung2_lft_ns_door", 0, 64, 0, 48, 75 },      // + "dung2_xxx_ns"
     { "dung2_mid_ew_door", 0,0,0,0,0 },
     { "dung2_mid_ns_door", 0,0,0,0,0 },
-    { "dung2_rgt_ew_door", 112, 64, 128, 48, "dung2_xxx_ew" },
-    { "dung2_rgt_ns_door", 112, 64, 128, 48, "dung2_xxx_ns" },
-
-    { "dung3_lft_ew_door", 0, 80, 48, 72, "dung3_xxx_ew" },
-    { "dung3_lft_ns_door", 0, 80, 48, 72, "dung3_xxx_ns" },
+    { "dung2_rgt_ew_door", 112, 64, 128, 48, 74 },  // + "dung2_xxx_ew"
+    { "dung2_rgt_ns_door", 112, 64, 128, 48, 75 },  // + "dung2_xxx_ns"
+        // 42
+    { "dung3_lft_ew_door", 0, 80, 48, 72, 76 },     // + "dung3_xxx_ew"
+    { "dung3_lft_ns_door", 0, 80, 48, 72, 77 },     // + "dung3_xxx_ns"
     { "dung3_mid_ew_door", 0,0,0,0,0 },
     { "dung3_mid_ns_door", 0,0,0,0,0 },
-    { "dung3_rgt_ew_door", 96, 80, 104, 72, "dung3_xxx_ew" },
-    { "dung3_rgt_ns_door", 96, 80, 104, 72, "dung3_xxx_ns" },
-
+    { "dung3_rgt_ew_door", 96, 80, 104, 72, 76 },   // + "dung3_xxx_ew"
+    { "dung3_rgt_ns_door", 96, 80, 104, 72, 77 },   // + "dung3_xxx_ns"
+        // 48
     { "dung0_ladderup",      0,0,0,0,0 },
     { "dung0_ladderup_side", 0,0,0,0,0 },
     { "dung1_ladderup",      0,0,0,0,0 },
@@ -370,7 +374,7 @@ const struct {
     { "dung2_ladderup_side", 0,0,0,0,0 },
     { "dung3_ladderup",      0,0,0,0,0 },
     { "dung3_ladderup_side", 0,0,0,0,0 },
-
+        // 56
     { "dung0_ladderdown",      0,0,0,0,0 },
     { "dung0_ladderdown_side", 0,0,0,0,0 },
     { "dung1_ladderdown",      0,0,0,0,0 },
@@ -379,7 +383,7 @@ const struct {
     { "dung2_ladderdown_side", 0,0,0,0,0 },
     { "dung3_ladderdown",      0,0,0,0,0 },
     { "dung3_ladderdown_side", 0,0,0,0,0 },
-
+        // 64
     { "dung0_ladderupdown",      0,0,0,0,0 },
     { "dung0_ladderupdown_side", 0,0,0,0,0 },
     { "dung1_ladderupdown",      0,0,0,0,0 },
@@ -388,36 +392,98 @@ const struct {
     { "dung2_ladderupdown_side", 0,0,0,0,0 },
     { "dung3_ladderupdown",      0,0,0,0,0 },
     { "dung3_ladderupdown_side", 0,0,0,0,0 },
+        // 72
+    { "dung1_xxx_ew", 0,0,0,0,0 },
+    { "dung1_xxx_ns", 0,0,0,0,0 },
+    { "dung2_xxx_ew", 0,0,0,0,0 },
+    { "dung2_xxx_ns", 0,0,0,0,0 },
+    { "dung3_xxx_ew", 0,0,0,0,0 },
+    { "dung3_xxx_ns", 0,0,0,0,0 }
 };
 
+/*
+ * Cache wall graphic pointers at setup to avoid lookup by name and image
+ * loading during drawWall().
+ */
+void DungeonView::cacheGraphicData() {
+    const ImageInfo* info;
+    const SubImage* subimage;
+    const char* name;
+    int i;
+
+    for (i = 0; i < GRAPHIC_COUNT; ++i) {
+        name = dngGraphicInfo[i].imageName;
+
+        info = xu4.imageMgr->get(name);
+        if (info) {
+            graphic[i].info = info;
+            graphic[i].sub  = NULL;
+        } else {
+            subimage = xu4.imageMgr->getSubImage(name);
+            if (subimage) {
+                info = xu4.imageMgr->get(subimage->srcImageName);
+                graphic[i].info = info;
+                graphic[i].sub  = subimage;
+            } else {
+                graphic[i].info = NULL;
+                graphic[i].sub  = NULL;
+            }
+        }
+    }
+}
+
+static void drawGraphic(const ImageInfo* info, const SubImage* subimage,
+                        int x, int y, int scale) {
+    x = (BORDER_WIDTH  + x) * scale;
+    y = (BORDER_HEIGHT + y) * scale;
+
+    if (subimage) {
+        int scalep = scale / info->prescale;
+        info->image->drawSubRect(x, y,
+                                 subimage->x * scalep,
+                                 subimage->y * scalep,
+                                 subimage->width * scalep,
+                                 subimage->height * scalep);
+    } else
+        info->image->draw(x, y);
+}
+
 void DungeonView::drawWall(int xoffset, int distance, Direction orientation, DungeonGraphicType type) {
-    int index;
+    const SubImage* subimage;
+    int index, i2;
+    int x, y;
+    unsigned int scale = xu4.settings->scale;
 
     index = graphicIndex(xoffset, distance, orientation, type);
     if (index == -1 || distance >= 4)
         return;
+    if (! graphic[index].info)
+        return;
 
-    int x = 0, y = 0;
-    const SubImage* subimage = xu4.imageMgr->getSubImage(dngGraphicInfo[index].subimage);
+    // TODO: Make all graphics subimages of a single atlas image. This cannot
+    // be done until the screen render position of walls is separated from
+    // their subimage position.
+
+    subimage = graphic[index].sub;
     if (subimage) {
         x = subimage->x;
         y = subimage->y;
+    } else {
+        x = y = 0;
     }
+    drawGraphic(graphic[index].info, subimage, x, y, scale);
 
-    unsigned int scale = xu4.settings->scale;
-    screenDrawImage(dngGraphicInfo[index].subimage, (BORDER_WIDTH + x) * scale,
-                    (BORDER_HEIGHT + y) * scale);
-
-    if (dngGraphicInfo[index].subimage2 != NULL) {
-        // FIXME: subimage2 is a horrible hack, needs to be cleaned up
-        if (xu4.settings->videoType == "EGA")
-            screenDrawImage(dngGraphicInfo[index].subimage2,
-                            (8 + dngGraphicInfo[index].ega_x2) * scale,
-                            (8 + dngGraphicInfo[index].ega_y2) * scale);
-        else
-            screenDrawImage(dngGraphicInfo[index].subimage2,
-                            (8 + dngGraphicInfo[index].vga_x2) * scale,
-                            (8 + dngGraphicInfo[index].vga_y2) * scale);
+    // FIXME: subimage2 is a horrible hack, needs to be cleaned up
+    i2 = dngGraphicInfo[index].subimage2;
+    if (i2) {
+        if (xu4.settings->videoType == "EGA") {
+            x = dngGraphicInfo[index].ega_x2;
+            y = dngGraphicInfo[index].ega_y2;
+        } else {
+            x = dngGraphicInfo[index].vga_x2;
+            y = dngGraphicInfo[index].vga_y2;
+        }
+        drawGraphic(graphic[i2].info, graphic[i2].sub, x, y, scale);
     }
 }
 

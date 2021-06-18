@@ -124,7 +124,6 @@ const std::vector<std::string> &screenGetGemLayoutNames();
 const char** screenGetFilterNames();
 const char** screenGetLineOfSightStyles();
 
-void screenDrawImage(const std::string &name, int x = 0, int y = 0);
 void screenDrawImageInMapArea(const std::string &bkgd);
 
 void screenCycle(void);

@@ -26,23 +26,32 @@ typedef enum {
     DNGGRAPHIC_BASETILE
 } DungeonGraphicType;
 
-std::vector<MapTile> dungeonViewGetTiles(int fwd, int side);
-DungeonGraphicType dungeonViewTilesToGraphic(const std::vector<MapTile> &tiles);
+class ImageInfo;
+class SubImage;
 
 class DungeonView : public TileView {
 public:
     DungeonView(int x, int y, int columns, int rows);
 
-    int graphicIndex(int xoffset, int distance, Direction orientation, DungeonGraphicType type);
-    void drawTile(const Tile *tile, int x_offset, int distance, Direction orientation);
-    void drawWall(int xoffset, int distance, Direction orientation, DungeonGraphicType type);
+    void cacheGraphicData();
 
     void display(Context * c, TileView *view);
-    DungeonGraphicType tilesToGraphic(const std::vector<MapTile> &tiles);
 
     bool toggle3DDungeonView() {
         return screen3dDungeonViewEnabled = ! screen3dDungeonViewEnabled;
     }
+
+private:
+    void drawInDungeon(const Tile *tile, int x_offset, int distance, Direction orientation, bool tiled);
+    int graphicIndex(int xoffset, int distance, Direction orientation, DungeonGraphicType type);
+    void drawTile(const Tile *tile, int x_offset, int distance, Direction orientation);
+    DungeonGraphicType tilesToGraphic(const std::vector<MapTile> &tiles);
+    void drawWall(int xoffset, int distance, Direction orientation, DungeonGraphicType type);
+
+    struct GraphicData {
+        const ImageInfo* info;
+        const SubImage* sub;
+    };
 
     std::vector<MapTile> getTiles(int fwd, int side);
     MapTile black;
@@ -51,11 +60,8 @@ public:
     TileId up_ladder;
     TileId down_ladder;
     TileId updown_ladder;
-
-private:
     bool screen3dDungeonViewEnabled;
-
-    void drawInDungeon(const Tile *tile, int x_offset, int distance, Direction orientation, bool tiled);
+    GraphicData graphic[78];
 };
 
 #endif /* DUNGEONVIEW_H */

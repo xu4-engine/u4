@@ -153,6 +153,8 @@ static void screenInit_data(Screen* scr, Settings& settings) {
     EventHandler::setKeyRepeat(settings.keydelay, settings.keyinterval);
 
     initDungeonTileChars(scr->dungeonTileChars);
+    if (scr->dungeonView)
+        scr->dungeonView->cacheGraphicData();
 
     Tileset::loadImages();
 }
@@ -554,34 +556,6 @@ raster_update:
     screenUpdateMoons();
     screenUpdateWind();
 #endif
-}
-
-/**
- * Draw an image or subimage on the screen.
- */
-void screenDrawImage(const string &name, int x, int y) {
-    ImageInfo *info = xu4.imageMgr->get(name);
-    if (info) {
-        info->image->draw(x, y);
-        return;
-    }
-
-    const SubImage* subimage = xu4.imageMgr->getSubImage(name);
-    if (subimage)
-        info = xu4.imageMgr->get(subimage->srcImageName);
-
-    if (info) {
-        if (info) {
-            unsigned int scale = xu4.settings->scale;
-            info->image->drawSubRect(x, y,
-                                     subimage->x * (scale / info->prescale),
-                                     subimage->y * (scale / info->prescale),
-                                     subimage->width * (scale / info->prescale),
-                                     subimage->height * (scale / info->prescale));
-            return;
-        }
-    }
-    errorFatal("ERROR 1006: Unable to load the image \"%s\".\t\n\nIs %s installed?\n\nVisit the XU4 website for additional information.\n\thttp://xu4.sourceforge.net/", name.c_str(), xu4.settings->game.c_str());
 }
 
 void screenDrawImageInMapArea(const string &name) {
