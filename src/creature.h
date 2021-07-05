@@ -236,6 +236,7 @@ public:
     uint8_t         resists;
     uint8_t         slowedType;
     bool            leavestile;
+    uint8_t         u4SaveId;       // Alias for Object::tile in getByTile().
     uint16_t        mattr;          // CreatureAttrib
     uint16_t        movementAttr;   // CreatureMovementAttrib
     uint16_t        status;

@@ -488,6 +488,7 @@ process-cfg [
                     0x1 ranged
                     0x2 leavestile
                 ]
+                none-zero at/u4SaveId
             ]
 
             ctiles: reduce [
@@ -599,14 +600,22 @@ process-cfg [
             transforms: make binary! 512
         ) into [some [
             tok: set-word! (
+                aspec: second tok
+                anim-chance: 0
+                if eq? 'random first aspec [anim-chance: second aspec]
+
                 apair anim-dict
                     to-word first tok
                     to-coord reduce [
                         div size? transforms 20     ; sizeof(TileAnimTransform)
-                        none-zero select second tok 'random
+                        anim-chance
                     ]
+                current-trans: none
             ) into [some [
-                'random int!    ; Ignore, handled above.
+                'random set n int! (
+                    ; Ignore initial 'random as it is handled above.
+                    if current-trans [poke current-trans 2 n]
+                )
               | 'invert set n coord!      (new-transform 0 n)
               | 'scroll set n int!/coord! (new-transform 1 n)
               | 'frame                    (new-transform 2 0)
@@ -614,7 +623,7 @@ process-cfg [
                     2 coord!
                 ]
               | 'context-frame set n int! (
-                    poke current-trans 3 1
+                    poke current-trans 3 1  ; ACON_FRAME
                     poke current-trans 4 n
                 )
             ]]

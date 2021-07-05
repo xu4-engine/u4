@@ -1,3 +1,28 @@
+static uint16_t* makeCreatureTileIndex(const vector<Creature *>& clist,
+                                       const Tileset* ts,
+                                       const UltimaSaveIds& usaveIds) {
+    uint16_t* index = new uint16_t[ ts->tileCount ];
+    int ci, ccount;
+    TileId tid;
+
+    ccount = clist.size();
+    for (tid = 0; tid != ts->tileCount; ++tid) {
+        for (ci = 0; ci < ccount; ++ci) {
+            const Creature* cp = clist[ci];
+            if (cp->tile.id == tid)
+                break;
+            if (cp->u4SaveId) {
+                // This supports fire_phantom which is saved as fire_field.
+                if (tid == usaveIds.moduleId( cp->u4SaveId ).id)
+                    break;
+            }
+        }
+        index[tid] = (ci < ccount) ? ci : 0xffff;
+    }
+    return index;
+}
+
+#if 0
 #define DUMP_CONFIG
 #define CF_STR(id)   cfg->confString(id)
 #define CF_SYM(id)   cfg->symbolName(id)
@@ -92,3 +117,4 @@ void dumpMap(const Config* cfg, Map* map) {
         printf(")\n");
     }
 }
+#endif

@@ -150,6 +150,9 @@
             <subimage name="tile_hydra"         width="16" height="64"/>
             <subimage name="tile_dragon"        width="16" height="64"/>
             <subimage name="tile_balron"        width="16" height="64"/>
+
+            <!-- Dungeon monsters -->
+            <subimage name="tile_fire_phantom" x="0" y="1120" width="16" height="32"/>
         </image>
         <image name="charset"  filename="u4/charset.ega"  width="8"  height="2048" depth="4" filetype="image/x-u4raw" tiles="256"/>
         <image name="borders"  filename="u4/start.ega"    width="320" height="200" depth="4" filetype="image/x-u4rle"/>
@@ -557,6 +560,9 @@
             <subimage name="tile_hydra"         width="16" height="64"/>
             <subimage name="tile_dragon"        width="16" height="64"/>
             <subimage name="tile_balron"        width="16" height="64"/>
+
+            <!-- Dungeon monsters -->
+            <subimage name="tile_fire_phantom" x="0" y="1120" width="16" height="32"/>
         </image>
         <image name="tile_guard" filename="vga/tile_guard.png" tiles="4" fixup="blackTransparencyHack"/>
         <image name="charset"  filename="u4u/charset.vga"  width="8"  height="1024" depth="8" filetype="image/x-u4raw" tiles="128"/>
@@ -1794,6 +1800,10 @@
                 <color red="256" green="200" blue="0"/>                
             </transform>
         </tileanim>
+        <tileanim name="phantom_flicker">
+            <transform type="frame" random="50"/>
+            <transform type="scroll" increment="1"/>
+        </tileanim>
     </tileanimset>
 
     <tileanimset name="VGA">
@@ -1852,6 +1862,10 @@
                 <color red="0" green="0" blue="0"/>
                 <color red="156" green="0" blue="0"/>                
             </transform>
+        </tileanim>
+        <tileanim name="phantom_flicker">
+            <transform type="frame" random="50"/>
+            <transform type="scroll" increment="1"/>
         </tileanim>
     </tileanimset>
     

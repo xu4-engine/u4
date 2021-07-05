@@ -719,20 +719,7 @@ bool Creature::dealDamage(Map* map, Creature *m, int damage) {
  * or NULL if a creature with that tile cannot be found
  */
 const Creature* Creature::getByTile(const MapTile& tile) {
-    uint32_t i;
-    uint32_t count;
-    const Creature* const* creatures = xu4.config->creatureTable(&count);
-    const Creature* cp;
-
-    for (i = 0; i < count; ++i) {
-        cp = creatures[i];
-        if (cp->tile == tile)
-            return cp;
-    }
-
-//    if (tile.id)
-//      errorWarning("Did not find creature for tile %d", tile.id);
-    return NULL;
+    return xu4.config->creatureOfTile(tile.id);
 }
 
 /**

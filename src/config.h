@@ -75,6 +75,7 @@ public:
     int armorType( const char* name );
     int weaponType( const char* name );
     const Creature* creature( uint32_t id ) const;
+    const Creature* creatureOfTile( TileId id ) const;
     const Creature* const* creatureTable( uint32_t* plen ) const;
     const TileRule* tileRule( Symbol name ) const;
     const Tileset* tileset() const;

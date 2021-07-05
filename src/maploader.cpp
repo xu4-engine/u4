@@ -422,8 +422,11 @@ static bool loadDungeonMap(Map *map, U4FILE *uf, FILE *sav) {
         u4fread(dungeon->rooms[i].buffer, sizeof(dungeon->rooms[i].buffer), 1, uf);
 
         /* translate each creature tile to a tile id */
-        for (j = 0; j < sizeof(dungeon->rooms[i].creature_tiles); j++)
-            dungeon->rooms[i].creature_tiles[j] = usaveIds->moduleId(dungeon->rooms[i].creature_tiles[j]).id;
+        uint8_t* ct = dungeon->rooms[i].creature_tiles;
+        for (j = 0; j < sizeof(dungeon->rooms[i].creature_tiles); j++) {
+            *ct = usaveIds->moduleId( *ct ).id;
+            ++ct;
+        }
 
         /* translate each map tile to a tile id */
         for (j = 0; j < sizeof(room_tiles); j++)

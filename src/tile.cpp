@@ -248,10 +248,13 @@ int Tile::frameForDirection(Direction d) const {
  */
 uint16_t Tile::startFrameAnim() const {
     if (frames && anim && anim->transforms[0]->animType == ATYPE_FRAME) {
-        //printf( "KR anim %d,%d\n", frames, anim->random );
+        int chance = anim->random;
+        if (chance == 0)
+            chance = anim->transforms[0]->random;
+        //printf("KR anim %d,%d\n", frames, chance);
         return anim_startCycleRandomI(&xu4.eventHandler->flourishAnim,
                                       0.25, ANIM_FOREVER, 0,
-                                      0, frames, anim->random);
+                                      0, frames, chance);
     }
     return ANIM_UNUSED;
 }

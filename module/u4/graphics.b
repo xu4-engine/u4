@@ -151,6 +151,7 @@ imageset EGA [
         tile_hydra      4
         tile_dragon     4
         tile_balron     4
+        at 0,1120 tile_fire_phantom 2
     ]
     image (name: charset filename: "u4/charset.ega" width: 8 height: 2048 depth: 4 filetype: u4raw tiles: 256)
     image (name: borders filename: "u4/start.ega" width: 320 height: 200 depth: 4 filetype: u4rle)
@@ -569,6 +570,7 @@ imageset EGA/VGA [
         tile_hydra      4
         tile_dragon     4
         tile_balron     4
+        at 0,1120 tile_fire_phantom 2
     ]
     image (name: tile_guard filename: "vga/tile_guard.png" tiles: 4 fixup: blackTransparencyHack)
     image (name: charset filename: "u4u/charset.vga" width: 8 height: 1024 depth: 8 filetype: u4raw tiles: 128)
@@ -768,6 +770,7 @@ tileanimset EGA [
             256,200, 0
         ]
     ]
+    phantom_flicker: [frame random 50 scroll 1]
 ]
 
 tileanimset VGA [
@@ -802,6 +805,7 @@ tileanimset VGA [
             156, 0, 0
         ]
     ]
+    phantom_flicker: [frame random 50 scroll 1]
 ]
 
 ]

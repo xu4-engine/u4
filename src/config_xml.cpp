@@ -2,6 +2,7 @@
  * config.cpp
  */
 
+#include <cassert>
 #include <cstdio>
 #include <cstdarg>
 #include <cstdlib>
@@ -46,7 +47,7 @@
 #include "xu4.h"
 #include "support/SymbolTable.h"
 
-//#include "config_dump.cpp"
+#include "config_data.cpp"
 
 using namespace std;
 
@@ -81,6 +82,7 @@ struct XMLConfig
     vector<Armor*> armors;
     vector<Weapon*> weapons;
     vector<Creature *> creatures;
+    uint16_t* creatureTileIndex;
     vector<Map *> mapList;
     vector<Coords> moongateList;    // Moon phase map coordinates.
 
@@ -773,6 +775,9 @@ static void conf_creatureLoad(ConfigXML* cfg, Creature* cr, Tileset* ts, const C
     /* find out if the creature leaves a tile behind on ranged attacks */
     cr->leavestile = conf.getBool("leavestile");
 
+    /* Alias for mapping TileId to Creature */
+    cr->u4SaveId = conf.getInt("u4SaveId");
+
     /* get effects that this creature is immune to */
     for (idx = 0; idx < sizeof(effects) / sizeof(effects[0]); idx++) {
         if (conf.getString("resists") == effects[idx].name)
@@ -838,6 +843,7 @@ static Weapon* conf_weapon(ConfigXML*, int type, const ConfigElement&);
 ConfigXML::ConfigXML() {
     backend = &xcd;
 
+    xcd.creatureTileIndex = NULL;
     xcd.tileset = NULL;
     memset(&xcd.usaveIds, 0, sizeof(xcd.usaveIds));
 
@@ -999,6 +1005,9 @@ ConfigXML::ConfigXML() {
         conf_creatureLoad(this, cr, xcd.tileset, *it);
         xcd.creatures[cr->getId()] = cr;
     }
+    xcd.creatureTileIndex = makeCreatureTileIndex(xcd.creatures,
+                                                  xcd.tileset,
+                                                  xcd.usaveIds);
     }
 }
 
@@ -1014,6 +1023,7 @@ ConfigXML::~ConfigXML() {
     vector<Creature *>::iterator cit;
     foreach (cit, xcd.creatures)
         delete *cit;
+    delete[] xcd.creatureTileIndex;
 
     vector<Armor *>::iterator ait;
     foreach (ait, xcd.armors)
@@ -1271,6 +1281,20 @@ int Config::weaponType( const char* name ) {
 const Creature* Config::creature( uint32_t id ) const {
     if (id < CB->creatures.size())
         return CB->creatures[id];
+    return NULL;
+}
+
+/**
+ * Returns the creature of the corresponding TileId or NULL if not found.
+ */
+const Creature* Config::creatureOfTile( TileId tid ) const {
+    const XMLConfig* cd = CB;
+    assert(tid < cd->tileset->tileCount);
+
+    uint16_t n = cd->creatureTileIndex[tid];
+    if (n < cd->creatures.size())
+        return cd->creatures[n];
+    //printf("creatureOfTile %d NULL\n", tid);
     return NULL;
 }
 

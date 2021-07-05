@@ -123,7 +123,9 @@ creatures: [
     ; Ankh in Skara Brae
     (id: 58 name: "Ankh" tile: ankh basehp: 255 exp: 16 good: true)
     ; Peculiar Fire field phantoms found in Destard LV4
-    (id: 59 name: "Phantom" tile: fire_field basehp: 48 exp: 14 canMoveOntoCreatures: true resists: fire canMoveOntoAvatar: true rangedhittile: random rangedmisstile: fire_field leader: 45 divides: true)
+    (id: 59 name: "Phantom" tile: fire_phantom basehp: 48 exp: 14
+     resists: fire canMoveOntoAvatar: true rangedhittile: random
+     rangedmisstile: fire_field leader: 45 divides: true u4SaveId: 70)
 ]
 
 tile-rules: [
@@ -312,6 +314,7 @@ tileset: [
     (name: dungeon_room image: tile_solid rule: dng_room)
     (name: dungeon_door image: tile_door rule: dng_door)
     (name: dungeon_altar image: tile_altar rule: dng_altar)
+    (name: fire_phantom rule: fire_field frames: 2 animation: phantom_flicker)
 ]
 
 u4-save-ids: [

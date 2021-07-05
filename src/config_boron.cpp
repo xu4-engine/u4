@@ -29,7 +29,7 @@
 #include "u4file.h"
 #include "xu4.h"
 
-//#include "config_dump.cpp"
+#include "config_data.cpp"
 
 // Order matches config context in pack-xu4.b.
 enum ConfigValues
@@ -79,6 +79,7 @@ struct ConfigData
     Armor* armors;
     vector<Weapon*> weapons;
     vector<Creature *> creatures;
+    uint16_t* creatureTileIndex;
     vector<Map *> mapList;
     vector<Coords> moongateList;    // Moon phase map coordinates.
 
@@ -659,7 +660,7 @@ static Creature* conf_creature(ConfigBoron* cfg, Tileset* ts, UBlockIt& bi)
         return NULL;
 
     // numA: id leader spawnsOnDeath basehp exp encounterSize
-    // numB: attr movementAttr resists flags
+    // numB: attr movementAttr resists flags u4SaveId
     const int16_t* numA = bi.it[0].coord.n;
     const int16_t* numB = bi.it[3].coord.n;
 
@@ -692,6 +693,7 @@ static Creature* conf_creature(ConfigBoron* cfg, Tileset* ts, UBlockIt& bi)
     cr->resists    = numB[2];
     cr->ranged     = numB[3] & 1;
     cr->leavestile = numB[3] & 2;
+    cr->u4SaveId   = numB[4];
 
     if (cr->spawn)
         attr |= MATTR_SPAWNSONDEATH;
@@ -848,6 +850,7 @@ ConfigBoron::ConfigBoron(const char* modulePath)
 
     backend = &xcd;
 
+    xcd.creatureTileIndex = NULL;
     xcd.tileset = NULL;
     xcd.modulePath = modulePath;
     memset(&xcd.usaveIds, 0, sizeof(xcd.usaveIds));
@@ -1026,6 +1029,10 @@ fail:
             xcd.creatures[id] = cr;
         }
         xcd.creatures.resize(last + 1);
+
+        xcd.creatureTileIndex = makeCreatureTileIndex(xcd.creatures,
+                                                      xcd.tileset,
+                                                      xcd.usaveIds);
     }
 
     // vendors
@@ -1048,6 +1055,7 @@ ConfigBoron::~ConfigBoron()
     vector<Creature *>::iterator cit;
     foreach (cit, xcd.creatures)
         delete *cit;
+    delete[] xcd.creatureTileIndex;
 
     delete[] xcd.armors;
 
@@ -1270,6 +1278,20 @@ int Config::weaponType( const char* name ) {
 const Creature* Config::creature( uint32_t id ) const {
     if (id < CB->creatures.size())
         return CB->creatures[id];
+    return NULL;
+}
+
+/**
+ * Returns the creature of the corresponding TileId or NULL if not found.
+ */
+const Creature* Config::creatureOfTile( TileId tid ) const {
+    const ConfigData* cd = CB;
+    assert(tid < cd->tileset->tileCount);
+
+    uint16_t n = cd->creatureTileIndex[tid];
+    if (n < cd->creatures.size())
+        return cd->creatures[n];
+    //printf("creatureOfTile %d NULL\n", tid);
     return NULL;
 }
 
