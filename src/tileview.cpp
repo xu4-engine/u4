@@ -24,6 +24,7 @@ TileView::TileView(int x, int y, int columns, int rows) : View(x, y, columns * T
     tileWidth  = TILE_WIDTH;
     tileHeight = TILE_HEIGHT;
     tileset = xu4.config->tileset();
+    SCALED_VAR
     animated = Image::create(SCALED(tileWidth), SCALED(tileHeight));
 }
 
@@ -40,6 +41,7 @@ void TileView::reinit() {
         delete animated;
         animated = NULL;
     }
+    SCALED_VAR
     animated = Image::create(SCALED(tileWidth), SCALED(tileHeight));
 }
 
@@ -59,6 +61,7 @@ void TileView::loadTile(const MapTile &mapTile)
  */
 void TileView::drawTile(const MapTile &mapTile, bool focus, int x, int y) {
     const Tile *tile = tileset->get(mapTile.id);
+    SCALED_VAR
 
     ASSERT(x < columns, "x value of %d out of range", x);
     ASSERT(y < rows, "y value of %d out of range", y);
@@ -110,6 +113,7 @@ void TileView::drawTile(vector<MapTile> &tiles, bool focus, int x, int y) {
     ASSERT(x < columns, "x value of %d out of range", x);
     ASSERT(y < rows, "y value of %d out of range", y);
     int layer = 0;
+    SCALED_VAR
 
     //animated->fillRect(0,0, SCALED(tileWidth),SCALED(tileHeight), 0,0,0,0);
 
@@ -166,6 +170,7 @@ void TileView::drawFocus(int x, int y) {
     ASSERT(x < columns, "x value of %d out of range", x);
     ASSERT(y < rows, "y value of %d out of range", y);
     Image* screen = xu4.screenImage;
+    SCALED_VAR
 
     /*
      * draw the focus rectangle around the tile

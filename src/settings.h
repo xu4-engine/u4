@@ -9,6 +9,16 @@
 #include "observable.h"
 #include "types.h"
 
+#ifdef USE_GL
+#define SCALED_BASE 1
+#define SCALED_VAR
+#define SCALED(n)   n
+#else
+#define SCALED_BASE xu4.settings->scale
+#define SCALED_VAR  int sscale = xu4.settings->scale;
+#define SCALED(n)   ((n) * sscale)
+#endif
+
 #define MIN_SHAKE_INTERVAL              50
 
 #define MAX_BATTLE_SPEED                10

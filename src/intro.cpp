@@ -1581,8 +1581,11 @@ void IntroController::addTitle(int x, int y, int w, int h, AnimType method, int 
         duration,           // total animation time
         NULL,               // storage for the source image
         NULL,               // storage for the animation frame
-        std::vector<AnimPlot>(),
-        false};             // prescaled
+        std::vector<AnimPlot>()
+#ifndef USE_GL
+        , false
+#endif
+    };
     titles.push_back(data);
 }
 
@@ -1605,12 +1608,18 @@ void IntroController::getTitleSourceData()
     if (!info)
         errorLoadImage(BKGD_INTRO);
 
+#ifdef USE_GL
+#define ISCALE(n)   n
+#else
+#define ISCALE(n)   (n * info->prescale)
     if (info->width  / info->prescale != 320 ||
         info->height / info->prescale != 200)
     {
         // the image appears to have been scaled already
         errorWarning("The title image has been scaled too early!");
     }
+    SCALED_VAR;
+#endif
 
     // for each element, get the source data
     for (unsigned i=0; i < titles.size(); i++)
@@ -1620,18 +1629,15 @@ void IntroController::getTitleSourceData()
         {
             // create a place to store the source image
             titles[i].srcImage = Image::create(
-                titles[i].rw * info->prescale,
-                titles[i].rh * info->prescale);
+                ISCALE(titles[i].rw),
+                ISCALE(titles[i].rh));
 
             // get the source image
-            info->image->drawSubRectOn(
-                titles[i].srcImage,
-                0,
-                0,
-                titles[i].rx * info->prescale,
-                titles[i].ry * info->prescale,
-                titles[i].rw * info->prescale,
-                titles[i].rh * info->prescale);
+            info->image->drawSubRectOn(titles[i].srcImage, 0, 0,
+                ISCALE(titles[i].rx),
+                ISCALE(titles[i].ry),
+                ISCALE(titles[i].rw),
+                ISCALE(titles[i].rh));
         }
 
         // after getting the srcImage
@@ -1686,7 +1692,7 @@ void IntroController::getTitleSourceData()
                     int x = (y < 6) ? 133 : 0;
                     for ( ; x < titles[i].rw ; x++)
                     {
-                        titles[i].srcImage->getPixel(x*info->prescale, y*info->prescale, r, g, b, a);
+                        titles[i].srcImage->getPixel(ISCALE(x), ISCALE(y), r, g, b, a);
                         if (r || g || b)
                         {
                             AnimPlot plot = {
@@ -1706,12 +1712,14 @@ void IntroController::getTitleSourceData()
                 // fill the map area with the transparent color
                 titles[i].srcImage->fillRect(8, 8, 304, 80, 0, 0, 0, 0);
 
+#ifndef USE_GL
                 Image *scaled;      // the scaled and filtered image
                 scaled = screenScale(titles[i].srcImage, xu4.settings->scale / info->prescale, 1, 1);
 
                 titles[i].prescaled = true;
                 delete titles[i].srcImage;
                 titles[i].srcImage = scaled;
+#endif
 
                 titles[i].animStepMax = 20;
                 break;
@@ -1726,17 +1734,24 @@ void IntroController::getTitleSourceData()
 
         // create the initial animation frame
         titles[i].destImage = Image::create(
+#ifdef USE_GL
+            2 + titles[i].rw, 2 + titles[i].rh
+#else
             2 + (titles[i].prescaled ? SCALED(titles[i].rw) : titles[i].rw) * info->prescale ,
-            2 + (titles[i].prescaled ? SCALED(titles[i].rh) : titles[i].rh) * info->prescale);
+            2 + (titles[i].prescaled ? SCALED(titles[i].rh) : titles[i].rh) * info->prescale
+#endif
+            );
         titles[i].destImage->fill(Image::black);
     }
 
+#ifndef USE_GL
     // scale the original image now
     Image *scaled = screenScale(info->image,
                                 xu4.settings->scale / info->prescale,
                                 1, 1);
     delete info->image;
     info->image = scaled;
+#endif
 }
 
 
@@ -1940,6 +1955,8 @@ bool IntroController::updateTitle()
 
         case MAP:
         {
+            SCALED_VAR
+
             if (bSkipTitles)
                 title->animStep = title->animStepMax;
             else
@@ -2059,7 +2076,12 @@ void IntroController::compactTitle()
 //
 void IntroController::drawTitle()
 {
+#ifdef USE_GL
+    title->destImage->drawSubRect(title->rx, title->ry, 1, 1,
+                                  title->rw, title->rh);
+#else
     Image *scaled;      // the scaled and filtered image
+    SCALED_VAR
 
     // blit the scaled and filtered surface to the screen
     if (title->prescaled)
@@ -2080,6 +2102,7 @@ void IntroController::drawTitle()
         delete scaled;
         scaled = NULL;
     }
+#endif
 }
 
 

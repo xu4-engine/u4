@@ -121,7 +121,12 @@ static void screenInit_data(Screen* scr, Settings& settings) {
         errorFatal("Invalid filter %d", settings.filter);
 
     // Create a special purpose image that represents the whole screen.
-    xu4.screenImage = Image::create(320 * settings.scale, 200 * settings.scale);
+    xu4.screenImage = Image::create
+#ifdef USE_GL
+        (320, 200);
+#else
+        (320 * settings.scale, 200 * settings.scale);
+#endif
     xu4.screenImage->fill(Image::black);
 
     xu4.imageMgr = new ImageMgr;
@@ -443,7 +448,9 @@ bool screenTileUpdate(TileView *view, const Coords &coords, bool redraw)
     return false;
 }
 
-#ifdef USE_GL
+//#define GPU_RENDER
+
+#ifdef GPU_RENDER
 struct SpriteRenderData {
     float* attr;
     const float* uvTable;
@@ -477,7 +484,7 @@ static void drawSprite(const Coords* loc, VisualId vid, void* user) {
 void screenUpdate(TileView *view, bool showmap, bool blackout) {
     ASSERT(c != NULL, "context has not yet been initialized");
 
-#ifdef USE_GL
+#ifdef GPU_RENDER
     //static const float clearColor[4] = {0.0, 0.5, 0.8, 1.0};
     const Image* screen = xu4.screenImage;
     Location* loc = c->location;
@@ -583,11 +590,11 @@ void screenDrawImageInMapArea(Symbol name) {
     if (!info)
         errorLoadImage(name);
 
-    unsigned int scale = xu4.settings->scale;
-    info->image->drawSubRect(BORDER_WIDTH * scale, BORDER_HEIGHT * scale,
-                             BORDER_WIDTH * scale, BORDER_HEIGHT * scale,
-                             VIEWPORT_W * TILE_WIDTH * scale,
-                             VIEWPORT_H * TILE_HEIGHT * scale);
+    SCALED_VAR;
+    info->image->drawSubRect(SCALED(BORDER_WIDTH), SCALED(BORDER_HEIGHT),
+                             SCALED(BORDER_WIDTH), SCALED(BORDER_HEIGHT),
+                             VIEWPORT_W * SCALED(TILE_WIDTH),
+                             VIEWPORT_H * SCALED(TILE_HEIGHT));
 }
 
 
@@ -617,37 +624,35 @@ void screenTextColor(int color) {
  * Draw a character from the charset onto the screen.
  */
 void screenShowChar(int chr, int x, int y) {
-    ImageInfo* charsetInfo = xu4.screen->charsetInfo;
-    unsigned int scale = xu4.settings->scale;
-    charsetInfo->image->drawSubRect(x * charsetInfo->image->width(), y * (CHAR_HEIGHT * scale),
-                                    0, chr * (CHAR_HEIGHT * scale),
-                                    charsetInfo->image->width(), CHAR_HEIGHT * scale);
+    ImageInfo* charset = xu4.screen->charsetInfo;
+    SCALED_VAR
+    int charW = charset->image->width();
+    int charH = SCALED(CHAR_HEIGHT);
+
+    charset->image->drawSubRect(x * charW, y * charH,
+                                0, chr * charH, charW, charH);
 }
 
 /**
  * Scroll the text in the message area up one position.
  */
 static void screenScrollMessageArea() {
-    ImageInfo* charsetInfo = xu4.screen->charsetInfo;
-    ASSERT(charsetInfo != NULL && charsetInfo->image != NULL, "charset not initialized!");
+    ImageInfo* charset = xu4.screen->charsetInfo;
+    ASSERT(charset != NULL && charset->image != NULL, "charset not initialized!");
 
-    unsigned int scale = xu4.settings->scale;
+    SCALED_VAR
     Image* screen = xu4.screenImage;
+    int charW = charset->image->width();
+    int charH = SCALED(CHAR_HEIGHT);
 
     screen->drawSubRectOn(screen,
-                          TEXT_AREA_X * charsetInfo->image->width(),
-                          TEXT_AREA_Y * CHAR_HEIGHT * scale,
-                          TEXT_AREA_X * charsetInfo->image->width(),
-                          (TEXT_AREA_Y + 1) * CHAR_HEIGHT * scale,
-                          TEXT_AREA_W * charsetInfo->image->width(),
-                          (TEXT_AREA_H - 1) * CHAR_HEIGHT * scale);
+                          TEXT_AREA_X * charW, TEXT_AREA_Y * charH,
+                          TEXT_AREA_X * charW, (TEXT_AREA_Y + 1) * charH,
+                          TEXT_AREA_W * charW, (TEXT_AREA_H - 1) * charH);
 
-
-    screen->fillRect(TEXT_AREA_X * charsetInfo->image->width(),
-                     TEXT_AREA_Y * CHAR_HEIGHT * scale + (TEXT_AREA_H - 1) * CHAR_HEIGHT * scale,
-                     TEXT_AREA_W * charsetInfo->image->width(),
-                     CHAR_HEIGHT * scale,
-                     0, 0, 0);
+    screen->fillRect(TEXT_AREA_X * charW,
+                     TEXT_AREA_Y * charH + (TEXT_AREA_H - 1) * charH,
+                     TEXT_AREA_W * charW, charH, 0, 0, 0);
 }
 
 void screenCycle() {
@@ -1167,19 +1172,19 @@ void screenRedrawMapArea() {
 }
 
 void screenEraseMapArea() {
-    unsigned int scale = xu4.settings->scale;
-    xu4.screenImage->fillRect(BORDER_WIDTH * scale, BORDER_HEIGHT * scale,
-                              VIEWPORT_W * TILE_WIDTH * scale,
-                              VIEWPORT_H * TILE_HEIGHT * scale,
+    SCALED_VAR
+    xu4.screenImage->fillRect(SCALED(BORDER_WIDTH), SCALED(BORDER_HEIGHT),
+                              VIEWPORT_W * SCALED(TILE_WIDTH),
+                              VIEWPORT_H * SCALED(TILE_HEIGHT),
                               0, 0, 0);
 }
 
 void screenEraseTextArea(int x, int y, int width, int height) {
-    unsigned int scale = xu4.settings->scale;
-    xu4.screenImage->fillRect(x * CHAR_WIDTH * scale, y * CHAR_HEIGHT * scale,
-                              width * CHAR_WIDTH * scale,
-                              height * CHAR_HEIGHT * scale,
-                              0, 0, 0);
+    SCALED_VAR
+    int charW = SCALED(CHAR_WIDTH);
+    int charH = SCALED(CHAR_HEIGHT);
+    xu4.screenImage->fillRect(x * charW, y * charH,
+                              width * charW, height * charH, 0, 0, 0);
 }
 
 /**
@@ -1188,6 +1193,7 @@ void screenEraseTextArea(int x, int y, int width, int height) {
 void screenShake(int iterations) {
     if (xu4.settings->screenShakes) {
         Screen* scr = xu4.screen;
+        SCALED_VAR
         int shakeOffset = SCALED(1);
 
         for (int i = 0; i < iterations; i++) {

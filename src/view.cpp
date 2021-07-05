@@ -11,10 +11,11 @@ View::View(int x, int y, int width, int height)
 : x(x), y(y), width(width), height(height), highlightX(0), highlightY(0), highlightW(0), highlightH(0), highlighted(false)
 {
 #ifdef USE_GL
-    screenRect[0] = SCALED(x);
-    screenRect[1] = xu4.screenImage->height() - SCALED(y + height);
-    screenRect[2] = SCALED(width);
-    screenRect[3] = SCALED(height);
+    int scale = xu4.settings->scale;
+    screenRect[0] = x * scale;
+    screenRect[1] = (xu4.screenImage->height() - (y + height)) * scale;
+    screenRect[2] = width  * scale;
+    screenRect[3] = height * scale;
 #endif
 }
 
@@ -28,6 +29,7 @@ void View::reinit() {
  * Clear the view to black.
  */
 void View::clear() {
+    SCALED_VAR
     unhighlight();
     xu4.screenImage->fillRect(SCALED(x), SCALED(y), SCALED(width), SCALED(height), 0, 0, 0);
 }
@@ -74,6 +76,7 @@ void View::unhighlight() {
 }
 
 void View::drawHighlighted() {
+    SCALED_VAR
     Image *tmp = Image::create(SCALED(highlightW), SCALED(highlightH));
     if (!tmp)
         return;

@@ -131,7 +131,7 @@ const char* Tile::nameStr() const {
  */
 void Tile::loadImage() {
     if (!image) {
-        scale = xu4.settings->scale;
+        scale = SCALED_BASE;
 
         const SubImage* subimage = NULL;
 
@@ -200,7 +200,7 @@ void Tile::deleteImage()
         delete image;
         image = NULL;
     }
-    scale = xu4.settings->scale;
+    scale = SCALED_BASE;
 }
 
 /**

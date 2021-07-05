@@ -315,6 +315,12 @@ static void updateDisplay(int x, int y, int w, int h) {
 void screenSwapBuffers() {
 #ifdef USE_GL
     CPU_START()
+#ifndef GPU_RENDER
+    const ScreenAllegro* sa = SA;
+    gpu_viewport(0, 0, al_get_display_width(sa->disp),
+                       al_get_display_height(sa->disp));
+    gpu_background(xu4.gpu, NULL, xu4.screenImage);
+#endif
     al_flip_display();
     CPU_END("ut:")
 #else

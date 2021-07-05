@@ -44,6 +44,7 @@ void TextView::drawChar(int chr, int x, int y) {
     ASSERT(x < columns, "x value of %d out of range", x);
     ASSERT(y < rows, "y value of %d out of range", y);
 
+    SCALED_VAR
     charset->drawSubRect(SCALED(this->x + (x * CHAR_WIDTH)),
                          SCALED(this->y + (y * CHAR_HEIGHT)),
                          0, SCALED(chr * CHAR_HEIGHT),
@@ -58,6 +59,7 @@ void TextView::drawChar(int chr, int x, int y) {
  * which the player is not an avatar.
  */
 void TextView::drawCharMasked(int chr, int x, int y, unsigned char mask) {
+    SCALED_VAR
     drawChar(chr, x, y);
     for (int i = 0; i < 8; i++) {
         if (mask & (1 << i)) {
@@ -193,6 +195,7 @@ void TextView::textAt(int x, int y, const char *fmt, ...) {
 
 void TextView::scroll() {
     Image* screen = xu4.screenImage;
+    SCALED_VAR
     screen->drawSubRectOn(screen,
                           SCALED(x),
                           SCALED(y),

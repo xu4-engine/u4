@@ -20,6 +20,7 @@ ImageView::~ImageView() {
  * Draw the image at the optionally specified offset.
  */
 void ImageView::draw(const ImageInfo* info, int sub, int ox, int oy) {
+    SCALED_VAR
     const SubImage* subimage = info->subImages + sub;
     info->image->drawSubRect(SCALED(x + ox), SCALED(y + oy),
                              SCALED(subimage->x) / info->prescale,
@@ -32,6 +33,7 @@ void ImageView::draw(const ImageInfo* info, int sub, int ox, int oy) {
  * Draw the image at the optionally specified offset.
  */
 void ImageView::draw(Symbol imageName, int x, int y) {
+    SCALED_VAR
     ImageInfo *info = xu4.imageMgr->get(imageName);
     if (info) {
         info->image->draw(SCALED(this->x + x), SCALED(this->y + y));

@@ -140,6 +140,7 @@ void DungeonView::drawInDungeon(const Tile *tile, int x_offset, int distance, Di
 
     /* scale is based on distance; 1 means half size, 2 regular, 4 means scale by 2x, etc. */
     const int *dscale = tiledWall ? lscale : nscale;
+    SCALED_VAR
     Image *scaled;
 
     if (dscale[distance] == 0)
@@ -433,12 +434,12 @@ void DungeonView::cacheGraphicData() {
 }
 
 static void drawGraphic(const ImageInfo* info, const SubImage* subimage,
-                        int x, int y, int scale) {
-    x = (BORDER_WIDTH  + x) * scale;
-    y = (BORDER_HEIGHT + y) * scale;
+                        int x, int y, int sscale) {
+    x = SCALED(BORDER_WIDTH  + x);
+    y = SCALED(BORDER_HEIGHT + y);
 
     if (subimage) {
-        int scalep = scale / info->prescale;
+        int scalep = sscale / info->prescale;
         info->image->drawSubRect(x, y,
                                  subimage->x * scalep,
                                  subimage->y * scalep,
@@ -452,7 +453,7 @@ void DungeonView::drawWall(int xoffset, int distance, Direction orientation, Dun
     const SubImage* subimage;
     int index, i2;
     int x, y;
-    unsigned int scale = xu4.settings->scale;
+    unsigned int scale = SCALED_BASE;
 
     index = graphicIndex(xoffset, distance, orientation, type);
     if (index == -1 || distance >= 4)

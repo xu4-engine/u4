@@ -58,6 +58,16 @@ ImageMgr::~ImageMgr() {
     delete logger;
 }
 
+#ifdef USE_GL
+#define PRESCALE(A, B, C, D, E, F)  A, B, C, D, E, F
+#define PRESCALE_4(A, B, C, D)      A, B, C, D
+#else
+#define PRESCALE(A, B, C, D, E, F) \
+    A*prescale, B*prescale, C*prescale, D*prescale, E*prescale, F*prescale
+#define PRESCALE_4(A, B, C, D) \
+    A*prescale, B*prescale, C*prescale, D*prescale
+#endif
+
 void ImageMgr::fixupIntro(Image *im, int prescale) {
     const unsigned char *sigData;
     int i, x, y;
@@ -68,48 +78,20 @@ void ImageMgr::fixupIntro(Image *im, int prescale) {
         /* ----------------------------
          * update the position of "and"
          * ---------------------------- */
-        im->drawSubRectOn(im, 148 * prescale, 17 * prescale,
-                          153 * prescale,
-                          17 * prescale,
-                          11 * prescale,
-                          4 * prescale);
-        im->drawSubRectOn(im, 159 * prescale, 17 * prescale,
-                          165 * prescale,
-                          18 * prescale,
-                          1 * prescale,
-                          4 * prescale);
-        im->drawSubRectOn(im, 160 * prescale, 17 * prescale,
-                          164 * prescale,
-                          17 * prescale,
-                          16 * prescale,
-                          4 * prescale);
+        im->drawSubRectOn(im, PRESCALE(148, 17, 153, 17, 11, 4));
+        im->drawSubRectOn(im, PRESCALE(159, 17, 165, 18,  1, 4));
+        im->drawSubRectOn(im, PRESCALE(160, 17, 164, 17, 16, 4));
         /* ---------------------------------------------
          * update the position of "Origin Systems, Inc."
          * --------------------------------------------- */
-        im->drawSubRectOn(im, 86 * prescale, 21 * prescale,
-                          88 * prescale,
-                          21 * prescale,
-                          114 * prescale,
-                          9 * prescale);
-        im->drawSubRectOn(im, 199 * prescale, 21 * prescale,
-                          202 * prescale,
-                          21 * prescale,
-                          6 * prescale,
-                          9 * prescale);
-        im->drawSubRectOn(im, 207 * prescale, 21 * prescale,
-                          208 * prescale,
-                          21 * prescale,
-                          28 * prescale,
-                          9 * prescale);
+        im->drawSubRectOn(im, PRESCALE( 86, 21,  88, 21, 114, 9));
+        im->drawSubRectOn(im, PRESCALE(199, 21, 202, 21,   6, 9));
+        im->drawSubRectOn(im, PRESCALE(207, 21, 208, 21,  28, 9));
         /* ---------------------------------------------
          * update the position of "Ultima IV"
          * --------------------------------------------- */
         // move this *prior* to moving "present"
-        im->drawSubRectOn(im, 59 * prescale, 33 * prescale,
-                          61 * prescale,
-                          33 * prescale,
-                          204 * prescale,
-                          46 * prescale);
+        im->drawSubRectOn(im, PRESCALE(59, 33, 61, 33, 204, 46));
 #if 0
         /*
          * NOTE: This just tweaks the kerning by a few pixels.  With the Image
@@ -124,57 +106,25 @@ void ImageMgr::fixupIntro(Image *im, int prescale) {
         /* ---------------------------------------------
          * update the position of "Quest of the Avatar"
          * --------------------------------------------- */
-        im->drawSubRectOn(im, 69 * prescale, 80 * prescale,     // quEst
-                          70 * prescale,
-                          80 * prescale,
-                          11 * prescale,
-                          13 * prescale);
-        im->drawSubRectOn(im, 82 * prescale, 80 * prescale,     // queST
-                          84 * prescale,
-                          80 * prescale,
-                          27 * prescale,
-                          13 * prescale);
-        im->drawSubRectOn(im, 131 * prescale, 80 * prescale,    // oF
-                          132 * prescale,
-                          80 * prescale,
-                          11 * prescale,
-                          13 * prescale);
-        im->drawSubRectOn(im, 150 * prescale, 80 * prescale,    // THE
-                          149 * prescale,
-                          80 * prescale,
-                          40 * prescale,
-                          13 * prescale);
-        im->drawSubRectOn(im, 166 * prescale, 80 * prescale,    // tHe
-                          165 * prescale,
-                          80 * prescale,
-                          11 * prescale,
-                          13 * prescale);
-        im->drawSubRectOn(im, 200 * prescale, 80 * prescale,    // AVATAR
-                          201 * prescale,
-                          80 * prescale,
-                          81 * prescale,
-                          13 * prescale);
-        im->drawSubRectOn(im, 227 * prescale, 80 * prescale,    // avAtar
-                          228 * prescale,
-                          80 * prescale,
-                          11 * prescale,
-                          13 * prescale);
+        im->drawSubRectOn(im, PRESCALE( 69, 80,  70, 80, 11, 13));  // quEst
+        im->drawSubRectOn(im, PRESCALE( 82, 80,  84, 80, 27, 13));  // queST
+        im->drawSubRectOn(im, PRESCALE(131, 80, 132, 80, 11, 13));  // oF
+        im->drawSubRectOn(im, PRESCALE(150, 80, 149, 80, 40, 13));  // THE
+        im->drawSubRectOn(im, PRESCALE(166, 80, 165, 80, 11, 13));  // tHe
+        im->drawSubRectOn(im, PRESCALE(200, 80, 201, 80, 81, 13));  // AVATAR
+        im->drawSubRectOn(im, PRESCALE(227, 80, 228, 80, 11, 13));  // avAtar
 #endif
     }
     /* -----------------------------------------------------------------------------
      * copy "present" to new location between "Origin Systems, Inc." and "Ultima IV"
      * ----------------------------------------------------------------------------- */
     // do this *after* moving "Ultima IV"
-    im->drawSubRectOn(im, 132 * prescale, 33 * prescale,
-                      135 * prescale,
-                      0 * prescale,
-                      56 * prescale,
-                      5 * prescale);
+    im->drawSubRectOn(im, PRESCALE(132, 33, 135, 0, 56, 5));
 
     /* ----------------------------
      * erase the original "present"
      * ---------------------------- */
-    im->fillRect(135 * prescale, 0 * prescale, 56 * prescale, 5 * prescale, 0, 0, 0);
+    im->fillRect(PRESCALE_4(135, 0, 56, 5), 0, 0, 0);
 
     /* -------------------------
      * update the colors for VGA
@@ -222,9 +172,7 @@ void ImageMgr::fixupIntro(Image *im, int prescale) {
             color = im->setColor(255, (y == 1 ? 250 : 255), blue[y]);
         }
 
-        im->fillRect(x * prescale, y * prescale,
-                     2 * prescale, prescale,
-                     color.r, color.g, color.b);
+        im->fillRect(PRESCALE_4(x, y, 2, 1), color.r, color.g, color.b);
         i += 2;
     }
 
@@ -241,12 +189,10 @@ void ImageMgr::fixupIntro(Image *im, int prescale) {
         color = im->setColor(128, 0, 0);    // dark red for EGA
     }
     for (i = 84; i < 236; i++)  // 152 px wide
-        im->fillRect(i * prescale, 31 * prescale,
-                     prescale, prescale,
-                     color.r, color.g, color.b);
+        im->fillRect(PRESCALE_4(i, 31, 1, 1), color.r, color.g, color.b);
 }
 
-void ImageMgr::fixupAbyssVision(Image *im, int prescale) {
+void ImageMgr::fixupAbyssVision(Image *im) {
     static unsigned int *data = NULL;
 
     /*
@@ -282,22 +228,22 @@ void ImageMgr::fixupAbacus(Image *im, int prescale) {
      * when scaling
      */
 
-    im->fillRect(7 * prescale, 186 * prescale, prescale, 14 * prescale, 0, 255, 80); /* green */
-    im->fillRect(16 * prescale, 186 * prescale, prescale, 14 * prescale, 0, 255, 80); /* green */
-    im->fillRect(8 * prescale, 186 * prescale, prescale * 8, prescale, 0, 255, 80); /* green */
-    im->fillRect(8 * prescale, 199 * prescale, prescale * 8, prescale, 0, 255, 80); /* green */
+    im->fillRect(PRESCALE_4( 7, 186, 1, 14), 0, 255, 80); /* green */
+    im->fillRect(PRESCALE_4(16, 186, 1, 14), 0, 255, 80); /* green */
+    im->fillRect(PRESCALE_4( 8, 186, 8,  1), 0, 255, 80); /* green */
+    im->fillRect(PRESCALE_4( 8, 199, 8,  1), 0, 255, 80); /* green */
 
-    im->fillRect(23 * prescale, 186 * prescale, prescale, 14 * prescale, 0, 255, 80); /* green */
-    im->fillRect(32 * prescale, 186 * prescale, prescale, 14 * prescale, 0, 255, 80); /* green */
-    im->fillRect(24 * prescale, 186 * prescale, prescale * 8, prescale, 0, 255, 80); /* green */
-    im->fillRect(24 * prescale, 199 * prescale, prescale * 8, prescale, 0, 255, 80); /* green */
+    im->fillRect(PRESCALE_4(23, 186, 1, 14), 0, 255, 80); /* green */
+    im->fillRect(PRESCALE_4(32, 186, 1, 14), 0, 255, 80); /* green */
+    im->fillRect(PRESCALE_4(24, 186, 8,  1), 0, 255, 80); /* green */
+    im->fillRect(PRESCALE_4(24, 199, 8,  1), 0, 255, 80); /* green */
 }
 
 /**
  * Swap blue and green for the dungeon walls when facing north or
  * south.
  */
-void ImageMgr::fixupDungNS(Image *im, int prescale) {
+void ImageMgr::fixupDungNS(Image *im) {
     for (int y = 0; y < im->height(); y++) {
         for (int x = 0; x < im->width(); x++) {
             unsigned int index;
@@ -314,7 +260,7 @@ void ImageMgr::fixupDungNS(Image *im, int prescale) {
  * The FMTowns images have a different screen dimension. This moves them up to what xu4 is accustomed to.
  * south.
  */
-void ImageMgr::fixupFMTowns(Image *im, int prescale) {
+void ImageMgr::fixupFMTowns(Image *im) {
     for (int y = 20; y < im->height(); y++) {
         for (int x = 0; x < im->width(); x++) {
             unsigned int index;
@@ -503,8 +449,12 @@ ImageInfo *ImageMgr::get(Symbol name, bool returnUnscaled) {
     if (unscaled == NULL)
         return NULL;
 
+#ifdef USE_GL
+    info->prescale = 1;
+#else
     if (info->prescale == 0)
         info->prescale = 1;
+#endif
 
     /*
      * fixup the image before scaling it
@@ -516,16 +466,16 @@ ImageInfo *ImageMgr::get(Symbol name, bool returnUnscaled) {
         fixupIntro(unscaled, info->prescale);
         break;
     case FIXUP_ABYSS:
-        fixupAbyssVision(unscaled, info->prescale);
+        fixupAbyssVision(unscaled);
         break;
     case FIXUP_ABACUS:
         fixupAbacus(unscaled, info->prescale);
         break;
     case FIXUP_DUNGNS:
-        fixupDungNS(unscaled, info->prescale);
+        fixupDungNS(unscaled);
         break;
     case FIXUP_FMTOWNSSCREEN:
-        fixupFMTowns(unscaled, info->prescale);
+        fixupFMTowns(unscaled);
         break;
     case FIXUP_BLACKTRANSPARENCYHACK:
         //Apply transparency shadow hack to ultima4 ega and vga upgrade classic graphics.
@@ -549,6 +499,10 @@ ImageInfo *ImageMgr::get(Symbol name, bool returnUnscaled) {
     unscaled->save(out2.append(name).append("-fixup.ppm").c_str());
 #endif
 
+#ifdef USE_GL
+    info->image = unscaled;
+    info->tex = gpu_makeTexture(info->image);
+#else
     if (returnUnscaled)
     {
         info->image = unscaled;
@@ -568,16 +522,14 @@ ImageInfo *ImageMgr::get(Symbol name, bool returnUnscaled) {
     imageScale /= info->prescale;
 
     info->image = screenScale(unscaled, imageScale, info->tiles, 1);
-#ifdef USE_GL
-    info->tex = gpu_makeTexture(info->image);
-#endif
-
     delete unscaled;
 
 #if 0
     string out3("/tmp/xu4/");
     info->image->save(out3.append(name).append("-scale.ppm").c_str());
 #endif
+#endif
+
     return info;
 }
 
