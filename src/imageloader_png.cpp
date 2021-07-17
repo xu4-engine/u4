@@ -92,6 +92,15 @@ Image* loadImage_png(U4FILE *file) {
             palette[c].b = pngpalette[c].blue;
             palette[c].a = IM_OPAQUE;
         }
+
+        png_bytep trans = NULL;
+        int num_trans;
+        png_color_16p trans_color;
+        png_get_tRNS(png_ptr, info_ptr, &trans, &num_trans, &trans_color);
+        if (trans) {
+            for (int c = 0; c < num_trans; c++)
+                palette[c].a = trans[c];
+        }
     }
 
     setFromRawData(image, width, height, bpp, raw, palette);

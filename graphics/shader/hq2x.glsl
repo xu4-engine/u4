@@ -1,83 +1,48 @@
-/* COMPATIBILITY 
-   - GLSL compilers
-*/
-
-
 /*
+* HQX Shader
+*
 * Copyright (C) 2003 Maxim Stepin ( maxst@hiend3d.com )
-*
 * Copyright (C) 2010 Cameron Zemek ( grom@zeminvaders.net )
-*
 * Copyright (C) 2014 Jules Blok ( jules@aerix.nl )
 *
-* This program is free software; you can redistribute it and/or
-* modify it under the terms of the GNU Lesser General Public
-* License as published by the Free Software Foundation; either
-* version 2.1 of the License, or (at your option) any later version.
-*
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-* Lesser General Public License for more details.
-*
-* You should have received a copy of the GNU Lesser General Public
-* License along with this program; if not, write to the Free Software
-* Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+* License: GNU Lesser General Public License v2.1
 */
 
-#define SCALE 2
+#define SCALE 2		// 2, 3, or 4
 
 #if defined(VERTEX)
 
-attribute vec4 VertexCoord;
-attribute vec4 TexCoord;
+layout(location = 0) in vec3 vertexCoord;
+layout(location = 1) in vec2 texCoord;
  
 uniform mat4 MVPMatrix;
-uniform int FrameDirection;
-uniform int FrameCount;
-uniform vec2 OutputSize;
 uniform vec2 TextureSize;
-uniform vec2 InputSize;
 
-varying vec4 vTexCoord[4];
+out vec4 vTexCoord[4];
 
 void main()
 {
-	gl_Position = VertexCoord * transpose(MVPMatrix);
+	gl_Position = MVPMatrix * vec4(vertexCoord, 1.0);
 
 	vec2 ps = 1.0/TextureSize;
 	float dx = ps.x;
 	float dy = ps.y;
 
-	//   +----+----+----+
-	//   |    |    |    |
-	//   | w1 | w2 | w3 |
-	//   +----+----+----+
-	//   |    |    |    |
-	//   | w4 | w5 | w6 |
-	//   +----+----+----+
-	//   |    |    |    |
-	//   | w7 | w8 | w9 |
-	//   +----+----+----+
-
 	vTexCoord[0].zw = ps;
-	vTexCoord[0].xy = TexCoord.xy;
-	vTexCoord[1] = TexCoord.xxxy + vec4(-dx, 0, dx, -dy); //  w1 | w2 | w3
-	vTexCoord[2] = TexCoord.xxxy + vec4(-dx, 0, dx,   0); //  w4 | w5 | w6
-	vTexCoord[3] = TexCoord.xxxy + vec4(-dx, 0, dx,  dy); //  w7 | w8 | w9
+	vTexCoord[0].xy = texCoord.xy;
+	vTexCoord[1] = texCoord.xxxy + vec4(-dx, 0, dx, -dy);	//  w1 | w2 | w3
+	vTexCoord[2] = texCoord.xxxy + vec4(-dx, 0, dx,   0);	//  w4 | w5 | w6
+	vTexCoord[3] = texCoord.xxxy + vec4(-dx, 0, dx,  dy);	//  w7 | w8 | w9
 }
 
 #elif defined(FRAGMENT)
 
 uniform sampler2D Texture;
 uniform sampler2D LUT;
-uniform int FrameDirection;
-uniform int FrameCount;
-uniform vec2 OutputSize;
 uniform vec2 TextureSize;
-uniform vec2 InputSize;
 
-varying vec4 vTexCoord[4];
+in vec4 vTexCoord[4];
+out vec4 fragColor;
 
 const mat3 yuv_matrix = mat3(0.299, 0.587, 0.114, -0.169, -0.331, 0.5, 0.5, -0.419, -0.081);
 const vec3 yuv_threshold = vec3(48.0/255.0, 7.0/255.0, 6.0/255.0);
@@ -126,7 +91,7 @@ void main()
 			  dot(vec3(pattern[1]), vec3(8, 0, 16)) +
 			  dot(vec3(pattern[2]), vec3(32, 64, 128));
 	index.y = dot(vec4(cross), vec4(1, 2, 4, 8)) * (SCALE * SCALE) +
-	          dot(floor(fp * SCALE), vec2(1, SCALE));
+			  dot(floor(fp * SCALE), vec2(1, SCALE));
 
 	vec2 step = 1.0 / vec2(256.0, 16.0 * (SCALE * SCALE));
 	vec2 offset = step / 2.0;
@@ -134,7 +99,7 @@ void main()
 	float sum = dot(weights, vec4(1));
 	vec3 res = pixels * (weights / sum);
 
-	gl_FragColor.rgb = res;
+	fragColor.rgb = res;
 }
 
 #endif

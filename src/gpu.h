@@ -2,7 +2,7 @@
 
 class Map;
 
-bool     gpu_init(void* res, int w, int h);
+bool     gpu_init(void* res, int w, int h, int scale);
 void     gpu_free(void* res);
 void     gpu_viewport(int x, int y, int w, int h);
 uint32_t gpu_makeTexture(Image* img);

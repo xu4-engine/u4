@@ -18,6 +18,9 @@
   along with XU4.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 #include "u4.h"     // VIEWPORT_W
 
 //#include "gpu_opengl.h"
@@ -103,21 +106,23 @@ static void printInfoLog(GLuint obj, int prog)
 /*
  * Returns zero on success or 1-3 to indicate compile/link error.
  */
-static int compileShaders(GLuint program, const char* vert, const char* frag)
+static int compileShaderParts(GLuint program, const char** src, int vcount,
+                              int fcount)
 {
     GLint ok;
     GLuint vobj = glCreateShader(GL_VERTEX_SHADER);
     GLuint fobj = glCreateShader(GL_FRAGMENT_SHADER);
 
-    glShaderSource(vobj, 1, (const GLchar**) &vert, 0);
+    glShaderSource(vobj, vcount, (const GLchar**) src, NULL);
     glCompileShader(vobj);
     glGetShaderiv(vobj, GL_COMPILE_STATUS, &ok);
     if (! ok) {
         printInfoLog(vobj, 0);
         return 1;
     }
+    src += vcount;
 
-    glShaderSource(fobj, 1, (const GLchar**) &frag, 0);
+    glShaderSource(fobj, fcount, (const GLchar**) src, NULL);
     glCompileShader(fobj);
     glGetShaderiv(fobj, GL_COMPILE_STATUS, &ok);
     if (! ok) {
@@ -139,6 +144,51 @@ static int compileShaders(GLuint program, const char* vert, const char* frag)
     return ok ? 0 : 3;
 }
 
+static int compileShaders(GLuint program, const char* vert, const char* frag)
+{
+    const char* src[2];
+    src[0] = vert;
+    src[1] = frag;
+    return compileShaderParts(program, src, 1, 1);
+}
+
+/*
+ * Returns zero on success or 1-4 to indicate compile/link/read error.
+ */
+static int compileSLFile(GLuint program, const char* filename, int scale)
+{
+    const char* src[4];
+    FILE* fp;
+    int res = 4;
+    const size_t bsize = 4096;
+    char* buf = (char*) malloc(bsize);
+
+    if (buf) {
+        fp = fopen(filename, "rb");
+        if (fp) {
+            size_t len = fread(buf, 1, bsize-1, fp);
+            if (len > 16) {
+                buf[len] = '\0';
+                if (scale > 2) {
+                    char* spos = strstr(buf, "SCALE 2");
+                    if (spos)
+                        spos[6] = '0' + scale;
+                }
+
+                src[0] = "#version 330\n#define VERTEX\n";
+                src[1] = buf;
+                src[2] = "#version 330\n#define FRAGMENT\n";
+                src[3] = buf;
+
+                res = compileShaderParts(program, src, 2, 2);
+            }
+            fclose(fp);
+        }
+        free(buf);
+    }
+    return res;
+}
+
 static void _defineAttributeLayout(GLuint vao, GLuint vbo)
 {
     glBindVertexArray(vao);
@@ -150,7 +200,10 @@ static void _defineAttributeLayout(GLuint vao, GLuint vbo)
                           (const GLvoid*) 12);
 }
 
-bool gpu_init(void* res, int w, int h)
+extern Image* loadImage_png(U4FILE *file);
+uint32_t gpu_makeTexture(Image* img);
+
+bool gpu_init(void* res, int w, int h, int scale)
 {
     OpenGLResources* gr = (OpenGLResources*) res;
 
@@ -161,7 +214,10 @@ bool gpu_init(void* res, int w, int h)
     glBindTexture(GL_TEXTURE_2D, gr->screenTex);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
     gr->tilesTex = 0;
+    gr->scalerLut = 0;
+    gr->scaler = 0;
 
 
     // Set default state.
@@ -170,6 +226,49 @@ bool gpu_init(void* res, int w, int h)
     glDisable(GL_BLEND);
     glDisable(GL_CULL_FACE);
     glViewport(0, 0, w, h);
+
+
+    // Create scaler shader.
+    if (scale > 1) {
+        if (scale > 4)
+            scale = 4;
+
+        {
+        std::string lutFile("graphics/shader/hq2x.png");
+        lutFile[18] = '0' + scale;
+        U4FILE* uf = u4fopen_stdio(lutFile.c_str());
+        if (uf) {
+            Image* img = loadImage_png(uf);
+            u4fclose(uf);
+            if (img) {
+                gr->scalerLut = gpu_makeTexture(img);
+                delete img;
+            }
+        }
+        }
+        if (! gr->scalerLut)
+            return false;
+
+        gr->scaler = glCreateProgram();
+        if (compileSLFile(gr->scaler, "graphics/shader/hq2x.glsl", scale))
+            return false;
+
+        gr->slocScMat = glGetUniformLocation(gr->scaler, "MVPMatrix");
+        gr->slocScDim = glGetUniformLocation(gr->scaler, "TextureSize");
+        gr->slocScTex = glGetUniformLocation(gr->scaler, "Texture");
+        gr->slocScLut = glGetUniformLocation(gr->scaler, "LUT");
+
+        glUseProgram(gr->scaler);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, gr->screenTex);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, gr->scalerLut);
+
+        glUniformMatrix4fv(gr->slocScMat, 1, GL_FALSE, unitMatrix);
+        glUniform2f(gr->slocScDim, (float) (w / scale), (float) (h / scale));
+        glUniform1i(gr->slocScTex, 0);
+        glUniform1i(gr->slocScLut, 1);
+    }
 
 
     // Create colormap shader.
@@ -218,6 +317,11 @@ void gpu_free(void* res)
 {
     OpenGLResources* gr = (OpenGLResources*) res;
 
+    if (gr->scaler) {
+        glDeleteProgram(gr->scaler);
+        glDeleteTextures(1, &gr->scalerLut);
+    }
+
     glDeleteVertexArrays(GLOB_COUNT, gr->vao);
     glDeleteBuffers(GLOB_COUNT, gr->vbo);
     glDeleteProgram(gr->shader);
@@ -265,9 +369,17 @@ void gpu_background(void* res, const float* color, const Image* img)
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, img->width(), img->height(),
                      0, GL_RGBA, GL_UNSIGNED_BYTE, img->pixelData());
 
-        glUniformMatrix4fv(gr->slocTrans, 1, GL_FALSE, unitMatrix);
+        if (gr->scaler) {
+            glUseProgram(gr->scaler);
+        } else {
+            glUniformMatrix4fv(gr->slocTrans, 1, GL_FALSE, unitMatrix);
+        }
+
         glBindVertexArray(gr->vao[ GLOB_QUAD ]);
         glDrawArrays(GL_TRIANGLES, 0, 6);
+
+        if (gr->scaler)
+            glUseProgram(gr->shader);
     }
     else if (color) {
         glClearColor(color[0], color[1], color[2], color[3]);

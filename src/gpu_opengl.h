@@ -23,10 +23,19 @@ struct OpenGLResources {
     GLuint tilesTex;
     GLuint vbo[ GLOB_COUNT ];
     GLuint vao[ GLOB_COUNT ];
+
+    GLuint scalerLut;
+    GLuint scaler;
+    GLint  slocScMat;
+    GLint  slocScDim;
+    GLint  slocScTex;
+    GLint  slocScLut;
+
     GLuint shader;
     GLint  slocTrans;
     GLint  slocCmap;
     GLint  slocTint;
+
     int    dbuf;
     float* dptr;
     GLsizei mapChunkVertCount;
