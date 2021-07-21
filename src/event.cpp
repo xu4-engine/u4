@@ -413,7 +413,7 @@ bool ReadChoiceController::keyPressed(int key) {
 
     if (choices.empty() || choices.find_first_of(value) < choices.length()) {
         // If the value is printable, display it
-        if (!isspace(key))
+        if (key > ' ')
             screenMessage("%c", toupper(key));
         doneWaiting();
         return true;
