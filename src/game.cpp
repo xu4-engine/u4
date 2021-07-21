@@ -47,7 +47,6 @@
 #include "stats.h"
 #include "tileset.h"
 #include "utils.h"
-#include "script.h"
 #include "weapon.h"
 #include "dungeonview.h"
 #include "xu4.h"
@@ -2723,10 +2722,6 @@ bool talkAt(const Coords &coords) {
     }
 
     Conversation conv;
-    //TRACE_LOCAL(gameDbg, "Setting up script information providers.");
-    conv.script->addProvider("party", c->party);
-    conv.script->addProvider("context", c);
-
     conv.state = Conversation::INTRO;
     conv.reply = talker->getConversationText(&conv, "");
     conv.playerInput.erase();

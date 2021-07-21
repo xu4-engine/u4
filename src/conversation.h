@@ -274,7 +274,9 @@ public:
     State state;                /**< The state of the conversation */
     string playerInput;         /**< A string holding the text the player inputs */
     list<string> reply;         /**< What the talker says */
+#ifndef USE_BORON
     class Script *script;       /**< A script that this person follows during the conversation (may be NULL) */
+#endif
     const Dialogue::Question *question; /**< The current question the player is being asked */
     int quant;                  /**< For vendor transactions */
     int player;                 /**< For vendor transactions */

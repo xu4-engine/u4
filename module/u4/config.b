@@ -505,3 +505,4 @@ layouts: [
 
 include %maps.b
 include %graphics.b
+include %vendors.b

@@ -25,6 +25,10 @@ class ConfigElement;
 struct RGBA;
 struct UltimaSaveIds;
 
+#ifdef USE_BORON
+struct UThread;
+#endif
+
 /**
  * Config is a singleton data provider interface which hides the storage
  * format of the game configuration.
@@ -46,6 +50,11 @@ public:
     const RGBA* egaPalette();
     const Layout* layouts( uint32_t* plen ) const;
 #ifdef CONF_MODULE
+#ifdef USE_BORON
+    UThread* boronThread() const;
+    int scriptItemId(Symbol name);
+    const void* scriptEvalArg(const char* fmt, ...);
+#endif
     const char* modulePath() const;
     const CDIEntry* imageFile( const char* id ) const;
     const CDIEntry* musicFile( uint32_t id ) const;

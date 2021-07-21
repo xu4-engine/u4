@@ -26,8 +26,14 @@
 #include "types.h"
 #include "u4file.h"
 #include "utils.h"
-#include "script.h"
 #include "xu4.h"
+
+#ifdef USE_BORON
+#include "config.h"
+#include <boron/boron.h>
+#else
+#include "script.h"
+#endif
 
 #ifdef IOS
 #include "ios_helpers.h"
@@ -149,9 +155,24 @@ list<string> Person::getConversationText(Conversation *cnv, const char *inquiry)
     string text;
 
     /*
-     * a convsation with a vendor
+     * a conversation with a vendor
      */
     if (isVendor()) {
+#ifdef USE_BORON
+        static const char* vendorId[] = {
+            "weapons", "armor", "food", "tavern", "reagents",
+            "healer", "inn", "guild", "stable"
+        };
+        if (cnv->state == Conversation::INTRO) {
+            // Make a valid Boron word! from names with spaces.
+            text = c->location->map->getName();
+            replace(text.begin(), text.end(), ' ', '-');
+
+            xu4.config->scriptEvalArg("talk-to %s '%s",
+                vendorId[npcType - NPC_VENDOR_WEAPONS], text.c_str());
+            text.clear();
+        }
+#else
         static const string ids[] = {
             "Weapons", "Armor", "Food", "Tavern", "Reagents", "Healer", "Inn", "Guild", "Stable"
         };
@@ -228,17 +249,18 @@ list<string> Person::getConversationText(Conversation *cnv, const char *inquiry)
                     } break;
 
                     default: break;
-                    } // } switch
+                    }
 
                     // Continue running the script!
                     c->line++;
                     script->_continue();
-                } // } if
-            } // } while
+                }
+            }
         }
 
         // Unload the script
         script->unload();
+#endif
         cnv->state = Conversation::DONE;
     }
 
@@ -304,28 +326,6 @@ string Person::getPrompt(Conversation *cnv) {
         prompt = dialogue->getPrompt();
 
     return prompt;
-}
-
-/**
- * Returns the valid keyboard choices for a given conversation.
- */
-const char *Person::getChoices(Conversation *cnv) {
-    if (isVendor())
-        return cnv->script->getChoices().c_str();
-
-    switch (cnv->state) {
-    case Conversation::CONFIRMATION:
-    case Conversation::CONTINUEQUESTION:
-        return "ny\015 \033";
-
-    case Conversation::PLAYER:
-        return "012345678\015 \033";
-
-    default:
-        ASSERT(0, "invalid state: %d", cnv->state);
-    }
-
-    return NULL;
 }
 
 string Person::getIntro(Conversation *cnv) {

@@ -11,7 +11,6 @@
 #include "aura.h"
 #include "names.h"
 #include "person.h"
-#include "script.h"
 #include "types.h"
 #include "savegame.h"
 #include "shrine.h"
@@ -34,7 +33,7 @@ typedef enum {
 /**
  * Context class
  */
-class Context : public Script::Provider {
+class Context {
 public:
     Context();
     ~Context();
@@ -55,17 +54,6 @@ public:
     time_t lastCommandTime;
     class Object *lastShip;
     ShrineState shrineState;
-
-    /**
-     * Provides scripts with information
-     */
-    virtual string translate(std::vector<string>& parts) {
-        if (parts.size() == 1) {
-            if (parts[0] == "wind")
-                return getDirectionName(static_cast<Direction>(windDirection));
-        }
-        return "";
-    }
 };
 
 extern Context *c;

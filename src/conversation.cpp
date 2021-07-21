@@ -6,7 +6,9 @@
 #include "conversation.h"
 #include "debug.h"
 #include "person.h"
+#ifndef USE_BORON
 #include "script.h"
+#endif
 #ifdef IOS
 #include "context.h"
 #include "ios_helpers.h"
@@ -206,8 +208,11 @@ string Dialogue::dump(const string &arg) {
  * Conversation class
  */
 
-Conversation::Conversation() : logger(0), state(INTRO), script(new Script()) {
+Conversation::Conversation() : logger(0), state(INTRO) {
     logger = new Debug("debug/conversation.txt", "Conversation");
+#ifndef USE_BORON
+    script = new Script();
+#endif
 #ifdef IOS
     U4IOS::incrementConversationCount();
 #endif
@@ -219,7 +224,9 @@ Conversation::~Conversation() {
     U4IOS::decrementConversationCount();
 #endif
     delete logger;
+#ifndef USE_BORON
     delete script;
+#endif
 }
 
 Conversation::InputType Conversation::getInputRequired(int *bufferlen) {

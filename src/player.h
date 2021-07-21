@@ -13,7 +13,6 @@
 #include "direction.h"
 #include "observable.h"
 #include "savegame.h"
-#include "script.h"
 #include "tile.h"
 #include "types.h"
 #ifdef IOS
@@ -89,15 +88,12 @@ enum EquipError {
 /**
  * PartyMember class
  */
-class PartyMember : public Creature, public Script::Provider {
+class PartyMember : public Creature {
 public:
     PartyMember(Party *p, SaveGamePlayerRecord *pr);
     virtual ~PartyMember();
 
     void notifyOfChange();
-
-    // Used to translate script values into something useful
-    virtual string translate(std::vector<string>& parts);
 
     // Accessor methods
     virtual int getHp() const;
@@ -173,16 +169,13 @@ public:
 
 typedef std::vector<PartyMember *> PartyMemberVector;
 
-class Party : public Observable<Party *, PartyEvent &>, public Script::Provider {
+class Party : public Observable<Party *, PartyEvent &> {
     friend class PartyMember;
 public:
     Party(SaveGame *saveGame);
     virtual ~Party();
 
     void notifyOfChange(PartyMember *partyMember = 0, PartyEvent::Type = PartyEvent::GENERIC);
-
-    // Used to translate script values into something useful
-    virtual string translate(std::vector<string>& parts);
 
     void adjustFood(int food);
     void adjustGold(int gold);

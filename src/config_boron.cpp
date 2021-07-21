@@ -52,6 +52,7 @@ enum ConfigValues
     CI_U4SAVEIDS,
     CI_MUSIC,
     CI_SOUND,
+    CI_VENDORS,
     CI_EGA_PALETTE,
 
     CI_COUNT
@@ -98,13 +99,15 @@ struct ConfigBoron : public Config {
     ~ConfigBoron();
     const UBuffer* buffer(int value, int dataType) const;
     const UBuffer* blockIt(UBlockIt* bi, int value) const;
-    const UBuffer* blockBuffer(int value, uint32_t n, int dataType) const;
+    //const UBuffer* blockBuffer(int value, uint32_t n, int dataType) const;
 
     UThread* ut;
     CDIEntry* toc;
     UIndex configN;
+    UIndex itemIdN;         // item-id context!
     size_t tocUsed;
     ConfigData xcd;
+    UBuffer evalBuf;
     Symbol sym_hitFlash;
     Symbol sym_missFlash;
     Symbol sym_random;
@@ -136,6 +139,7 @@ const UBuffer* ConfigBoron::blockIt(UBlockIt* bi, int value) const
     return blk;
 }
 
+/*
 const UBuffer* ConfigBoron::blockBuffer(int value, uint32_t n, int dataType) const
 {
     const UBuffer* buf = ur_buffer(configN);
@@ -150,6 +154,7 @@ const UBuffer* ConfigBoron::blockBuffer(int value, uint32_t n, int dataType) con
     }
     return NULL;
 }
+*/
 
 #define WORD_NONE   (UT_BI_COUNT + UT_WORD)
 #define COORD_NONE  (UT_BI_COUNT + UT_COORD)
@@ -797,6 +802,26 @@ static Weapon* conf_weapon(const ConfigBoron* cfg, int type, UBlockIt& bi) {
 
 //--------------------------------------
 
+#include "script_boron.cpp"
+
+const void* Config::scriptEvalArg(const char* fmt, ...)
+{
+    UBuffer* buf = &static_cast<ConfigBoron*>(this)->evalBuf;
+    int bufSize = ur_avail(buf);
+    va_list arg;
+    int n;
+
+    va_start(arg, fmt);
+    n = vsnprintf(buf->ptr.c, bufSize, fmt, arg);
+    va_end(arg);
+
+    if (n > 0 && n < bufSize)
+        return script_eval(CX->ut, buf->ptr.c, n);
+    return NULL;
+}
+
+//--------------------------------------
+
 ConfigBoron::ConfigBoron(const char* modulePath)
 {
     UBlockIt bi;
@@ -816,6 +841,7 @@ ConfigBoron::ConfigBoron(const char* modulePath)
     xcd.tileset = NULL;
     xcd.modulePath = modulePath;
     memset(&xcd.usaveIds, 0, sizeof(xcd.usaveIds));
+    ur_binInit(&evalBuf, 1024);
 
     {
     UEnvParameters param;
@@ -983,6 +1009,16 @@ fail:
         }
         xcd.creatures.resize(last + 1);
     }
+
+    // vendors
+    {
+    const UBuffer* ctx = ur_buffer(configN);
+    const UCell* cell = ur_ctxCell(ctx, CI_VENDORS);
+    if (ur_is(cell, UT_BLOCK)) {
+        itemIdN = script_init(ut, cell);
+        ur_setId(cell, UT_NONE);    // Let block be recycled.
+    }
+    }
 }
 
 ConfigBoron::~ConfigBoron()
@@ -1004,6 +1040,7 @@ ConfigBoron::~ConfigBoron()
     delete[] xcd.tileRules;
     delete xcd.tileset;
     xcd.usaveIds.free();
+    ur_binFree(&evalBuf);
 
     boron_freeEnv( ut );
     free(toc);
@@ -1064,6 +1101,25 @@ const RGBA* Config::egaPalette() {
 const Layout* Config::layouts( uint32_t* plen ) const {
     *plen = CB->layouts.size();
     return &CB->layouts.front();
+}
+
+UThread* Config::boronThread() const {
+    return CX->ut;
+}
+
+/*
+ * Return internal item-id of Symbol.  Used by script functions.
+ */
+int Config::scriptItemId(Symbol name) {
+    UThread* ut = CX->ut;
+    const UBuffer* ctx = ur_buffer(CX->itemIdN);
+    int n = ur_ctxLookup(ctx, name);
+    if (n >= 0) {
+        const UCell* cell = ur_ctxCell(ctx, n);
+        assert(ur_is(cell, UT_INT));
+        return ur_int(cell);
+    }
+    return 0;
 }
 
 const char* Config::modulePath() const {

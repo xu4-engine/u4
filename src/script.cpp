@@ -8,6 +8,7 @@
 #include "script.h"
 
 #include "camp.h"
+#include "config.h"
 #include "context.h"
 #include "conversation.h"
 #include "debug.h"
@@ -26,8 +27,146 @@
 #include "utils.h"
 #include "weapon.h"
 #include "xml.h"
+#include "xu4.h"
 
 using namespace std;
+
+
+static string translateContext(vector<string>& parts) {
+    if (parts.size() == 1) {
+        if (parts[0] == "wind")
+            return getDirectionName((Direction) c->windDirection);
+    }
+    return "";
+}
+
+static string translateMember(const PartyMember* pm, std::vector<string>& parts) {
+    if (parts.size() == 1) {
+        if (parts[0] == "hp")
+            return xu4_to_string(pm->getHp());
+        else if (parts[0] == "max_hp")
+            return xu4_to_string(pm->getMaxHp());
+        else if (parts[0] == "mp")
+            return xu4_to_string(pm->getMp());
+        else if (parts[0] == "max_mp")
+            return xu4_to_string(pm->getMaxMp());
+        else if (parts[0] == "str")
+            return xu4_to_string(pm->getStr());
+        else if (parts[0] == "dex")
+            return xu4_to_string(pm->getDex());
+        else if (parts[0] == "int")
+            return xu4_to_string(pm->getInt());
+        else if (parts[0] == "exp")
+            return xu4_to_string(pm->getExp());
+        else if (parts[0] == "name")
+            return pm->getName();
+        else if (parts[0] == "weapon")
+            return pm->getWeapon()->getName();
+        else if (parts[0] == "armor")
+            return pm->getArmor()->getName();
+        else if (parts[0] == "sex") {
+            string var = " ";
+            var[0] = pm->getSex();
+            return var;
+        }
+        else if (parts[0] == "class")
+            return getClassName(pm->getClass());
+        else if (parts[0] == "level")
+            return xu4_to_string(pm->getRealLevel());
+    }
+    else if (parts.size() == 2) {
+        if (parts[0] == "needs") {
+            if (parts[1] == "cure") {
+                if (pm->getStatus() == STAT_POISONED)
+                    return "true";
+                else return "false";
+            }
+            else if (parts[1] == "heal" || parts[1] == "fullheal") {
+                if (pm->getHp() < pm->getMaxHp())
+                    return "true";
+                else return "false";
+            }
+            else if (parts[1] == "resurrect") {
+                if (pm->isDead())
+                    return "true";
+                else return "false";
+            }
+        }
+    }
+    return "";
+}
+
+static string translateParty(vector<string>& parts) {
+    if (parts.size() == 1) {
+        // Translate some different items for the script
+        if (parts[0] == "transport") {
+            if (c->transportContext & TRANSPORT_FOOT)
+                return "foot";
+            if (c->transportContext & TRANSPORT_HORSE)
+                return "horse";
+            if (c->transportContext & TRANSPORT_SHIP)
+                return "ship";
+            if (c->transportContext & TRANSPORT_BALLOON)
+                return "balloon";
+        }
+        else if (parts[0] == "gold")
+            return xu4_to_string(c->saveGame->gold);
+        else if (parts[0] == "food")
+            return xu4_to_string(c->saveGame->food);
+        else if (parts[0] == "members")
+            return xu4_to_string(c->party->size());
+        else if (parts[0] == "keys")
+            return xu4_to_string(c->saveGame->keys);
+        else if (parts[0] == "torches")
+            return xu4_to_string(c->saveGame->torches);
+        else if (parts[0] == "gems")
+            return xu4_to_string(c->saveGame->gems);
+        else if (parts[0] == "sextants")
+            return xu4_to_string(c->saveGame->sextants);
+        else if (parts[0] == "food")
+            return xu4_to_string((c->saveGame->food / 100));
+        else if (parts[0] == "gold")
+            return xu4_to_string(c->saveGame->gold);
+        else if (parts[0] == "party_members")
+            return xu4_to_string(c->saveGame->members);
+        else if (parts[0] == "moves")
+            return xu4_to_string(c->saveGame->moves);
+    }
+    else if (parts.size() >= 2) {
+        if (parts[0].find_first_of("member") == 0) {
+            // Make a new parts list, but remove the first item
+            std::vector<string> new_parts = parts;
+            new_parts.erase(new_parts.begin());
+
+            // Find the member we'll be working with
+            string str = parts[0];
+            string::size_type pos = str.find_first_of("1234567890");
+            if (pos != string::npos) {
+                str = str.substr(pos);
+                int p_member = (int)strtol(str.c_str(), NULL, 10);
+
+                // Make the party member translate its own stuff
+                if (p_member > 0)
+                    return translateMember(c->party->member(p_member-1), new_parts);
+            }
+        }
+        else if (parts.size() == 2) {
+            if (parts[0] == "weapon") {
+                int type = xu4.config->weaponType(parts[1].c_str());
+                if (type >= 0)
+                    return xu4_to_string(c->saveGame->weapons[type]);
+            }
+            else if (parts[0] == "armor") {
+                int type = xu4.config->armorType(parts[1].c_str());
+                if (type >= 0)
+                    return xu4_to_string(c->saveGame->armor[type]);
+            }
+        }
+    }
+    return "";
+}
+
+//---------------------------------------------------------------------------
 
 /*
  * Script::Variable class
@@ -575,11 +714,20 @@ void Script::translate(string *text) {
 
             provider = item.substr(0, pos);
             to_find = item.substr(pos + 1);
+            std::vector<string> parts = split(to_find, ":");
+#if 1
+            // Built-in providers.
+            if (provider == "party")
+                prop = translateParty(parts);
+            else if (provider == "context")
+                prop = translateContext(parts);
+#else
+            // External providers.
             if (providers.find(provider) != providers.end()) {
-                std::vector<string> parts = split(to_find, ":");
                 Provider* p = providers[provider];
                 prop = p->translate(parts);
             }
+#endif
         }
 
         /**

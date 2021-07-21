@@ -55,7 +55,6 @@ public:
 
     list<string> getConversationText(Conversation *cnv, const char *inquiry);
     string getPrompt(Conversation *cnv);
-    const char *getChoices(Conversation *cnv);
 
     string getIntro(Conversation *cnv);
     string processResponse(Conversation *cnv, Response *response);

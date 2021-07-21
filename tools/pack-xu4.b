@@ -60,6 +60,7 @@ config: context [
     u4-save-ids:
     music:
     sound:
+    vendors:
     ega-palette:
         none
 ]

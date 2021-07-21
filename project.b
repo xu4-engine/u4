@@ -11,13 +11,13 @@ libxml2: does [
 		libs %xml2
 	]
 	win32 [
+		cflags "/DLIBXML_STATIC"
 		libs_from %../usr/lib [%libxml2_a]
 	]
 ]
 
 exe %u4 [
 	include_from [%src %src/lzw %src/support]
-	libxml2
 	win32 [
 		include_from %../usr/include
 	]
@@ -56,8 +56,11 @@ exe %u4 [
 			%support/cdi.c
 		]
 	][
-		sources [
-			%src/config.cpp
+		libxml2
+		sources_from %src [
+			%config.cpp
+			%script.cpp
+			%xml.cpp
 		]
 	]
 
@@ -70,7 +73,6 @@ exe %u4 [
 		]
 	]
 	win32 [
-		cflags "/DLIBXML_STATIC"
 		libs_from %../usr/lib [%libpng16 %zlib]
 		libs [%User32]
 	]
@@ -123,7 +125,6 @@ exe %u4 [
 		%savegame.cpp
 		%scale.cpp
 		%screen.cpp
-		%script.cpp
 		%settings.cpp
 		%shrine.cpp
 		%spell.cpp
@@ -138,7 +139,6 @@ exe %u4 [
 		%utils.cpp
 		%unzip.c
 		%view.cpp
-		%xml.cpp
 
 		%lzw/hash.c
 		%lzw/lzw.c
