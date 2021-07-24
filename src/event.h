@@ -319,7 +319,7 @@ public:
 protected:
     bool controllerDone;
     bool ended;
-    TimedEventMgr timer;
+    TimedEventMgr timedEvents;
     std::vector<Controller *> controllers;
     MouseAreaList mouseAreaSets;
     updateScreenCallback updateScreen;

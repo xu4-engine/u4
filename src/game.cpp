@@ -756,9 +756,7 @@ void gameSpellEffect(int spell, int player, Sound sound) {
             gameUpdateScreen();
             soundPlay(SOUND_RUMBLE, false);
             screenShake(8);
-
         }
-
         break;
     }
 }
@@ -2915,7 +2913,6 @@ void ztatsFor(int player) {
  * This function is called every quarter second.
  */
 void GameController::timerFired() {
-
     if (pausedTimer > 0) {
         pausedTimer--;
         if (pausedTimer <= 0) {
@@ -2938,24 +2935,21 @@ void GameController::timerFired() {
         }
 
         updateMoons(true);
-
         screenCycle();
-
         gameUpdateScreen();
 
         /*
          * force pass if no commands within last 20 seconds
          */
         Controller *controller = xu4.eventHandler->getController();
-        if (controller != NULL &&
-            (xu4.eventHandler->getController() == xu4.game || dynamic_cast<CombatController *>(xu4.eventHandler->getController()) != NULL) &&
-             gameTimeSinceLastCommand() > 20) {
+        if (controller &&
+            (controller == xu4.game || dynamic_cast<CombatController *>(controller) != NULL) &&
+            gameTimeSinceLastCommand() > 20) {
 
             /* pass the turn, and redraw the text area so the prompt is shown */
             controller->keyPressed(U4_SPACE);
         }
     }
-
 }
 
 /**

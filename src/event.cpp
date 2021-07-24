@@ -58,6 +58,7 @@ void EventHandler::wait_cycles(unsigned int cycles) {
     waitCtrl.wait();
 }
 
+/** Sets the controller exit flag for the event handler */
 void EventHandler::setControllerDone(bool done)
 {
     controllerDone = done;
@@ -65,7 +66,7 @@ void EventHandler::setControllerDone(bool done)
     if (done)
         controllerStopped_helper();
 #endif
-}     /**< Sets the controller exit flag for the event handler */
+}
 
 /** Returns the current value of the controller exit flag */
 bool EventHandler::getControllerDone() {
@@ -78,11 +79,11 @@ void EventHandler::quitGame() {
     xu4.stage = StageExitGame;
 }
 
-TimedEventMgr* EventHandler::getTimer()  { return &timer;}
+TimedEventMgr* EventHandler::getTimer() { return &timedEvents; }
 
 Controller *EventHandler::pushController(Controller *c) {
     controllers.push_back(c);
-    getTimer()->add(&Controller::timerCallback, c->getTimerInterval(), c);
+    timedEvents.add(&Controller::timerCallback, c->getTimerInterval(), c);
     return c;
 }
 
@@ -90,8 +91,7 @@ Controller *EventHandler::popController() {
     if (controllers.empty())
         return NULL;
 
-    Controller *controller = controllers.back();
-    getTimer()->remove(&Controller::timerCallback, controller);
+    timedEvents.remove(&Controller::timerCallback, controllers.back());
     controllers.pop_back();
 
     return getController();

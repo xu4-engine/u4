@@ -60,7 +60,7 @@ void TimedEventMgr::start() {
 /**
  * Constructs an event handler object.
  */
-EventHandler::EventHandler() : timer(eventTimerGranularity), updateScreen(NULL) {
+EventHandler::EventHandler() : timedEvents(eventTimerGranularity), updateScreen(NULL) {
     controllerDone = ended = false;
 }
 
