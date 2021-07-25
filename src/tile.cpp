@@ -148,14 +148,17 @@ void Tile::loadImage() {
         }
 
         /* FIXME: This is a hack to address the fact that there are 4
-           frames for the guard in VGA mode, but only 2 in EGA. Is there
-           a better way to handle this? */
-        if (name == sym.guard) {
-            if (xu4.settings->videoType == "EGA")
-                frames = 2;
-            else
-                frames = 4;
-        }
+           frames for the guard in VGA mode, but only 2 in EGA.  VGA mode
+           uses a separate guard image.  In the future, frames should not
+           be stored in the tile, but come from image animation data. */
+        if (! subimage)
+            frames = info->tiles;
+#if 0
+        const char* nstr = xu4.config->symbolName(name);
+        if (strcmp(nstr, "guard") == 0)
+            printf("tile %c frames: %d %s\n",
+                   subimage ? 'S' : 'I', frames, nstr);
+#endif
 
         if (info) {
             w = (subimage ? subimage->width * scale : info->width * scale / info->prescale);

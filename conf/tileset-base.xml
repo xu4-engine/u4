@@ -77,7 +77,7 @@
     <tile name="miss_flash" usesReplacementTileAsBackground="true"/>
     <tile name="magic_flash" usesReplacementTileAsBackground="true"/>
     <tile name="hit_flash" usesReplacementTileAsBackground="true"/>
-    <tile name="guard" rule="person" frames="4" animation="slow_frame"/>
+    <tile name="guard" rule="person" frames="2" animation="slow_frame"/>
     <tile name="villager" rule="person" frames="2" animation="frame"/>
     <tile name="bard_singing" rule="person" frames="2" animation="frame"/>    
     <tile name="jester" rule="person" frames="2" animation="frame"/>
