@@ -226,6 +226,24 @@ void screenPrompt() {
     }
 }
 
+static void screenScrollMessageArea();
+
+/*
+ * Do carriage return and line feed in message area.
+ */
+void screenCrLf() {
+    c->col = 0;
+    c->line++;
+
+    /* scroll the message area, if necessary */
+    if (c->line == TEXT_AREA_H) {
+        c->line--;
+        screenHideCursor();
+        screenScrollMessageArea();
+        screenShowCursor();
+    }
+}
+
 void screenMessage(const char *fmt, ...) {
 #ifdef IOS
     static bool recursed = false;
@@ -251,9 +269,9 @@ void screenMessage(const char *fmt, ...) {
     screenHideCursor();
 
     /* scroll the message area, if necessary */
-    if (c->line == 12) {
-        screenScrollMessageArea();
+    if (c->line == TEXT_AREA_H) {
         c->line--;
+        screenScrollMessageArea();
     }
 
     for (i = 0; i < strlen(buffer); i++) {
@@ -609,7 +627,7 @@ void screenShowChar(int chr, int x, int y) {
 /**
  * Scroll the text in the message area up one position.
  */
-void screenScrollMessageArea() {
+static void screenScrollMessageArea() {
     ImageInfo* charsetInfo = xu4.screen->charsetInfo;
     ASSERT(charsetInfo != NULL && charsetInfo->image != NULL, "charset not initialized!");
 

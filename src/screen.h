@@ -131,10 +131,10 @@ void screenEraseMapArea(void);
 void screenEraseTextArea(int x, int y, int width, int height);
 void screenGemUpdate(void);
 
+void screenCrLf();
 void screenMessage(const char *fmt, ...) PRINTF_LIKE(1, 2);
 void screenPrompt(void);
 void screenRedrawMapArea(void);
-void screenScrollMessageArea(void);
 void screenShake(int iterations);
 void screenShowChar(int chr, int x, int y);
 void screenShowCharMasked(int chr, int x, int y, unsigned char mask);
