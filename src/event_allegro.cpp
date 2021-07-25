@@ -163,27 +163,33 @@ static void handleKeyDownEvent(const ALLEGRO_EVENT* event, Controller *controlle
 /**
  * Delays program execution for the specified number of milliseconds.
  * This doesn't actually stop events, but it stops the user from interacting
- * While some important event happens (e.g., getting hit by a cannon ball or a spell effect).
+ * while some important event happens (e.g., getting hit by a cannon ball or
+ * a spell effect).
  *
- * This method is not expected to handle msec values less than one game frame.
+ * This method is not expected to handle msec values of less than the display
+ * refresh interval.
  */
-void EventHandler::sleep(unsigned int msec) {
+void EventHandler::wait_msecs(unsigned int msec) {
+    Controller waitCon;     // Base controller consumes key events.
     ALLEGRO_EVENT event;
+    EventHandler* eh = xu4.eventHandler;
     ScreenAllegro* sa = SA;
     uint32_t endTime = getTicks() + msec;
     bool sleeping = true;
     bool redraw = false;
 
     // Using getTicks() rather than an ALLEGRO_TIMER to avoid the overhead
-    // to create/destroy & regiseter/unregister it.
+    // to create/destroy & register/unregister it.
 
-    while (sleeping) {
+    eh->pushController(&waitCon);
+
+    while (sleeping && ! eh->ended) {
         do {
             al_wait_for_event(sa->queue, &event);
             switch (event.type) {
-            default:
-                // Discard any key & button events.
-                // TODO: But handle Alt+x Alt+q keys...
+            // Discard all key & button events but globals (e.g. Alt+x).
+            case ALLEGRO_EVENT_KEY_CHAR:
+                handleKeyDownEvent(&event, &waitCon, NULL);
                 break;
             case ALLEGRO_EVENT_MOUSE_AXES:
                 handleMouseMotionEvent(event.mouse.x, event.mouse.y);
@@ -197,13 +203,13 @@ void EventHandler::sleep(unsigned int msec) {
                 if (event.timer.source == sa->refreshTimer) {
                     redraw = true;
                 } else {
-                    xu4.eventHandler->getTimer()->tick();
+                    eh->getTimer()->tick();
                 }
                 if (getTicks() >= endTime)
                     sleeping = false;
                 break;
             case ALLEGRO_EVENT_DISPLAY_CLOSE:
-                xu4.eventHandler->quitGame();
+                eh->quitGame();
                 sleeping = false;
                 break;
             }
@@ -214,6 +220,8 @@ void EventHandler::sleep(unsigned int msec) {
             screenSwapBuffers();
         }
     }
+
+    eh->popController();
 }
 
 void EventHandler::run() {

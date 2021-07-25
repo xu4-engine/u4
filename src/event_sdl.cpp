@@ -217,23 +217,32 @@ static void handleKeyDownEvent(const SDL_Event &event, Controller *controller, u
 /**
  * Delays program execution for the specified number of milliseconds.
  * This doesn't actually stop events, but it stops the user from interacting
- * While some important event happens (e.g., getting hit by a cannon ball or a spell effect).
+ * while some important event happens (e.g., getting hit by a cannon ball or
+ * a spell effect).
  *
- * This method is not expected to handle msec values less than one game frame.
+ * This method is not expected to handle msec values of less than the display
+ * refresh interval.
  */
-void EventHandler::sleep(unsigned int msec) {
+void EventHandler::wait_msecs(unsigned int msec) {
+    Controller waitCon;     // Base controller consumes key events.
     SDL_Event event;
+    EventHandler* eh = xu4.eventHandler;
     uint32_t endTime = getTicks() + msec;
     bool sleeping = true;
     bool redraw = false;
 
-    while (sleeping) {
+    eh->pushController(&waitCon);
+
+    while (sleeping && ! eh->ended) {
         do {
             SDL_WaitEvent(&event);
             switch (event.type) {
             default:
                 break;
+            // Discard all key & button events but globals (e.g. Alt+x).
             case SDL_KEYDOWN:
+                handleKeyDownEvent(event, &waitCon, NULL);
+                break;
             case SDL_KEYUP:
             case SDL_MOUSEBUTTONDOWN:
             case SDL_MOUSEBUTTONUP:
@@ -243,19 +252,19 @@ void EventHandler::sleep(unsigned int msec) {
                 handleMouseMotionEvent(event);
                 break;
             case SDL_ACTIVEEVENT:
-                handleActiveEvent(event, xu4.eventHandler->updateScreen);
+                handleActiveEvent(event, eh->updateScreen);
                 break;
             case SDL_USEREVENT:
                 if (event.user.code == UC_ScreenRefresh) {
                     redraw = true;
                 } else if (event.user.code == UC_TimedEventMgr) {
-                    xu4.eventHandler->getTimer()->tick();
+                    eh->getTimer()->tick();
                 }
                 if (getTicks() >= endTime)
                     sleeping = false;
                 break;
             case SDL_QUIT:
-                xu4.eventHandler->quitGame();
+                eh->quitGame();
                 sleeping = false;
                 break;
             }
@@ -266,6 +275,8 @@ void EventHandler::sleep(unsigned int msec) {
             screenSwapBuffers();
         }
     }
+
+    eh->popController();
 }
 
 void EventHandler::run() {

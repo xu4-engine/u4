@@ -749,7 +749,7 @@ void gameSpellEffect(int spell, int player, Sound sound) {
     case Spell::SFX_INVERT:
         gameUpdateScreen();
         xu4.game->mapArea.highlight(0, 0, VIEWPORT_W * TILE_WIDTH, VIEWPORT_H * TILE_HEIGHT);
-        EventHandler::sleep(time);
+        EventHandler::wait_msecs(time);
         xu4.game->mapArea.unhighlight();
 
         if (effect == Spell::SFX_TREMOR) {
@@ -3290,7 +3290,7 @@ void gameDamageParty(int minDamage, int maxDamage) {
             c->party->member(i)->applyDamage(damage);
             c->stats->highlightPlayer(i);
             lastdmged = i;
-            EventHandler::sleep(50);
+            EventHandler::wait_msecs(50);
         }
     }
 

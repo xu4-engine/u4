@@ -16,14 +16,14 @@ public:
     virtual ~Controller();
 
     /* methods for interacting with event manager */
-    virtual bool  isCombatController() const { return false; }
     bool notifyKeyPressed(int key);
     int getTimerInterval();
     static void timerCallback(void *data);
 
     /* control methods subclasses may want to override */
-    virtual bool keyPressed(int key) = 0;
+    virtual bool keyPressed(int key);
     virtual void timerFired();
+    virtual bool isCombatController() const { return false; }
 
 private:
     int timerInterval;

@@ -123,7 +123,7 @@ public:
     int                 gamma;
     int                 shakeInterval;
     bool                shortcutCommands;
-    int                 shrineTime;
+    int                 shrineTime;     // Seconds for one meditation cycle.
     int                 soundVol;
     int                 spellEffectSpeed;
     bool                validateXml;

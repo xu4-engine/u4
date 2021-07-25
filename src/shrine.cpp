@@ -123,8 +123,6 @@ void Shrine::enter() {
 }
 
 void Shrine::enhancedSequence() {
-    int cyclesPerSec = xu4.settings->gameCyclesPerSecond;
-
     /* replace the 'static' avatar tile with grass */
     annotations->add(Coords(5, 6, c->location->coords.z),
             tileset->getByName(Tile::sym.grass)->getId(), false, true);
@@ -132,7 +130,7 @@ void Shrine::enhancedSequence() {
     screenDisableCursor();
     screenMessage("You approach\nthe ancient\nshrine...\n");
     gameUpdateScreen();
-    EventHandler::wait_cycles(cyclesPerSec);
+    EventHandler::wait_msecs(1000);
 
     Object *obj = addCreature(xu4.config->creature(BEGGAR_ID),
                               Coords(5, 10, c->location->coords.z));
@@ -150,25 +148,21 @@ void Shrine::enhancedSequence() {
     gameUpdateScreen();
 
     screenMessage("\n...and kneel before the altar.\n");
-    EventHandler::wait_cycles(cyclesPerSec);
+    EventHandler::wait_msecs(1000);
     screenEnableCursor();
 }
 
 void Shrine::meditationCycle() {
-    /* find our interval for meditation */
+    /* Calculate the millisecond interval for meditation */
     int interval = (xu4.settings->shrineTime * 1000) / MEDITATION_MANTRAS_PER_CYCLE;
-    interval -= (interval % eventTimerGranularity);
-    interval /= eventTimerGranularity;
-    if (interval <= 0)
-        interval = 1;
+    if (interval < 50)
+        interval = 50;
 
     c->saveGame->lastmeditation = (c->saveGame->moves / SHRINE_MEDITATION_INTERVAL) & 0xffff;
 
     screenDisableCursor();
     for (int i = 0; i < MEDITATION_MANTRAS_PER_CYCLE; i++) {
-        WaitController controller(interval);
-        xu4.eventHandler->pushController(&controller);
-        controller.wait();
+        EventHandler::wait_msecs(interval);
         screenMessage(".");
     }
     askMantra();

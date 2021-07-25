@@ -164,24 +164,6 @@ public:
 };
 
 /**
- * A controller to pause for a given length of time, ignoring all
- * keyboard input.
- */
-class WaitController : public Controller {
-public:
-    WaitController(unsigned int cycles);
-    virtual bool keyPressed(int key);
-    virtual void timerFired();
-
-    void wait();
-    void setCycles(int c);
-
-private:
-    unsigned int cycles;
-    unsigned int current;
-};
-
-/**
  * A class for handling timed events.
  */
 class TimedEvent {
@@ -264,6 +246,7 @@ protected:
 };
 
 typedef void(*updateScreenCallback)(void);
+
 /**
  * A class for handling game events.
  */
@@ -276,9 +259,7 @@ public:
     EventHandler();
 
     /* Static functions */
-    static void sleep(unsigned int usec);
     static void wait_msecs(unsigned int msecs);
-    static void wait_cycles(unsigned int cycles);
     static bool timerQueueEmpty();
     static int setKeyRepeat(int delay, int interval);
 

@@ -31,6 +31,14 @@ int Controller::getTimerInterval() {
 }
 
 /**
+ * The keyboard input handler for a controller.
+ * The base keyPressed method returns true (consumes all key events).
+ */
+bool Controller::keyPressed(int key) {
+    return true;
+}
+
+/**
  * The default timerFired handler for a controller.  By default,
  * timers are ignored, but subclasses can override this method and it
  * will be called every <interval> 1/4 seconds.

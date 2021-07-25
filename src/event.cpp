@@ -13,7 +13,6 @@
 #include "location.h"
 #include "savegame.h"
 #include "screen.h"
-#include "settings.h"
 #include "textview.h"
 #include "xu4.h"
 
@@ -31,31 +30,6 @@ void EventHandler::runController(Controller* con) {
     run();
     popController();
     setControllerDone(false);
-}
-
-/**
- * Waits a given number of milliseconds before continuing
- */
-void EventHandler::wait_msecs(unsigned int msecs) {
-    int msecs_per_cycle = (1000 / xu4.settings->gameCyclesPerSecond);
-    int cycles = msecs / msecs_per_cycle;
-
-    if (cycles > 0) {
-        WaitController waitCtrl(cycles);
-        xu4.eventHandler->pushController(&waitCtrl);
-        waitCtrl.wait();
-    }
-    // Sleep the rest of the msecs we can't wait for
-    EventHandler::sleep(msecs % msecs_per_cycle);
-}
-
-/**
- * Waits a given number of game cycles before continuing
- */
-void EventHandler::wait_cycles(unsigned int cycles) {
-    WaitController waitCtrl(cycles);
-    xu4.eventHandler->pushController(&waitCtrl);
-    waitCtrl.wait();
 }
 
 /** Sets the controller exit flag for the event handler */
@@ -457,27 +431,6 @@ bool ReadDirController::keyPressed(int key) {
     }
 
     return false;
-}
-
-WaitController::WaitController(unsigned int c) : Controller(), cycles(c), current(0) {}
-
-void WaitController::timerFired() {
-    if (++current >= cycles) {
-        current = 0;
-        xu4.eventHandler->setControllerDone(true);
-    }
-}
-
-bool WaitController::keyPressed(int key) {
-    return true;
-}
-
-void WaitController::wait() {
-    Controller_startWait();
-}
-
-void WaitController::setCycles(int c) {
-    cycles = c;
 }
 
 

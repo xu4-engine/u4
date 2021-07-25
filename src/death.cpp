@@ -51,7 +51,7 @@ const struct {
 
 #define N_MSGS (sizeof(deathMsgs) / sizeof(deathMsgs[0]))
 
-void deathStart(int delay) {
+void deathStart(int delaySeconds) {
     if (deathSequenceRunning)
         return;
 
@@ -62,15 +62,13 @@ void deathStart(int delay) {
     timerCount = 0;
     timerMsg = 0;
 
-    WaitController waitCtrl(delay * xu4.settings->gameCyclesPerSecond);
-    xu4.eventHandler->pushController(&waitCtrl);
-    waitCtrl.wait();
+    if (delaySeconds > 0)
+        EventHandler::wait_msecs(delaySeconds * 1000);
 
     gameSetViewMode(VIEW_DEAD);
-
-    xu4.eventHandler->pushKeyHandler(&KeyHandler::ignoreKeys);
     screenDisableCursor();
 
+    xu4.eventHandler->pushKeyHandler(&KeyHandler::ignoreKeys);
     xu4.eventHandler->getTimer()->add(&deathTimer, xu4.settings->gameCyclesPerSecond);
 }
 

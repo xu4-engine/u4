@@ -1175,11 +1175,11 @@ void screenShake(int iterations) {
         for (int i = 0; i < iterations; i++) {
             // shift the screen down and make the top row black
             scr->state.vertOffset = shakeOffset;
-            EventHandler::sleep(xu4.settings->shakeInterval);
+            EventHandler::wait_msecs(xu4.settings->shakeInterval);
 
             // shift the screen back up
             scr->state.vertOffset = 0;
-            EventHandler::sleep(xu4.settings->shakeInterval);
+            EventHandler::wait_msecs(xu4.settings->shakeInterval);
         }
     }
 }
