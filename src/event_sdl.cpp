@@ -120,15 +120,12 @@ EventHandler::EventHandler() : timedEvents(eventTimerGranularity), updateScreen(
 }
 
 static void handleMouseMotionEvent(const SDL_Event &event) {
-    if (!xu4.settings->mouseOptions.enabled)
+    if (! xu4.settings->mouseOptions.enabled)
         return;
 
     MouseArea *area;
     area = xu4.eventHandler->mouseAreaForPoint(event.button.x, event.button.y);
-    if (area)
-        screenSetMouseCursor(area->cursor);
-    else
-        screenSetMouseCursor(MC_DEFAULT);
+    screenSetMouseCursor(area ? area->cursor : MC_DEFAULT);
 }
 
 static void handleActiveEvent(const SDL_Event &event, updateScreenCallback updateScreen) {
@@ -142,19 +139,26 @@ static void handleActiveEvent(const SDL_Event &event, updateScreenCallback updat
 }
 
 static void handleMouseButtonDownEvent(const SDL_Event &event, Controller *controller, updateScreenCallback updateScreen) {
-    int button = event.button.button - 1;
+    MouseArea* area;
+    int xu4Button, keyCmd;
 
-    if (!xu4.settings->mouseOptions.enabled)
+    if (! xu4.settings->mouseOptions.enabled)
         return;
 
-    if (button > 2)
-        button = 0;
-    MouseArea *area = xu4.eventHandler->mouseAreaForPoint(event.button.x, event.button.y);
-    if (!area || area->command[button] == 0)
-        return;
-    controller->keyPressed(area->command[button]);
-    if (updateScreen)
-        (*updateScreen)();
+    area = xu4.eventHandler->mouseAreaForPoint(event.button.x, event.button.y);
+    if (area) {
+        // Map SDL button to what MouseArea uses.
+        xu4Button = event.button.button - 1;
+        if (xu4Button > 2)
+            xu4Button = 0;
+
+        keyCmd = area->command[xu4Button];
+        if (keyCmd) {
+            controller->keyPressed(keyCmd);
+            if (updateScreen)
+                (*updateScreen)();
+        }
+    }
 }
 
 static void handleKeyDownEvent(const SDL_Event &event, Controller *controller, updateScreenCallback updateScreen) {

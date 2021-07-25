@@ -66,14 +66,11 @@ EventHandler::EventHandler() : timedEvents(eventTimerGranularity), updateScreen(
 
 
 static void handleMouseMotionEvent(int x, int y) {
-    if (!xu4.settings->mouseOptions.enabled)
+    if (! xu4.settings->mouseOptions.enabled)
         return;
 
     MouseArea* area = xu4.eventHandler->mouseAreaForPoint(x, y);
-    if (area)
-        screenSetMouseCursor(area->cursor);
-    else
-        screenSetMouseCursor(MC_DEFAULT);
+    screenSetMouseCursor(area ? area->cursor : MC_DEFAULT);
 }
 
 /*
@@ -90,17 +87,24 @@ static void handleActiveEvent(const ALLEGRO_EVENT* event, updateScreenCallback u
 
 static void handleMouseButtonDownEvent(EventHandler* handler, const ALLEGRO_EVENT* event, Controller *controller, updateScreenCallback updateScreen) {
     static const uint8_t buttonMap[4] = { 0, 0, 2, 1 };
+    MouseArea* area;
+    int xu4Button, keyCmd;
 
-    if (!xu4.settings->mouseOptions.enabled)
+    if (! xu4.settings->mouseOptions.enabled)
         return;
 
-    int button = buttonMap[event->mouse.button & 3];
-    MouseArea *area = handler->mouseAreaForPoint(event->mouse.x, event->mouse.y);
-    if (!area || area->command[button] == 0)
-        return;
-    controller->keyPressed(area->command[button]);
-    if (updateScreen)
-        (*updateScreen)();
+    area = handler->mouseAreaForPoint(event->mouse.x, event->mouse.y);
+    if (area) {
+        // Map ALLEGRO button to what MouseArea uses.
+        xu4Button = buttonMap[event->mouse.button & 3];
+
+        keyCmd = area->command[xu4Button];
+        if (keyCmd) {
+            controller->keyPressed(keyCmd);
+            if (updateScreen)
+                (*updateScreen)();
+        }
+    }
 }
 
 static void handleKeyDownEvent(const ALLEGRO_EVENT* event, Controller *controller, updateScreenCallback updateScreen) {
