@@ -95,7 +95,7 @@ coord$(EXEEXT): util/coord.o
 dumpmap$(EXEEXT) : util/dumpmap.o
 	$(CC) $(CFLAGS) -o $@ $+
 
-dumpsavegame$(EXEEXT) : util/dumpsavegame.o savegame.o
+dumpsavegame$(EXEEXT) : util/dumpsavegame.o
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ $+
 
 tlkconv$(EXEEXT) : util/tlkconv.o

@@ -399,6 +399,7 @@ int saveGameMonstersRead(SaveGameMonsterRecord *monsterTable, FILE *f) {
 
 //--------------------------------------
 
+#ifndef SAVE_UTIL
 #include "config.h"
 #include "tile.h"
 #include "tileset.h"
@@ -503,3 +504,4 @@ uint8_t UltimaSaveIds::moduleToDngMap(TileId modId) const {
     }
     return 0;
 }
+#endif

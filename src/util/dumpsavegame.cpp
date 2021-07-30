@@ -4,7 +4,8 @@
 #include <cstdlib>
 #include <cstring>
 
-#include "savegame.h"
+#define SAVE_UTIL
+#include "savegame.cpp"
 
 #define EX_USAGE     64  /* command line usage error */
 #define EX_NOINPUT   66  /* cannot open input */
