@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * event.cpp
  */
 
 #include <cctype>
@@ -24,6 +24,13 @@ int eventTimerGranularity = 300;
 #else
 int eventTimerGranularity = 250;
 #endif
+
+/**
+ * Constructs the event handler object.
+ */
+EventHandler::EventHandler() : timedEvents(eventTimerGranularity), updateScreen(NULL) {
+    controllerDone = ended = false;
+}
 
 void EventHandler::runController(Controller* con) {
     pushController(con);

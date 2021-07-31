@@ -14,8 +14,7 @@
 #include "settings.h"
 #include "xu4.h"
 
-extern bool verbose, quit;
-extern int eventTimerGranularity;
+extern bool verbose;
 
 extern uint32_t getTicks();
 extern int u4_SDL_InitSubSystem(Uint32 flags);
@@ -110,13 +109,6 @@ void TimedEventMgr::stop() {
 void TimedEventMgr::start() {
     if (!id)
         id = static_cast<void*>(SDL_AddTimer(baseInterval, &tem_callback, this));
-}
-
-/**
- * Constructs an event handler object.
- */
-EventHandler::EventHandler() : timedEvents(eventTimerGranularity), updateScreen(NULL) {
-    controllerDone = ended = false;
 }
 
 static void handleMouseMotionEvent(const SDL_Event &event) {

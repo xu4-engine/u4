@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * event.h
  */
 
 #ifndef EVENT_H

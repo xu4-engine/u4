@@ -32,8 +32,6 @@
 
 using namespace std;
 
-extern bool quit;
-
 #define INTRO_MAP_HEIGHT 5
 #define INTRO_MAP_WIDTH 19
 #define INTRO_TEXT_X 0

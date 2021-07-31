@@ -11,7 +11,6 @@
 extern uint32_t getTicks();
 
 extern bool verbose;
-extern int eventTimerGranularity;
 
 
 #define CTIMER(id)  ((ALLEGRO_TIMER*) id)
@@ -55,15 +54,6 @@ void TimedEventMgr::stop() {
 void TimedEventMgr::start() {
     al_start_timer(CTIMER(id));
 }
-
-
-/**
- * Constructs an event handler object.
- */
-EventHandler::EventHandler() : timedEvents(eventTimerGranularity), updateScreen(NULL) {
-    controllerDone = ended = false;
-}
-
 
 static void handleMouseMotionEvent(int x, int y) {
     if (! xu4.settings->mouseOptions.enabled)
