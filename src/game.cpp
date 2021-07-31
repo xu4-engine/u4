@@ -570,7 +570,7 @@ void GameController::finishTurn() {
     c->lastCommandTime = time(NULL);
     Creature *attacker = NULL;
 
-    while (1) {
+    while (xu4.stage == StagePlay) {
 
         /* adjust food and moves */
         c->party->endTurn();
@@ -618,7 +618,7 @@ void GameController::finishTurn() {
             return;
         } else {
             screenMessage("Zzzzzz\n");
-            screenWait(4);
+            EventHandler::wait_msecs(166);  // Four video frames at 24 fps.
         }
     }
 
