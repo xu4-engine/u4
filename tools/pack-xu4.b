@@ -20,7 +20,7 @@ forall args [
         "-v" [verbose: to-int second ++ args]
         "-h" [print usage quit]
         "-o" [module-file: to-file second ++ args]
-        "--version" [print "pack-xu4 0.1" quit]
+        "--version" [print "pack-xu4 0.1.1" quit]
         [root-path: to-file first args]
     ]
 ]
@@ -167,7 +167,7 @@ cdi-chunk: func [cdi-format name data /extern pkg-len] [
 ; Make CDI String Table (Form 1).
 cdi-string-table1: func [dict] [
     store: make binary! 2048
-    clear v16
+    v16: make vector! 'u16
     foreach str dict [
         append v16 size? store
         ifn string? str [str: to-string str]
@@ -178,6 +178,19 @@ cdi-string-table1: func [dict] [
         to-binary v16
         store
     ]
+]
+
+file-dict: make block! 128
+file-id-seen: false
+
+file-id: func [str /extern file-id-seen] [
+    either file-id-seen: find file-dict str [
+        idx: sub index? file-id-seen 1
+    ][
+        idx: size? file-dict
+        append file-dict str
+    ]
+    idx
 ]
 
 print-toc: does [
@@ -456,11 +469,13 @@ process-cfg [
                 fname: at/filename
                 ext: find/last fname '.'
                 either eq? ".png" ext [
+                    n: file-id fname
                     poke app_id 3 div n 256
                     poke app_id 4 and n 255
-                    ++ n
 
-                    cdi-chunk 0x1002 app_id read join path fname
+                    ifn file-id-seen [
+                        cdi-chunk 0x1002 app_id read join path fname
+                    ]
 
                     fname: copy app_id
                     ftype: 'png
@@ -690,11 +705,11 @@ process-cfg [
 
 if ge? verbose 2 [
     probe cfg
+    probe file-dict
 ]
 
 cdi-chunk 0x7FC0 "CONF" serialize reduce [cfg]
-;cdi-chunk 0x0006 'strs cdi-string-table1 string-dict
-;cdi-chunk 0x0006 'syms cdi-string-table1 symbol-dict
+cdi-chunk 0x0006 "FNAM" cdi-string-table1 file-dict
 cdi-end
 
 if ge? verbose 1 [print-toc]
