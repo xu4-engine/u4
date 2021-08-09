@@ -83,6 +83,16 @@ typedef struct {
     uint32_t bytes;
 } CDIEntry;
 
+typedef struct {
+    uint32_t form;
+    uint32_t count;
+    union {
+        uint16_t* f1;
+        uint32_t* f2;
+    } index;
+    const char* strings;
+} CDIStringTable;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -92,6 +102,7 @@ uint8_t*        cdi_loadPakChunk(FILE* fp, const CDIEntry* ent);
 CDIEntry*       cdi_loadPakTOC(FILE* fp, const CDIEntry* header);
 const CDIEntry* cdi_findAppId(const CDIEntry* toc, size_t count, uint32_t id);
 const CDIEntry* cdi_findFormat(const CDIEntry* toc, size_t count, uint32_t cdi);
+CDIStringTable* cdi_initStringTable(CDIStringTable* table, const uint8_t* buf);
 
 void cdi_swap16(uint16_t* vars, size_t count);
 void cdi_swap32(uint32_t* vars, size_t count);

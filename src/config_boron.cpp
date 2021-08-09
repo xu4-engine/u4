@@ -103,6 +103,8 @@ struct ConfigBoron : public Config {
 
     UThread* ut;
     CDIEntry* toc;
+    uint8_t* fnamBuf;
+    CDIStringTable fnam;
     UIndex configN;
     UIndex itemIdN;         // item-id context!
     size_t tocUsed;
@@ -872,6 +874,15 @@ ConfigBoron::ConfigBoron(const char* modulePath)
     tocUsed = CDI_TOC_SIZE((&pakHead));
     }
 
+
+    // Load filename string table.
+    ent = cdi_findAppId(toc, tocUsed, CDI32('F','N','A','M'));
+    NO_PTR(ent, "Module FNAM not found");
+    fnamBuf = cdi_loadPakChunk(fp, ent);
+    NO_PTR(fnamBuf, "Read FNAM failed");
+    cdi_initStringTable(&fnam, fnamBuf);
+
+
     // Load config.
     {
     UCell* res;
@@ -1043,6 +1054,7 @@ ConfigBoron::~ConfigBoron()
     ur_binFree(&evalBuf);
 
     boron_freeEnv( ut );
+    free(fnamBuf);
     free(toc);
 }
 
@@ -1124,6 +1136,42 @@ int Config::scriptItemId(Symbol name) {
 
 const char* Config::modulePath() const {
     return CB->modulePath;
+}
+
+static int lastChar(const char* str) {
+    while (*str)
+        ++str;
+    return str[-1];
+}
+
+/*
+ * Return the CDIEntry pointer for a given source filename.
+ */
+const CDIEntry* Config::fileEntry( const char* sourceFilename ) const {
+    const CDIStringTable& st = CX->fnam;
+    if (st.form != 1)
+        return NULL;
+
+    const uint16_t* it  = st.index.f1;
+    const uint16_t* end = it + st.count;
+    int n = 0;
+    while (it != end) {
+        if (strcmp(st.strings + *it, sourceFilename) == 0) {
+            int a, b;
+            if (lastChar(sourceFilename) == 'l') {
+                a = 'S';    // .glsl
+                b = 'L';
+            } else {
+                a = 'I';    // .png
+                b = 'M';
+            }
+            uint32_t appId = CDI32(a, b, (n >> 8), (n & 0xff));
+            return cdi_findAppId(CX->toc, CX->tocUsed, appId);
+        }
+        ++n;
+        ++it;
+    }
+    return NULL;
 }
 
 /*

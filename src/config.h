@@ -56,6 +56,7 @@ public:
     const void* scriptEvalArg(const char* fmt, ...);
 #endif
     const char* modulePath() const;
+    const CDIEntry* fileEntry( const char* sourceFilename ) const;
     const CDIEntry* imageFile( const char* id ) const;
     const CDIEntry* musicFile( uint32_t id ) const;
     const CDIEntry* soundFile( uint32_t id ) const;

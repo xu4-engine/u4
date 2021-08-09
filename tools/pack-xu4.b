@@ -183,6 +183,9 @@ cdi-string-table1: func [dict] [
 file-dict: make block! 128
 file-id-seen: false
 
+; File-id returns the zero-based index of str in file-dict.
+; The global file-id-seen is set to true if str was already present in
+; file-dict, or false if it was not.
 file-id: func [str /extern file-id-seen] [
     either file-id-seen: find file-dict str [
         idx: sub index? file-id-seen 1
@@ -191,6 +194,21 @@ file-id: func [str /extern file-id-seen] [
         append file-dict str
     ]
     idx
+]
+
+img_id: "IM^0^0"
+file_buf: make binary! 4096
+
+; Return app_id of PNG chunk.
+pack-png: func [path filename] [
+    n: file-id filename
+    poke img_id 3 div n 256
+    poke img_id 4 and n 255
+
+    ifn file-id-seen [
+        cdi-chunk 0x1002 img_id read/into join path filename file_buf
+    ]
+    img_id
 ]
 
 print-toc: does [
@@ -410,11 +428,6 @@ process-cfg [
         )
     ]
 
-    ; Image variables.
-    path: join root-path %image/
-    app_id: "IM^0^0"
-    n: 0
-
     layout-subimages: func [spec block! out block! width none!/int!] [
         ; Stack vertically if width not provided.
         if none? width [width: 0]
@@ -453,6 +466,9 @@ process-cfg [
         ]]
     ]
 
+    image-path: join root-path %image/
+    n: 0
+
     process-blk graphics [
         'imageset set name word!/path! (
             either word? name [
@@ -469,15 +485,7 @@ process-cfg [
                 fname: at/filename
                 ext: find/last fname '.'
                 either eq? ".png" ext [
-                    n: file-id fname
-                    poke app_id 3 div n 256
-                    poke app_id 4 and n 255
-
-                    ifn file-id-seen [
-                        cdi-chunk 0x1002 app_id read join path fname
-                    ]
-
-                    fname: copy app_id
+                    fname: copy pack-png image-path fname
                     ftype: 'png
                 ][
                     ftype: at/filetype
@@ -702,6 +710,28 @@ process-cfg [
     ]
     ega-palette: bin
 ]
+
+; Pull in shader files
+if exists? spath: join root-path %shader/ [
+    sl_id: "SL^0^0"
+    foreach file read spath [
+        switch find/last file '.' [
+            %.glsl [
+                n: file-id file
+                poke sl_id 3 div n 256
+                poke sl_id 4 and n 255
+                ifn file-id-seen [
+                    cdi-chunk 0x0001 sl_id
+                        /*compress*/ read/into join spath file file_buf
+                ]
+            ]
+            %.png [
+                pack-png spath file
+            ]
+        ]
+    ]
+]
+
 
 if ge? verbose 2 [
     probe cfg

@@ -152,38 +152,73 @@ static int compileShaders(GLuint program, const char* vert, const char* frag)
     return compileShaderParts(program, src, 1, 1);
 }
 
+static char* readShader(const char* filename)
+{
+#ifdef CONF_MODULE
+    const CDIEntry* ent = xu4.config->fileEntry(filename);
+    if (! ent)
+        return NULL;
+
+    char* buf = (char*) malloc(ent->bytes + 1);
+    if (buf) {
+        FILE* fp = fopen(xu4.config->modulePath(), "rb");
+        if (fp) {
+            fseek(fp, ent->offset, SEEK_SET);
+
+            size_t len = fread(buf, 1, ent->bytes, fp);
+            fclose(fp);
+            if (len == ent->bytes) {
+                buf[len] = '\0';
+                return buf;
+            }
+        }
+        free(buf);
+    }
+#else
+    char fnBuf[40];
+    const size_t bsize = 4096;
+    char* buf = (char*) malloc(bsize);
+    if (buf) {
+        strcpy(fnBuf, "graphics/shader/");
+        strcat(fnBuf, filename);
+
+        FILE* fp = fopen(fnBuf, "rb");
+        if (fp) {
+            size_t len = fread(buf, 1, bsize-1, fp);
+            fclose(fp);
+            if (len > 16) {
+                buf[len] = '\0';
+                return buf;
+            }
+        }
+        free(buf);
+    }
+#endif
+    return NULL;
+}
+
 /*
  * Returns zero on success or 1-4 to indicate compile/link/read error.
  */
 static int compileSLFile(GLuint program, const char* filename, int scale)
 {
     const char* src[4];
-    FILE* fp;
     int res = 4;
-    const size_t bsize = 4096;
-    char* buf = (char*) malloc(bsize);
+    char* buf = readShader(filename);
 
     if (buf) {
-        fp = fopen(filename, "rb");
-        if (fp) {
-            size_t len = fread(buf, 1, bsize-1, fp);
-            if (len > 16) {
-                buf[len] = '\0';
-                if (scale > 2) {
-                    char* spos = strstr(buf, "SCALE 2");
-                    if (spos)
-                        spos[6] = '0' + scale;
-                }
-
-                src[0] = "#version 330\n#define VERTEX\n";
-                src[1] = buf;
-                src[2] = "#version 330\n#define FRAGMENT\n";
-                src[3] = buf;
-
-                res = compileShaderParts(program, src, 2, 2);
-            }
-            fclose(fp);
+        if (scale > 2) {
+            char* spos = strstr(buf, "SCALE 2");
+            if (spos)
+                spos[6] = '0' + scale;
         }
+
+        src[0] = "#version 330\n#define VERTEX\n";
+        src[1] = buf;
+        src[2] = "#version 330\n#define FRAGMENT\n";
+        src[3] = buf;
+
+        res = compileShaderParts(program, src, 2, 2);
         free(buf);
     }
     return res;
@@ -202,6 +237,28 @@ static void _defineAttributeLayout(GLuint vao, GLuint vbo)
 
 extern Image* loadImage_png(U4FILE *file);
 uint32_t gpu_makeTexture(Image* img);
+
+static U4FILE* openHQXTableImage(int scale)
+{
+#ifdef CONF_MODULE
+    char lutFile[16];
+    strcpy(lutFile, "hq2x.png");
+    lutFile[2] = '0' + scale;
+
+    const CDIEntry* ent = xu4.config->fileEntry(lutFile);
+    if (! ent)
+        return NULL;
+
+    U4FILE* uf = u4fopen_stdio(xu4.config->modulePath());
+    u4fseek(uf, ent->offset, SEEK_SET);
+    return uf;
+#else
+    char lutFile[32];
+    strcpy(lutFile, "graphics/shader/hq2x.png");
+    lutFile[18] = '0' + scale;
+    return u4fopen_stdio(lutFile);
+#endif
+}
 
 bool gpu_init(void* res, int w, int h, int scale)
 {
@@ -233,10 +290,7 @@ bool gpu_init(void* res, int w, int h, int scale)
         if (scale > 4)
             scale = 4;
 
-        {
-        std::string lutFile("graphics/shader/hq2x.png");
-        lutFile[18] = '0' + scale;
-        U4FILE* uf = u4fopen_stdio(lutFile.c_str());
+        U4FILE* uf = openHQXTableImage(scale);
         if (uf) {
             Image* img = loadImage_png(uf);
             u4fclose(uf);
@@ -245,12 +299,11 @@ bool gpu_init(void* res, int w, int h, int scale)
                 delete img;
             }
         }
-        }
         if (! gr->scalerLut)
             return false;
 
         gr->scaler = glCreateProgram();
-        if (compileSLFile(gr->scaler, "graphics/shader/hq2x.glsl", scale))
+        if (compileSLFile(gr->scaler, "hq2x.glsl", scale))
             return false;
 
         gr->slocScMat = glGetUniformLocation(gr->scaler, "MVPMatrix");

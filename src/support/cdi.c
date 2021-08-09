@@ -89,6 +89,35 @@ uint8_t* cdi_loadPakChunk(FILE* fp, const CDIEntry* ent)
 }
 
 /*
+  Initialize a CDIStringTable struct to point to the data in string table buf.
+
+  \return Pointer to table or NULL if buf is not a valid string table.
+*/
+CDIStringTable* cdi_initStringTable(CDIStringTable* table, const uint8_t* buf)
+{
+    int form = buf[0];
+    if (form > 2)
+        return NULL;
+
+    table->form = form;
+    table->count = buf[1] << 16 | buf[2] << 8 | buf[3];
+    table->strings = (char*) (buf+4);
+    if (form) {
+        table->strings += table->count * 2 * form;
+        table->index.f1 = (uint16_t*) (buf+4);
+#ifdef __BIG_ENDIAN__
+        if (form == 1)
+            cdi_swap16(table->index.f1, table->count);
+        else
+            cdi_swap32(table->index.f2, table->count);
+#endif
+    } else {
+        table->index.f1 = NULL;
+    }
+    return table;
+}
+
+/*
   Read a CDI package Table of Contents.
 
   To obtain the number of entries in the table of contents use the
