@@ -52,7 +52,7 @@ void u4_SDL_QuitSubSystem(Uint32 flags) {
         SDL_QuitSubSystem(flags);
 }
 
-void screenInit_sys(const Settings* settings, int reset) {
+void screenInit_sys(const Settings* settings, int* dim, int reset) {
     ScreenSDL* sd;
 
     if (reset) {
@@ -101,6 +101,10 @@ void screenInit_sys(const Settings* settings, int reset) {
     {
     ScreenState* state = screenState();
     SDL_Surface* ss = SDL_GetVideoSurface();
+
+    dim[0] = ss->w;
+    dim[1] = ss->h;
+
 #if 0
     printf( "SDL color masks: R:%08x G:%08x B:%08x A:%08x\n",
             ss->format->Rmask, ss->format->Gmask,

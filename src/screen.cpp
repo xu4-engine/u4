@@ -48,6 +48,8 @@ struct Screen {
     ImageInfo* gemTilesInfo;
     ScreenState state;
     Scaler filterScaler;
+    int width;
+    int height;
     int cursorX;
     int cursorY;
     int cursorStatus;
@@ -66,8 +68,8 @@ struct Screen {
         state.currentCycle = 0;
         state.vertOffset = 0;
         state.formatIsABGR = true;
-        cursorX = 0;
-        cursorY = 0;
+        width = height = 0;
+        cursorX = cursorY = 0;
         cursorStatus = 0;
         cursorEnabled = 1;
         needPrompt = 1;
@@ -86,7 +88,7 @@ static const int BufferSize = 1024;
 extern bool verbose;
 
 // Just extern the system functions here. That way people aren't tempted to call them as part of the public API.
-extern void screenInit_sys(const Settings*, int reset);
+extern void screenInit_sys(const Settings*, int* dim, int reset);
 extern void screenDelete_sys();
 
 static void initDungeonTileChars(std::map<string, int>& dungeonTileChars) {
@@ -187,7 +189,7 @@ enum ScreenSystemStage {
  */
 void screenInit() {
     xu4.screen = new Screen;
-    screenInit_sys(xu4.settings, SYS_CLEAN);
+    screenInit_sys(xu4.settings, &xu4.screen->width, SYS_CLEAN);
     screenInit_data(xu4.screen, *xu4.settings);
 }
 
@@ -205,7 +207,7 @@ void screenDelete() {
  */
 void screenReInit() {
     screenDelete_data(xu4.screen);
-    screenInit_sys(xu4.settings, SYS_RESET);
+    screenInit_sys(xu4.settings, &xu4.screen->width, SYS_RESET);
     screenInit_data(xu4.screen, *xu4.settings); // Load new backgrounds, etc.
 }
 
@@ -485,7 +487,6 @@ void screenUpdate(TileView *view, bool showmap, bool blackout) {
 
 #ifdef GPU_RENDER
     //static const float clearColor[4] = {0.0, 0.5, 0.8, 1.0};
-    const Image* screen = xu4.screenImage;
     Location* loc = c->location;
     const Map* map = loc->map;
 
@@ -502,8 +503,8 @@ raster_update:
         screenUpdateMoons();
         screenUpdateWind();
 
-        gpu_viewport(0, 0, screen->width(), screen->height());
-        gpu_background(xu4.gpu, NULL, screen);
+        gpu_viewport(0, 0, xu4.screen->width, xu4.screen->height);
+        gpu_background(xu4.gpu, NULL, xu4.screenImage);
     }
     else if (showmap) {
         ImageInfo* shapes = xu4.imageMgr->get(BKGD_SHAPES);
@@ -513,8 +514,8 @@ raster_update:
         screenUpdateMoons();
         screenUpdateWind();
 
-        gpu_viewport(0, 0, screen->width(), screen->height());
-        gpu_background(xu4.gpu, NULL, screen);
+        gpu_viewport(0, 0, xu4.screen->width, xu4.screen->height);
+        gpu_background(xu4.gpu, NULL, xu4.screenImage);
 
 #if 0
         // Unscaled pixel rect. on screen.
