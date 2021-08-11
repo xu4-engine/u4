@@ -53,7 +53,7 @@ struct Screen {
     int cursorStatus;
     int cursorEnabled;
     int needPrompt;
-    int screenLos[VIEWPORT_W][VIEWPORT_H];
+    uint8_t screenLos[VIEWPORT_W * VIEWPORT_H];
 
     Screen() {
         gemLayout = NULL;
@@ -438,8 +438,8 @@ bool screenTileUpdate(TileView *view, const Coords &coords)
     }
 
     // Draw if it is on screen
-    if (x >= 0 && y >= 0 && x < VIEWPORT_W &&
-                            y < VIEWPORT_H && xu4.screen->screenLos[x][y])
+    if (x >= 0 && y >= 0 && x < VIEWPORT_W && y < VIEWPORT_H &&
+        xu4.screen->screenLos[y*VIEWPORT_W + x])
     {
         view->drawTile(tiles, focus, x, y);
         return true;
@@ -563,13 +563,13 @@ raster_update:
 
         screenFindLineOfSight(viewportTiles);
 
-        int (*screenLos)[VIEWPORT_H] = xu4.screen->screenLos;
+        const uint8_t* lineOfSight = xu4.screen->screenLos;
         for (y = 0; y < VIEWPORT_H; y++) {
             for (x = 0; x < VIEWPORT_W; x++) {
-                if (screenLos[x][y]) {
-                    view->drawTile(viewportTiles[x][y], viewportFocus[x][y], x, y);
-                }
-                else
+                if (*lineOfSight++) {
+                    view->drawTile(viewportTiles[x][y],
+                                   viewportFocus[x][y], x, y);
+                } else
                     view->drawTile(black, false, x, y);
             }
         }
@@ -758,124 +758,125 @@ void screenMakeDungeonView() {
  * location in the middle. (original DOS algorithm)
  */
 static void screenFindLineOfSight(vector <MapTile> viewportTiles[VIEWPORT_W][VIEWPORT_H]) {
-    int (*screenLos)[VIEWPORT_H] = xu4.screen->screenLos;
-    int x, y;
-
-    if (!c)
-        return;
-
-    /*
-     * if the map has the no line of sight flag, all is visible
-     */
     if (c->location->map->flags & NO_LINE_OF_SIGHT) {
-        for (y = 0; y < VIEWPORT_H; y++) {
-            for (x = 0; x < VIEWPORT_W; x++) {
-                screenLos[x][y] = 1;
-            }
-        }
-        return;
-    }
+        // The map has the no line of sight flag, all is visible
+        memset(xu4.screen->screenLos, 1, VIEWPORT_W * VIEWPORT_H);
+    } else {
+        // otherwise calculate it from the map data
+        memset(xu4.screen->screenLos, 0, VIEWPORT_W * VIEWPORT_H);
 
-    /*
-     * otherwise calculate it from the map data
-     */
-    for (y = 0; y < VIEWPORT_H; y++) {
-        for (x = 0; x < VIEWPORT_W; x++) {
-            screenLos[x][y] = 0;
-        }
+        if (xu4.settings->lineOfSight == 0)
+            screenFindLineOfSightDOS(viewportTiles);
+        else
+            screenFindLineOfSightEnhanced(viewportTiles);
     }
-
-    if (xu4.settings->lineOfSight == 0)
-        screenFindLineOfSightDOS(viewportTiles);
-    else
-        screenFindLineOfSightEnhanced(viewportTiles);
 }
 
+
+#define LOS(x,y)    lineOfSight[(y) * VIEWPORT_W + (x)]
 
 /**
  * Finds which tiles in the viewport are visible from the avatars
  * location in the middle. (original DOS algorithm)
  */
 static void screenFindLineOfSightDOS(vector <MapTile> viewportTiles[VIEWPORT_W][VIEWPORT_H]) {
-    int (*screenLos)[VIEWPORT_H] = xu4.screen->screenLos;
+    uint8_t* lineOfSight = xu4.screen->screenLos;
     int x, y;
 
-    screenLos[VIEWPORT_W / 2][VIEWPORT_H / 2] = 1;
+    LOS(VIEWPORT_W / 2, VIEWPORT_H / 2) = 1;
 
     for (x = VIEWPORT_W / 2 - 1; x >= 0; x--)
-        if (screenLos[x + 1][VIEWPORT_H / 2] &&
+        if (LOS(x + 1, VIEWPORT_H / 2) &&
             !viewportTiles[x + 1][VIEWPORT_H / 2].front().getTileType()->isOpaque())
-            screenLos[x][VIEWPORT_H / 2] = 1;
+            LOS(x, VIEWPORT_H / 2) = 1;
 
     for (x = VIEWPORT_W / 2 + 1; x < VIEWPORT_W; x++)
-        if (screenLos[x - 1][VIEWPORT_H / 2] &&
+        if (LOS(x - 1, VIEWPORT_H / 2) &&
             !viewportTiles[x - 1][VIEWPORT_H / 2].front().getTileType()->isOpaque())
-            screenLos[x][VIEWPORT_H / 2] = 1;
+            LOS(x, VIEWPORT_H / 2) = 1;
 
     for (y = VIEWPORT_H / 2 - 1; y >= 0; y--)
-        if (screenLos[VIEWPORT_W / 2][y + 1] &&
+        if (LOS(VIEWPORT_W / 2, y + 1) &&
             !viewportTiles[VIEWPORT_W / 2][y + 1].front().getTileType()->isOpaque())
-            screenLos[VIEWPORT_W / 2][y] = 1;
+            LOS(VIEWPORT_W / 2, y) = 1;
 
     for (y = VIEWPORT_H / 2 + 1; y < VIEWPORT_H; y++)
-        if (screenLos[VIEWPORT_W / 2][y - 1] &&
+        if (LOS(VIEWPORT_W / 2, y - 1) &&
             !viewportTiles[VIEWPORT_W / 2][y - 1].front().getTileType()->isOpaque())
-            screenLos[VIEWPORT_W / 2][y] = 1;
+            LOS(VIEWPORT_W / 2, y) = 1;
 
     for (y = VIEWPORT_H / 2 - 1; y >= 0; y--) {
 
         for (x = VIEWPORT_W / 2 - 1; x >= 0; x--) {
-            if (screenLos[x][y + 1] &&
+            if (LOS(x, y + 1) &&
                 !viewportTiles[x][y + 1].front().getTileType()->isOpaque())
-                screenLos[x][y] = 1;
-            else if (screenLos[x + 1][y] &&
+                LOS(x, y) = 1;
+            else if (LOS(x + 1, y) &&
                      !viewportTiles[x + 1][y].front().getTileType()->isOpaque())
-                screenLos[x][y] = 1;
-            else if (screenLos[x + 1][y + 1] &&
+                LOS(x, y) = 1;
+            else if (LOS(x + 1, y + 1) &&
                      !viewportTiles[x + 1][y + 1].front().getTileType()->isOpaque())
-                screenLos[x][y] = 1;
+                LOS(x, y) = 1;
         }
 
         for (x = VIEWPORT_W / 2 + 1; x < VIEWPORT_W; x++) {
-            if (screenLos[x][y + 1] &&
+            if (LOS(x, y + 1) &&
                 !viewportTiles[x][y + 1].front().getTileType()->isOpaque())
-                screenLos[x][y] = 1;
-            else if (screenLos[x - 1][y] &&
+                LOS(x, y) = 1;
+            else if (LOS(x - 1, y) &&
                      !viewportTiles[x - 1][y].front().getTileType()->isOpaque())
-                screenLos[x][y] = 1;
-            else if (screenLos[x - 1][y + 1] &&
+                LOS(x, y) = 1;
+            else if (LOS(x - 1, y + 1) &&
                      !viewportTiles[x - 1][y + 1].front().getTileType()->isOpaque())
-                screenLos[x][y] = 1;
+                LOS(x, y) = 1;
         }
     }
 
     for (y = VIEWPORT_H / 2 + 1; y < VIEWPORT_H; y++) {
 
         for (x = VIEWPORT_W / 2 - 1; x >= 0; x--) {
-            if (screenLos[x][y - 1] &&
+            if (LOS(x, y - 1) &&
                 !viewportTiles[x][y - 1].front().getTileType()->isOpaque())
-                screenLos[x][y] = 1;
-            else if (screenLos[x + 1][y] &&
+                LOS(x, y) = 1;
+            else if (LOS(x + 1, y) &&
                      !viewportTiles[x + 1][y].front().getTileType()->isOpaque())
-                screenLos[x][y] = 1;
-            else if (screenLos[x + 1][y - 1] &&
+                LOS(x, y) = 1;
+            else if (LOS(x + 1, y - 1) &&
                      !viewportTiles[x + 1][y - 1].front().getTileType()->isOpaque())
-                screenLos[x][y] = 1;
+                LOS(x, y) = 1;
         }
 
         for (x = VIEWPORT_W / 2 + 1; x < VIEWPORT_W; x++) {
-            if (screenLos[x][y - 1] &&
+            if (LOS(x, y - 1) &&
                 !viewportTiles[x][y - 1].front().getTileType()->isOpaque())
-                screenLos[x][y] = 1;
-            else if (screenLos[x - 1][y] &&
+                LOS(x, y) = 1;
+            else if (LOS(x - 1, y) &&
                      !viewportTiles[x - 1][y].front().getTileType()->isOpaque())
-                screenLos[x][y] = 1;
-            else if (screenLos[x - 1][y - 1] &&
+                LOS(x, y) = 1;
+            else if (LOS(x - 1, y - 1) &&
                      !viewportTiles[x - 1][y - 1].front().getTileType()->isOpaque())
-                screenLos[x][y] = 1;
+                LOS(x, y) = 1;
         }
     }
 }
+
+/*
+ * bitmasks for LOS shadows
+ */
+#define ____H 0x01    // obscured along the horizontal face
+#define ___C_ 0x02    // obscured at the center
+#define __V__ 0x04    // obscured along the vertical face
+#define _N___ 0x80    // start of new raster
+
+#define ___CH 0x03
+#define __VCH 0x07
+#define __VC_ 0x06
+
+#define _N__H 0x81
+#define _N_CH 0x83
+#define _NVCH 0x87
+#define _NVC_ 0x86
+#define _NV__ 0x84
 
 /**
  * Finds which tiles in the viewport are visible from the avatars
@@ -896,8 +897,6 @@ static void screenFindLineOfSightDOS(vector <MapTile> viewportTiles[VIEWPORT_W][
  * is always at the center of the screen.
  */
 static void screenFindLineOfSightEnhanced(vector <MapTile> viewportTiles[VIEWPORT_W][VIEWPORT_H]) {
-    int x, y;
-
     /*
      * the shadow rasters for each viewport octant
      *
@@ -910,7 +909,8 @@ static void screenFindLineOfSightEnhanced(vector <MapTile> viewportTiles[VIEWPOR
      * shadowRaster[0][6]    // #3 length
      * ...etc...
      */
-    const int shadowRaster[14][13] = {
+    static const uint8_t colRasterIndex[5] = { 0, 0, 2, 5, 9 };
+    static const uint8_t shadowRaster[14][13] = {
         { 6, __VCH, 4, _N_CH, 1, __VCH, 3, _N___, 1, ___CH, 1, __VCH, 1 },    // raster_1_0
         { 6, __VC_, 1, _NVCH, 2, __VC_, 1, _NVCH, 3, _NVCH, 2, _NVCH, 1 },    // raster_1_1
         //
@@ -929,6 +929,17 @@ static void screenFindLineOfSightEnhanced(vector <MapTile> viewportTiles[VIEWPOR
         { 2, __V__, 1, _NVCH, 1,     0, 0,     0, 0,     0, 0,     0, 0 },    // raster_4_3
         { 2, __V__, 1, _NVCH, 1,     0, 0,     0, 0,     0, 0,     0, 0 }     // raster_4_4
     };
+    static const char octantSign[8 * 3] = {
+    // xSign, ySign, reflect
+         1,  1,  0,     // lower-right
+         1,  1,  1,
+         1, -1,  1,     // lower-left
+        -1,  1,  0,
+        -1, -1,  0,     // upper-left
+        -1, -1,  1,
+        -1,  1,  1,     // upper-right
+         1, -1,  0,
+    };
 
     /*
      * As each viewport tile is processed, it will store the bitmask for the shadow it casts.
@@ -939,36 +950,30 @@ static void screenFindLineOfSightEnhanced(vector <MapTile> viewportTiles[VIEWPOR
     const int _NUM_RASTERS_COLS = 4;
 
     int octant;
-    int xOrigin, yOrigin, xSign, ySign, reflect, xTile, yTile, xTileOffset, yTileOffset;
-    int (*screenLos)[VIEWPORT_H] = xu4.screen->screenLos;
+    int xOrigin, yOrigin, xSign, ySign, reflect;
+    int xTile, yTile, xTileOffset, yTileOffset;
+    int currentRaster;
+    int maxWidth, maxHeight;
+    uint8_t* lineOfSight = xu4.screen->screenLos;
+    const char* osign = octantSign;
+
+    // determine the origin point
+    xOrigin = VIEWPORT_W / 2;
+    yOrigin = VIEWPORT_H / 2;
 
     for (octant = 0; octant < _OCTANTS; octant++) {
-        switch (octant) {
-            case 0:  xSign=  1;  ySign=  1;  reflect=false;  break;        // lower-right
-            case 1:  xSign=  1;  ySign=  1;  reflect=true;   break;
-            case 2:  xSign=  1;  ySign= -1;  reflect=true;   break;        // lower-left
-            case 3:  xSign= -1;  ySign=  1;  reflect=false;  break;
-            case 4:  xSign= -1;  ySign= -1;  reflect=false;  break;        // upper-left
-            case 5:  xSign= -1;  ySign= -1;  reflect=true;   break;
-            case 6:  xSign= -1;  ySign=  1;  reflect=true;   break;        // upper-right
-            case 7:  xSign=  1;  ySign= -1;  reflect=false;  break;
-        }
-
-        // determine the origin point for the current LOS octant
-        xOrigin = VIEWPORT_W / 2;
-        yOrigin = VIEWPORT_H / 2;
+        xSign   = *osign++;
+        ySign   = *osign++;
+        reflect = *osign++;
 
         // make sure the segment doesn't reach out of bounds
-        int maxWidth      = xOrigin;
-        int maxHeight     = yOrigin;
-        int currentRaster = 0;
-
-        // just in case the viewport isn't square, swap the width and height
         if (reflect) {
-            // swap height and width for later use
-            maxWidth ^= maxHeight;
-            maxHeight ^= maxWidth;
-            maxWidth ^= maxHeight;
+            // swap height and width
+            maxWidth  = yOrigin;
+            maxHeight = xOrigin;
+        } else {
+            maxWidth  = xOrigin;
+            maxHeight = yOrigin;
         }
 
         // check the visibility of each tile
@@ -985,26 +990,12 @@ static void screenFindLineOfSightEnhanced(vector <MapTile> viewportTiles[VIEWPOR
                 }
 
                 if (viewportTiles[xTile][yTile].front().getTileType()->isOpaque()) {
-                    // a wall was detected, so go through the raster for this wall
-                    // segment and mark everything behind it with the appropriate
-                    // shadow bitmask.
-                    //
-                    // first, get the correct raster
-                    //
-                    if ((currentCol==1) && (currentRow==0)) { currentRaster=0; }
-                    else if ((currentCol==1) && (currentRow==1)) { currentRaster=1; }
-                    else if ((currentCol==2) && (currentRow==0)) { currentRaster=2; }
-                    else if ((currentCol==2) && (currentRow==1)) { currentRaster=3; }
-                    else if ((currentCol==2) && (currentRow==2)) { currentRaster=4; }
-                    else if ((currentCol==3) && (currentRow==0)) { currentRaster=5; }
-                    else if ((currentCol==3) && (currentRow==1)) { currentRaster=6; }
-                    else if ((currentCol==3) && (currentRow==2)) { currentRaster=7; }
-                    else if ((currentCol==3) && (currentRow==3)) { currentRaster=8; }
-                    else if ((currentCol==4) && (currentRow==0)) { currentRaster=9; }
-                    else if ((currentCol==4) && (currentRow==1)) { currentRaster=10; }
-                    else if ((currentCol==4) && (currentRow==2)) { currentRaster=11; }
-                    else if ((currentCol==4) && (currentRow==3)) { currentRaster=12; }
-                    else { currentRaster=13; }  // currentCol and currentRow must equal 4
+                    // a wall was detected, so go through the raster for this
+                    // wall segment and mark everything behind it with the
+                    // appropriate shadow bitmask.
+
+                    // first, get the correct raster (0-13)
+                    currentRaster = currentRow + colRasterIndex[currentCol];
 
                     xTileOffset = 0;
                     yTileOffset = 0;
@@ -1022,10 +1013,9 @@ static void screenFindLineOfSightEnhanced(vector <MapTile> viewportTiles[VIEWPOR
                         if (shadowType & 0x80) {
                             // remove the flag from the shadowType
                             shadowType ^= _N___;
-//                            if (currentRow + yTileOffset >= maxHeight) {
-                            if (currentRow + yTileOffset > maxHeight) {
+                            if (currentRow + yTileOffset > maxHeight)
                                 break;
-                            }
+
                             xTileOffset = yTileOffset;
                             yTileOffset++;
                         }
@@ -1038,44 +1028,44 @@ static void screenFindLineOfSightEnhanced(vector <MapTile> viewportTiles[VIEWPOR
                          * horizontal shadow edge accuracy isn't important
                          */
                         // if reflecting the octant, swap the edges
-//                        if (reflect) {
-//                            int shadowTemp = 0;
-//                            // swap the vertical and horizontal shadow edges
-//                            if (shadowType & __V__) { shadowTemp |= ____H; }
-//                            if (shadowType & ___C_) { shadowTemp |= ___C_; }
-//                            if (shadowType & ____H) { shadowTemp |= __V__; }
-//                            shadowType = shadowTemp;
-//                        }
+                        /*
+                        if (reflect) {
+                            int shadowTemp = 0;
+                            // swap the vertical and horizontal shadow edges
+                            if (shadowType & __V__) { shadowTemp |= ____H; }
+                            if (shadowType & ___C_) { shadowTemp |= ___C_; }
+                            if (shadowType & ____H) { shadowTemp |= __V__; }
+                            shadowType = shadowTemp;
+                        }
+                        */
 
                         for (int currentShadow = 1; currentShadow <= shadowLength; currentShadow++) {
                             // apply the shadow to the shadowMap
                             if (reflect) {
-                                screenLos[xTile + ((yTileOffset) * ySign)][yTile + ((currentShadow+xTileOffset) * xSign)] |= shadowType;
+                                LOS(xTile + ((yTileOffset) * ySign), yTile + ((currentShadow+xTileOffset) * xSign)) |= shadowType;
                             }
                             else {
-                                screenLos[xTile + ((currentShadow+xTileOffset) * xSign)][yTile + ((yTileOffset) * ySign)] |= shadowType;
+                                LOS(xTile + ((currentShadow+xTileOffset) * xSign), yTile + ((yTileOffset) * ySign)) |= shadowType;
                             }
                         }
                         xTileOffset += shadowLength;
-                    }  // for (int currentSegment = 0; currentSegment < shadowRaster[currentRaster][0]; currentSegment++)
+                    }  // currentSegment
                     //========================================
 
-                }  // if (viewportTiles[xTile][yTile].front().getTileType()->isOpaque())
-            }  // for (int currentRow = 0; currentRow <= currentCol; currentRow++)
-        }  // for (int currentCol = 1; currentCol <= _NUM_RASTERS_COLS; currentCol++)
-    }  // for (octant = 0; octant < _OCTANTS; octant++)
+                }  // isOpaque
+            }  // currentRow
+        }  // currentCol
+    }  // octant
 
     // go through all tiles on the viewable area and set the appropriate visibility
-    for (y = 0; y < VIEWPORT_H; y++) {
-        for (x = 0; x < VIEWPORT_W; x++) {
-            // if the shadow flags equal __VCH, hide it, otherwise it's fully visible
-            //
-            if ((screenLos[x][y] & __VCH) == __VCH) {
-                screenLos[x][y] = 0;
-            } else {
-                screenLos[x][y] = 1;
-            }
-        }
+    uint8_t* end = lineOfSight + VIEWPORT_W * VIEWPORT_H;
+    while (lineOfSight != end) {
+        // if the shadow flags equal __VCH, hide it, otherwise it's fully visible
+        if ((*lineOfSight & __VCH) == __VCH)
+            *lineOfSight = 0;
+        else
+            *lineOfSight = 1;
+        ++lineOfSight;
     }
 }
 
