@@ -411,26 +411,30 @@ vector<MapTile> screenViewportTile(unsigned int width, unsigned int height, int 
     return c->location->tilesAt(tc, focus);
 }
 
-bool screenTileUpdate(TileView *view, const Coords &coords, bool redraw)
+/*
+ * Return true if coords is visible and tiles were drawn.
+ */
+bool screenTileUpdate(TileView *view, const Coords &coords)
 {
-    if (c->location->map->flags & FIRST_PERSON)
+    Location* loc = c->location;
+    if (loc->map->flags & FIRST_PERSON)
         return false;
 
     // Get the tiles
     bool focus;
     MapCoords mc(coords);
-    mc.wrap(c->location->map);
-    vector<MapTile> tiles = c->location->tilesAt(mc, focus);
+    mc.wrap(loc->map);
+    vector<MapTile> tiles = loc->tilesAt(mc, focus);
 
     // Get the screen coordinates
     int x = coords.x;
     int y = coords.y;
 
-    if (c->location->map->width > VIEWPORT_W || c->location->map->height > VIEWPORT_H)
+    if (loc->map->width > VIEWPORT_W || loc->map->height > VIEWPORT_H)
     {
         //Center the coordinates to the viewport if you're on centered-view map.
-        x = x - c->location->coords.x + VIEWPORT_W / 2;
-        y = y - c->location->coords.y + VIEWPORT_H / 2;
+        x = x - loc->coords.x + VIEWPORT_W / 2;
+        y = y - loc->coords.y + VIEWPORT_H / 2;
     }
 
     // Draw if it is on screen
@@ -438,11 +442,6 @@ bool screenTileUpdate(TileView *view, const Coords &coords, bool redraw)
                             y < VIEWPORT_H && xu4.screen->screenLos[x][y])
     {
         view->drawTile(tiles, focus, x, y);
-
-        if (redraw)
-        {
-            //screenRedrawMapArea();
-        }
         return true;
     }
     return false;

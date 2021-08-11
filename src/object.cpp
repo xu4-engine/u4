@@ -40,7 +40,7 @@ void Object::remove() {
 void Object::animateMovement()
 {
     //TODO abstract movement - also make screen.h and game.h not required
-    screenTileUpdate(&xu4.game->mapArea, prevCoords, false);
-    if (screenTileUpdate(&xu4.game->mapArea, coords, false))
+    screenTileUpdate(&xu4.game->mapArea, prevCoords);
+    if (screenTileUpdate(&xu4.game->mapArea, coords))
         screenWait(1);
 }

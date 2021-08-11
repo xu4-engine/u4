@@ -662,7 +662,7 @@ void GameController::flashTile(const Coords &coords, MapTile tile, int frames) {
     screenWait(frames);
     c->location->map->annotations->remove(coords, tile);
 
-    screenTileUpdate(&xu4.game->mapArea, coords, false);
+    screenTileUpdate(&xu4.game->mapArea, coords);
 }
 
 void GameController::flashTile(const Coords &coords, Symbol tilename, int timeFactor) {
