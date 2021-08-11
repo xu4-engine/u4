@@ -506,8 +506,11 @@ ImageInfo* ImageMgr::load(ImageInfo* info, bool returnUnscaled) {
             // NOTE: The first 16 tiles are landscape and must be fully opaque!
             int f = (info->name == BKGD_SHAPES) ? 16 : 0;
             int frames = info->tiles;
-            for ( ; f < frames; ++f)
+            for ( ; f < frames; ++f) {
+                if (f == 126)
+                    continue;   // Skip tile_black
                 unscaled->performTransparencyHack(Image::black, frames, f, transparency_shadow_size, opacity);
+            }
         }
         break;
     }

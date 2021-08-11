@@ -159,6 +159,7 @@ public:
     void deleteImage();
 
     TileId id;          /**< an id that is unique across all tilesets */
+    VisualId vid;       /**< The default rendering resource identifier */
     Symbol name;        /**< The name of this tile */
     Symbol imageName;   /**< The name of the image that belongs to this tile */
     Symbol animationRule;

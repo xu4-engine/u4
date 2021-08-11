@@ -131,6 +131,7 @@ const char* Tile::nameStr() const {
  */
 void Tile::loadImage() {
     if (!image) {
+        vid = VID_UNSET;
         scale = SCALED_BASE;
 
         const SubImage* subimage;
@@ -167,6 +168,9 @@ void Tile::loadImage() {
             if (subimage) {
                 Image *tiles = info->image;
                 tiles->drawSubRectOn(image, 0, 0, subimage->x * scale, subimage->y * scale, subimage->width * scale, subimage->height * scale);
+
+                // Set visual to subimage index.
+                vid = subimage - info->subImages;
             }
             else info->image->drawOn(image, 0, 0);
 

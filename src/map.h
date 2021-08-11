@@ -62,6 +62,7 @@ public:
     // Member functions
     virtual const char* getName() const;
 
+    void queryBlocking(int x, int y, uint8_t* blocking, int bw, int bh) const;
     void queryVisible(const Coords &coords, int radius,
                       void (*func)(const Coords*, VisualId, void*),
                       void* user) const;

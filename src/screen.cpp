@@ -527,6 +527,12 @@ raster_update:
         gpu_drawMap(xu4.gpu, map, shapes->tileTexCoord,
                     coord.x, coord.y, VIEWPORT_W / 2);
 
+        int startX = coord.x - VIEWPORT_W / 2;
+        int startY = coord.y - VIEWPORT_H / 2;
+        map->queryBlocking(startX, startY,
+                           xu4.screen->blockingGrid, VIEWPORT_W, VIEWPORT_H);
+        screenFindLineOfSight();
+
         {
         SpriteRenderData rd;
 
@@ -537,6 +543,20 @@ raster_update:
         rd.attr = gpu_beginDraw(xu4.gpu);
 
         map->queryVisible(coord, VIEWPORT_W / 2, drawSprite, &rd);
+
+        const uint8_t* lineOfSight = xu4.screen->screenLos;
+        Coords bpos;
+        int x, y;
+        VisualId vidBlack = map->tileset->getByName(Tile::sym.black)->vid;
+        for (y = 0; y < VIEWPORT_H; y++) {
+            bpos.y = startY + y;
+            for (x = 0; x < VIEWPORT_W; x++) {
+                if (! (*lineOfSight++)) {
+                    bpos.x = startX + x;
+                    drawSprite(&bpos, vidBlack, &rd);
+                }
+            }
+        }
 
         gpu_endDraw(xu4.gpu, rd.attr);
         }

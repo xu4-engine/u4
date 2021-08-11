@@ -30,6 +30,7 @@ typedef uint16_t Symbol;
 #define MAKE_VID(bank,idx)  ((bank << 12) | (idx))
 #define VID_BANK(vid)       (vid >> 12)
 #define VID_INDEX(vid)      (vid & 0xfff)
+#define VID_UNSET   0xffff
 
 typedef enum {
     FAST,

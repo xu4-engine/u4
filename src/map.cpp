@@ -237,6 +237,35 @@ const char* Map::getName() const {
     return xu4.config->confString(fname);
 }
 
+void Map::queryBlocking(int x, int y, uint8_t* blocking, int bw, int bh) const {
+    const Tile* tile;
+    int maxX = x + bw;
+    int maxY = y + bh;
+    int rowIndex, col;
+
+    for ( ; y < maxY; ++y) {
+        if (y < 0 || y >= width) {
+            memset(blocking, 0, bw);
+            blocking += bw;
+        } else {
+            rowIndex = y * width;
+            for (col = x; col < maxX; ++col) {
+                if (col < 0 || col >= width) {
+                    *blocking++ = 0;
+                } else {
+                    tile = tileset->get(data[rowIndex + col]);
+                    *blocking++ = tile->isOpaque();
+                }
+            }
+#if 0
+            uint8_t* c = blocking - bw;
+            printf("%d %d%d%d%d%d%d%d%d%d%d%d\n", y,
+                   c[0],c[1],c[2],c[3],c[4],c[5],c[6],c[7],c[8],c[9],c[10]);
+#endif
+        }
+    }
+}
+
 /*
  * Call a function for each entity (Annotations & Objects) near a coordinate.
  *
@@ -250,24 +279,26 @@ void Map::queryVisible(const Coords& center, int radius,
                        void* user) const {
     int minX, minY, maxX, maxY;
     const Coords* cp;
+    const std::vector<Tile*>& tiles = tileset->tiles;
     VisualId vid;
+
+#define OUTSIDE(C) (C->x < minX || C->x > maxX || C->y < minY || C->y > maxY)
 
     minX = center.x - radius;
     minY = center.y - radius;
     maxX = center.x + radius;
     maxY = center.y + radius;
 
-    // Manufacture VisualIds until they become part of a structure somewhere.
-    const UltimaSaveIds* usaveIds = xu4.config->usaveIds();
-
     Annotation::List::const_iterator ait;
     Annotation::List& alist = annotations->annotations;
     for(ait = alist.begin(); ait != alist.end(); ait++) {
         const Annotation& ann = *ait;
         cp = &ann.coords;
-        if (cp->x < minX || cp->x > maxX || cp->y < minY || cp->y > maxY)
+        if (OUTSIDE(cp))
             continue;
-        vid = usaveIds->ultimaId(ann.tile);
+        //printf("KR ann %d %d %d,%d\n",
+        //        ann.tile.id, ann.tile.frame, cp->x, cp->y);
+        vid = tiles[ann.tile.id]->vid;
         func(cp, vid, user);
     }
 
@@ -275,10 +306,21 @@ void Map::queryVisible(const Coords& center, int radius,
     for(it = objects.begin(); it != objects.end(); it++) {
         const Object* obj = *it;
         cp = &obj->coords;
-        if (cp->x < minX || cp->x > maxX || cp->y < minY || cp->y > maxY)
+        if (OUTSIDE(cp))
             continue;
-        vid = usaveIds->ultimaId(obj->tile);
+        //printf("KR obj %d %d %d,%d\n",
+        //        obj->tile.id, obj->tile.frame, cp->x, cp->y);
+        vid = tiles[obj->tile.id]->vid;
         func(cp, vid, user);
+    }
+
+    if (flags & SHOW_AVATAR) {
+        cp = &c->location->coords;
+        if (! OUTSIDE(cp)) {
+            MapTile trans = c->party->getTransport();
+            vid = tiles[trans.id]->vid;
+            func(cp, vid, user);
+        }
     }
 }
 
