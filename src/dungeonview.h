@@ -42,9 +42,8 @@ public:
     }
 
 private:
-    void drawInDungeon(const Tile *tile, int x_offset, int distance, Direction orientation, bool tiled);
+    void drawInDungeon(const Tile *tile, int x_offset, int distance, Direction orientation);
     int graphicIndex(int xoffset, int distance, Direction orientation, DungeonGraphicType type);
-    void drawTile(const Tile *tile, int x_offset, int distance, Direction orientation);
     DungeonGraphicType tilesToGraphic(const std::vector<MapTile> &tiles);
     void drawWall(int xoffset, int distance, Direction orientation, DungeonGraphicType type);
 

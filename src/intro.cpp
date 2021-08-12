@@ -543,7 +543,7 @@ void IntroController::drawMapStatic() {
     // draw unmodified map
     for (y = 0; y < INTRO_MAP_HEIGHT; y++)
         for (x = 0; x < INTRO_MAP_WIDTH; x++)
-            mapArea.drawTile(binData->introMap[x + (y * INTRO_MAP_WIDTH)], false, x, y);
+            mapArea.drawTile(binData->introMap[x + (y * INTRO_MAP_WIDTH)], x, y);
 }
 
 void IntroController::drawMapAnimated() {
@@ -554,7 +554,7 @@ void IntroController::drawMapAnimated() {
     for (i = 0; i < IntroBinData::INTRO_BASETILE_TABLE_SIZE; i++) {
         IntroObjectState& state = objectStateTable[i];
         if (state.tile != 0)
-            mapArea.drawTile(state.tile, false, state.x, state.y);
+            mapArea.drawTile(state.tile, state.x, state.y);
     }
     Image::enableBlend(0);
 }

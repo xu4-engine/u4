@@ -443,7 +443,9 @@ bool screenTileUpdate(TileView *view, const Coords &coords)
     if (x >= 0 && y >= 0 && x < VIEWPORT_W && y < VIEWPORT_H &&
         xu4.screen->screenLos[y*VIEWPORT_W + x])
     {
-        view->drawTile(tiles, focus, x, y);
+        view->drawTile(tiles, x, y);
+        if (focus)
+            view->drawFocus(x, y);
         return true;
     }
     return false;
@@ -554,14 +556,20 @@ raster_update:
         MapTile black = c->location->map->tileset->getByName(Tile::sym.black)->getId();
         vector<MapTile> viewTiles[VIEWPORT_W][VIEWPORT_H];
         uint8_t* blocked = xu4.screen->blockingGrid;
-        bool viewportFocus[VIEWPORT_W][VIEWPORT_H];
+        bool focus;
+        int focusX, focusY;
         int x, y;
 
+        focusX = -1;
         for (y = 0; y < VIEWPORT_H; y++) {
             for (x = 0; x < VIEWPORT_W; x++) {
                 viewTiles[x][y] = screenViewportTile(VIEWPORT_W, VIEWPORT_H,
-                                                     x, y, viewportFocus[x][y]);
+                                                     x, y, focus);
                 *blocked++ = viewTiles[x][y].front().getTileType()->isOpaque();
+                if (focus) {
+                    focusX = x;
+                    focusY = y;
+                }
             }
         }
 
@@ -570,13 +578,14 @@ raster_update:
         const uint8_t* lineOfSight = xu4.screen->screenLos;
         for (y = 0; y < VIEWPORT_H; y++) {
             for (x = 0; x < VIEWPORT_W; x++) {
-                if (*lineOfSight++) {
-                    view->drawTile(viewTiles[x][y],
-                                   viewportFocus[x][y], x, y);
-                } else
-                    view->drawTile(black, false, x, y);
+                if (*lineOfSight++)
+                    view->drawTile(viewTiles[x][y], x, y);
+                else
+                    view->drawTile(black, x, y);
             }
         }
+        if (focusX >= 0)
+            view->drawFocus(focusX, focusY);
         screenRedrawMapArea();
     }
 

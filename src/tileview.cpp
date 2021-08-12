@@ -59,24 +59,12 @@ void TileView::loadTile(const MapTile &mapTile)
  * Draw a tile on the screenImage using the current Image::enableBlend
  * setting.
  */
-void TileView::drawTile(const MapTile &mapTile, bool focus, int x, int y) {
+void TileView::drawTile(const MapTile &mapTile, int x, int y) {
     const Tile *tile = tileset->get(mapTile.id);
     SCALED_VAR
 
     ASSERT(x < columns, "x value of %d out of range", x);
     ASSERT(y < rows, "y value of %d out of range", y);
-
-#if 0
-    //Blank scratch pad
-    animated->fillRect(0,0,SCALED(tileWidth),SCALED(tileHeight),0,0,0, 255);
-    //Draw blackness on the tile.
-    animated->drawSubRect(SCALED(x * tileWidth + this->x),
-                          SCALED(y * tileHeight + this->y),
-                          0,
-                          0,
-                          SCALED(tileWidth),
-                          SCALED(tileHeight));
-#endif
 
     // draw the tile to the screen
     if (tile->getAnim()) {
@@ -103,19 +91,13 @@ void TileView::drawTile(const MapTile &mapTile, bool focus, int x, int y) {
                            SCALED(tileWidth),
                            SCALED(tileHeight));
     }
-
-    // draw the focus around the tile if it has the focus
-    if (focus)
-        drawFocus(x, y);
 }
 
-void TileView::drawTile(vector<MapTile> &tiles, bool focus, int x, int y) {
+void TileView::drawTile(vector<MapTile> &tiles, int x, int y) {
     ASSERT(x < columns, "x value of %d out of range", x);
     ASSERT(y < rows, "y value of %d out of range", y);
     int layer = 0;
     SCALED_VAR
-
-    //animated->fillRect(0,0, SCALED(tileWidth),SCALED(tileHeight), 0,0,0,0);
 
     for (vector<MapTile>::reverse_iterator t = tiles.rbegin();
             t != tiles.rend();
@@ -157,10 +139,6 @@ void TileView::drawTile(vector<MapTile> &tiles, bool focus, int x, int y) {
     animated->drawSubRect(SCALED(x * tileWidth + this->x),
                           SCALED(y * tileHeight + this->y),
                           0, 0, SCALED(tileWidth), SCALED(tileHeight));
-
-    // draw the focus around the tile if it has the focus
-    if (focus)
-        drawFocus(x, y);
 }
 
 /**

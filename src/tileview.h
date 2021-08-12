@@ -25,8 +25,8 @@ public:
     virtual ~TileView();
 
     void reinit();
-    void drawTile(const MapTile &mapTile, bool focus, int x, int y);
-    void drawTile(std::vector<MapTile> &tiles, bool focus, int x, int y);
+    void drawTile(const MapTile &mapTile, int x, int y);
+    void drawTile(std::vector<MapTile> &tiles, int x, int y);
     void drawFocus(int x, int y);
     void loadTile(const MapTile &mapTile);
 
