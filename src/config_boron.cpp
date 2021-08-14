@@ -117,6 +117,7 @@ struct ConfigBoron : public Config {
     Symbol sym_abyss;
     Symbol sym_imageset;
     Symbol sym_tileanims;
+    Symbol sym_Ucel;
 };
 
 #define CB  static_cast<ConfigData*>(backend)
@@ -853,7 +854,7 @@ ConfigBoron::ConfigBoron(const char* modulePath)
     }
 
     ur_internAtoms(ut, "hit_flash miss_flash random shrine abyss"
-                       " imageset tileanims", &sym_hitFlash);
+                       " imageset tileanims _cel", &sym_hitFlash);
 
 
     // Read package table of contents.
@@ -1375,6 +1376,7 @@ static ImageInfo* loadImageInfo(const ConfigBoron* cfg, UBlockIt& bi) {
         UBlockIt sit;
         SubImage* subimage;
         int n = 0;
+        int celCount;
 
         ur_blockIt(cfg->ut, &sit, bi.it);
         ++bi.it;
@@ -1383,8 +1385,10 @@ static ImageInfo* loadImageInfo(const ConfigBoron* cfg, UBlockIt& bi) {
         info->subImages = subimage = new SubImage[info->subImageCount];
 
         ur_foreach (sit) {
-            subimage->name  = ur_atom(sit.it);
-            subimage->srcImageName = info->name;
+            subimage->name = ur_atom(sit.it);
+            if (subimage->name != cfg->sym_Ucel)
+                info->subImageIndex[subimage->name] = n;
+            ++n;
 
             ++sit.it;
             numA = sit.it->coord.n;
@@ -1392,8 +1396,15 @@ static ImageInfo* loadImageInfo(const ConfigBoron* cfg, UBlockIt& bi) {
             subimage->y      = numA[1];
             subimage->width  = numA[2];
             subimage->height = numA[3];
+            celCount         = (sit.it->coord.len > 4) ? numA[4] : 1;
 
-            info->subImageIndex[subimage->name] = n++;
+#ifdef USE_GL
+            subimage->celCount = celCount;
+#endif
+            // Animated tiles denoted by height. TODO: Eliminate this.
+            if (celCount > 1)
+                subimage->height *= celCount;
+
             ++subimage;
         }
     }

@@ -452,12 +452,12 @@ process-cfg [
           | word! coord! (do emit-name append out second tok)
           | word! int! (
               frames: second tok
-              do emit-name append out to-coord reduce [
-                  pos
-                  first size
-                  mul second size frames
+              do emit-name append out to-coord [pos size frames]
+              do next-tile
+              loop sub frames 1 [
+                  apair out mark-sol '_cel to-coord [pos size]
+                  do next-tile
               ]
-              loop frames [do next-tile]
             )
           | word! (
               do emit-name append out to-coord [pos size]

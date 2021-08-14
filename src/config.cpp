@@ -1369,7 +1369,7 @@ const Coords* Config::moongateCoords(int phase) const {
 //--------------------------------------
 // Graphics config
 
-static void loadSubImage(ConfigXML* cfg, SubImage* subimage, Symbol imgName, const ConfigElement &conf) {
+static void loadSubImage(ConfigXML* cfg, SubImage* subimage, const ConfigElement &conf) {
     static int x = 0,
                y = 0,
                last_width = 0,
@@ -1378,7 +1378,6 @@ static void loadSubImage(ConfigXML* cfg, SubImage* subimage, Symbol imgName, con
     subimage->name = cfg->propSymbol(conf, "name");
     subimage->width = conf.getInt("width");
     subimage->height = conf.getInt("height");
-    subimage->srcImageName = imgName;
     if (conf.exists("x") && conf.exists("y")) {
         x = subimage->x = conf.getInt("x");
         y = subimage->y = conf.getInt("y");
@@ -1467,7 +1466,7 @@ static ImageInfo* loadImageInfo(ConfigXML* cfg, const ConfigElement &conf) {
         count = 0;
         foreach (it, children) {
             if (it->getName() == "subimage") {
-                loadSubImage(cfg, simg, info->name, *it);
+                loadSubImage(cfg, simg, *it);
                 info->subImageIndex[ simg->name ] = count++;
                 ++simg;
             }

@@ -133,16 +133,9 @@ void Tile::loadImage() {
     if (!image) {
         scale = SCALED_BASE;
 
-        const SubImage* subimage = NULL;
-
-        ImageInfo *info = xu4.imageMgr->get(imageName);
-        if (!info) {
-            subimage = xu4.imageMgr->getSubImage(imageName);
-            if (subimage)
-                info = xu4.imageMgr->get(subimage->srcImageName);
-        }
-        if (!info) //IF still no info loaded
-        {
+        const SubImage* subimage;
+        ImageInfo* info = xu4.imageMgr->imageInfo(imageName, &subimage);
+        if (! info) {
             errorWarning("Error: couldn't load image for tile '%s'", nameStr());
             return;
         }

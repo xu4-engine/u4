@@ -125,8 +125,10 @@ struct ImageSymbols {
 
 struct SubImage {
     Symbol name;
-    Symbol srcImageName;
     int16_t x, y, width, height;
+#ifdef USE_GL
+    uint16_t celCount;
+#endif
 };
 
 enum ImageFixup {
@@ -191,8 +193,8 @@ public:
     ImageMgr();
     ~ImageMgr();
 
-    ImageInfo *get(Symbol name, bool returnUnscaled=false);
-    const SubImage* getSubImage(Symbol name);
+    ImageInfo* imageInfo(Symbol name, const SubImage** subPtr);
+    ImageInfo* get(Symbol name, bool returnUnscaled=false);
 
     uint16_t setResourceGroup(uint16_t group);
     void freeResourceGroup(uint16_t group);
@@ -200,6 +202,8 @@ public:
     const RGBA* vgaPalette();
 
 private:
+    const SubImage* getSubImage(Symbol name, ImageInfo** infoPtr);
+    ImageInfo* load(ImageInfo* info, bool returnUnscaled);
     U4FILE * getImageFile(ImageInfo *info);
     ImageSet* scheme(Symbol setname);
     ImageInfo* getInfoFromSet(Symbol name, ImageSet *set);

@@ -404,29 +404,12 @@ const struct {
  * loading during drawWall().
  */
 void DungeonView::cacheGraphicData() {
-    const ImageInfo* info;
-    const SubImage* subimage;
     Symbol name;
     int i;
 
     for (i = 0; i < GRAPHIC_COUNT; ++i) {
         name = xu4.config->intern(dngGraphicInfo[i].imageName);
-
-        info = xu4.imageMgr->get(name);
-        if (info) {
-            graphic[i].info = info;
-            graphic[i].sub  = NULL;
-        } else {
-            subimage = xu4.imageMgr->getSubImage(name);
-            if (subimage) {
-                info = xu4.imageMgr->get(subimage->srcImageName);
-                graphic[i].info = info;
-                graphic[i].sub  = subimage;
-            } else {
-                graphic[i].info = NULL;
-                graphic[i].sub  = NULL;
-            }
-        }
+        graphic[i].info = xu4.imageMgr->imageInfo(name, &graphic[i].sub);
     }
 }
 

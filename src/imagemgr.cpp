@@ -367,18 +367,36 @@ U4FILE * ImageMgr::getImageFile(ImageInfo *info)
     return file;
 }
 
+ImageInfo* ImageMgr::imageInfo(Symbol name, const SubImage** subPtr) {
+    const SubImage* subImg = NULL;
+    ImageInfo* info = get(name);
+    if (! info) {
+        subImg = getSubImage(name, &info);
+        if (subImg) {
+            if (! info->image)
+                info = load(info, false);
+        }
+    }
+    *subPtr = subImg;
+    return info;
+}
+
 /**
  * Load in a background image from a ".ega" file.
  */
 ImageInfo *ImageMgr::get(Symbol name, bool returnUnscaled) {
     ImageInfo *info = getInfoFromSet(name, baseSet);
-    if (!info)
+    if (! info)
         return NULL;
 
     /* return if already loaded */
     if (info->image != NULL)
         return info;
 
+    return load(info, returnUnscaled);
+}
+
+ImageInfo* ImageMgr::load(ImageInfo* info, bool returnUnscaled) {
     U4FILE *file = getImageFile(info);
     Image *unscaled = NULL;
     if (file) {
@@ -486,7 +504,7 @@ ImageInfo *ImageMgr::get(Symbol name, bool returnUnscaled) {
             int opacity = xu4.settings->enhancementsOptions.u4TileTransparencyHackPixelShadowOpacity;
 
             // NOTE: The first 16 tiles are landscape and must be fully opaque!
-            int f = (name == BKGD_SHAPES) ? 16 : 0;
+            int f = (info->name == BKGD_SHAPES) ? 16 : 0;
             int frames = info->tiles;
             for ( ; f < frames; ++f)
                 unscaled->performTransparencyHack(Image::black, frames, f, transparency_shadow_size, opacity);
@@ -536,7 +554,7 @@ ImageInfo *ImageMgr::get(Symbol name, bool returnUnscaled) {
 /**
  * Returns information for the given image set.
  */
-const SubImage* ImageMgr::getSubImage(Symbol name) {
+const SubImage* ImageMgr::getSubImage(Symbol name, ImageInfo** infoPtr) {
     std::map<Symbol, ImageInfo *>::iterator it;
     ImageSet *set = baseSet;
 
@@ -544,8 +562,10 @@ const SubImage* ImageMgr::getSubImage(Symbol name) {
         foreach (it, set->info) {
             ImageInfo *info = (ImageInfo *) it->second;
             std::map<Symbol, int>::iterator j = info->subImageIndex.find(name);
-            if (j != info->subImageIndex.end())
+            if (j != info->subImageIndex.end()) {
+                *infoPtr = info;
                 return info->subImages + j->second;
+            }
         }
         set = scheme(set->extends);
     }
