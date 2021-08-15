@@ -429,9 +429,16 @@ ImageInfo* ImageMgr::load(ImageInfo* info, bool returnUnscaled) {
             float tileH = iwf;
             float tileY = 0.0f;
             float *uv;
+            int tileCount = info->tiles;
 
-            info->tileTexCoord = uv = new float[info->tiles * 4];
-            for (int i = 0; i < info->tiles; ++i) {
+            if (info->name == BKGD_SHAPES) {
+                // An extra focus tile is added below.
+                ihf += tileH;
+                ++tileCount;
+            }
+
+            info->tileTexCoord = uv = new float[tileCount * 4];
+            for (int i = 0; i < tileCount; ++i) {
                 *uv++ = 0.0f;
                 *uv++ = tileY / ihf;
                 *uv++ = 1.0f;
@@ -522,7 +529,31 @@ ImageInfo* ImageMgr::load(ImageInfo* info, bool returnUnscaled) {
 
 #ifdef USE_GL
     info->image = unscaled;
-    info->tex = gpu_makeTexture(info->image);
+
+    if (info->name == BKGD_SHAPES) {
+        Image32 tmp;
+        const int tileDim = 16;
+        RGBA white = {255, 255, 255, 255};
+        RGBA trans = {0, 0, 0, 0};
+
+        // Create a texture with an extra tile and undefined pixel data.
+        tmp.pixels = NULL;
+        tmp.w = unscaled->w;
+        tmp.h = unscaled->h + tileDim;
+        info->tex = gpu_makeTexture(&tmp);
+
+        // Blit tiles.
+        gpu_blitTexture(info->tex, 0, 0, unscaled);
+
+        // Make and blit focus indicator tile.
+        image32_allocPixels(&tmp, tileDim, tileDim);
+        image32_fill(&tmp, &white);
+        image32_fillRect(&tmp, 2, 2, tileDim-4, tileDim-4, &trans);
+        gpu_blitTexture(info->tex, 0, unscaled->h, &tmp);
+        image32_freePixels(&tmp);
+    } else {
+        info->tex = gpu_makeTexture(info->image);
+    }
 #else
     if (returnUnscaled)
     {

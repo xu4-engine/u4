@@ -276,11 +276,13 @@ void Map::queryBlocking(int x, int y, uint8_t* blocking, int bw, int bh) const {
  */
 void Map::queryVisible(const Coords& center, int radius,
                        void (*func)(const Coords*, VisualId, void*),
-                       void* user) const {
+                       void* user, const Object** focusPtr) const {
     int minX, minY, maxX, maxY;
     const Coords* cp;
     const std::vector<Tile*>& tiles = tileset->tiles;
     VisualId vid;
+
+    *focusPtr = NULL;
 
 #define OUTSIDE(C) (C->x < minX || C->x > maxX || C->y < minY || C->y > maxY)
 
@@ -308,6 +310,8 @@ void Map::queryVisible(const Coords& center, int radius,
         cp = &obj->coords;
         if (OUTSIDE(cp))
             continue;
+        if (obj->hasFocus())
+            *focusPtr = obj;
         //printf("KR obj %d %d %d,%d\n",
         //        obj->tile.id, obj->tile.frame, cp->x, cp->y);
         vid = tiles[obj->tile.id]->vid;

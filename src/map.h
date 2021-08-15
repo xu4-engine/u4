@@ -65,7 +65,7 @@ public:
     void queryBlocking(int x, int y, uint8_t* blocking, int bw, int bh) const;
     void queryVisible(const Coords &coords, int radius,
                       void (*func)(const Coords*, VisualId, void*),
-                      void* user) const;
+                      void* user, const Object** focus) const;
     const Object* objectAt(const Coords &coords) const;
     Object* objectAt(const Coords &coords) {
         return (Object*) static_cast<const Map*>(this)->objectAt(coords);

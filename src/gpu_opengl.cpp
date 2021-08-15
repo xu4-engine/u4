@@ -240,7 +240,7 @@ static void _defineAttributeLayout(GLuint vao, GLuint vbo)
 }
 
 extern Image* loadImage_png(U4FILE *file);
-uint32_t gpu_makeTexture(Image* img);
+uint32_t gpu_makeTexture(const Image32* img);
 
 static U4FILE* openHQXTableImage(int scale)
 {
@@ -389,16 +389,23 @@ void gpu_viewport(int x, int y, int w, int h)
     glViewport(x, y, w, h);
 }
 
-uint32_t gpu_makeTexture(Image* img)
+uint32_t gpu_makeTexture(const Image32* img)
 {
     GLuint tex;
     glGenTextures(1, &tex);
     glBindTexture(GL_TEXTURE_2D, tex);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, img->width(), img->height(),
-                 0, GL_RGBA, GL_UNSIGNED_BYTE, img->pixelData());
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, img->w, img->h,
+                 0, GL_RGBA, GL_UNSIGNED_BYTE, img->pixels);
     return tex;
+}
+
+void gpu_blitTexture(uint32_t tex, int x, int y, const Image32* img)
+{
+    glBindTexture(GL_TEXTURE_2D, tex);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, img->w, img->h,
+                    GL_RGBA, GL_UNSIGNED_BYTE, img->pixels);
 }
 
 void gpu_freeTexture(uint32_t tex)
@@ -416,14 +423,14 @@ void gpu_setTilesTexture(void* res, uint32_t tex)
  * Begin a rendered frame with a background which may be either a solid color
  * or an image.
  */
-void gpu_background(void* res, const float* color, const Image* img)
+void gpu_background(void* res, const float* color, const Image32* img)
 {
     OpenGLResources* gr = (OpenGLResources*) res;
 
     if (img) {
         glBindTexture(GL_TEXTURE_2D, gr->screenTex);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, img->width(), img->height(),
-                     0, GL_RGBA, GL_UNSIGNED_BYTE, img->pixelData());
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, img->w, img->h,
+                     0, GL_RGBA, GL_UNSIGNED_BYTE, img->pixels);
 
         if (gr->scaler) {
             glUseProgram(gr->scaler);
@@ -478,10 +485,15 @@ void gpu_endDraw(void* res, float* attr)
     if (dcount) {
         //dprint("gpu_endDraw %d\n", dcount);
 
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
         glUniformMatrix4fv(gr->slocTrans, 1, GL_FALSE, unitMatrix);
         glBindTexture(GL_TEXTURE_2D, gr->tilesTex);
         glBindVertexArray(gr->vao[ gr->dbuf ]);
         glDrawArrays(GL_TRIANGLES, 0, dcount / ATTR_COUNT);
+
+        glDisable(GL_BLEND);
 
         gr->dbuf ^= 1;
     }
