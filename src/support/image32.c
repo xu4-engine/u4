@@ -98,7 +98,7 @@ void image32_fillRect(Image32* img, int x, int y, int rw, int rh,
     uint32_t* dend;
     uint32_t* drow = img->pixels + img->w * y + x;
 
-    icol = *((uint32_t*) &color);
+    icol = *((uint32_t*) color);
 
     if ((rw + x) > img->w)
         rw = img->w - x;
