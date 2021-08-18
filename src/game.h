@@ -98,7 +98,7 @@ public:
     virtual void timerFired();
 
     /* main game functions */
-    void init();
+    bool init();
     void initScreen();
     void initScreenWithoutReloadingState();
     void setMap(Map *map, bool saveLocation, const Portal *portal, TurnCompleter *turnCompleter = NULL);

@@ -302,6 +302,9 @@ bool IntroController::init() {
     beastieSub[0] = beastiesImg->subImageIndex[sym[0]];
     beastieSub[1] = beastiesImg->subImageIndex[sym[1]];
 
+    if (xu4.errorMessage)
+        bSkipTitles = true;
+
     if (bSkipTitles)
     {
         // the init() method is called again from within the
@@ -392,19 +395,16 @@ bool IntroController::keyPressed(int key) {
     case INTRO_MENU:
         switch (key) {
         case 'i':
-            errorMessage.erase();
             initiateNewGame();
             break;
         case 'j':
             journeyOnward();
             break;
         case 'r':
-            errorMessage.erase();
             mode = INTRO_MAP;
             updateScreen();
             break;
         case 'c': {
-            errorMessage.erase();
             // Make a copy of our settings so we can change them
             settingsChanged = *xu4.settings;
             screenDisableCursor();
@@ -414,7 +414,6 @@ bool IntroController::keyPressed(int key) {
             break;
         }
         case 'a':
-            errorMessage.erase();
             about();
             break;
         case 'q':
@@ -652,14 +651,15 @@ void IntroController::updateScreen() {
         backgroundArea.draw(BKGD_OPTIONS_BTM, 0, 120);
 
         // if there is an error message to display, show it
-        if (!errorMessage.empty())
+        if (xu4.errorMessage)
         {
-            menuArea.textAt(6, 5, "%s", errorMessage.c_str());
+            menuArea.textAt(6, 5, xu4.errorMessage);
+            xu4.errorMessage = NULL;
+
             drawBeasties();
             // wait for a couple seconds
-            EventHandler::wait_msecs(2000);
+            EventHandler::wait_msecs(3000);
             // clear the screen again
-            errorMessage.erase();
             backgroundArea.draw(BKGD_INTRO);
             backgroundArea.draw(BKGD_OPTIONS_BTM, 0, 120);
         }
@@ -766,10 +766,13 @@ void IntroController::finishInitiateGame(const string &nameBuffer, SexType sex)
 
     // write out save game an segue into game
 
+    delete xu4.saveGame;
+    xu4.saveGame = NULL;    // Make GameController::init() reload the game.
+
     FILE *saveGameFile = fopen((xu4.settings->getUserPath() + PARTY_SAV).c_str(), "wb");
     if (!saveGameFile) {
         questionArea.disableCursor();
-        errorMessage = "Unable to create save game!";
+        xu4.errorMessage = "Unable to create save game!";
         updateScreen();
         return;
     }
@@ -941,35 +944,12 @@ string IntroController::getQuestion(int v1, int v2) {
  * Starts the game.
  */
 void IntroController::journeyOnward() {
-    FILE *saveGameFile;
-    bool validSave = false;
-
-    /*
-     * ensure a party.sav file exists, otherwise require user to
-     * initiate game
-     */
-    saveGameFile = fopen((xu4.settings->getUserPath() + PARTY_SAV).c_str(), "rb");
-    if (saveGameFile) {
-        SaveGame *saveGame = new SaveGame;
-
-        // Make sure there are players in party.sav --
-        // In the Ultima Collection CD, party.sav exists, but does
-        // not contain valid info to journey onward
-        saveGame->read(saveGameFile);
-        if (saveGame->members > 0)
-            validSave = true;
-        delete saveGame;
-        fclose(saveGameFile);
+    if (saveGameLoad()) {
+        xu4.stage = StagePlay;
+        xu4.eventHandler->setControllerDone();
+    } else {
+        updateScreen();     // Shows errorMessage set by saveGameLoad().
     }
-
-    if (!validSave) {
-        errorMessage = "Initiate a new game first!";
-        updateScreen();
-        return;
-    }
-
-    xu4.stage = StagePlay;
-    xu4.eventHandler->setControllerDone();
 }
 
 /**

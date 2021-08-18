@@ -246,6 +246,7 @@ struct SaveGame {
 
 int saveGameMonstersWrite(const SaveGameMonsterRecord *monsterTable, FILE *f);
 int saveGameMonstersRead(SaveGameMonsterRecord *monsterTable, FILE *f);
+SaveGame* saveGameLoad();
 
 class Config;
 class Tileset;

@@ -397,6 +397,42 @@ int saveGameMonstersRead(SaveGameMonsterRecord *monsterTable, FILE *f) {
     return 1;
 }
 
+#ifndef SAVE_UTIL
+#include "settings.h"
+#include "xu4.h"
+
+/*
+ * Set xu4.saveGame to a new loaded game.  If loading fails or there are no
+ * players defined then set xu4.errorMessage and return NULL.
+ */
+SaveGame* saveGameLoad() {
+    SaveGame* sg = NULL;
+    FILE* fp = fopen((xu4.settings->getUserPath() + PARTY_SAV).c_str(), "rb");
+    if (fp) {
+        sg = new SaveGame;
+        sg->read(fp);
+        fclose(fp);
+
+        // Make sure there are players in party.sav --
+        // In the Ultima Collection CD, party.sav exists, but does
+        // not contain valid info to journey onward
+
+        if (sg->members < 1) {
+            delete sg;
+            sg = NULL;
+        }
+    }
+
+    if (sg) {
+        delete xu4.saveGame;
+        xu4.saveGame = sg;
+    } else {
+        xu4.errorMessage = "Initiate a new game first!";
+    }
+    return sg;
+}
+#endif
+
 //--------------------------------------
 
 #ifndef SAVE_UTIL

@@ -27,7 +27,6 @@ Context::Context()
 
 Context::~Context() {
     delete party;
-    delete saveGame;
     delete location;
     delete stats;
     delete aura;

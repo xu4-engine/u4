@@ -8,6 +8,7 @@ class ImageMgr;
 struct Screen;
 class Image;
 class EventHandler;
+class SaveGame;
 class IntroController;
 class GameController;
 
@@ -26,8 +27,10 @@ struct XU4GameServices {
     void* gpu;
     Image* screenImage;
     EventHandler* eventHandler;
+    SaveGame* saveGame;
     IntroController* intro;
     GameController* game;
+    const char* errorMessage;
     int stage;
 };
 

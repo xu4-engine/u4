@@ -66,7 +66,6 @@ void gameInnHandler(void);
 void gameLostEighth(Virtue virtue);
 void gamePartyStarving(void);
 time_t gameTimeSinceLastCommand(void);
-int gameSave(const char* path);
 
 /* spell functions */
 void gameCastSpell(unsigned int spell, int caster, int param);
@@ -213,13 +212,13 @@ public:
 };
 
 /**
- * Loads the saved game.
+ * Loads the saved game (if not already loaded) and create global game context.
+ *
+ * Return true if loading is successful.
  */
-void GameController::init() {
+bool GameController::init() {
     Debug gameDbg("debug/game.txt", "Game");
-    FILE *fp;
     const Settings& settings = *xu4.settings;
-    MonstersSav mons;
 
     TRACE(gameDbg, "gameInit() running.");
 
@@ -232,11 +231,19 @@ void GameController::init() {
 
     screenTextAt(13, 11, "%s", "Loading Game...");
 
-    /* initialize the global game context */
-    c = new Context;
-    c->saveGame = new SaveGame;
+    /* load in the save game (if not done by intro) */
+    if (! xu4.saveGame) {
+        if (! saveGameLoad()) {
+            xu4.stage = StageIntro;     // Go back to intro.
+            return false;
+        }
+    }
+    TRACE_LOCAL(gameDbg, "Save game loaded."); ++pb;
 
-    TRACE_LOCAL(gameDbg, "Global context initialized.");
+    /* initialize the global game context */
+    delete c;
+    c = new Context;
+    c->saveGame = xu4.saveGame;
 
     /* initialize conversation and game state variables */
     c->line = TEXT_AREA_H - 1;
@@ -252,15 +259,7 @@ void GameController::init() {
     c->lastCommandTime = time(NULL);
     c->lastShip = NULL;
 
-    /* load in the save game */
-    fp = fopen((settings.getUserPath() + PARTY_SAV).c_str(), "rb");
-    if (fp) {
-        c->saveGame->read(fp);
-        fclose(fp);
-    } else
-        errorFatal("no savegame found!");
-
-    TRACE_LOCAL(gameDbg, "Save game loaded."); ++pb;
+    TRACE_LOCAL(gameDbg, "Global context initialized.");
 
     /* initialize our party */
     c->party = new Party(c->saveGame);
@@ -308,7 +307,9 @@ void GameController::init() {
     TRACE_LOCAL(gameDbg, "Loading monsters."); ++pb;
 
     /* load in monsters.sav */
-    fp = fopen((settings.getUserPath() + MONSTERS_SAV).c_str(), "rb");
+    {
+    MonstersSav mons;
+    FILE* fp = fopen((settings.getUserPath() + MONSTERS_SAV).c_str(), "rb");
     if (fp) {
         saveGameMonstersRead(mons.table, fp);
         fclose(fp);
@@ -323,6 +324,7 @@ void GameController::init() {
             fclose(fp);
             gameFixupObjects(c->location->prev->map, mons.table);
         }
+    }
     }
 
     spellSetEffectCallback(&gameSpellEffect);
@@ -344,6 +346,7 @@ void GameController::init() {
 
     initScreenWithoutReloadingState();
     TRACE(gameDbg, "gameInit() completed successfully.");
+    return true;
 }
 
 /**

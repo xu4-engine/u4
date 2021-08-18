@@ -216,7 +216,6 @@ private:
     IntroBinData *binData;
 
     // additional introduction state data
-    std::string errorMessage;
     int answerInd;
     int questionRound;
     int questionTree[15];

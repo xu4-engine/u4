@@ -189,6 +189,7 @@ void servicesInit(XU4GameServices* gs, Options* opt) {
 void servicesFree(XU4GameServices* gs) {
     delete gs->game;
     delete gs->intro;
+    delete gs->saveGame;
     delete gs->eventHandler;
     soundDelete();
     screenDelete();
@@ -260,10 +261,12 @@ int main(int argc, char *argv[]) {
 
             if (! xu4.game) {
                 xu4.game = new GameController();
-                xu4.game->init();
+                if (! xu4.game->init())
+                    continue;
             } else if (xu4.intro && xu4.intro->hasInitiatedNewGame()) {
                 //Loads current savegame
-                xu4.game->init();
+                if (! xu4.game->init())
+                    continue;
             } else {
                 //Inits screen stuff without renewing game
                 xu4.game->initScreen();
