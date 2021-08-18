@@ -3,6 +3,7 @@
  */
 
 #include <cctype>
+#include <cstring>
 #include <list>
 
 #include "event.h"
@@ -276,37 +277,48 @@ MouseArea* EventHandler::getMouseAreaSet() const {
         return NULL;
 }
 
+#define TEST_BIT(bits, c)   (bits[c >> 3] & 1 << (c & 7))
+#define MAX_BITS    128
+
+static void addCharBits(uint8_t* bits, const char* cp) {
+    int c;
+    while ((c = *cp++))
+        bits[c >> 3] |= 1 << (c & 7);
+}
+
 /**
  * @param maxlen the maximum length of the string
  * @param screenX the screen column where to begin input
  * @param screenY the screen row where to begin input
+ * @param textView  Pointer to associated TextView or NULL.
  * @param accepted_chars a string characters to be accepted for input
  */
-ReadStringController::ReadStringController(int maxlen, int screenX, int screenY, const string &accepted_chars) {
+ReadStringController::ReadStringController(int maxlen, int screenX, int screenY, TextView* textView, const char* accepted_chars) {
+    // Set 0-9, A-Z, a-z, backspace, new line, carriage return, & space.
+    static const uint8_t alphaNumBitset[MAX_BITS/8] = {
+        0x00, 0x25, 0x00, 0x00, 0x01, 0x00, 0xFF, 0x03,
+        0xFE, 0xFF, 0xFF, 0x07, 0xFE, 0xFF, 0xFF, 0x07
+    };
+
     this->maxlen = maxlen;
     this->screenX = screenX;
     this->screenY = screenY;
-    this->view = NULL;
-    this->accepted = accepted_chars;
-}
+    view = textView;
 
-ReadStringController::ReadStringController(int maxlen, TextView *view, const string &accepted_chars) {
-    this->maxlen = maxlen;
-    this->screenX = view->getCursorX();
-    this->screenY = view->getCursorY();
-    this->view = view;
-    this->accepted = accepted_chars;
+    if (accepted_chars) {
+        memset(accepted, 0, MAX_BITS/8);
+        addCharBits(accepted, accepted_chars);
+    } else {
+        memcpy(accepted, alphaNumBitset, MAX_BITS/8);
+    }
 }
 
 bool ReadStringController::keyPressed(int key) {
-    int valid = true,
-        len = value.length();
-    string::size_type pos = string::npos;
+    bool valid = true;
 
-    if (key < U4_ALT)
-         pos = accepted.find_first_of(key);
+    if (key < MAX_BITS && TEST_BIT(accepted, key)) {
+        int len = value.length();
 
-    if (pos != string::npos) {
         if (key == U4_BACKSPACE) {
             if (len > 0) {
                 /* remove the last character */
@@ -324,6 +336,10 @@ bool ReadStringController::keyPressed(int key) {
             }
         }
         else if (key == '\n' || key == '\r') {
+            doneWaiting();
+        }
+        else if (key == U4_ESC) {
+            value.erase(0, value.length());
             doneWaiting();
         }
         else if (len < maxlen) {
@@ -346,25 +362,26 @@ bool ReadStringController::keyPressed(int key) {
     return valid || KeyHandler::defaultHandler(key, NULL);
 }
 
-string ReadStringController::get(int maxlen, int screenX, int screenY, EventHandler *eh) {
-    if (!eh)
-        eh = xu4.eventHandler;
-
+string ReadStringController::get(int maxlen, int screenX, int screenY, const char* extraChars) {
     ReadStringController ctrl(maxlen, screenX, screenY);
-    eh->pushController(&ctrl);
+    if (extraChars)
+        addCharBits(ctrl.accepted, extraChars);
+
+    xu4.eventHandler->pushController(&ctrl);
     return ctrl.waitFor();
 }
 
-string ReadStringController::get(int maxlen, TextView *view, EventHandler *eh) {
-    if (!eh)
-        eh = xu4.eventHandler;
+string ReadStringController::get(int maxlen, TextView *view, const char* extraChars) {
+    ReadStringController ctrl(maxlen, view->getCursorX(), view->getCursorY(),
+                              view);
+    if (extraChars)
+        addCharBits(ctrl.accepted, extraChars);
 
-    ReadStringController ctrl(maxlen, view);
-    eh->pushController(&ctrl);
+    xu4.eventHandler->pushController(&ctrl);
     return ctrl.waitFor();
 }
 
-ReadIntController::ReadIntController(int maxlen, int screenX, int screenY) : ReadStringController(maxlen, screenX, screenY, "0123456789 \n\r\010") {}
+ReadIntController::ReadIntController(int maxlen, int screenX, int screenY) : ReadStringController(maxlen, screenX, screenY, NULL, "0123456789 \n\r\010") {}
 
 int ReadIntController::get(int maxlen, int screenX, int screenY, EventHandler *eh) {
     if (!eh)

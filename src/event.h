@@ -110,12 +110,14 @@ private:
  */
 class ReadStringController : public WaitableController<string> {
 public:
-    ReadStringController(int maxlen, int screenX, int screenY, const string &accepted_chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890 \n\r\010");
-    ReadStringController(int maxlen, TextView *view, const string &accepted_chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890 \n\r\010");
+    ReadStringController(int maxlen, int screenX, int screenY,
+                         TextView* view = NULL,
+                         const char* accepted_chars = NULL);
+
     virtual bool keyPressed(int key);
 
-    static string get(int maxlen, int screenX, int screenY, EventHandler *eh = NULL);
-    static string get(int maxlen, TextView *view, EventHandler *eh = NULL);
+    static string get(int maxlen, int screenX, int screenY, const char *extraChars = NULL);
+    static string get(int maxlen, TextView *view, const char *extraChars = NULL);
 #ifdef IOS
     void setValue(const string &utf8StringValue) {
         value = utf8StringValue;
@@ -125,7 +127,7 @@ public:
 protected:
     int maxlen, screenX, screenY;
     TextView *view;
-    string accepted;
+    uint8_t accepted[16];   // Character bitset.
 };
 
 /**

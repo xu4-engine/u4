@@ -709,7 +709,7 @@ void IntroController::initiateNewGame() {
 
     drawBeasties();
 
-    string nameBuffer = ReadStringController::get(12, &menuArea);
+    string nameBuffer = ReadStringController::get(12, &menuArea, "\033");
     if (nameBuffer.length() == 0) {
         // the user didn't enter a name
         menuArea.disableCursor();
