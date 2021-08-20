@@ -828,6 +828,7 @@ static void screenFindLineOfSightDOS(const uint8_t* blocking, uint8_t* lineOfSig
     }
 }
 
+#if 1
 /*
  * bitmasks for LOS shadows
  */
@@ -1035,6 +1036,49 @@ static void screenFindLineOfSightEnhanced(const uint8_t* blocking, uint8_t* line
         ++lineOfSight;
     }
 }
+#else
+
+typedef struct {
+    const uint8_t* blocking;
+    uint8_t* visible;
+    //float visible[VIEWPORT_W * VIEWPORT_H];
+} GridSC;
+
+#define GSC_TYPE                GridSC
+#define GSC_XDIM(g)             VIEWPORT_W
+#define GSC_YDIM(g)             VIEWPORT_H
+#define GSC_IS_WALL(g,x,y)      g->blocking[VIEWPORT_W * y + x]
+#define GSC_SET_LIGHT(g,x,y,ds) g->visible[VIEWPORT_W * y + x] = 1
+#include "support/gridShadowCast.c"
+
+static void screenFindLineOfSightEnhanced(const uint8_t* blocking, uint8_t* lineOfSight) {
+    GridSC grid;
+    int viewPos[2];
+
+    grid.blocking = blocking;
+    grid.visible  = lineOfSight;
+    viewPos[0] = VIEWPORT_W/2;
+    viewPos[1] = VIEWPORT_H/2;
+
+#if 0
+    // Mark cells as not visible.
+    for (int i = 0; i < VIEWPORT_W*VIEWPORT_H; ++i)
+        grid.visible[i] = -1.0f;
+#endif
+
+    gsc_computeVisibility(&grid, viewPos, 8.0f);
+
+#if 0
+    for (int i = 0; i < VIEWPORT_W*VIEWPORT_H; ++i) {
+        lineOfSight[i] = (grid.visible[i] >= 0.0) ? 1 : 0;
+        //printf( "KR los %d %f\n", i, grid.visible[i]);
+    }
+#endif
+}
+#endif
+
+//#define CPU_TEST
+#include "support/cpuCounter.h"
 
 /**
  * Finds which tiles in the viewport are visible from the avatars
@@ -1049,12 +1093,14 @@ static void screenFindLineOfSight() {
         // otherwise calculate it from the map data
         memset(xu4.screen->screenLos, 0, VIEWPORT_W * VIEWPORT_H);
 
+        CPU_START()
         if (xu4.settings->lineOfSight == 0)
             screenFindLineOfSightDOS(xu4.screen->blockingGrid,
                                      xu4.screen->screenLos);
         else
             screenFindLineOfSightEnhanced(xu4.screen->blockingGrid,
                                           xu4.screen->screenLos);
+        CPU_END()
     }
 }
 
