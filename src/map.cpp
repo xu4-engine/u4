@@ -237,33 +237,78 @@ const char* Map::getName() const {
     return xu4.config->confString(fname);
 }
 
-void Map::queryBlocking(int x, int y, uint8_t* blocking, int bw, int bh) const {
+/*
+ * Build BlockingGroups for use by the shadow casting shader.
+ */
+void Map::queryBlocking(BlockingGroups* bg, int sx, int sy, int vw, int vh) const {
     const Tile* tile;
-    int maxX = x + bw;
-    int maxY = y + bh;
-    int rowIndex, col;
+    int centerX, leftEndX, maxX;
+    int centerY, maxY;
+    int x, y, di;
+    int count;
+    float* pos = bg->tilePos;
+    float* posEnd = pos + BLOCKING_POS_SIZE;
 
-    for ( ; y < maxY; ++y) {
-        if (y < 0 || y >= width) {
-            memset(blocking, 0, bw);
-            blocking += bw;
-        } else {
-            rowIndex = y * width;
-            for (col = x; col < maxX; ++col) {
-                if (col < 0 || col >= width) {
-                    *blocking++ = 0;
-                } else {
-                    tile = tileset->get(data[rowIndex + col]);
-                    *blocking++ = tile->isOpaque();
-                }
-            }
-#if 0
-            uint8_t* c = blocking - bw;
-            printf("%d %d%d%d%d%d%d%d%d%d%d%d\n", y,
-                   c[0],c[1],c[2],c[3],c[4],c[5],c[6],c[7],c[8],c[9],c[10]);
-#endif
-        }
+    centerX = sx + vw / 2;
+    centerY = sy + vw / 2;
+
+    // Initialize counts in case the function aborts (buffer_full).
+    bg->left = bg->center = bg->right = 0;
+
+    // Handle negative start positions.
+    if (sx < 0) {
+        vw += sx;   // Subtracts sx.
+        sx = 0;
     }
+    if (sy < 0) {
+        vh += sy;   // Subtracts sy.
+        sy = 0;
+    }
+
+    maxX = sx + vw;
+    if (maxX > width)
+        maxX = width;
+    maxY = sy + vh;
+    if (maxY > height)
+        maxY = height;
+
+#define BLOCKING_COLUMN \
+    for (di = sy * width + x, y = sy; y < maxY; di += width, ++y) { \
+        tile = tileset->get(data[di]); \
+        if (tile->isOpaque()) { \
+            if (pos == posEnd) \
+                goto buffer_full; \
+            *pos++ = (float) (x - centerX); \
+            *pos++ = (float) (y - centerY); \
+            *pos++ = 1.0f; \
+            ++count; \
+        } \
+    }
+
+    // Gather blocking tiles in column left to right order.
+
+    leftEndX = (centerX < width) ? centerX : width;
+    count = 0;
+    for (x = sx; x < leftEndX; ++x) {
+        BLOCKING_COLUMN
+    }
+    bg->left = count;
+
+    count = 0;
+    if (centerX < width) {
+        BLOCKING_COLUMN
+    }
+    bg->center = count;
+
+    count = 0;
+    for (++x; x < maxX; ++x) {
+        BLOCKING_COLUMN
+    }
+    bg->right = count;
+    return;
+
+buffer_full:
+    fprintf(stderr, "Map::queryBlocking pos buffer full!\n" );
 }
 
 /*

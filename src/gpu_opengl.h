@@ -33,6 +33,13 @@ struct OpenGLResources {
     GLint  slocScTex;
     GLint  slocScLut;
 
+    GLuint shadow;
+    GLint  shadowMat;
+    GLint  shadowVport;
+    GLint  shadowViewer;
+    GLint  shadowCounts;
+    GLint  shadowShapes;
+
     GLuint shader;
     GLint  slocTrans;
     GLint  slocCmap;
@@ -40,6 +47,7 @@ struct OpenGLResources {
 
     int    dbuf;
     float* dptr;
+    int    blockCount;
     GLsizei mapChunkVertCount;
     uint16_t mapChunkDim;       // Size in tiles (width & height are the same).
     uint16_t mapChunkLoc[4];    // Chunk X,Y of associated GLOB_MAP_CHUNK.

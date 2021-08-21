@@ -267,6 +267,7 @@ static U4FILE* openHQXTableImage(int scale)
 bool gpu_init(void* res, int w, int h, int scale)
 {
     OpenGLResources* gr = (OpenGLResources*) res;
+    GLuint sh;
 
     assert(sizeof(GLuint) == sizeof(uint32_t));
 
@@ -279,12 +280,14 @@ bool gpu_init(void* res, int w, int h, int scale)
     gr->tilesTex = 0;
     gr->scalerLut = 0;
     gr->scaler = 0;
+    gr->blockCount = 0;
 
 
     // Set default state.
+    glDisable(GL_CULL_FACE);
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_BLEND);
-    glDisable(GL_CULL_FACE);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glViewport(0, 0, w, h);
 
 
@@ -305,14 +308,14 @@ bool gpu_init(void* res, int w, int h, int scale)
         if (! gr->scalerLut)
             return false;
 
-        gr->scaler = glCreateProgram();
-        if (compileSLFile(gr->scaler, "hq2x.glsl", scale))
+        gr->scaler = sh = glCreateProgram();
+        if (compileSLFile(sh, "hq2x.glsl", scale))
             return false;
 
-        gr->slocScMat = glGetUniformLocation(gr->scaler, "MVPMatrix");
-        gr->slocScDim = glGetUniformLocation(gr->scaler, "TextureSize");
-        gr->slocScTex = glGetUniformLocation(gr->scaler, "Texture");
-        gr->slocScLut = glGetUniformLocation(gr->scaler, "LUT");
+        gr->slocScMat = glGetUniformLocation(sh, "MVPMatrix");
+        gr->slocScDim = glGetUniformLocation(sh, "TextureSize");
+        gr->slocScTex = glGetUniformLocation(sh, "Texture");
+        gr->slocScLut = glGetUniformLocation(sh, "LUT");
 
         glUseProgram(gr->scaler);
         glActiveTexture(GL_TEXTURE0);
@@ -327,14 +330,26 @@ bool gpu_init(void* res, int w, int h, int scale)
     }
 
 
-    // Create colormap shader.
-    gr->shader = glCreateProgram();
-    if (compileShaders(gr->shader, cmap_vertShader, cmap_fragShader))
+    // Create shadowcast shader.
+    gr->shadow = sh = glCreateProgram();
+    if (compileSLFile(sh, "shadowcast.glsl", 0))
         return false;
 
-    gr->slocTrans = glGetUniformLocation(gr->shader, "transform");
-    gr->slocCmap  = glGetUniformLocation(gr->shader, "cmap");
-    gr->slocTint  = glGetUniformLocation(gr->shader, "tint");
+    gr->shadowMat    = glGetUniformLocation(sh, "transform");
+    gr->shadowVport  = glGetUniformLocation(sh, "vport");
+    gr->shadowViewer = glGetUniformLocation(sh, "viewer");
+    gr->shadowCounts = glGetUniformLocation(sh, "shape_count");
+    gr->shadowShapes = glGetUniformLocation(sh, "shapes");
+
+
+    // Create colormap shader.
+    gr->shader = sh = glCreateProgram();
+    if (compileShaders(sh, cmap_vertShader, cmap_fragShader))
+        return false;
+
+    gr->slocTrans = glGetUniformLocation(sh, "transform");
+    gr->slocCmap  = glGetUniformLocation(sh, "cmap");
+    gr->slocTint  = glGetUniformLocation(sh, "tint");
 
     glUseProgram(gr->shader);
     glActiveTexture(GL_TEXTURE0);
@@ -380,6 +395,7 @@ void gpu_free(void* res)
 
     glDeleteVertexArrays(GLOB_COUNT, gr->vao);
     glDeleteBuffers(GLOB_COUNT, gr->vbo);
+    glDeleteProgram(gr->shadow);
     glDeleteProgram(gr->shader);
     glDeleteTextures(1, &gr->screenTex);
 }
@@ -438,6 +454,7 @@ void gpu_background(void* res, const float* color, const Image32* img)
             glUniformMatrix4fv(gr->slocTrans, 1, GL_FALSE, unitMatrix);
         }
 
+        glDisable(GL_BLEND);
         glBindVertexArray(gr->vao[ GLOB_QUAD ]);
         glDrawArrays(GL_TRIANGLES, 0, 6);
 
@@ -487,13 +504,12 @@ void gpu_endDraw(void* res, float* attr)
 
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glBlendEquation(GL_FUNC_ADD);
 
         glUniformMatrix4fv(gr->slocTrans, 1, GL_FALSE, unitMatrix);
         glBindTexture(GL_TEXTURE_2D, gr->tilesTex);
         glBindVertexArray(gr->vao[ gr->dbuf ]);
         glDrawArrays(GL_TRIANGLES, 0, dcount / ATTR_COUNT);
-
-        glDisable(GL_BLEND);
 
         gr->dbuf ^= 1;
     }
@@ -565,8 +581,13 @@ float* gpu_emitQuad(float* attr, const float* drawRect, const float* uvRect)
 //--------------------------------------
 // Map Rendering
 
-static void _initMapChunks(OpenGLResources* gr, const Map* map)
+void gpu_resetMap(void* res, const Map* map)
 {
+    OpenGLResources* gr = (OpenGLResources*) res;
+
+    gr->blockCount = 0;
+
+    // Initialize map chunks.
     assert(map->chunk_height == map->chunk_width);
     gr->mapChunkDim = map->chunk_width;
     gr->mapChunkVertCount = gr->mapChunkDim * gr->mapChunkDim * 6;
@@ -576,6 +597,8 @@ static void _initMapChunks(OpenGLResources* gr, const Map* map)
         glBufferData(GL_ARRAY_BUFFER, gr->mapChunkVertCount * ATTR_STRIDE,
                      NULL, GL_DYNAMIC_DRAW);
     }
+
+    // Clear chunk cache.
     memset(gr->mapChunkLoc, 0xff, 4*sizeof(uint16_t));
 }
 
@@ -703,18 +726,42 @@ used:
 /*
  * \param map           Pointer to map.
  * \param tileUVs       Table of four floats (minU,minV,maxU,maxV) per tile.
+ * \param blocks        Sets the occluder shapes for shadowcasting.
+ *                      Pass NULL to reuse any previously set shapes.
  * \param cx            Map tile row to center view on.
  * \param cy            Map tile column to center view on.
  * \param viewRadius    Number of tiles (horiz & vert) to draw around cx,cy.
  */
 void gpu_drawMap(void* res, const Map* map, const float* tileUVs,
+                 const BlockingGroups* blocks,
                  int cx, int cy, int viewRadius)
 {
     OpenGLResources* gr = (OpenGLResources*) res;
     int i, usedMask;
 
-    if (gr->mapChunkDim != map->chunk_width)
-        _initMapChunks(gr, map);
+#if 1
+    // Render shadows.
+    if (blocks)
+        gr->blockCount = blocks->left + blocks->center + blocks->right;
+
+    if (gr->blockCount) {
+        glUseProgram(gr->shadow);
+        if (blocks) {
+            GLfloat vp[4];
+            glGetFloatv(GL_VIEWPORT, vp);
+
+            glUniformMatrix4fv(gr->shadowMat, 1, GL_FALSE, unitMatrix);
+            glUniform4fv(gr->shadowVport, 1, vp);
+            glUniform3f(gr->shadowViewer, 0.0f, 0.0f, 11.0f);
+            glUniform3i(gr->shadowCounts,
+                        blocks->left, blocks->center, blocks->right);
+            glUniform3fv(gr->shadowShapes, gr->blockCount, blocks->tilePos);
+        }
+        glDisable(GL_BLEND);
+        glBindVertexArray(gr->vao[ GLOB_QUAD ]);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+    }
+#endif
 
     {
     ChunkInfo ci;
@@ -763,7 +810,17 @@ void gpu_drawMap(void* res, const Map* map, const float* tileUVs,
 
     memcpy(matrix, unitMatrix, sizeof(matrix));
 
+    glUseProgram(gr->shader);
     glBindTexture(GL_TEXTURE_2D, gr->tilesTex);
+
+    if (gr->blockCount) {
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_DST_ALPHA, GL_ONE_MINUS_DST_ALPHA);
+        glBlendEquation(GL_FUNC_SUBTRACT);
+    } else {
+        glDisable(GL_BLEND);
+    }
+
     for (i = 0; i < 4; ++i) {
         if (usedMask & (1 << i)) {
             // Position chunk in viewport.

@@ -37,6 +37,12 @@ typedef std::vector<TileId> MapData;
 #define WITH_GROUND_OBJECTS 1
 #define WITH_OBJECTS        2
 
+#define BLOCKING_POS_SIZE   128*3
+struct BlockingGroups {
+    int left, center, right;
+    float tilePos[BLOCKING_POS_SIZE];
+};
+
 /**
  * Map class
  */
@@ -62,7 +68,7 @@ public:
     // Member functions
     virtual const char* getName() const;
 
-    void queryBlocking(int x, int y, uint8_t* blocking, int bw, int bh) const;
+    void queryBlocking(BlockingGroups*, int sx, int sy, int vw, int vh) const;
     void queryVisible(const Coords &coords, int radius,
                       void (*func)(const Coords*, VisualId, void*),
                       void* user, const Object** focus) const;
