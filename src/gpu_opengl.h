@@ -20,9 +20,16 @@ enum GLObject {
     GLOB_COUNT
 };
 
+enum GLTextureUnit {
+    GTU_CMAP,
+    GTU_SHADOW,
+    GTU_SCALER_LUT
+};
+
 struct OpenGLResources {
     GLuint screenTex;
-    GLuint tilesTex;
+    GLuint shadowTex;
+    GLuint shadowFbo;
     GLuint vbo[ GLOB_COUNT ];
     GLuint vao[ GLOB_COUNT ];
 
@@ -34,17 +41,23 @@ struct OpenGLResources {
     GLint  slocScLut;
 
     GLuint shadow;
-    GLint  shadowMat;
+    GLint  shadowTrans;
     GLint  shadowVport;
     GLint  shadowViewer;
     GLint  shadowCounts;
     GLint  shadowShapes;
 
-    GLuint shader;
+    GLuint shadeColor;
     GLint  slocTrans;
     GLint  slocCmap;
     GLint  slocTint;
 
+    GLuint shadeWorld;
+    GLint  worldTrans;
+    GLint  worldCmap;
+    GLint  worldShadowMap;
+
+    GLuint tilesTex;            // Managed by user.
     int    dbuf;
     float* dptr;
     int    blockCount;

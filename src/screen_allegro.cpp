@@ -165,7 +165,7 @@ void screenInit_sys(const Settings* settings, int* dim, int reset) {
     al_set_new_display_flags(dflags);
 
 #ifdef USE_GL
-    al_set_new_display_option(ALLEGRO_ALPHA_SIZE, 8, ALLEGRO_REQUIRE);
+    //al_set_new_display_option(ALLEGRO_ALPHA_SIZE, 8, ALLEGRO_REQUIRE);
 #endif
 
     sa->disp = al_create_display(dw, dh);

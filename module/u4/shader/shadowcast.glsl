@@ -60,6 +60,7 @@ void main() {
 	float rayLen = length(toViewer);
 	float rpos = 0.0;
 	float visible = 1.0;
+	float inside = 0.0;
 	ivec4 group;
 	int i;
 
@@ -68,8 +69,10 @@ void main() {
 	group = ivec4(0, i, shape_count.x, i + shape_count.z);
 
 	dist = sceneSDF(rayStart, group);
-	if (dist < 0.0)
+	if (dist < 0.0) {
 		rpos = 1.0;
+		inside = 1.0;
+	}
 
 	for (i = 0; i < 32; i++) {
 		if (rpos >= rayLen)
@@ -88,7 +91,7 @@ void main() {
 	if (i == 32)
 		visible = 0.0;
 
-	fragColor = vec4(vec3(0.0), visible);
+	fragColor = vec4(0.0, inside, 0.0, visible);
 }
 
 #endif
