@@ -277,7 +277,7 @@ static int conf_tileRule(TileRule* rule, UBlockIt& bi)
 static Tile* conf_tile(ConfigBoron* cfg, int id, UBlockIt& bi)
 {
     static const uint8_t tparam[6] = {
-        // name   rule   image  animation  directions  frames,flags
+        // name   rule   image   animation   directions   numA
         UT_WORD, WORD_NONE, WORD_NONE, WORD_NONE, WORD_NONE, UT_COORD
     };
     if (! validParam(bi, sizeof(tparam), tparam))
@@ -309,16 +309,20 @@ static Tile* conf_tile(ConfigBoron* cfg, int id, UBlockIt& bi)
         tile->animationRule = ur_atom(cell);
     ++cell;
 
+    // numA: frames opaque flags
+    const int16_t* numA = bi.it[5].coord.n;
+
     // Set frames before calling setDirections().
-    int frames = bi.it[5].coord.n[0];
+    int frames = numA[0];
     tile->frames = frames ? frames : 1;
 
     /* Fill directions if they are specified. */
     if (ur_is(cell, UT_WORD))
         tile->setDirections( ur_atomCStr(cfg->ut, ur_atom(cell)) );
 
-    int flags = bi.it[5].coord.n[1];
-    tile->opaque          = flags & 1;
+    tile->opaque = numA[1];
+
+    int flags = numA[2];
     tile->foreground      = flags & 2; // usesReplacementTileAsBackground
     tile->waterForeground = flags & 4; // usesWaterReplacementTileAsBackground
     tile->tiledInDungeon  = flags & 8;

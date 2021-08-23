@@ -584,8 +584,8 @@ process-cfg [
             apair blk at/image at/animation
             apair blk at/directions to-coord reduce [
                 none-zero at/frames
+                none-zero select [square 1 round 2] at/opaque
                 attribute-flags at [
-                    1 opaque
                     2 usesReplacementTileAsBackground
                     4 usesWaterReplacementTileAsBackground
                     8 tiledInDungeon

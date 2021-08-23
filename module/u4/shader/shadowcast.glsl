@@ -22,6 +22,10 @@ out vec4 fragColor;
 vec3 shapeCube = vec3(0.5, 0.5, 0.5);
 const float farClip = 20.0;
 
+float sdSphere(vec3 p, float r) {
+	return length(p) - r;
+}
+
 float sdBox(vec3 p, vec3 b) {
 	vec3 q = abs(p) - b;
 	return length(max(q,0.0)) + min(max(q.x,q.z),0.0);	// 2D test.
@@ -29,6 +33,7 @@ float sdBox(vec3 p, vec3 b) {
 
 float sceneSDF(vec3 pnt, ivec4 group) {
 	ivec2 it;
+	float d;
 	float nd = farClip;
 
 	if (pnt.x < 0.0)
@@ -38,7 +43,10 @@ float sceneSDF(vec3 pnt, ivec4 group) {
 
 	for ( ; it.x < it.y; it.x++) {
 		vec3 spos = shapes[it.x];
-		float d = sdBox(pnt - vec3(spos.x, 0.0, spos.y), shapeCube);
+		if (spos.z == 1.0)
+			d = sdBox(pnt - vec3(spos.x, 0.0, spos.y), shapeCube);
+		else
+			d = sdSphere(pnt - vec3(spos.x, 0.0, spos.y), 0.5);
 		nd = min(nd, d);
 	}
 	return min(1.0, nd);    // Cap ray advance to handle group transition.

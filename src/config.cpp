@@ -323,7 +323,7 @@ static void conf_tileLoad(ConfigXML* cfg, Tile* tile, const ConfigElement &conf)
         tile->animationRule = cfg->propSymbol(conf, "animation");
 
     /* see if the tile is opaque */
-    tile->opaque = conf.getBool("opaque");
+    tile->opaque = conf.getBool("opaque") ? 1 : 0;
 
     tile->foreground = conf.getBool("usesReplacementTileAsBackground");
     tile->waterForeground = conf.getBool("usesWaterReplacementTileAsBackground");

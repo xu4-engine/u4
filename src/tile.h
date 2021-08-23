@@ -167,7 +167,7 @@ public:
     int16_t h;          /**< Pixel height of the tile */
     int16_t frames;     /**< The number of frames this tile has */
     int16_t scale;      /**< The scale of the tile */
-    bool opaque;        /**< Is this tile opaque? */
+    uint8_t opaque;     /**< Visibility blocking shape (1=square, 2=round) */
 
     bool foreground;    /**< As a maptile, is a foreground that will search neighbour maptiles for a land-based background replacement. ex: chests */
     bool waterForeground;/**< As a maptile, is a foreground that will search neighbour maptiles for a water-based background replacement. ex: chests */

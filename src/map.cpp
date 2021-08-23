@@ -275,12 +275,12 @@ void Map::queryBlocking(BlockingGroups* bg, int sx, int sy, int vw, int vh) cons
 #define BLOCKING_COLUMN \
     for (di = sy * width + x, y = sy; y < maxY; di += width, ++y) { \
         tile = tileset->get(data[di]); \
-        if (tile->isOpaque()) { \
+        if (tile->opaque) { \
             if (pos == posEnd) \
                 goto buffer_full; \
             *pos++ = (float) (x - centerX); \
             *pos++ = (float) (y - centerY); \
-            *pos++ = 1.0f; \
+            *pos++ = (float) tile->opaque; \
             ++count; \
         } \
     }
