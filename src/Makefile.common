@@ -4,6 +4,7 @@ MAIN=u4$(EXEEXT)
 VERSION=1.1svn
 
 CSRCS=\
+        anim.c \
         lzw/hash.c \
         lzw/lzw.c \
         unzip.c \

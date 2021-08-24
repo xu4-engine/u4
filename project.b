@@ -106,6 +106,7 @@ exe %u4 [
 	cflags {-DVERSION=\"KR-1.0\"}
 
 	sources_from %src [
+		%anim.c
 		%annotation.cpp
 		%aura.cpp
 		%camp.cpp

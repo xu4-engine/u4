@@ -11,6 +11,7 @@
 #include "context.h"
 #include "debug.h"
 #include "direction.h"
+#include "event.h"
 #include "location.h"
 #include "movement.h"
 #include "object.h"
@@ -349,6 +350,7 @@ void Map::queryVisible(const Coords& center, int radius,
         func(cp, vid, user);
     }
 
+    const Animator* animator = &xu4.eventHandler->flourishAnim;
     ObjectDeque::const_iterator it;
     for(it = objects.begin(); it != objects.end(); it++) {
         const Object* obj = *it;
@@ -360,6 +362,8 @@ void Map::queryVisible(const Coords& center, int radius,
         //printf("KR obj %d %d %d,%d\n",
         //        obj->tile.id, obj->tile.frame, cp->x, cp->y);
         vid = tiles[obj->tile.id]->vid;
+        if (obj->animId != ANIM_UNUSED)
+            vid += anim_valueI(animator, obj->animId);
         func(cp, vid, user);
     }
 

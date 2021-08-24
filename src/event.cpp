@@ -31,6 +31,11 @@ int eventTimerGranularity = 250;
  */
 EventHandler::EventHandler() : timedEvents(eventTimerGranularity), updateScreen(NULL) {
     controllerDone = ended = false;
+    anim_init(&flourishAnim, 64, NULL, NULL);
+}
+
+EventHandler::~EventHandler() {
+    anim_free(&flourishAnim);
 }
 
 void EventHandler::runController(Controller* con) {

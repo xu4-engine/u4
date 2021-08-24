@@ -9,6 +9,7 @@
 #include "context.h"
 #include "creature.h"
 #include "error.h"
+#include "event.h"
 #include "image.h"
 #include "imagemgr.h"
 #include "location.h"
@@ -254,6 +255,21 @@ int Tile::frameForDirection(Direction d) const {
     return -1;
 }
 
+/*
+ * Start a new animation if this tile has frame animation.
+ * The caller will own the animation and is responsible for stopping it.
+ *
+ * Return AnimId or ANIM_UNUSED if the tile is has no frame animation.
+ */
+uint16_t Tile::startFrameAnim() const {
+    if (frames && anim && anim->transforms[0]->animType == ATYPE_FRAME) {
+        //printf( "KR anim %d,%d\n", frames, anim->random );
+        return anim_startCycleRandomI(&xu4.eventHandler->flourishAnim,
+                                      0.25, ANIM_FOREVER, 0,
+                                      0, frames, anim->random);
+    }
+    return ANIM_UNUSED;
+}
 
 const Tile *MapTile::getTileType() const {
     return Tileset::findTileById(id);

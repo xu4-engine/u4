@@ -50,6 +50,7 @@ Creature::Creature() : Object(Object::CREATURE) {
 
 Creature::Creature(const Creature* cproto) : Object(Object::CREATURE) {
     *this = *cproto;
+    animId = ANIM_UNUSED;
 }
 
 std::string Creature::getName() const {

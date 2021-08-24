@@ -157,6 +157,7 @@ public:
 
     void loadImage();
     void deleteImage();
+    uint16_t startFrameAnim() const;
 
     TileId id;          /**< an id that is unique across all tilesets */
     VisualId vid;       /**< The default rendering resource identifier */

@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "anim.h"
 #include "controller.h"
 #include "types.h"
 
@@ -259,6 +260,7 @@ public:
 
     /* Constructors */
     EventHandler();
+    ~EventHandler();
 
     /* Static functions */
     static void wait_msecs(unsigned int msecs);
@@ -298,6 +300,8 @@ public:
     void popMouseAreaSet();
     _MouseArea* getMouseAreaSet() const;
     _MouseArea* mouseAreaForPoint(int x, int y);
+
+    Animator flourishAnim;
 
 protected:
     bool controllerDone;

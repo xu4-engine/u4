@@ -5,8 +5,18 @@
 #include <algorithm>
 
 #include "object.h"
+#include "event.h"
 #include "map.h"
+#include "tileset.h"
 #include "xu4.h"
+
+Object::~Object() {
+#ifdef GPU_RENDER
+    // Must check if exiting game as the eventHandler may already be deleted.
+    if (animId != ANIM_UNUSED && xu4.stage != StageExitGame)
+        anim_setState(&xu4.eventHandler->flourishAnim, animId, ANIM_FREE);
+#endif
+}
 
 bool Object::setDirection(Direction d) {
     return tile.setDirection(d);
@@ -20,6 +30,15 @@ void Object::placeOnMap(Map* map, const Coords& coords) {
         maps.push_back(map);
 
     setCoords(coords);
+
+#ifdef GPU_RENDER
+    /* Start frame animation */
+    if (animId == ANIM_UNUSED) {
+        const Tile* tileDef = map->tileset->get(tile.id);
+        if (tileDef)
+            animId = tileDef->startFrameAnim();
+    }
+#endif
 }
 
 /*

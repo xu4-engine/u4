@@ -6,6 +6,7 @@
 #define OBJECT_H
 
 #include <deque>
+#include "anim.h"
 #include "coords.h"
 #include "tile.h"
 #include "types.h"
@@ -32,12 +33,13 @@ public:
       prevTile(0),
       movement_behavior(MOVEMENT_FIXED),
       objType(type),
+      animId(ANIM_UNUSED),
       focused(false),
       visible(true),
       animated(true)
     {}
 
-    virtual ~Object() {}
+    virtual ~Object();
 
     // Methods
     MapTile& getTile()                      { return tile; }
@@ -75,6 +77,7 @@ protected:
     Coords coords, prevCoords;
     ObjectMovementBehavior movement_behavior;
     Type objType;
+    AnimId animId;
     std::deque<class Map *> maps;           /**< A list of maps this object is a part of */
 
     bool focused;
