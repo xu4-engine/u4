@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * object.cpp
  */
 
 #include <algorithm>
@@ -8,15 +8,18 @@
 #include "map.h"
 #include "xu4.h"
 
-using namespace std;
-
 bool Object::setDirection(Direction d) {
     return tile.setDirection(d);
 }
 
-void Object::setMap(class Map *m) {
-    if (find(maps.begin(), maps.end(), m) == maps.end())
-        maps.push_back(m);
+/*
+ * NOTE: This does not set prevCoords.
+ */
+void Object::placeOnMap(Map* map, const Coords& coords) {
+    if (find(maps.begin(), maps.end(), map) == maps.end())
+        maps.push_back(map);
+
+    setCoords(coords);
 }
 
 Map *Object::getMap() {
@@ -25,12 +28,16 @@ Map *Object::getMap() {
     return maps.back();
 }
 
-void Object::remove() {
-    unsigned int size = maps.size();
-    for (unsigned int i = 0; i < size; i++) {
-        if (i == size - 1)
-            maps[i]->removeObject(this);
-        else maps[i]->removeObject(this, false);
+/*
+ * Remove object from any maps that it is a part of.
+ *
+ * If the object is not a PartyMember then it is also deleted.
+ */
+void Object::removeFromMaps() {
+    size_t size = maps.size();
+    for (size_t i = 0; i < size; i++) {
+        bool lastMap = (i == size - 1);
+        maps[i]->removeObject(this, lastMap);
     }
 }
 

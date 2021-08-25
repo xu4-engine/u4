@@ -703,7 +703,7 @@ bool Creature::applyDamage(int damage, bool byplayer) {
             spawnOnDeath();
 
         // Remove yourself from the map
-        remove();
+        removeFromMaps();
         return false;
 
     case MSTAT_FLEEING:

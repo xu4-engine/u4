@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * object.h
  */
 
 #ifndef OBJECT_H
@@ -16,6 +16,8 @@ typedef enum {
     MOVEMENT_FOLLOW_AVATAR,
     MOVEMENT_ATTACK_AVATAR
 } ObjectMovementBehavior;
+
+class Map;
 
 class Object {
 public:
@@ -52,17 +54,17 @@ public:
     void setTile(MapTile t)                 { tile = t; }
     void setTile(const Tile *t)             { tile = t->getId(); }
     void setPrevTile(MapTile t)             { prevTile = t; }
-    void setCoords(Coords c)                { prevCoords = coords; coords = c; }
-    void setPrevCoords(Coords c)            { prevCoords = c; }
+    void setCoords(const Coords& c)         { prevCoords = coords; coords = c; }
+    void setPrevCoords(const Coords& c)     { prevCoords = c; }
     void setMovementBehavior(ObjectMovementBehavior b)          { movement_behavior = b; }
     void setType(Type t)                    { objType = t; }
     void setFocus(bool f = true)            { focused = f; }
     void setVisible(bool v = true)          { visible = v; }
     void setAnimated(bool a = true)         { animated = a; }
 
-    void setMap(class Map *m);
+    void placeOnMap(Map*, const Coords&);
     Map *getMap();
-    void remove();  /**< Removes itself from any maps that it is a part of */
+    void removeFromMaps();
 
     bool setDirection(Direction d);
 

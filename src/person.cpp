@@ -132,10 +132,6 @@ string Person::getName() const {
         return "(unnamed person)";
 }
 
-void Person::goToStartLocation() {
-    setCoords(start);
-}
-
 void Person::setDialogue(Dialogue *d) {
     dialogue = d;
     if (tile.getTileType()->name == Tile::sym.beggar)

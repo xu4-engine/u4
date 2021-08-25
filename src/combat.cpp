@@ -458,8 +458,7 @@ void CombatController::placePartyMembers() {
         /* don't place dead party members */
         if (p->getStatus() != STAT_DEAD) {
             /* add the party member to the map */
-            p->setCoords(map->player_start[i]);
-            p->setMap(map);
+            p->placeOnMap(map, map->player_start[i]);
             map->objects.push_back(p);
             party[i] = p;
         }

@@ -46,8 +46,7 @@ Person *City::addPerson(Person *person) {
     Person *p = new Person(person);
 
     /* set the start coordinates for the person */
-    p->setMap(this);
-    p->goToStartLocation();
+    p->placeOnMap(this, p->getStart());
 
     objects.push_back(p);
     return p;

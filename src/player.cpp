@@ -46,7 +46,7 @@ PartyMember::PartyMember(Party *p, SaveGamePlayerRecord *pr) :
 }
 
 PartyMember::~PartyMember() {
-    remove();
+    removeFromMaps();
 }
 
 /**
@@ -388,7 +388,7 @@ bool PartyMember::applyDamage(int damage, bool) {
         }
 
         /* remove yourself from the map */
-        remove();
+        removeFromMaps();
         return false;
     }
 

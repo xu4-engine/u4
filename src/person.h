@@ -47,7 +47,6 @@ public:
     bool canConverse() const;
     bool isVendor() const;
     virtual string getName() const;
-    void goToStartLocation();
     void setDialogue(Dialogue *d);
     MapCoords &getStart() { return start; }
     PersonNpcType getNpcType() const { return npcType; }

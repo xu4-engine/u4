@@ -3088,7 +3088,6 @@ bool GameController::checkMoongates() {
  */
 void gameFixupObjects(Map *map, const SaveGameMonsterRecord* table) {
     int i;
-    Object *obj;
     const SaveGameMonsterRecord *it;
     MapTile tile, oldTile;
     const UltimaSaveIds* usaveIds = xu4.config->usaveIds();
@@ -3116,7 +3115,7 @@ void gameFixupObjects(Map *map, const SaveGameMonsterRecord* table) {
                 const Creature *creature = Creature::getByTile(tile);
                 /* make sure we really have a creature */
                 if (creature) {
-                    obj = map->addCreature(creature, coords);
+                    Object* obj = map->addCreature(creature, coords);
 
                     // Preserve animation & previous state to keep round-trip
                     // load > save > load identical.
@@ -3127,14 +3126,11 @@ void gameFixupObjects(Map *map, const SaveGameMonsterRecord* table) {
                     obj->setPrevCoords(pc);
                 } else {
                     fprintf(stderr, "Error: A non-creature object was found in the creature section of the monster table. (Tile: %s)\n", tile.getTileType()->nameStr());
-                    obj = map->addObject(tile, oldTile, coords);
+                    map->addObject(tile, oldTile, coords);
                 }
             }
             else
-                obj = map->addObject(tile, oldTile, coords);
-
-            /* set the map for our object */
-            obj->setMap(map);
+                map->addObject(tile, oldTile, coords);
         }
     }
 }

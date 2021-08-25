@@ -472,13 +472,12 @@ void Map::findWalkability(Coords coords, int *path_data) {
 /**
  * Adds a creature object to the given map
  */
-Creature *Map::addCreature(const Creature *creature, Coords coords) {
+Creature *Map::addCreature(const Creature *creature, const Coords& coords) {
     Creature *m = new Creature(creature);
 
     m->setInitialHp();
     m->setStatus(STAT_GOOD);
-    m->setCoords(coords);
-    m->setMap(this);
+    m->placeOnMap(this, coords);
 
     /* initialize the creature before placing it */
     if (m->wanders())
@@ -504,14 +503,13 @@ Object *Map::addObject(Object *obj, Coords coords) {
     return obj;
 }
 
-Object *Map::addObject(MapTile tile, MapTile prevtile, Coords coords) {
+Object *Map::addObject(MapTile tile, MapTile prevtile, const Coords& coords) {
     Object *obj = new Object;
 
     obj->setTile(tile);
     obj->setPrevTile(prevtile);
-    obj->setCoords(coords);
     obj->setPrevCoords(coords);
-    obj->setMap(this);
+    obj->placeOnMap(this, coords);
 
     objects.push_front(obj);
 
