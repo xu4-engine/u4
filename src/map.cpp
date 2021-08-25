@@ -876,16 +876,21 @@ void Map::fillMonsterTable(SaveGameMonsterRecord* table) const {
     /**
      * Fill in our monster table
      */
+    MapTile prevTile;
     const UltimaSaveIds* saveIds = xu4.config->usaveIds();
     for (i = 0; i < MONSTERTABLE_SIZE; i++) {
-        Coords c = monsters[i]->getCoords(),
-           prevc = monsters[i]->getPrevCoords();
+        obj = monsters[i];
+        Coords c = obj->getCoords(),
+           prevc = obj->getPrevCoords();
 
         // Reset animation to a value that is savegame compatible with u4dos.
-        MapTile prevTile = monsters[i]->getPrevTile();
-        prevTile.frame = 0;
+        if (obj->getType() == Object::CREATURE) {
+            prevTile = obj->getTile();
+            prevTile.frame = 0;
+        } else
+            prevTile = obj->getPrevTile();
 
-        table->tile = saveIds->ultimaId(monsters[i]->getTile());
+        table->tile = saveIds->ultimaId(obj->getTile());
         table->x = c.x;
         table->y = c.y;
         table->prevTile = saveIds->ultimaId(prevTile);
