@@ -223,8 +223,6 @@ void EventHandler::wait_msecs(unsigned int msec) {
     bool sleeping = true;
     bool redraw = false;
 
-    eh->pushController(&waitCon);
-
     while (sleeping && ! eh->ended) {
         do {
             SDL_WaitEvent(&event);
@@ -267,8 +265,6 @@ void EventHandler::wait_msecs(unsigned int msec) {
             screenSwapBuffers();
         }
     }
-
-    eh->popController();
 }
 
 void EventHandler::run() {

@@ -171,8 +171,6 @@ void EventHandler::wait_msecs(unsigned int msec) {
     // Using getTicks() rather than an ALLEGRO_TIMER to avoid the overhead
     // to create/destroy & register/unregister it.
 
-    eh->pushController(&waitCon);
-
     while (sleeping && ! eh->ended) {
         do {
             al_wait_for_event(sa->queue, &event);
@@ -210,8 +208,6 @@ void EventHandler::wait_msecs(unsigned int msec) {
             screenSwapBuffers();
         }
     }
-
-    eh->popController();
 }
 
 void EventHandler::run() {
