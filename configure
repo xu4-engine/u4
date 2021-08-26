@@ -7,6 +7,7 @@ if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
   echo "  --sdl             Use SDL 1.2 as the platform API"
   echo "  --boron           Use Boron/CDI configuration (default)"
   echo "  --xml             Use XML configuration"
+  echo "  --gpu             Use GPU rendering"
   echo "  --prefix <dir>    Set install directory root"
   exit
 fi
@@ -14,6 +15,7 @@ fi
 PLATFORM=allegro
 CONF=boron
 PREFIX=/usr/local
+GPU=false
 
 while [ "$1" != "" ]; do
   case $1 in
@@ -25,6 +27,8 @@ while [ "$1" != "" ]; do
       CONF=boron ;;
     --xml)
       CONF=xml ;;
+    --gpu)
+      GPU=true ;;
     --prefix)
       shift
       PREFIX=$1 ;;
@@ -37,6 +41,6 @@ while [ "$1" != "" ]; do
 done
 
 echo "Generating make.config & project.config"
-printf "os_api: \'${PLATFORM}\nuse_boron: $([[ ${CONF} = boron ]] && echo true || echo false)\n" >project.config
-printf "PREFIX=${PREFIX}\nUI=${PLATFORM}\nCONF=${CONF}\n" >make.config
+printf "os_api: \'${PLATFORM}\nuse_boron: $([[ ${CONF} = boron ]] && echo true || echo false)\ngpu_render: ${GPU}\n" >project.config
+printf "PREFIX=${PREFIX}\nUI=${PLATFORM}\nCONF=${CONF}\nGPU=${GPU}" >make.config
 echo "Now type make (or copr) to build."

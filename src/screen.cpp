@@ -451,8 +451,6 @@ bool screenTileUpdate(TileView *view, const Coords &coords)
     return false;
 }
 
-//#define GPU_RENDER
-
 #ifdef GPU_RENDER
 struct SpriteRenderData {
     float* attr;

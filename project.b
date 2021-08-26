@@ -3,6 +3,7 @@ options [
 	use_gl: false
 	use_boron: true
 	boron_sdk: none		"Path to Boron headers and libraries"
+	gpu_render: true
 	make_util: true
 ]
 
@@ -82,6 +83,7 @@ exe %u4 [
 	]
 
 	if use_gl [
+		if gpu_render [cflags "-DGPU_RENDER"]
 		cflags "-DUSE_GL"
 		opengl
 	]
