@@ -23,6 +23,8 @@
 #include <string.h>
 #include "u4.h"     // VIEWPORT_W
 
+extern uint32_t getTicks();
+
 //#include "gpu_opengl.h"
 
 #define dprint  printf
@@ -34,8 +36,8 @@ const char* cmap_vertShader =
     "#version 330\n"
     "uniform mat4 transform;\n"
     "layout(location = 0) in vec3 position;\n"
-    "layout(location = 1) in vec2 uv;\n"
-    "out vec2 texCoord;\n"
+    "layout(location = 1) in vec4 uv;\n"
+    "out vec4 texCoord;\n"
     "void main() {\n"
     "  texCoord = uv;\n"
     "  gl_Position = transform * vec4(position, 1.0);\n"
@@ -45,10 +47,23 @@ const char* cmap_fragShader =
     "#version 330\n"
     "uniform sampler2D cmap;\n"
     "uniform vec4 tint;\n"
-    "in vec2 texCoord;\n"
+    "uniform vec2 scroll;\n"
+    "in vec4 texCoord;\n"
     "out vec4 fragColor;\n"
     "void main() {\n"
-    "  vec4 texel = texture(cmap, texCoord);\n"
+    "  vec4 texel;\n"
+    "  if (texCoord.q == 5.0) {\n"
+    "    vec2 tc = texCoord.st; \n"
+    "    float nv = texCoord.p - scroll.t * 0.3;\n"
+    "    tc.t += (nv - floor(nv)) * scroll.s;\n"
+    "    texel = texture(cmap, tc);\n"
+    "/*\n"
+    "    float nv = texCoord.p + scroll.t;\n"
+    "    texel = vec4(vec3(nv - floor(nv)), 1.0);\n"
+    "*/\n"
+    "  } else {\n"
+    "    texel = texture(cmap, texCoord.st);\n"
+    "  }\n"
     "  fragColor = tint * texel;\n"
     "}\n";
 
@@ -56,8 +71,8 @@ const char* world_vertShader =
     "#version 330\n"
     "uniform mat4 transform;\n"
     "layout(location = 0) in vec3 position;\n"
-    "layout(location = 1) in vec2 uv;\n"
-    "out vec2 texCoord;\n"
+    "layout(location = 1) in vec4 uv;\n"
+    "out vec4 texCoord;\n"
     "out vec2 shadowCoord;\n"
     "void main() {\n"
     "  texCoord = uv;\n"
@@ -69,11 +84,24 @@ const char* world_fragShader =
     "#version 330\n"
     "uniform sampler2D cmap;\n"
     "uniform sampler2D shadowMap;\n"
-    "in vec2 texCoord;\n"
+    "uniform vec2 scroll;\n"
+    "in vec4 texCoord;\n"
     "in vec2 shadowCoord;\n"
     "out vec4 fragColor;\n"
     "void main() {\n"
-    "  vec4 texel = texture(cmap, texCoord);\n"
+    "  vec4 texel;\n"
+    "  if (texCoord.q == 5.0) {\n"
+    "    vec2 tc = texCoord.st; \n"
+    "    float nv = texCoord.p - scroll.t * 0.3;\n"
+    "    tc.t += (nv - floor(nv)) * scroll.s;\n"
+    "    texel = texture(cmap, tc);\n"
+    "/*\n"
+    "    float nv = texCoord.p + scroll.t;\n"
+    "    texel = vec4(vec3(nv - floor(nv)), 1.0);\n"
+    "*/\n"
+    "  } else {\n"
+    "    texel = texture(cmap, texCoord.st);\n"
+    "  }\n"
     "  vec4 shade = texture(shadowMap, shadowCoord);\n"
     "  fragColor = vec4(shade.aaa, 1.0) * texel;\n"
     "}\n";
@@ -87,16 +115,16 @@ static const float unitMatrix[16] = {
     0.0, 0.0, 0.0, 1.0
 };
 
-#define ATTR_COUNT      5
+#define ATTR_COUNT      7
 #define ATTR_STRIDE     (sizeof(float) * ATTR_COUNT)
 static const float quadAttr[] = {
-    // X   Y   Z       U  V
-   -1.0,-1.0, 0.0,   0.0, 1.0,
-    1.0,-1.0, 0.0,   1.0, 1.0,
-    1.0, 1.0, 0.0,   1.0, 0.0,
-    1.0, 1.0, 0.0,   1.0, 0.0,
-   -1.0, 1.0, 0.0,   0.0, 0.0,
-   -1.0,-1.0, 0.0,   0.0, 1.0
+    // X   Y   Z       U  V  VUnit  Effect
+   -1.0,-1.0, 0.0,   0.0, 1.0, 0.0, 0.0,
+    1.0,-1.0, 0.0,   1.0, 1.0, 0.0, 0.0,
+    1.0, 1.0, 0.0,   1.0, 0.0, 0.0, 0.0,
+    1.0, 1.0, 0.0,   1.0, 0.0, 0.0, 0.0,
+   -1.0, 1.0, 0.0,   0.0, 0.0, 0.0, 0.0,
+   -1.0,-1.0, 0.0,   0.0, 1.0, 0.0, 0.0
 };
 
 #define DRAW_BUF_SIZE   (ATTR_STRIDE * 6 * 400)
@@ -288,7 +316,7 @@ static void _defineAttributeLayout(GLuint vao, GLuint vbo)
     glEnableVertexAttribArray(LOC_POS);
     glVertexAttribPointer(LOC_POS, 3, GL_FLOAT, GL_FALSE, ATTR_STRIDE, 0);
     glEnableVertexAttribArray(LOC_UV);
-    glVertexAttribPointer(LOC_UV,  2, GL_FLOAT, GL_FALSE, ATTR_STRIDE,
+    glVertexAttribPointer(LOC_UV,  4, GL_FLOAT, GL_FALSE, ATTR_STRIDE,
                           (const GLvoid*) 12);
 }
 
@@ -435,6 +463,7 @@ bool gpu_init(void* res, int w, int h, int scale)
     gr->slocTrans   = glGetUniformLocation(sh, "transform");
     gr->slocCmap    = glGetUniformLocation(sh, "cmap");
     gr->slocTint    = glGetUniformLocation(sh, "tint");
+    gr->slocScroll  = glGetUniformLocation(sh, "scroll");
 
     glUseProgram(sh);
     glUniformMatrix4fv(gr->slocTrans, 1, GL_FALSE, unitMatrix);
@@ -450,6 +479,7 @@ bool gpu_init(void* res, int w, int h, int scale)
     gr->worldTrans     = glGetUniformLocation(sh, "transform");
     gr->worldCmap      = glGetUniformLocation(sh, "cmap");
     gr->worldShadowMap = glGetUniformLocation(sh, "shadowMap");
+    gr->worldScroll    = glGetUniformLocation(sh, "scroll");
 
     glUseProgram(sh);
     glUniformMatrix4fv(gr->worldTrans, 1, GL_FALSE, unitMatrix);
@@ -527,10 +557,11 @@ void gpu_freeTexture(uint32_t tex)
     glDeleteTextures(1, &tex);
 }
 
-void gpu_setTilesTexture(void* res, uint32_t tex)
+void gpu_setTilesTexture(void* res, uint32_t tex, float vDim)
 {
     OpenGLResources* gr = (OpenGLResources*) res;
     gr->tilesTex = tex;
+    gr->tilesVDim = vDim;
 }
 
 /*
@@ -634,44 +665,80 @@ float* gpu_emitQuad(float* attr, const float* drawRect, const float* uvRect)
             uvRect[0], uvRect[1], uvRect[2], uvRect[3]);
 #endif
 
+#define EMIT_POS(x,y) \
+    *attr++ = x; \
+    *attr++ = y; \
+    *attr++ = 0.0f
+
+#define EMIT_UV(u,v) \
+    *attr++ = u; \
+    *attr++ = v; \
+    *attr++ = 0.0f; \
+    *attr++ = 0.0f
+
     // NOTE: We only do writes to attr here (avoid memcpy).
 
     // First vertex, lower-left corner
-    *attr++ = drawRect[0];
-    *attr++ = drawRect[1];
-    *attr++ = 0.0f;
-    *attr++ = uvRect[0];
-    *attr++ = uvRect[3];
+    EMIT_POS(drawRect[0], drawRect[1]);
+    EMIT_UV(uvRect[0], uvRect[3]);
 
     // Lower-right corner
-    *attr++ = drawRect[0] + w;
-    *attr++ = drawRect[1];
-    *attr++ = 0.0f;
-    *attr++ = uvRect[2];
-    *attr++ = uvRect[3];
+    EMIT_POS(drawRect[0] + w, drawRect[1]);
+    EMIT_UV(uvRect[2], uvRect[3]);
 
     // Top-right corner
     for (i = 0; i < 2; ++i) {
-        *attr++ = drawRect[0] + w;
-        *attr++ = drawRect[1] + h;
-        *attr++ = 0.0f;
-        *attr++ = uvRect[2];
-        *attr++ = uvRect[1];
+        EMIT_POS(drawRect[0] + w, drawRect[1] + h);
+        EMIT_UV(uvRect[2], uvRect[1]);
     }
 
     // Top-left corner
-    *attr++ = drawRect[0];
-    *attr++ = drawRect[1] + h;
-    *attr++ = 0.0f;
-    *attr++ = uvRect[0];
-    *attr++ = uvRect[1];
+    EMIT_POS(drawRect[0], drawRect[1] + h);
+    EMIT_UV(uvRect[0], uvRect[1]);
 
     // Repeat first vertex
-    *attr++ = drawRect[0];
-    *attr++ = drawRect[1];
-    *attr++ = 0.0f;
-    *attr++ = uvRect[0];
-    *attr++ = uvRect[3];
+    EMIT_POS(drawRect[0], drawRect[1]);
+    EMIT_UV(uvRect[0], uvRect[3]);
+
+    return attr;
+}
+
+float* gpu_emitQuadScroll(float* attr, const float* drawRect,
+                          const float* uvRect)
+{
+    float w = drawRect[2];
+    float h = drawRect[3];
+    int i;
+
+#define EMIT_UVS(u,v,vunit) \
+    *attr++ = u; \
+    *attr++ = v; \
+    *attr++ = vunit; \
+    *attr++ = 5.0f
+
+    // NOTE: We only do writes to attr here (avoid memcpy).
+
+    // First vertex, lower-left corner
+    EMIT_POS(drawRect[0], drawRect[1]);
+    EMIT_UVS(uvRect[0], uvRect[1], 1.0f);
+
+    // Lower-right corner
+    EMIT_POS(drawRect[0] + w, drawRect[1]);
+    EMIT_UVS(uvRect[2], uvRect[1], 1.0f);
+
+    // Top-right corner
+    for (i = 0; i < 2; ++i) {
+        EMIT_POS(drawRect[0] + w, drawRect[1] + h);
+        EMIT_UVS(uvRect[2], uvRect[1], 0.0f);
+    }
+
+    // Top-left corner
+    EMIT_POS(drawRect[0], drawRect[1] + h);
+    EMIT_UVS(uvRect[0], uvRect[1], 0.0f);
+
+    // Repeat first vertex
+    EMIT_POS(drawRect[0], drawRect[1]);
+    EMIT_UVS(uvRect[0], uvRect[1], 1.0f);
 
     return attr;
 }
@@ -706,6 +773,7 @@ static void _buildChunkGeo(GLuint vbo, const uint8_t* chunk, int dim,
                            const float* uvTable )
 {
     float drawRect[4];  // x, y, width, height
+    const float* uvCur;
     float* attr;
     float startX;
     int x, y;
@@ -730,7 +798,11 @@ static void _buildChunkGeo(GLuint vbo, const uint8_t* chunk, int dim,
         drawRect[0] = startX;
         for (x = 0; x < dim; ++x) {
             c = *chunk++;
-            attr = gpu_emitQuad(attr, drawRect, uvTable + c*4);
+            uvCur = uvTable + c*4;
+            if (c < 3)
+                attr = gpu_emitQuadScroll(attr, drawRect, uvCur);
+            else
+                attr = gpu_emitQuad(attr, drawRect, uvCur);
             drawRect[0] += drawRect[2];
         }
         drawRect[1] -= drawRect[3];
@@ -914,14 +986,17 @@ void gpu_drawMap(void* res, const Map* map, const float* tileUVs,
     int wx, wy;         // Tile location of chunk on the map.
     uint16_t chunkId;
 
+    gr->time = ((float) getTicks()) * 0.001;
     memcpy(matrix, unitMatrix, sizeof(matrix));
 
     if (gr->blockCount) {
         glUseProgram(gr->shadeWorld);
+        glUniform2f(gr->worldScroll, gr->tilesVDim, gr->time);
         glActiveTexture(GL_TEXTURE0 + GTU_SHADOW);
         glBindTexture(GL_TEXTURE_2D, gr->shadowTex);
     } else {
         glUseProgram(gr->shadeColor);
+        glUniform2f(gr->slocScroll, gr->tilesVDim, gr->time);
     }
 
     glActiveTexture(GL_TEXTURE0 + GTU_CMAP);

@@ -164,13 +164,13 @@ static void screenInit_data(Screen* scr, Settings& settings) {
     xu4.config->internSymbols(symbol, 2, "texture reticle");
     scr->textureInfo = tinfo = xu4.imageMgr->get(symbol[0]);
     if (tinfo) {
-        gpu_setTilesTexture(xu4.gpu, tinfo->tex);
+        gpu_setTilesTexture(xu4.gpu, tinfo->tex, tinfo->tileTexCoord[3]);
         scr->focusReticle = tinfo->subImageIndex.find(symbol[1])->second;
     }
     }
 #else
     ImageInfo* shapes = xu4.imageMgr->get(BKGD_SHAPES);
-    gpu_setTilesTexture(xu4.gpu, shapes->tex);
+    gpu_setTilesTexture(xu4.gpu, shapes->tex, 0.0f);
 #endif
 #endif
 
