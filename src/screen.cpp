@@ -119,6 +119,10 @@ static void screenInit_data(Screen* scr, Settings& settings) {
     if (! scr->filterScaler)
         errorFatal("Invalid filter %d", settings.filter);
 
+    /* If we can't use VGA graphics then reset to EGA. */
+    if (! u4isUpgradeAvailable() && settings.videoType == "VGA")
+        settings.videoType = "EGA";
+
     // Create a special purpose image that represents the whole screen.
     xu4.screenImage = Image::create
 #ifdef USE_GL
@@ -133,10 +137,6 @@ static void screenInit_data(Screen* scr, Settings& settings) {
     scr->charsetInfo = xu4.imageMgr->get(BKGD_CHARSET);
     if (! scr->charsetInfo)
         errorLoadImage(BKGD_CHARSET);
-
-    /* if we can't use vga, reset to default:ega */
-    if (!u4isUpgradeAvailable() && settings.videoType == "VGA")
-        settings.videoType = "EGA";
 
 #ifdef USE_GL
     ImageInfo* shapes = xu4.imageMgr->get(BKGD_SHAPES);

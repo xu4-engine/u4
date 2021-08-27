@@ -147,13 +147,10 @@ missing_value:
 void servicesInit(XU4GameServices* gs, Options* opt) {
     if (!u4fsetup())
     {
-        errorFatal( "xu4 requires the PC version of Ultima IV to be present. "
-            "It must either be in the same directory as the xu4 executable, "
-            "or in a subdirectory named \"ultima4\"."
-            "\n\nThis can be achieved by downloading \"UltimaIV.zip\" from www.ultimaforever.com"
-            "\n - Extract the contents of UltimaIV.zip"
-            "\n - Copy the \"ultima4\" folder to your xu4 executable location."
-            "\n\nVisit the XU4 website for additional information.\n\thttp://xu4.sourceforge.net/");
+        errorFatal( "xu4 requires the PC version of Ultima IV to be present.\n"
+            "\nIt may either be a zip file or subdirectory named \"ultima4\" in the same\n"
+            "directory as the xu4 executable.\n"
+            "\nFor more information visit http://xu4.sourceforge.net/faq.html\n");
     }
 
     /* initialize the settings */

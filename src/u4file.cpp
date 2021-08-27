@@ -138,14 +138,16 @@ void U4PATH::initDefaultPaths() {
     //The first part of the path searched will be one of these root directories
 
     /*Try to cover all root possibilities. These can be added to by separate modules*/
-    rootResourcePaths.push_back("");
     rootResourcePaths.push_back(".");
     rootResourcePaths.push_back("./ultima4");
-    rootResourcePaths.push_back("/usr/lib/u4");
-    rootResourcePaths.push_back("/usr/local/lib/u4");
+#ifdef _WIN32
     rootResourcePaths.push_back("C:");
     rootResourcePaths.push_back("C:/DOS");
     rootResourcePaths.push_back("C:/GAMES");
+#else
+    rootResourcePaths.push_back("/usr/lib/u4");
+    rootResourcePaths.push_back("/usr/local/lib/u4");
+#endif
 
     //The second (specific) part of the path searched will be these various subdirectories
 
@@ -538,8 +540,13 @@ U4FILE *u4fopen(const string &fname) {
     const vector<U4ZipPackage *> &packages = u4zip_instance->packages;
     for (std::vector<U4ZipPackage *>::const_reverse_iterator j = packages.rbegin(); j != packages.rend(); j++) {
         u4f = U4FILE_zip::open(fname, *j);
-        if (u4f)
+        if (u4f) {
+            if (verbose) {
+                printf("%s found in %s\n", fname.c_str(),
+                       (*j)->getFilename().c_str());
+            }
             return u4f; /* file was found, return it! */
+        }
     }
 
     /*
