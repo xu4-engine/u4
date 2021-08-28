@@ -17,7 +17,8 @@ enum ImageFiletype {
     FTYPE_U5LZW,
     FTYPE_FMTOWNS,
     FTYPE_FMTOWNS_PIC,
-    FTYPE_FMTOWNS_TIF
+    FTYPE_FMTOWNS_TIF,
+    FTYPE_ATLAS         // Special internal type for ImageInfo.
 };
 
 Image* loadImage(U4FILE *file, int ftype, int width, int height, int bpp);

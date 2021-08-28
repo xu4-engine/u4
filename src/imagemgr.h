@@ -123,6 +123,11 @@ struct ImageSymbols {
     Symbol whitebead;
 };
 
+struct AtlasSubImage {
+    Symbol name;
+    int16_t x, y;
+};
+
 struct SubImage {
     Symbol name;
     int16_t x, y, width, height;

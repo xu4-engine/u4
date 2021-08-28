@@ -1,6 +1,11 @@
 graphics: [
 
 imageset EGA [
+    texture: atlas 64,4096 [
+        tiles    0, 0
+        hud     17, 0
+        charset 17,33
+    ]
     image (name: tiles filename: "u4/shapes.ega" width: 16 height: 4096 depth: 4 filetype: u4raw tiles: 256 fixup: blackTransparencyHack) [
         at 0,0 size 16,16
         ; subimages
@@ -241,6 +246,11 @@ imageset EGA [
     image (name: rune6 filename: "u4/rune_1.ega" width: 320 height: 200 depth: 4 filetype: u4rle)
     image (name: rune7 filename: "u4/rune_3.ega" width: 320 height: 200 depth: 4 filetype: u4rle)
     image (name: rune8 filename: "u4/rune_4.ega" width: 320 height: 200 depth: 4 filetype: u4rle)
+    image (name: hud filename: "ega/hud.png") [
+        at 0,0 size 16,16
+        reticle
+        cross
+    ]
     image (name: gemtiles filename: "ega/gem.png" tiles: 128)
     image (name: dungew filename: "ega/dungeonhall.png") [
         dung0_lft_ew    0, 0, 32,176
@@ -395,6 +405,12 @@ imageset EGA [
 ]
 
 imageset EGA/VGA [
+    texture: atlas 64,4096 [
+        tiles        0, 0
+        hud         17, 0
+        tile_guard  17,32
+        charset     17,97
+    ]
     image (name: tiles filename: "u4u/shapes.vga" width: 16 height: 4096 depth: 8 filetype: u4raw tiles: 256 fixup: blackTransparencyHack) [
         at 0,0 size 16,16
         ; subimages

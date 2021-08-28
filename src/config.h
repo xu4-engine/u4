@@ -12,6 +12,7 @@
 #endif
 
 class ImageSet;
+struct AtlasSubImage;
 struct Layout;
 struct Armor;
 struct Weapon;
@@ -60,6 +61,7 @@ public:
     const CDIEntry* imageFile( const char* id ) const;
     const CDIEntry* musicFile( uint32_t id ) const;
     const CDIEntry* soundFile( uint32_t id ) const;
+    int atlasImages(StringId spec, AtlasSubImage* images, int max);
 #else
     const char* musicFile( uint32_t id );
     const char* soundFile( uint32_t id );

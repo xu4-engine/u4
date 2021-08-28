@@ -514,6 +514,11 @@ process-cfg [
                     layout-subimages first tok last img-blk at/width
                 ]
             )
+          | tok: set-word! 'atlas coord! block! (
+                apair img-blk mark-sol to-word first tok 'atlas
+                append img-blk third tok
+                append/block img-blk pick tok 4
+            )
         ]]
       | 'tileanimset set name word! (
             apair blk mark-sol 'tileanims name

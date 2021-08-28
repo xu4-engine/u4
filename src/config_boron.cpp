@@ -1339,16 +1339,49 @@ const Coords* Config::moongateCoords(int phase) const {
 //--------------------------------------
 // Graphics config
 
+int Config::atlasImages(StringId spec, AtlasSubImage* images, int max) {
+    UCell cell;
+    UBlockIt bi;
+    int count = 0;
+
+    // Spec is actually a block! not a string!.
+    ur_setId(&cell, UT_BLOCK);
+    ur_setSeries(&cell, spec, 0);
+
+    ur_blockIt(CX->ut, &bi, &cell);
+    ur_foreach (bi) {
+        if (ur_is(bi.it, UT_WORD) && ur_is(bi.it+1, UT_COORD)) {
+            images->name = ur_atom(bi.it);
+            ++bi.it;
+            images->x = bi.it->coord.n[0];
+            images->y = bi.it->coord.n[1];
+            ++images;
+            if (++count >= max)
+                break;
+        }
+    }
+    return count;
+}
+
 static ImageInfo* loadImageInfo(const ConfigBoron* cfg, UBlockIt& bi) {
+    static const uint8_t atlasParam[4] = {
+        // name  'atlas   numA      spec
+        UT_WORD, UT_WORD, UT_COORD, UT_BLOCK
+    };
     static const uint8_t imageParam[4] = {
         // name  filename   numA      numB
         UT_WORD, UT_STRING, UT_COORD, UT_COORD
     };
-    if (! validParam(bi, sizeof(imageParam), imageParam))
-        errorFatal("Invalid image parameters");
+    int isAtlas = 0;
 
-    const int16_t* numA = bi.it[2].coord.n;     // width height depth
-    const int16_t* numB = bi.it[3].coord.n;     // filetype tiles fixup
+    if (! validParam(bi, sizeof(imageParam), imageParam)) {
+        if (validParam(bi, sizeof(atlasParam), atlasParam))
+            isAtlas = 1;
+        else
+            errorFatal("Invalid image parameters");
+    }
+
+    const int16_t* numA = bi.it[2].coord.n;     // width height (depth)
 
 #if 0
     UThread* ut = cfg->ut;
@@ -1359,20 +1392,35 @@ static ImageInfo* loadImageInfo(const ConfigBoron* cfg, UBlockIt& bi) {
 
     ImageInfo* info = new ImageInfo;
     info->name     = ur_atom(bi.it);
-    info->filename = ASTR(bi.it[1].series.buf);
     info->resGroup = 0;
     info->width    = numA[0];
     info->height   = numA[1];
     info->subImageCount = 0;
-    info->depth    = numA[2];
     info->prescale = 0;
-    info->filetype = numB[0];
-    info->tiles    = numB[1];
     info->transparentIndex = -1;
-    info->fixup    = numB[2];
     info->image    = NULL;
     info->subImages = NULL;
 
+    if (isAtlas) {
+        // An atlas ImageInfo is denoted by filetype FTYPE_ATLAS.
+        // The filename is the spec. block UIndex, not a string!
+
+        info->filename = bi.it[3].series.buf;
+        info->depth    = 0;
+        info->filetype = FTYPE_ATLAS;
+        info->tiles    = 0;
+        info->fixup    = FIXUP_NONE;
+    } else {
+        const int16_t* numB = bi.it[3].coord.n;     // filetype tiles fixup
+
+        info->filename = ASTR(bi.it[1].series.buf);
+        info->depth    = numA[2];
+        info->filetype = numB[0];
+        info->tiles    = numB[1];
+        info->fixup    = numB[2];
+    }
+
+    assert(sizeof(atlasParam) == sizeof(imageParam));
     bi.it += sizeof(imageParam);
 
     // Optional subimages block!
@@ -1405,9 +1453,11 @@ static ImageInfo* loadImageInfo(const ConfigBoron* cfg, UBlockIt& bi) {
 #ifdef USE_GL
             subimage->celCount = celCount;
 #endif
+#ifndef GPU_RENDER
             // Animated tiles denoted by height. TODO: Eliminate this.
             if (celCount > 1)
                 subimage->height *= celCount;
+#endif
 
             ++subimage;
         }

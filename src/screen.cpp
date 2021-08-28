@@ -56,6 +56,8 @@ struct Screen {
     int cursorEnabled;
     int needPrompt;
 #ifdef GPU_RENDER
+    ImageInfo* textureInfo;
+    VisualId focusReticle;
     int mapId;          // Tracks map changes.
     int blockX;         // Tracks changes to view point.
     int blockY;
@@ -155,8 +157,21 @@ static void screenInit_data(Screen* scr, Settings& settings) {
         errorLoadImage(BKGD_CHARSET);
 
 #ifdef USE_GL
+#ifdef GPU_RENDER
+    {
+    ImageInfo* tinfo;
+    Symbol symbol[2];
+    xu4.config->internSymbols(symbol, 2, "texture reticle");
+    scr->textureInfo = tinfo = xu4.imageMgr->get(symbol[0]);
+    if (tinfo) {
+        gpu_setTilesTexture(xu4.gpu, tinfo->tex);
+        scr->focusReticle = tinfo->subImageIndex.find(symbol[1])->second;
+    }
+    }
+#else
     ImageInfo* shapes = xu4.imageMgr->get(BKGD_SHAPES);
     gpu_setTilesTexture(xu4.gpu, shapes->tex);
+#endif
 #endif
 
     assert(scr->state.tileanims == NULL);
@@ -526,8 +541,8 @@ raster_update:
         gpu_background(xu4.gpu, NULL, xu4.screenImage);
     }
     else if (showmap) {
-        ImageInfo* shapes = xu4.imageMgr->get(BKGD_SHAPES);
         Screen* sp = xu4.screen;
+        ImageInfo* shapes = sp->textureInfo;
         BlockingGroups* blocks = NULL;
         const Coords& coord = loc->coords;   // Center of view.
 
@@ -584,7 +599,7 @@ raster_update:
         if (focusObj) {
             if ((screenState()->currentCycle * 4 / SCR_CYCLE_PER_SECOND) % 2) {
                 const Coords& floc = focusObj->getCoords();
-                drawSprite(&floc, shapes->subImageCount, &rd);
+                drawSprite(&floc, sp->focusReticle, &rd);
             }
         }
 

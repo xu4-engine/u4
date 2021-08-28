@@ -4,7 +4,10 @@
 
 #include "tileset.h"
 
+#include "error.h"
 #include "config.h"
+#include "imagemgr.h"
+#include "settings.h"
 #include "tile.h"
 #include "xu4.h"
 
@@ -14,9 +17,38 @@
 void Tileset::loadImages() {
     Tileset* ts = (Tileset*) xu4.config->tileset();
     if (ts) {
+#ifdef GPU_RENDER
+        Symbol texture = xu4.config->intern("texture");
+        ImageInfo* info = xu4.imageMgr->get(texture);
+        if (! info)
+            return;
+
+        std::map<Symbol, int>::iterator j;
+        std::vector<Tile*>::iterator it;
+        foreach (it, ts->tiles) {
+            Tile* tile = *it;
+            tile->scale = SCALED_BASE;
+
+            j = info->subImageIndex.find(tile->imageName);
+            if (j != info->subImageIndex.end()) {
+                const SubImage* subimage = info->subImages + j->second;
+                tile->frames = subimage->celCount;
+
+                // Set visual to subimage index.
+                tile->vid = subimage - info->subImages;
+            } else {
+                tile->vid = VID_UNSET;
+                errorWarning("No subimage found for tile '%s'", tile->nameStr());
+            }
+            tile->loadImage();
+            //printf("KR tile %d %s vid %d frames %d\n",
+            //       tile->id, tile->nameStr(), tile->vid, tile->frames);
+        }
+#else
         std::vector<Tile*>::iterator it;
         foreach (it, ts->tiles)
             (*it)->loadImage();
+#endif
     }
 }
 
@@ -24,12 +56,14 @@ void Tileset::loadImages() {
  * Delete all tileset images.
  */
 void Tileset::unloadImages() {
+#ifndef GPU_RENDER
     Tileset* ts = (Tileset*) xu4.config->tileset();
     if (ts) {
         std::vector<Tile*>::iterator it;
         foreach (it, ts->tiles)
             (*it)->deleteImage();
     }
+#endif
 }
 
 /**

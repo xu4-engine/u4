@@ -132,6 +132,7 @@ const char* Tile::nameStr() const {
  */
 void Tile::loadImage() {
     if (!image) {
+#ifndef GPU_RENDER
         vid = VID_UNSET;
         scale = SCALED_BASE;
 
@@ -178,6 +179,7 @@ void Tile::loadImage() {
             if (wasBlending)
                 Image::enableBlend(1);
         }
+#endif
 
         if (animationRule) {
             const TileAnimSet* tileanims = screenState()->tileanims;
@@ -194,11 +196,13 @@ void Tile::loadImage() {
 
 void Tile::deleteImage()
 {
+#ifndef GPU_RENDER
     if(image) {
         delete image;
         image = NULL;
     }
     scale = SCALED_BASE;
+#endif
 }
 
 /**
