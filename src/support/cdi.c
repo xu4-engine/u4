@@ -17,7 +17,12 @@
 //#define bswap_64(x) _byteswap_uint64(x)
 
 #elif defined(__BYTE_ORDER__)
+#ifdef __MINGW32__
+#define bswap_16(x) __builtin_bswap16(x)
+#define bswap_32(x) __builtin_bswap32(x)
+#else
 #include <byteswap.h>
+#endif
 #if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
 #define __BIG_ENDIAN__  1
 #endif

@@ -145,9 +145,11 @@ void screenInit_sys(const Settings* settings, int reset) {
             errorWarning("Unsupported Allegro pixel format: %d", format);
             // Fall through...
         case ALLEGRO_PIXEL_FORMAT_ARGB_8888:
+        case ALLEGRO_PIXEL_FORMAT_XRGB_8888:
             state->formatIsABGR = false;
             break;
         case ALLEGRO_PIXEL_FORMAT_ABGR_8888:
+        case ALLEGRO_PIXEL_FORMAT_XBGR_8888:
             state->formatIsABGR = true;
             break;
     }
