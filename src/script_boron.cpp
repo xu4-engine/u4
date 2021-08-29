@@ -67,6 +67,7 @@ static const UCell* script_eval(UThread* ut, char* script, int len)
 */
 CFUNC(cf_gameWait)
 {
+    (void) ut;
     screenDisableCursor();
     EventHandler::wait_msecs((int) ur_int(a1));
     screenEnableCursor();
@@ -85,6 +86,7 @@ CFUNC(cf_gameWait)
 */
 CFUNC(cf_music)
 {
+    (void) ut;
     switch (ur_type(a1)) {
         case UT_NONE:
             musicStop();
@@ -110,6 +112,8 @@ CFUNC(cf_music)
 CFUNC(cf_relocate)
 {
     MapCoords* pc = &c->location->coords;
+    (void) ut;
+
     pc->x = a1->coord.n[0];
     pc->y = a1->coord.n[1];
     if (a1->coord.len > 2)
@@ -133,6 +137,7 @@ CFUNC(cf_damagePc)
 {
     int player = ur_int(a1);
     int hp     = ur_int(a1+1);
+    (void) ut;
 
     if (player > 0 && hp > 0) {
         PartyMember* p = c->party->member(player - 1);
@@ -152,6 +157,7 @@ CFUNC(cf_damagePc)
 */
 CFUNC(cf_karma)
 {
+    (void) ut;
     c->party->adjustKarma((KarmaAction) ur_int(a1));
     ur_setId(res, UT_UNSET);
     return UR_OK;
@@ -165,6 +171,8 @@ CFUNC(cf_karma)
 */
 CFUNC(cf_innSleep)
 {
+    (void) ut;
+    (void) a1;
     CombatController* cc = new InnController();
     cc->begin();
 
@@ -181,6 +189,7 @@ CFUNC(cf_innSleep)
 */
 CFUNC(cf_cursor)
 {
+    (void) ut;
     if (ur_logic(a1))
         screenEnableCursor();
     else
@@ -199,6 +208,7 @@ CFUNC(cf_cursor)
 */
 CFUNC(cf_viewStats)
 {
+    (void) ut;
     int n = ur_int(a1);
     if (n < 0 || n > STATS_MIXTURES)
         n = 0;
@@ -351,6 +361,7 @@ CFUNC(cf_inputChoice)
 */
 CFUNC(cf_inputNumber)
 {
+    (void) ut;
     int maxLen = ur_int(a1);
     if (maxLen <= 0)
         maxLen = 7;     //Conversation::BUFFERLEN;
@@ -405,6 +416,8 @@ CFUNC(cf_inputPlayer)
 {
     ReadPlayerController cont;
     int player;
+    (void) ut;
+    (void) a1;
 
     xu4.eventHandler->pushController(&cont);
     player = cont.waitFor();
@@ -673,6 +686,7 @@ CFUNC(cf_addItem)
 {
     Party* p = c->party;
     UAtom atom = ur_atom(a1);
+    (void) ut;
 
     if (atom == Tile::sym.horse)
         p->setTransport(Tileset::findTileByName(atom)->getId());
@@ -695,6 +709,7 @@ CFUNC(cf_addItems)
     int amount = ur_int(a1+1);
     int id = xu4.config->scriptItemId(ur_atom(a1));
     int ic = SCRIPT_ITEM_CLASS(id);
+    (void) ut;
 
     id = SCRIPT_ITEM_INDEX(id);
 
@@ -751,6 +766,7 @@ CFUNC(cf_removeItems)
     int amount = -ur_int(a1+1);
     int id = xu4.config->scriptItemId(ur_atom(a1));
     int ic = SCRIPT_ITEM_CLASS(id);
+    (void) ut;
 
     id = SCRIPT_ITEM_INDEX(id);
 
