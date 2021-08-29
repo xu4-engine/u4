@@ -25,6 +25,7 @@ exe %u4 [
 	include_from [%src %src/lzw %src/support]
 	win32 [
 		include_from %../usr/include
+		include-define "_WIN32"		; Needed to archive glad.*
 	]
 
 	switch os_api [

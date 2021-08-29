@@ -76,6 +76,10 @@ static const float quadAttr[] = {
 #define DRAW_BUF_SIZE   (ATTR_STRIDE * 6 * 400)
 
 
+#ifdef _WIN32
+#include "glad.c"
+#endif
+
 static void printInfoLog(GLuint obj, int prog)
 {
     GLint infologLength;
@@ -279,7 +283,6 @@ bool gpu_init(void* res, int w, int h, int scale)
 
     // Set default state.
     glDisable(GL_DEPTH_TEST);
-    glDisable(GL_ALPHA_TEST);
     glDisable(GL_BLEND);
     glDisable(GL_CULL_FACE);
     glViewport(0, 0, w, h);
