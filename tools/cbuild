@@ -13,6 +13,7 @@ ID=${SCRIPT}
 HDIR=/tmp
 CDIR=/tmp
 WSM=../workshop/mingw-build
+WSL=../workshop/linux-build
 
 if [ "$1" == "win" ]; then
 	if [ ! -d ${WSM} ]; then
@@ -47,13 +48,15 @@ if [ "$1" == "win" ]; then
 	fi
 else
 	echo '
+  tar xjf /tmp/boron-x86_64-static-2.0.6.tar.bz2
   mkdir u4
   cd u4
   tar xf /tmp/project.tar.gz
-  copr use_gl:true make_util:false
+  copr use_gl:false make_util:false boron_sdk:%../boron
 ' >$HDIR/${SCRIPT}
 
-	podman run -d -it --name=$ID dev/centos8:1.0 /bin/bash || exit
+	podman run -d -it --name=$ID dev/f33-xu4:1.1 /bin/bash || exit
+	podman cp ${WSL}/boron-x86_64-static-2.0.6.tar.bz2 $ID:$CDIR
 	podman cp project.tar.gz $ID:$CDIR
 	podman cp $HDIR/${SCRIPT} $ID:$CDIR/${SCRIPT}
 	podman exec -it $ID /bin/bash $CDIR/${SCRIPT}

@@ -2,6 +2,7 @@ options [
 	os_api: 'allegro	"Platform API ('allegro 'sdl)"
 	use_gl: false
 	use_boron: true
+	boron_sdk: none		"Path to Boron headers and libraries"
 	make_util: true
 ]
 
@@ -53,7 +54,15 @@ exe %u4 [
 
 	either use_boron [
 		cflags "-DUSE_BORON -DCONF_MODULE"
-		unix  [libs %boron]
+		unix [
+			either [boron_sdk] [
+				include_from join boron_sdk %/include
+				libs_from    join boron_sdk %/lib %boron
+				libs %pthread
+			][
+				libs %boron
+			]
+		]
 		win32 [
 			libs_from %../usr/lib either msvc %libboron %boron
 			libs %ws2_32
