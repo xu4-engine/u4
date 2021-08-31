@@ -61,6 +61,42 @@ static ALLEGRO_MOUSE_CURSOR* screenInitCursor(ALLEGRO_BITMAP* bmp, const char * 
     return al_create_mouse_cursor(bmp, hot_x, hot_y);
 }
 
+#ifdef __linux__
+extern Image* loadImage_png(U4FILE *file);
+
+static ALLEGRO_BITMAP* loadBitmapPng(const char* filename) {
+    U4FILE* uf = u4fopen_stdio(filename);
+    if (uf) {
+        Image* img = loadImage_png(uf);
+        u4fclose(uf);
+        if (img) {
+            ALLEGRO_BITMAP* bm;
+            const RGBA* col;
+            int x, y;
+
+            al_set_new_bitmap_flags(ALLEGRO_MEMORY_BITMAP);
+            bm = al_create_bitmap(img->w, img->h);
+
+            al_lock_bitmap(bm, ALLEGRO_PIXEL_FORMAT_ANY, ALLEGRO_LOCK_WRITEONLY);
+            al_set_target_bitmap(bm);
+
+            col = (const RGBA*) img->pixels;
+            for (y=0; y < img->h; ++y) {
+                for (x=0; x < img->w; ++x) {
+                    al_put_pixel(x, y, al_map_rgb(col->r, col->g, col->b));
+                    ++col;
+                }
+            }
+
+            al_unlock_bitmap(bm);
+            delete img;
+            return bm;
+        }
+    }
+    return NULL;
+}
+#endif
+
 
 #ifdef USE_GL
 #include "gpu_opengl.cpp"
@@ -127,7 +163,17 @@ void screenInit_sys(const Settings* settings, int reset) {
         goto fatal;
 
     al_set_window_title(sa->disp, "Ultima IV");  // configService->gameName()
-    //al_set_display_icon(sa->disp, ALLEGRO_BITMAP*);  LoadBMP(ICON_FILE));
+
+#ifdef __linux__
+    {
+    ALLEGRO_BITMAP* bm =
+        loadBitmapPng("/usr/share/icons/hicolor/48x48/apps/xu4.png");
+    if (bm) {
+        al_set_display_icon(sa->disp, bm);
+        al_destroy_bitmap(bm);
+    }
+    }
+#endif
 
     // Can settings->gamma be applied?
 

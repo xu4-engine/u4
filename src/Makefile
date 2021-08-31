@@ -21,7 +21,7 @@ endif
 
 FEATURES=-DHAVE_BACKTRACE=1 -DHAVE_VARIADIC_MACROS=1
 DEBUGCXXFLAGS=-rdynamic -g
-CXXFLAGS=$(FEATURES) -Wall -I. $(UIFLAGS) $(shell xml2-config --cflags) -DICON_FILE=\"$(datadir)/pixmaps/u4.bmp\" -DVERSION=\"$(VERSION)\" $(DEBUGCXXFLAGS)
+CXXFLAGS=$(FEATURES) -Wall -I. $(UIFLAGS) $(shell xml2-config --cflags) -DVERSION=\"$(VERSION)\" $(DEBUGCXXFLAGS)
 CFLAGS=$(CXXFLAGS)
 LIBS=$(UILIBS) $(shell xml2-config --libs) -lpng -lz
 INSTALL=install
@@ -34,8 +34,8 @@ include Makefile.common
 
 install::
 	$(INSTALL) -D $(MAIN) $(bindir)/$(MAIN)
-	$(INSTALL) -D ../icons/u4.bmp $(datadir)/pixmaps/u4.bmp
-	$(INSTALL) -D ../icons/u4.png $(datadir)/pixmaps/u4.png
+	$(INSTALL) -D ../icons/xu4.png $(datadir)/icons/hicolor/48x48/apps/xu4.png
+	$(INSTALL) -D ../u4.desktop $(datadir)/applications/u4.desktop
 	mkdir -p $(libdir)/u4/music
 	$(INSTALL) ../mid/*.mid $(libdir)/u4/music
 	$(INSTALL) ../mid/*.it $(libdir)/u4/music
@@ -64,7 +64,6 @@ install::
 	$(INSTALL) ../graphics/vga/*.png $(libdir)/u4/graphics/vga
 	$(INSTALL) ../graphics/vga2/*.png $(libdir)/u4/graphics/vga2
 	$(INSTALL) ../graphics/new/* $(libdir)/u4/graphics/new
-	$(INSTALL) -D ../u4.desktop $(datadir)/applications/u4.desktop
 
 
 # use GCC's automatic dependency generation
