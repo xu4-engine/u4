@@ -17,7 +17,6 @@ CXXSRCS=\
         city.cpp \
         codex.cpp \
         combat.cpp \
-        config.cpp \
         controller.cpp \
         context.cpp \
         conversation.cpp \
@@ -57,7 +56,6 @@ CXXSRCS=\
         rle.cpp \
         savegame.cpp \
         scale.cpp \
-        script.cpp \
         screen.cpp \
         screen_$(UI).cpp \
         settings.cpp \
@@ -74,17 +72,23 @@ CXXSRCS=\
         u4file.cpp \
         utils.cpp \
         view.cpp \
-        xml.cpp \
         lzw/u4decode.cpp \
         lzw/u6decode.cpp \
         support/SymbolTable.cpp \
         $(NULL)
 
+ifeq ($(CONF),xml)
+	CXXSRCS+=config.cpp script.cpp xml.cpp
+else
+	CSRCS+=support/cdi.c
+	CXXSRCS+=config_boron.cpp
+endif
+
 OBJS += $(CSRCS:.c=.o) $(CXXSRCS:.cpp=.o)
 
 all:: $(MAIN) mkutils
 
-mkutils::  coord$(EXEEXT) dumpsavegame$(EXEEXT) tlkconv$(EXEEXT) u4dec$(EXEEXT) u4enc$(EXEEXT) u4unpackexe$(EXEEXT)
+mkutils::  coord$(EXEEXT) dumpmap$(EXEEXT) dumpsavegame$(EXEEXT) tlkconv$(EXEEXT) u4dec$(EXEEXT) u4enc$(EXEEXT) u4unpackexe$(EXEEXT)
 
 $(MAIN): $(OBJS)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ $(OBJS) $(LIBS)
@@ -92,14 +96,14 @@ $(MAIN): $(OBJS)
 coord$(EXEEXT): util/coord.o
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ $+
 
-dumpmap$(EXEEXT) : util/dumpmap.o
+dumpmap$(EXEEXT) : util/dumpmap.c
 	$(CC) $(CFLAGS) -o $@ $+
 
 dumpsavegame$(EXEEXT) : util/dumpsavegame.o
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ $+
 
-tlkconv$(EXEEXT) : util/tlkconv.o
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ $+ $(shell xml2-config --libs)
+tlkconv$(EXEEXT) : util/tlkconv.c
+	$(CC) -o $@ $+ $(shell xml2-config --cflags) $(shell xml2-config --libs)
 
 u4dec$(EXEEXT) : util/u4dec.o lzw/lzw.o lzw/u4decode.o lzw/hash.o rle.o util/pngconv.o
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ $+ -lpng -lz
@@ -114,7 +118,7 @@ clean:: cleanutil
 	rm -rf *~ */*~ $(OBJS) $(MAIN)
 
 cleanutil::
-	rm -rf util/coord.o coord$(EXEEXT) util/dumpsavegame.o dumpsavegame$(EXEEXT) util/u4dec.o u4dec$(EXEEXT) util/u4enc.o u4enc$(EXEEXT) util/pngconv.o util/tlkconv.o tlkconv$(EXEEXT) util/u4unpackexe.o u4unpackexe$(EXEEXT)
+	rm -rf util/coord.o coord$(EXEEXT) dumpmap$(EXEEXT) util/dumpsavegame.o dumpsavegame$(EXEEXT) util/u4dec.o u4dec$(EXEEXT) util/u4enc.o u4enc$(EXEEXT) util/pngconv.o tlkconv$(EXEEXT) util/u4unpackexe.o u4unpackexe$(EXEEXT)
 
 TAGS: $(CSRCS) $(CXXSRCS)
 	etags *.h $(CSRCS) $(CXXSRCS)

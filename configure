@@ -5,11 +5,14 @@ if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
   echo "  -h, --help        Display this help and exit"
   echo "  --allegro         Use Allegro 5.2 as the platform API (default)"
   echo "  --sdl             Use SDL 1.2 as the platform API"
+  echo "  --boron           Use Boron/CDI configuration (default)"
+  echo "  --xml             Use XML configuration"
   echo "  --prefix <dir>    Set install directory root"
   exit
 fi
 
 PLATFORM=allegro
+CONF=boron
 PREFIX=/usr/local
 
 while [ "$1" != "" ]; do
@@ -18,6 +21,10 @@ while [ "$1" != "" ]; do
       PLATFORM=allegro ;;
     --sdl)
       PLATFORM=sdl ;;
+    --boron )
+      CONF=boron ;;
+    --xml)
+      CONF=xml ;;
     --prefix)
       shift
       PREFIX=$1 ;;
@@ -30,6 +37,6 @@ while [ "$1" != "" ]; do
 done
 
 echo "Generating make.config & project.config"
-printf "os_api: \'${PLATFORM}\n" >project.config
-printf "PREFIX=${PREFIX}\nUI=${PLATFORM}\n" >make.config
+printf "os_api: \'${PLATFORM}\nuse_boron: $([[ ${CONF} = boron ]] && echo true || echo false)\n" >project.config
+printf "PREFIX=${PREFIX}\nUI=${PLATFORM}\nCONF=${CONF}\n" >make.config
 echo "Now type make (or copr) to build."

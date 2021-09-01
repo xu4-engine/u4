@@ -6,6 +6,7 @@
 
 PREFIX ?= /usr/local
 UI ?= allegro
+CONF ?= boron
 
 bindir=$(PREFIX)/bin
 libdir=$(PREFIX)/lib
@@ -19,11 +20,19 @@ UILIBS=-lallegro_acodec -lallegro_audio -lallegro
 UIFLAGS=
 endif
 
+ifeq ($(CONF),xml)
+	UIFLAGS+=$(shell xml2-config --cflags)
+	UILIBS+=$(shell xml2-config --libs)
+else
+	UIFLAGS+=-Isupport -DUSE_BORON -DCONF_MODULE
+	UILIBS+=-lboron
+endif
+
 FEATURES=-DHAVE_BACKTRACE=1 -DHAVE_VARIADIC_MACROS=1
 DEBUGCXXFLAGS=-rdynamic -g
-CXXFLAGS=$(FEATURES) -Wall -I. $(UIFLAGS) $(shell xml2-config --cflags) -DVERSION=\"$(VERSION)\" $(DEBUGCXXFLAGS)
+CXXFLAGS=$(FEATURES) -Wall -I. $(UIFLAGS) -DVERSION=\"$(VERSION)\" $(DEBUGCXXFLAGS)
 CFLAGS=$(CXXFLAGS)
-LIBS=$(UILIBS) $(shell xml2-config --libs) -lpng -lz
+LIBS=$(UILIBS) -lpng -lz
 INSTALL=install
 
 ifeq ($(STATIC_GCC_LIBS),true)

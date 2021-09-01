@@ -9,6 +9,7 @@
 PREFIX ?= /usr
 
 UI ?= sdl
+CONF=xml
 
 # system info
 OSX_VERSION=$(shell sw_vers -productVersion | cut -f 1,2 -d . -)

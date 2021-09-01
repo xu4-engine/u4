@@ -15,6 +15,7 @@ XML_CXXFLAGS=$(shell xml2-config --cflags)
 XML_LIBS=$(shell xml2-config --libs)
 
 UI=sdl
+CONF=xml
 
 CXX=g++
 CC=gcc
