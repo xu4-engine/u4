@@ -277,6 +277,7 @@ void Creature::act(CombatController *controller) {
     int dist;
     CombatAction action;
     Creature *target;
+    CombatMap* map = controller->getMap();
 
     /* see if creature wakes up if it is asleep */
     if ((getStatus() == STAT_SLEEPING) && (xu4_random(8) == 0))
@@ -314,7 +315,7 @@ void Creature::act(CombatController *controller) {
      * now find out who to do it to
      */
 
-    target = nearestOpponent(&dist, action == CA_RANGED);
+    target = nearestOpponent(map, &dist, action == CA_RANGED);
     if (target == NULL)
         return;
 
@@ -322,7 +323,7 @@ void Creature::act(CombatController *controller) {
         action = CA_ADVANCE;
 
     /* let's see if the creature blends into the background, or if he appears... */
-    if (camouflages() && !hideOrShow())
+    if (camouflages() && !hideOrShow(map))
         return; /* creature is hidden -- no action! */
 
     switch(action) {
@@ -334,7 +335,7 @@ void Creature::act(CombatController *controller) {
             GameController::flashTile(target->getCoords(), Tile::sym.hitFlash, 4);
 
 
-            if (!dealDamage(target, getDamage()))
+            if (!dealDamage(map, target, getDamage()))
                 target = NULL;
 
             if (target && isPartyMember(target)) {
@@ -362,7 +363,7 @@ void Creature::act(CombatController *controller) {
 
         /* Apply the sleep spell to party members still in combat */
         if (!isPartyMember(this)) {
-            PartyMemberVector party = controller->getMap()->getPartyMembers();
+            PartyMemberVector party = map->getPartyMembers();
             PartyMemberVector::iterator j;
 
             for (j = party.begin(); j != party.end(); j++) {
@@ -379,7 +380,6 @@ void Creature::act(CombatController *controller) {
         bool firstTry = true;
 
         while (!valid) {
-            Map *map = getMap();
             new_c = Coords(xu4_random(map->width), xu4_random(map->height), c->location->coords.z);
 
             const Tile *tile = map->tileTypeAt(new_c, WITH_OBJECTS);
@@ -430,7 +430,6 @@ void Creature::act(CombatController *controller) {
 
     case CA_FLEE:
     case CA_ADVANCE: {
-        Map *map = getMap();
         if (moveCombatObject(action, map, this, target->getCoords())) {
             Coords coords = getCoords();
 
@@ -451,7 +450,7 @@ void Creature::act(CombatController *controller) {
     this->animateMovement();
 }
 
-void Creature::applyTileEffect(TileEffect effect) {
+void Creature::applyTileEffect(Map* map, TileEffect effect) {
     if (effect != EFFECT_NONE) {
         gameUpdateScreen();
 
@@ -467,13 +466,13 @@ void Creature::applyTileEffect(TileEffect effect) {
         case EFFECT_FIRE:
             /* deal 0 - 127 damage to the creature if it is not immune to fire damage */
             if ((resists != EFFECT_FIRE) && (resists != EFFECT_LAVA))
-                applyDamage(xu4_random(0x7F), false);
+                applyDamage(map, xu4_random(0x7F), false);
             break;
 
         case EFFECT_POISONFIELD:
             /* deal 0 - 127 damage to the creature if it is not immune to poison field damage */
             if (resists != EFFECT_POISONFIELD)
-                applyDamage(xu4_random(0x7F), false);
+                applyDamage(map, xu4_random(0x7F), false);
             break;
 
         case EFFECT_POISON:
@@ -490,8 +489,7 @@ int Creature::getDefense() const {
     return 128;
 }
 
-bool Creature::divide() {
-    Map *map = getMap();
+bool Creature::divide(Map* map) {
     int dirmask = map->getValidMoves(getCoords(), getTile());
     Direction d = dirRandomDir(dirmask);
 
@@ -519,16 +517,11 @@ bool Creature::divide() {
     return false;
 }
 
-bool Creature::spawnOnDeath() {
-    Map *map = getMap();
-
+bool Creature::spawnOnDeath(Map* map) {
     /* this is a game enhancement, make sure it's turned on! */
     if (!xu4.settings->enhancements ||
         !xu4.settings->enhancementsOptions.gazerSpawnsInsects)
         return false;
-
-    /* make sure there's a place to put the divided creature! */
-    MapCoords coords(getCoords());
 
     /* create our new creature! */
     map->addCreature(xu4.config->creature(spawn), coords);
@@ -539,12 +532,12 @@ bool Creature::spawnOnDeath() {
  * Hides or shows a camouflaged creature, depending on its distance from
  * the nearest opponent
  */
-bool Creature::hideOrShow() {
+bool Creature::hideOrShow(Map* map) {
     /* find the nearest opponent */
     int dist;
 
     /* ok, now we've got the nearest party member.  Now, see if they're close enough */
-    if (nearestOpponent(&dist, false) != NULL) {
+    if (nearestOpponent(map, &dist, false) != NULL) {
         if ((dist < 5) && !isVisible())
             setVisible(); /* show yourself */
         else if (dist >= 5)
@@ -554,12 +547,11 @@ bool Creature::hideOrShow() {
     return isVisible();
 }
 
-Creature *Creature::nearestOpponent(int *dist, bool ranged) {
+Creature *Creature::nearestOpponent(Map* map, int *dist, bool ranged) {
     Creature *opponent = NULL;
     int d, leastDist = 0xFFFF;
     ObjectDeque::iterator i;
     bool jinx = (*c->aura == Aura::JINX);
-    Map *map = getMap();
 
     for (i = map->objects.begin(); i < map->objects.end(); i++) {
         if (!isCreature(*i))
@@ -679,7 +671,7 @@ void Creature::wakeUp() {
  * fire or poison, or as a result of jinx) we don't report experience
  * on death
  */
-bool Creature::applyDamage(int damage, bool byplayer) {
+bool Creature::applyDamage(Map* map, int damage, bool byplayer) {
     /* deal the damage */
     if (id != LORDBRITISH_ID)
         AdjustValueMin(hp, -damage, 0);
@@ -700,7 +692,7 @@ bool Creature::applyDamage(int damage, bool byplayer) {
          * then remove it
          */
         if (spawnsOnDeath())
-            spawnOnDeath();
+            spawnOnDeath(map);
 
         // Remove yourself from the map
         removeFromMaps();
@@ -729,13 +721,13 @@ bool Creature::applyDamage(int damage, bool byplayer) {
 
     /* creature is still alive and has the chance to divide - xu4 enhancement */
     if (divides() && xu4_random(2) == 0)
-        divide();
+        divide(map);
 
     return true;
 }
 
-bool Creature::dealDamage(Creature *m, int damage) {
-    return m->applyDamage(damage, isPartyMember(this));
+bool Creature::dealDamage(Map* map, Creature *m, int damage) {
+    return m->applyDamage(map, damage, isPartyMember(this));
 }
 
 //--------------------------------------

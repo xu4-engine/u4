@@ -22,12 +22,6 @@ void Object::placeOnMap(Map* map, const Coords& coords) {
     setCoords(coords);
 }
 
-Map *Object::getMap() {
-    if (maps.empty())
-        return NULL;
-    return maps.back();
-}
-
 /*
  * Remove object from any maps that it is a part of.
  *

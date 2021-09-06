@@ -373,7 +373,7 @@ bool spellMagicAttackAt(const Coords &coords, MapTile attackTile, int attackDama
 
         /* apply the damage to the creature */
         CombatController *controller = spellCombatController();
-        controller->getCurrentPlayer()->dealDamage(creature, attackDamage);
+        controller->getCurrentPlayer()->dealDamage(cm, creature, attackDamage);
         GameController::flashTile(coords, attackTile, 1);
     }
 
@@ -655,7 +655,8 @@ static int spellSleep(int unused) {
 
 static int spellTremor(int unused) {
     CombatController *ct = spellCombatController();
-    CreatureVector creatures = ct->getMap()->getCreatures();
+    CombatMap* map = ct->getMap();
+    CreatureVector creatures = map->getCreatures();
     CreatureVector::iterator i;
 
     for (i = creatures.begin(); i != creatures.end(); i++) {
@@ -675,14 +676,14 @@ static int spellTremor(int unused) {
             if (xu4_random(2) == 0) {
                 soundPlay(SOUND_NPC_STRUCK);
                 GameController::flashTile(coords, Tile::sym.hitFlash, 3);
-                ct->getCurrentPlayer()->dealDamage(m, 0xFF);
+                ct->getCurrentPlayer()->dealDamage(map, m, 0xFF);
             }
             /* Deal enough damage to creature to make it flee */
             else if (xu4_random(2) == 0) {
                 soundPlay(SOUND_NPC_STRUCK);
                 GameController::flashTile(coords, Tile::sym.hitFlash, 2);
                 if (m->getHp() > 23)
-                    ct->getCurrentPlayer()->dealDamage(m, m->getHp()-23);
+                    ct->getCurrentPlayer()->dealDamage(map, m, m->getHp()-23);
             }
             else
             {

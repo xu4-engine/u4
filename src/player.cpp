@@ -375,10 +375,10 @@ bool PartyMember::applyDamage(int damage, bool) {
     player->hp = newHp;
     notifyOfChange();
 
-    if (isCombatMap(c->location->map) && isDead()) {
-        Coords p = getCoords();
-        Map *map = getMap();
-        map->annotations->add(p, Tileset::findTileByName(Tile::sym.corpse)->getId())->setTTL(party->size() * 2);
+    Map* map = c->location->map;
+    if (isCombatMap(map) && isDead()) {
+        TileId corpseId = Tileset::findTileByName(Tile::sym.corpse)->getId();
+        map->annotations->add(coords, corpseId)->setTTL(party->size() * 2);
 
         if (party) {
             party->setChanged();
@@ -405,12 +405,12 @@ int PartyMember::getDefense() const {
     return xu4.config->armor(player->armor)->defense;
 }
 
-bool PartyMember::dealDamage(Creature *m, int damage) {
+bool PartyMember::dealDamage(Map* map, Creature *m, int damage) {
     /* we have to record these now, because if we
        kill the target, it gets destroyed */
     int m_xp = m->getXp();
 
-    if (!Creature::dealDamage(m, damage)) {
+    if (!Creature::dealDamage(map, m, damage)) {
         /* half the time you kill an evil creature you get a karma boost */
         awardXp(m_xp);
         return false;

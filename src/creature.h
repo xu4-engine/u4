@@ -199,25 +199,25 @@ public:
     /* combat methods */
     void act(CombatController *controller);
     virtual void addStatus(StatusType status);
-    void applyTileEffect(TileEffect effect);
+    void applyTileEffect(Map*, TileEffect effect);
     virtual int getAttackBonus() const;
     virtual int getDefense() const;
-    bool divide();
-    bool spawnOnDeath();
+    bool divide(Map*);
+    bool spawnOnDeath(Map*);
     virtual CreatureStatus getState() const;
     StatusType getStatus() const;
     bool isAsleep() const;
     bool isDisabled() const;
     bool isDead() const;
-    bool hideOrShow();
-    Creature *nearestOpponent(int *dist, bool ranged);
+    bool hideOrShow(Map*);
+    Creature *nearestOpponent(Map*, int *dist, bool ranged);
     virtual void putToSleep();
     virtual void removeStatus(StatusType status);
     virtual void setStatus(StatusType status);
     virtual void wakeUp();
 
-    virtual bool applyDamage(int damage, bool byplayer = true);
-    virtual bool dealDamage(Creature *m, int damage);
+    virtual bool applyDamage(Map*, int damage, bool byplayer = true);
+    virtual bool dealDamage(Map*, Creature *m, int damage);
 
     // Properties
 //protected:

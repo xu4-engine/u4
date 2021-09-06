@@ -190,7 +190,7 @@ void CombatController::applyCreatureTileEffects() {
     for (i = creatures.begin(); i != creatures.end(); i++) {
         Creature *m = *i;
         TileEffect effect = map->tileTypeAt(m->getCoords(), WITH_GROUND_OBJECTS)->getEffect();
-        m->applyTileEffect(effect);
+        m->applyTileEffect(map, effect);
     }
 }
 
@@ -554,7 +554,7 @@ bool CombatController::attackAt(const Coords &coords, PartyMember *attacker, int
         GameController::flashTile(coords, hittile, 3);
 
         /* apply the damage to the creature */
-        if (!attacker->dealDamage(creature, attacker->getDamage()))
+        if (!attacker->dealDamage(map, creature, attacker->getDamage()))
         {
             creature = NULL;
             GameController::flashTile(coords, hittile, 1);
@@ -592,7 +592,7 @@ bool CombatController::rangedAttack(const Coords &coords, Creature *attacker) {
         /* FIXME: are there any special effects here? */
         soundPlay(SOUND_PC_STRUCK, false);
         screenMessage("\n%s %cElectrified%c!\n", target->getName().c_str(), FG_BLUE, FG_WHITE);
-        attacker->dealDamage(target, attacker->getDamage());
+        attacker->dealDamage(map, target, attacker->getDamage());
         break;
 
     case EFFECT_POISON:
@@ -626,7 +626,7 @@ bool CombatController::rangedAttack(const Coords &coords, Creature *attacker) {
         soundPlay(SOUND_PC_STRUCK, false);
         screenMessage("\n%s %c%s Hit%c!\n", target->getName().c_str(), FG_RED,
                       effect == EFFECT_LAVA ? "Lava" : "Fiery", FG_WHITE);
-        attacker->dealDamage(target, attacker->getDamage());
+        attacker->dealDamage(map, target, attacker->getDamage());
         break;
 
     default:
@@ -635,7 +635,7 @@ bool CombatController::rangedAttack(const Coords &coords, Creature *attacker) {
         if (hittile == Tileset::findTileByName(Tile::sym.magicFlash)->getId())
             screenMessage("\n%s %cMagical Hit%c!\n", target->getName().c_str(), FG_BLUE, FG_WHITE);
         else screenMessage("\n%s Hit!\n", target->getName().c_str());
-        attacker->dealDamage(target, attacker->getDamage());
+        attacker->dealDamage(map, target, attacker->getDamage());
         break;
     }
     GameController::flashTile(coords, hittile, 1);
