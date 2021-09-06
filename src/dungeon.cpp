@@ -82,7 +82,7 @@ uint8_t Dungeon::currentSubToken() {
 /**
  * Returns the dungeon token for the given coordinates
  */
-DungeonToken Dungeon::tokenAt(const MapCoords& coords) const {
+DungeonToken Dungeon::tokenAt(const Coords& coords) const {
     return tokenForTile(getTileFromData(coords));
 }
 
@@ -263,7 +263,7 @@ bool dungeonHandleTrap(TrapType trap) {
 /**
  * Returns true if a ladder-up is found at the given coordinates
  */
-bool Dungeon::ladderUpAt(MapCoords coords) {
+bool Dungeon::ladderUpAt(const Coords& coords) const {
     Annotation::List a = annotations->allAt(coords);
 
     if (tokenAt(coords) == DUNGEON_LADDER_UP ||
@@ -283,7 +283,7 @@ bool Dungeon::ladderUpAt(MapCoords coords) {
 /**
  * Returns true if a ladder-down is found at the given coordinates
  */
-bool Dungeon::ladderDownAt(MapCoords coords) {
+bool Dungeon::ladderDownAt(const Coords& coords) const {
     Annotation::List a = annotations->allAt(coords);
 
     if (tokenAt(coords) == DUNGEON_LADDER_DOWN ||
@@ -300,7 +300,7 @@ bool Dungeon::ladderDownAt(MapCoords coords) {
     return false;
 }
 
-bool Dungeon::validTeleportLocation(const MapCoords& coords) const {
+bool Dungeon::validTeleportLocation(const Coords& coords) const {
     const Tile* tile = tileTypeAt(coords, WITH_OBJECTS);
     return tokenForTile(tile->id) == DUNGEON_CORRIDOR;
 }
@@ -342,12 +342,12 @@ uint8_t* Dungeon::fillRawMap() {
                     continue;
                 }
 
-                tid = getTileFromData(MapCoords(x, y, z));
+                tid = getTileFromData(Coords(x, y, z));
                 dngId = usaveIds->moduleToDngMap(tid);
                 //printf("KR %d,%d,%d %d => %d\n", x, y, z, tid, dngId);
 
                 // Add the creature to the tile
-                const Object *obj = objectAt(MapCoords(x, y, z));
+                const Object *obj = objectAt(Coords(x, y, z));
                 if (obj && obj->getType() == Object::CREATURE) {
                     const Creature *m = static_cast<const Creature*>(obj);
                     uid = u4DngMonster(m->getId());

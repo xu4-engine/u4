@@ -109,10 +109,10 @@ bool CheatMenuController::keyPressed(int key) {
         }
         if (!found) {
             Symbol destSym = xu4.config->intern(dest.c_str());
-            MapCoords coords = c->location->map->getLabel(destSym);
-            if (coords != MapCoords::nowhere) {
+            const Coords* coords = c->location->map->getLabel(destSym);
+            if (coords) {
                 screenMessage("\n%s\n", dest.c_str());
-                c->location->coords = coords;
+                c->location->coords = *coords;
                 found = true;
             }
         }
@@ -244,7 +244,7 @@ bool CheatMenuController::keyPressed(int key) {
 
     case 't':
         if (c->location->map->isWorldMap()) {
-            MapCoords coords = c->location->coords;
+            Coords coords = c->location->coords;
             const char* name = NULL;
 
             screenMessage("Create transport!\nWhich? ");
@@ -269,7 +269,7 @@ bool CheatMenuController::keyPressed(int key) {
                 xu4.eventHandler->pushController(&readDir);
 
                 screenMessage("Dir: ");
-                coords.move(readDir.waitFor(), c->location->map);
+                map_move(coords, readDir.waitFor(), c->location->map);
                 if (coords != c->location->coords) {
                     bool ok = false;
                     const Tile* ground = c->location->map->tileTypeAt(coords, WITHOUT_OBJECTS);

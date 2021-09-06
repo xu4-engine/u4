@@ -30,14 +30,14 @@ class TurnCompleter;
 
 class Location : public Observable<Location *, MoveEvent &> {
 public:
-    Location(MapCoords coords, Map *map, int viewmode, LocationContext ctx, TurnCompleter *turnCompleter, Location *prev);
+    Location(const Coords& coords, Map *map, int viewmode, LocationContext ctx, TurnCompleter *turnCompleter, Location *prev);
 
-    std::vector<MapTile> tilesAt(MapCoords coords, bool &focus);
-    TileId getReplacementTile(MapCoords atCoords, Tile const * forTile);
-    int getCurrentPosition(MapCoords *coords);
+    std::vector<MapTile> tilesAt(const Coords& coords, bool &focus);
+    TileId getReplacementTile(const Coords& atCoords, Tile const * forTile);
+    int getCurrentPosition(Coords *coords);
     MoveResult move(Direction dir, bool userEvent);
 
-    MapCoords coords;
+    Coords coords;
     Map *map;
     int viewMode;
     LocationContext context;

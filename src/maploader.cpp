@@ -151,7 +151,7 @@ static bool loadCityMap(Map *map, U4FILE *ult) {
             per = new Person(usaveIds->moduleId( pd[PD_TILE] ));
             per->setPrevTile(usaveIds->moduleId( pd[PD_PREV_TILE] ));
 
-            MapCoords& pos = per->getStart();
+            Coords& pos = per->getStart();
             pos.x = pd[PD_X];
             pos.y = pd[PD_Y];
             pos.z = 0;
@@ -249,13 +249,13 @@ static bool loadCombatMap(Map *map, U4FILE *uf) {
         CombatMap *cm = getCombatMap(map);
 
         for (i = 0; i < AREA_CREATURES; i++)
-            cm->creature_start[i] = MapCoords(u4fgetc(uf));
+            cm->creature_start[i] = Coords(u4fgetc(uf));
 
         for (i = 0; i < AREA_CREATURES; i++)
             cm->creature_start[i].y = u4fgetc(uf);
 
         for (i = 0; i < AREA_PLAYERS; i++)
-            cm->player_start[i] = MapCoords(u4fgetc(uf));
+            cm->player_start[i] = Coords(u4fgetc(uf));
 
         for (i = 0; i < AREA_PLAYERS; i++)
             cm->player_start[i].y = u4fgetc(uf);

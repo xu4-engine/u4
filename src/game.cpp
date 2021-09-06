@@ -287,11 +287,11 @@ bool GameController::init() {
      * Translate info from the savegame to something we can use
      */
     if (c->location->prev) {
-        c->location->coords = MapCoords(c->saveGame->x, c->saveGame->y, c->saveGame->dnglevel);
-        c->location->prev->coords = MapCoords(c->saveGame->dngx, c->saveGame->dngy);
+        c->location->coords = Coords(c->saveGame->x, c->saveGame->y, c->saveGame->dnglevel);
+        c->location->prev->coords = Coords(c->saveGame->dngx, c->saveGame->dngy);
     }
     else
-        c->location->coords = MapCoords(c->saveGame->x, c->saveGame->y, (int)c->saveGame->dnglevel);
+        c->location->coords = Coords(c->saveGame->x, c->saveGame->y, (int)c->saveGame->dnglevel);
 
     c->saveGame->orientation = (Direction)(c->saveGame->orientation + DIR_WEST);
 
@@ -301,8 +301,7 @@ bool GameController::init() {
      * To maintain compatibility with u4dos, this value gets translated
      * when the game is saved and loaded
      */
-    if (MAP_IS_OOB(map, c->location->coords))
-        c->location->coords.putInBounds(map);
+    map->putInBounds(c->location->coords);
 
     TRACE_LOCAL(gameDbg, "Loading monsters."); ++pb;
 
@@ -474,7 +473,7 @@ void GameController::setMap(Map *map, bool saveLocation, const Portal *portal, T
     int viewMode;
     LocationContext context;
     int activePlayer = c->party->getActivePlayer();
-    MapCoords coords;
+    Coords coords;
 
     if (!turnCompleter)
         turnCompleter = this;
@@ -482,7 +481,7 @@ void GameController::setMap(Map *map, bool saveLocation, const Portal *portal, T
     if (portal)
         coords = portal->start;
     else
-        coords = MapCoords(map->width / 2, map->height / 2);
+        coords = Coords(map->width / 2, map->height / 2);
 
     /* If we don't want to save the location, then just return to the previous location,
        as there may still be ones in the stack we want to keep */
@@ -901,7 +900,7 @@ bool GameController::keyPressed(int key) {
         case U4_FKEY+8:
             if (settings.debug && (c->location->context & CTX_WORLDMAP)) {
                 setMap(xu4.config->map(MAP_DECEIT), 1, NULL);
-                c->location->coords = MapCoords(1, 0, 7);
+                c->location->coords = Coords(1, 0, 7);
                 c->saveGame->orientation = DIR_SOUTH;
             }
             else valid = false;
@@ -910,7 +909,7 @@ bool GameController::keyPressed(int key) {
         case U4_FKEY+9:
             if (settings.debug && (c->location->context & CTX_WORLDMAP)) {
                 setMap(xu4.config->map(MAP_DESPISE), 1, NULL);
-                c->location->coords = MapCoords(3, 2, 7);
+                c->location->coords = Coords(3, 2, 7);
                 c->saveGame->orientation = DIR_SOUTH;
             }
             else valid = false;
@@ -919,7 +918,7 @@ bool GameController::keyPressed(int key) {
         case U4_FKEY+10:
             if (settings.debug && (c->location->context & CTX_WORLDMAP)) {
                 setMap(xu4.config->map(MAP_DESTARD), 1, NULL);
-                c->location->coords = MapCoords(7, 6, 7);
+                c->location->coords = Coords(7, 6, 7);
                 c->saveGame->orientation = DIR_SOUTH;
             }
             else valid = false;
@@ -1911,7 +1910,7 @@ void getChest(int player)
 
     // first check to see if a chest exists at the current location
     // if one exists, prompt the player for the opener, if necessary
-    MapCoords coords;
+    Coords coords;
     Location* loc = c->location;
     loc->getCurrentPosition(&coords);
     const Tile *tile = loc->map->tileTypeAt(coords, WITH_GROUND_OBJECTS);
@@ -2180,10 +2179,10 @@ void GameController::avatarMoved(MoveEvent &event) {
 
             /* if shortcuts are enabled, try them! */
             if (xu4.settings->shortcutCommands) {
-                MapCoords new_coords = c->location->coords;
+                Coords new_coords = c->location->coords;
                 const Tile* tile;
 
-                new_coords.move(event.dir, c->location->map);
+                map_move(new_coords, event.dir, c->location->map);
                 tile = c->location->map->tileTypeAt(new_coords, WITH_OBJECTS);
 
                 if (tile->isDoor()) {
@@ -3017,7 +3016,7 @@ void GameController::checkSpecialCreatures(Direction dir) {
         c->location->coords.x == 0xdd &&
         c->location->coords.y == 0xe0) {
         for (i = 0; i < 8; i++) {
-            obj = c->location->map->addCreature(xu4.config->creature(PIRATE_ID), MapCoords(pirateInfo[i].x, pirateInfo[i].y));
+            obj = c->location->map->addCreature(xu4.config->creature(PIRATE_ID), Coords(pirateInfo[i].x, pirateInfo[i].y));
             obj->setDirection(pirateInfo[i].dir);
         }
     }
@@ -3033,7 +3032,7 @@ void GameController::checkSpecialCreatures(Direction dir) {
         c->location->coords.y < 217 &&
         *c->aura != Aura::HORN) {
         for (i = 0; i < 8; i++)
-            c->location->map->addCreature(xu4.config->creature(DAEMON_ID), MapCoords(231, c->location->coords.y + 1, c->location->coords.z));
+            c->location->map->addCreature(xu4.config->creature(DAEMON_ID), Coords(231, c->location->coords.y + 1, c->location->coords.z));
     }
 }
 
@@ -3234,11 +3233,12 @@ vector<Coords> gameGetDirectionalActionPath(int dirmask, int validDirections, co
      * Stop when the the range is exceeded, or the action is blocked.
      */
 
-    MapCoords t_c(origin);
+    Coords t_c(origin);
     if ((dirx <= 0 || DIR_IN_MASK(dirx, validDirections)) &&
         (diry <= 0 || DIR_IN_MASK(diry, validDirections))) {
         for (int distance = 0; distance <= maxDistance;
-             distance++, t_c.move(dirx, c->location->map), t_c.move(diry, c->location->map)) {
+             distance++, map_move(t_c, dirx, c->location->map),
+                 map_move(t_c, diry, c->location->map)) {
 
             if (distance >= minDistance) {
                 /* make sure our action isn't taking us off the map */
@@ -3340,10 +3340,10 @@ void GameController::creatureCleanup() {
 
     for (i = map->objects.begin(); i != map->objects.end();) {
         Object *obj = *i;
-        MapCoords o_coords = obj->getCoords();
+        const Coords& o_coords = obj->getCoords();
 
         if ((obj->getType() == Object::CREATURE) && (o_coords.z == c->location->coords.z) &&
-             o_coords.distance(c->location->coords, c->location->map) > MAX_CREATURE_DISTANCE) {
+             map_distance(o_coords, c->location->coords, c->location->map) > MAX_CREATURE_DISTANCE) {
 
             /* delete the object and remove it from the map */
             i = map->removeObject(i);
@@ -3424,16 +3424,16 @@ void gameLordBritishCheckLevels() {
 bool gameSpawnCreature(const Creature *m) {
     int t, i;
     const Creature *creature;
-    MapCoords coords = c->location->coords;
+    Coords coords = c->location->coords;
 
     if (c->location->context & CTX_DUNGEON) {
         /* FIXME: for some reason dungeon monsters aren't spawning correctly */
 
         bool found = false;
-        MapCoords new_coords;
+        Coords new_coords;
 
         for (i = 0; i < 0x20; i++) {
-            new_coords = MapCoords(xu4_random(c->location->map->width), xu4_random(c->location->map->height), coords.z);
+            new_coords = Coords(xu4_random(c->location->map->width), xu4_random(c->location->map->height), coords.z);
             const Tile *tile = c->location->map->tileTypeAt(new_coords, WITH_OBJECTS);
             if (tile->isCreatureWalkable()) {
                 found = true;
@@ -3469,8 +3469,8 @@ bool gameSpawnCreature(const Creature *m) {
 
             /* make sure we can spawn the creature there */
             if (m) {
-                MapCoords new_coords = coords;
-                new_coords.move(dx, dy, c->location->map);
+                Coords new_coords = coords;
+                map_move(new_coords, dx, dy, c->location->map);
 
                 const Tile *tile = c->location->map->tileTypeAt(new_coords, WITHOUT_OBJECTS);
                 if ((m->sails() && tile->isSailable()) ||
@@ -3484,7 +3484,7 @@ bool gameSpawnCreature(const Creature *m) {
         }
 
         if (ok)
-            coords.move(dx, dy, c->location->map);
+            map_move(coords, dx, dy, c->location->map);
     }
 
     /* can't spawn creatures on top of the player */
@@ -3562,8 +3562,12 @@ bool GameController::createBalloon(Map *map) {
 
     const Tile *balloon = map->tileset->getByName(Tile::sym.balloon);
     ASSERT(balloon, "no balloon tile found in tileset");
-    map->addObject(balloon->getId(), balloon->getId(), map->getLabel(Tile::sym.balloon));
-    return true;
+    const Coords* coord = map->getLabel(Tile::sym.balloon);
+    if (coord) {
+        map->addObject(balloon->getId(), balloon->getId(), *coord);
+        return true;
+    }
+    return false;
 }
 
 // Colors assigned to reagents based on my best reading of them

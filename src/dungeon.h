@@ -76,12 +76,12 @@ public:
     DungeonToken tokenForTile(TileId tid) const;
     DungeonToken currentToken();
     uint8_t currentSubToken();
-    DungeonToken tokenAt(const MapCoords& coords) const;
+    DungeonToken tokenAt(const Coords& coords) const;
 
-    bool ladderUpAt(MapCoords coords);
-    bool ladderDownAt(MapCoords coords);
+    bool ladderUpAt(const Coords& coords) const;
+    bool ladderDownAt(const Coords& coords) const;
 
-    bool validTeleportLocation(const MapCoords& coords) const;
+    bool validTeleportLocation(const Coords& coords) const;
     uint8_t* fillRawMap();
 
     // Properties

@@ -374,7 +374,7 @@ void useSkull(int item) {
  * Handles using the virtue stones in dungeon altar rooms and on dungeon altars
  */
 void useStone(int item) {
-    MapCoords coords;
+    Coords coords;
     unsigned char stone = static_cast<unsigned char>(item);
 
     static unsigned char truth   = STONE_WHITE | STONE_PURPLE | STONE_GREEN  | STONE_BLUE;
@@ -467,7 +467,7 @@ void useStone(int item) {
                 if (stone == (1 << c->location->coords.z)) {
                     if (c->location->coords.z < 7) {
                         /* replace the altar with a down-ladder */
-                        MapCoords coords;
+                        Coords coords;
                         screenMessage("\n\nThe altar changes before thyne eyes!\n");
                         c->location->getCurrentPosition(&coords);
                         c->location->map->annotations->add(coords, c->location->map->tileset->getByName(SYM_DOWN_LADDER)->getId());

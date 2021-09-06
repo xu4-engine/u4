@@ -382,25 +382,26 @@ static void screenLoadLayoutsFromConf(Screen* scr) {
 }
 
 vector<MapTile> screenViewportTile(unsigned int width, unsigned int height, int x, int y, bool &focus) {
-    MapCoords center = c->location->coords;
-    static MapTile grass = c->location->map->tileset->getByName(Tile::sym.grass)->getId();
+    Map* map = c->location->map;
+    Coords center = c->location->coords;
+    static MapTile grass = map->tileset->getByName(Tile::sym.grass)->getId();
 
-    if (c->location->map->width <= width &&
-        c->location->map->height <= height) {
-        center.x = c->location->map->width / 2;
-        center.y = c->location->map->height / 2;
+    if (map->width <= width &&
+        map->height <= height) {
+        center.x = map->width / 2;
+        center.y = map->height / 2;
     }
 
-    MapCoords tc = center;
+    Coords tc = center;
 
     tc.x += x - (width / 2);
     tc.y += y - (height / 2);
 
     /* Wrap the location if we can */
-    tc.wrap(c->location->map);
+    map_wrap(tc, map);
 
     /* off the edge of the map: pad with grass tiles */
-    if (MAP_IS_OOB(c->location->map, tc)) {
+    if (MAP_IS_OOB(map, tc)) {
         focus = false;
         vector<MapTile> result;
         result.push_back(grass);
@@ -421,8 +422,8 @@ bool screenTileUpdate(TileView *view, const Coords &coords)
 
     // Get the tiles
     bool focus;
-    MapCoords mc(coords);
-    mc.wrap(loc->map);
+    Coords mc(coords);
+    map_wrap(mc, loc->map);
     vector<MapTile> tiles = loc->tilesAt(mc, focus);
 
     // Get the screen coordinates
@@ -506,7 +507,7 @@ raster_update:
     }
     else if (showmap) {
         ImageInfo* shapes = xu4.imageMgr->get(BKGD_SHAPES);
-        const MapCoords& coord = loc->coords;   // Center of view.
+        const Coords& coord = loc->coords;   // Center of view.
 
         screenUpdateCursor();
         screenUpdateMoons();

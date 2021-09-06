@@ -26,81 +26,41 @@
 
 
 /**
- * MapCoords Class Implementation
+ * Map Coords functions
  */
-MapCoords MapCoords::nowhere(-1, -1, -1);
 
-bool MapCoords::operator==(const MapCoords &a) const {
-    return (x == a.x) && (y == a.y) && (z == a.z);
-}
-bool MapCoords::operator!=(const MapCoords &a) const {
-    return !operator==(a);
-}
-bool MapCoords::operator<(const MapCoords &a)  const {
-    //TODO cooler boolean logic
-    if (x > a.x)
-        return false;
-    if (y > a.y)
-        return false;
-    return z < a.z;
-}
-
-
-MapCoords& MapCoords::wrap(const Map *map) {
+void map_wrap(Coords& c, const Map *map) {
     if (map && map->border_behavior == Map::BORDER_WRAP) {
-        while (x < 0)
-            x += map->width;
-        while (y < 0)
-            y += map->height;
-        while (x >= (int)map->width)
-            x -= map->width;
-        while (y >= (int)map->height)
-            y -= map->height;
+        while (c.x < 0)
+            c.x += map->width;
+        while (c.y < 0)
+            c.y += map->height;
+        while (c.x >= (int)map->width)
+            c.x -= map->width;
+        while (c.y >= (int)map->height)
+            c.y -= map->height;
     }
-    return *this;
 }
 
-MapCoords& MapCoords::putInBounds(const Map *map) {
-    if (map) {
-        if (x < 0)
-            x = 0;
-        if (x >= (int) map->width)
-            x = map->width - 1;
-        if (y < 0)
-            y = 0;
-        if (y >= (int) map->height)
-            y = map->height - 1;
-        if (z < 0)
-            z = 0;
-        if (z >= (int) map->levels)
-            z = map->levels - 1;
-    }
-    return *this;
-}
-
-MapCoords& MapCoords::move(Direction d, const Map *map) {
+void map_move(Coords& c, Direction d, const Map *map) {
     switch(d) {
-    case DIR_NORTH: y--; break;
-    case DIR_EAST: x++; break;
-    case DIR_SOUTH: y++; break;
-    case DIR_WEST: x--; break;
-    default: break;
+        case DIR_NORTH: c.y--; break;
+        case DIR_EAST:  c.x++; break;
+        case DIR_SOUTH: c.y++; break;
+        case DIR_WEST:  c.x--; break;
+        default: break;
     }
 
     // Wrap the coordinates if necessary
-    wrap(map);
-
-    return *this;
+    map_wrap(c, map);
 }
 
-MapCoords& MapCoords::move(int dx, int dy, const Map *map) {
-    x += dx;
-    y += dy;
+void map_move(Coords& c, int dx, int dy, const Map *map) {
+    c.x += dx;
+    c.y += dy;
 
     // Wrap the coordinates if necessary
-    wrap(map);
-
-    return *this;
+    map_wrap(c, map);
 }
 
 /**
@@ -112,33 +72,33 @@ MapCoords& MapCoords::move(int dx, int dy, const Map *map) {
  * itself accordingly. If the two coordinates are not on the same z-plane,
  * then this function return DIR_NONE.
  */
-int MapCoords::getRelativeDirection(const MapCoords &c, const Map *map) const {
+int map_getRelativeDirection(const Coords& a, const Coords& b, const Map *map) {
     int dx, dy, dirmask;
 
     dirmask = DIR_NONE;
-    if (z != c.z)
+    if (a.z != b.z)
         return dirmask;
 
     /* adjust our coordinates to find the closest path */
     if (map && map->border_behavior == Map::BORDER_WRAP) {
-        MapCoords me = *this;
+        Coords c = a;
 
-        if (abs(int(me.x - c.x)) > abs(int(me.x + map->width - c.x)))
-            me.x += map->width;
-        else if (abs(int(me.x - c.x)) > abs(int(me.x - map->width - c.x)))
-            me.x -= map->width;
+        if (abs(int(c.x - b.x)) > abs(int(c.x + map->width - b.x)))
+            c.x += map->width;
+        else if (abs(int(c.x - b.x)) > abs(int(c.x - map->width - b.x)))
+            c.x -= map->width;
 
-        if (abs(int(me.y - c.y)) > abs(int(me.y + map->width - c.y)))
-            me.y += map->height;
-        else if (abs(int(me.y - c.y)) > abs(int(me.y - map->width - c.y)))
-            me.y -= map->height;
+        if (abs(int(c.y - b.y)) > abs(int(c.y + map->width - b.y)))
+            c.y += map->height;
+        else if (abs(int(c.y - b.y)) > abs(int(c.y - map->width - b.y)))
+            c.y -= map->height;
 
-        dx = me.x - c.x;
-        dy = me.y - c.y;
+        dx = c.x - b.x;
+        dy = c.y - b.y;
     }
     else {
-        dx = x - c.x;
-        dy = y - c.y;
+        dx = a.x - b.x;
+        dy = a.y - b.y;
     }
 
     /* add x directions that lead towards to_x to the mask */
@@ -160,11 +120,13 @@ int MapCoords::getRelativeDirection(const MapCoords &c, const Map *map) const {
  * This function also takes into account map boundaries and adjusts
  * itself accordingly, provided the 'map' parameter is passed
  */
-Direction MapCoords::pathTo(const MapCoords &c, int valid_directions, bool towards, const Map *map) const {
+Direction map_pathTo(const Coords& a, const Coords &b, int valid_directions, bool towards, const Map *map) {
     int directionsToObject;
 
     /* find the directions that lead [to/away from] our target */
-    directionsToObject = towards ? getRelativeDirection(c, map) : ~getRelativeDirection(c, map);
+    directionsToObject = map_getRelativeDirection(a, b, map);
+    if (! towards)
+        directionsToObject = ~directionsToObject;
 
     /* make sure we eliminate impossible options */
     directionsToObject &= valid_directions;
@@ -174,14 +136,14 @@ Direction MapCoords::pathTo(const MapCoords &c, int valid_directions, bool towar
         return dirRandomDir(directionsToObject);
 
     /* there are no valid directions that lead to our target, just move wherever we can! */
-    else return dirRandomDir(valid_directions);
+    return dirRandomDir(valid_directions);
 }
 
 /**
  * Finds the appropriate direction to travel to move away from one point
  */
-Direction MapCoords::pathAway(const MapCoords &c, int valid_directions) const {
-    return pathTo(c, valid_directions, false);
+Direction map_pathAway(const Coords& a, const Coords &b, int valid_directions) {
+    return map_pathTo(a, b, valid_directions, false);
 }
 
 /**
@@ -189,33 +151,33 @@ Direction MapCoords::pathAway(const MapCoords &c, int valid_directions) const {
  * on a map, taking into account map boundaries and such.  If the two coords
  * are not on the same z-plane, then this function returns -1;
  */
-int MapCoords::movementDistance(const MapCoords &c, const Map *map) const {
-    int dirmask = DIR_NONE;
-    int dist = 0;
-    MapCoords me = *this;
+int map_movementDistance(const Coords& a, const Coords& b, const Map *map) {
+    Coords c;
+    int dist;
+    int dirmask;
+    int dx, dy;
 
-    if (z != c.z)
+    if (a.z != b.z)
         return -1;
 
     /* get the direction(s) to the coordinates */
-    dirmask = getRelativeDirection(c, map);
+    dirmask = map_getRelativeDirection(a, b, map);
+    dx = (dirmask & MASK_DIR_WEST) ? -1 : 1;
+    dy = (dirmask & MASK_DIR_NORTH) ? -1 : 1;
 
-    while ((me.x != c.x) || (me.y != c.y))
-    {
-        if (me.x != c.x) {
-            if (dirmask & MASK_DIR_WEST)
-                me.move(DIR_WEST, map);
-            else me.move(DIR_EAST, map);
+    dist = 0;
+    c = a;
 
+    while ((c.x != b.x) || (c.y != b.y)) {
+        if (c.x != b.x) {
+            c.x += dx;
             dist++;
         }
-        if (me.y != c.y) {
-            if (dirmask & MASK_DIR_NORTH)
-                me.move(DIR_NORTH, map);
-            else me.move(DIR_SOUTH, map);
-
+        if (c.y != b.y) {
+            c.y += dy;
             dist++;
         }
+        map_wrap(c, map);
     }
 
     return dist;
@@ -226,14 +188,15 @@ int MapCoords::movementDistance(const MapCoords &c, const Map *map) const {
  * If the two coordinates are not on the same z-plane, then this function
  * returns -1. This function also takes into account map boundaries.
  */
-int MapCoords::distance(const MapCoords &c, const Map *map) const {
-    int dist = movementDistance(c, map);
+int map_distance(const Coords& a, const Coords& b, const Map *map) {
+    int dist = map_movementDistance(a, b, map);
     if (dist <= 0)
         return dist;
 
     /* calculate how many fewer movements there would have been */
-    dist -= abs(x - c.x) < abs(y - c.y) ? abs(x - c.x) : abs(y - c.y);
-
+    int absDx = abs(a.x - b.x);
+    int absDy = abs(a.y - b.y);
+    dist -= (absDx < absDy) ? absDx : absDy;
     return dist;
 }
 
@@ -549,7 +512,7 @@ ObjectDeque::iterator Map::removeObject(ObjectDeque::iterator rem, bool deleteOb
  * Returns an attacking object if there is a creature attacking.
  * Also performs special creature actions and creature effects.
  */
-Creature *Map::moveObjects(MapCoords avatar) {
+Creature *Map::moveObjects(const Coords& avatar) {
     Creature *attacker = NULL;
 
     for (unsigned int i = 0; i < objects.size(); i++) {
@@ -560,13 +523,13 @@ Creature *Map::moveObjects(MapCoords avatar) {
                just a normal, docile person in town or an inanimate object */
             if ((m->getType() == Object::PERSON && m->getMovementBehavior() == MOVEMENT_ATTACK_AVATAR) ||
                 (m->getType() == Object::CREATURE && m->willAttack())) {
-                MapCoords o_coords = m->getCoords();
+                Coords o_coords = m->getCoords();
 
                 /* don't move objects that aren't on the same level as us */
                 if (o_coords.z != avatar.z)
                     continue;
 
-                if (o_coords.movementDistance(avatar, this) <= 1) {
+                if (map_movementDistance(o_coords, avatar, this) <= 1) {
                     attacker = m;
                     continue;
                 }
@@ -623,7 +586,7 @@ int Map::getNumberOfCreatures() {
 /**
  * Returns a mask of valid moves for the given transport on the given map
  */
-int Map::getValidMoves(const MapCoords& from, MapTile transport) {
+int Map::getValidMoves(const Coords& from, MapTile transport) {
     int retval;
     Direction d;
     Object *obj;
@@ -631,7 +594,7 @@ int Map::getValidMoves(const MapCoords& from, MapTile transport) {
     const Tile* prev_tile;
     const Tile* tile;
     int ontoAvatar, ontoCreature;
-    MapCoords testCoord;
+    Coords testCoord;
 
     // get the creature object, if it exists (the one that's moving)
     m = Creature::getByTile(transport);
@@ -649,7 +612,7 @@ int Map::getValidMoves(const MapCoords& from, MapTile transport) {
 
         // Move the coordinates in the current direction and test it
         testCoord = from;
-        testCoord.move(d, this);
+        map_move(testCoord, d, this);
 
         // you can always walk off the edge of the map
         if (MAP_IS_OOB(this, testCoord)) {
@@ -772,8 +735,9 @@ int Map::getValidMoves(const MapCoords& from, MapTile transport) {
 }
 
 bool Map::move(Object *obj, Direction d) {
-    MapCoords new_coords = obj->getCoords();
-    if (new_coords.move(d) != obj->getCoords()) {
+    Coords new_coords = obj->getCoords();
+    map_move(new_coords, d);
+    if (new_coords != obj->getCoords()) {
         obj->setCoords(new_coords);
         return true;
     }
@@ -795,20 +759,37 @@ void Map::alertGuards() {
     }
 }
 
-const MapCoords &Map::getLabel(Symbol name) const {
-    std::map<Symbol, MapCoords>::const_iterator i = labels.find(name);
+const Coords* Map::getLabel(Symbol name) const {
+    std::map<Symbol, Coords>::const_iterator i = labels.find(name);
     if (i == labels.end())
-        return MapCoords::nowhere;
-    return i->second;
+        return NULL;
+    return &i->second;
 }
 
-const char* Map::labelAt(const MapCoords& pos) const {
-    std::map<Symbol, MapCoords>::const_iterator it;
+const char* Map::labelAt(const Coords& pos) const {
+    std::map<Symbol, Coords>::const_iterator it;
     for (it = labels.begin(); it != labels.end(); ++it) {
         if (it->second == pos)
             return xu4.config->symbolName(it->first);
     }
     return NULL;
+}
+
+void Map::putInBounds(Coords& c) const {
+    if (c.x < 0)
+        c.x = 0;
+    else if (c.x >= (int) width)
+        c.x = width - 1;
+
+    if (c.y < 0)
+        c.y = 0;
+    else if (c.y >= (int) height)
+        c.y = height - 1;
+
+    if (c.z < 0)
+        c.z = 0;
+    else if (c.z >= (int) levels)
+        c.z = levels - 1;
 }
 
 void Map::fillMonsterTable(SaveGameMonsterRecord* table) const {

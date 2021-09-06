@@ -399,7 +399,7 @@ static int spellBlink(int dir) {
         diff,
         *var;
     Direction reverseDir = dirReverse((Direction)dir);
-    MapCoords coords = c->location->coords;
+    Coords coords = c->location->coords;
 
     /* Blink doesn't work near the mouth of the abyss */
     /* Note: This means you can teleport to Hythloth from the top of the map,
@@ -423,12 +423,12 @@ static int spellBlink(int dir) {
 
     /* test our distance, and see if it works */
     for (i = 0; i < distance; i++)
-        coords.move((Direction)dir, c->location->map);
+        map_move(coords, (Direction)dir, c->location->map);
 
     i = distance;
     /* begin walking backward until you find a valid spot */
     while ((i-- > 0) && !c->location->map->tileTypeAt(coords, WITH_OBJECTS)->isWalkable())
-        coords.move(reverseDir, c->location->map);
+        map_move(coords, reverseDir, c->location->map);
 
     if (c->location->map->tileTypeAt(coords, WITH_OBJECTS)->isWalkable()) {
         /* we didn't move! */
@@ -451,7 +451,7 @@ static int spellCure(int player) {
 static int spellDispel(int dir) {
     const Tile* tile;
     Location* loc = c->location;
-    MapCoords fpos;
+    Coords fpos;
 
     /*
      * get the location of the avatar (or current party member, if in battle)
@@ -461,7 +461,7 @@ static int spellDispel(int dir) {
     /*
      * find where we want to dispel the field
      */
-    fpos.move((Direction)dir, loc->map);
+    map_move(fpos, (Direction)dir, loc->map);
 
     GameController::flashTile(fpos, Tile::sym.wisp, 2);
     /*
@@ -500,7 +500,7 @@ static int spellDispel(int dir) {
 static int spellEField(int param) {
     int fieldType;
     int dir;
-    MapCoords coords;
+    Coords coords;
     Symbol fsym;
 
     /* Unpack fieldType and direction */
@@ -519,7 +519,7 @@ static int spellEField(int param) {
 
     c->location->getCurrentPosition(&coords);
 
-    coords.move((Direction)dir, c->location->map);
+    map_move(coords, (Direction)dir, c->location->map);
     if (MAP_IS_OOB(c->location->map, coords))
         return 0;
     else {
@@ -730,7 +730,7 @@ static int spellXit(int unused) {
 }
 
 static int spellYup(int unused) {
-    MapCoords coords = c->location->coords;
+    Coords coords = c->location->coords;
     Dungeon *dungeon = dynamic_cast<Dungeon *>(c->location->map);
 
     /* can't cast in the Abyss */
@@ -739,7 +739,7 @@ static int spellYup(int unused) {
     /* staying in the dungeon */
     else if (coords.z > 0) {
         for (int i = 0; i < 0x20; i++) {
-            coords = MapCoords(xu4_random(8), xu4_random(8), c->location->coords.z - 1);
+            coords = Coords(xu4_random(8), xu4_random(8), c->location->coords.z - 1);
             if (dungeon->validTeleportLocation(coords)) {
                 c->location->coords = coords;
                 return 1;
@@ -758,7 +758,7 @@ static int spellYup(int unused) {
 }
 
 static int spellZdown(int unused) {
-    MapCoords coords = c->location->coords;
+    Coords coords = c->location->coords;
     Dungeon *dungeon = dynamic_cast<Dungeon *>(c->location->map);
 
     /* can't cast in the Abyss */
@@ -769,7 +769,7 @@ static int spellZdown(int unused) {
         return 0;
     else {
         for (int i = 0; i < 0x20; i++) {
-            coords = MapCoords(xu4_random(8), xu4_random(8), c->location->coords.z + 1);
+            coords = Coords(xu4_random(8), xu4_random(8), c->location->coords.z + 1);
             if (dungeon->validTeleportLocation(coords)) {
                 c->location->coords = coords;
                 return 1;

@@ -458,7 +458,7 @@ Portal* conf_initPortal(ConfigXML* cfg, const ConfigElement& conf) {
     portal->portalConditionsMet = NULL;
     portal->retroActiveDest = NULL;
 
-    portal->coords = MapCoords(
+    portal->coords = Coords(
         conf.getInt("x"),
         conf.getInt("y"),
         conf.getInt("z", 0));
@@ -518,7 +518,7 @@ Portal* conf_initPortal(ConfigXML* cfg, const ConfigElement& conf) {
         if (it->getName() == "retroActiveDest") {
             portal->retroActiveDest = new PortalDestination;
 
-            portal->retroActiveDest->coords = MapCoords(
+            portal->retroActiveDest->coords = Coords(
                 it->getInt("x"),
                 it->getInt("y"),
                 it->getInt("z", 0));
@@ -559,9 +559,9 @@ static void conf_createMoongate(ConfigXML* cfg, const ConfigElement& conf) {
     coords.y = conf.getInt("y");
 }
 
-static pair<Symbol, MapCoords> conf_initLabel(ConfigXML* cfg, const ConfigElement& conf) {
-    return pair<Symbol, MapCoords> (cfg->propSymbol(conf, "name"),
-         MapCoords(conf.getInt("x"), conf.getInt("y"), conf.getInt("z", 0)));
+static pair<Symbol, Coords> conf_initLabel(ConfigXML* cfg, const ConfigElement& conf) {
+    return pair<Symbol, Coords> (cfg->propSymbol(conf, "name"),
+         Coords(conf.getInt("x"), conf.getInt("y"), conf.getInt("z", 0)));
 }
 
 static Map* conf_makeMap(ConfigXML* cfg, Tileset* tiles, const ConfigElement& conf) {

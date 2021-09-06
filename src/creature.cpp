@@ -114,15 +114,15 @@ CreatureStatus Creature::getState() const {
  * whole turn (i.e. it cant move afterwords)
  */
 bool Creature::specialAction() {
+    const Location* loc = c->location;
     bool retval = false;
 
-    int dx = abs(c->location->coords.x - coords.x);
-    int dy = abs(c->location->coords.y - coords.y);
-    int mapdist = c->location->coords.distance(coords, c->location->map);
+    int dx = abs(loc->coords.x - coords.x);
+    int dy = abs(loc->coords.y - coords.y);
+    int mapdist = map_distance(loc->coords, coords, loc->map);
 
     /* find out which direction the avatar is in relation to the creature */
-    MapCoords mapcoords(coords);
-    int dir = mapcoords.getRelativeDirection(c->location->coords, c->location->map);
+    int dir = map_getRelativeDirection(coords, loc->coords, loc->map);
 
     //Init outside of switch
     int broadsidesDirs = 0;
@@ -138,7 +138,7 @@ bool Creature::specialAction() {
            and not in a city
            Note: Monsters in settlements in U3 do fire on party
         */
-        if (mapdist <= 3 && xu4_random(2) == 0 && (c->location->context & CTX_CITY) == 0) {
+        if (mapdist <= 3 && xu4_random(2) == 0 && (loc->context & CTX_CITY) == 0) {
             vector<Coords> path = gameGetDirectionalActionPath(dir, MASK_DIR_ALL, coords,
                                                                1, 3, NULL, false);
             for (vector<Coords>::iterator i = path.begin(); i != path.end(); i++) {
@@ -234,7 +234,10 @@ bool Creature::specialEffect() {
                 gameDamageShip(-1, 10);
 
                 /* Send the party to Locke Lake */
-                c->location->coords = c->location->map->getLabel(Tile::sym.lockelake);
+                const Coords* dest =
+                    c->location->map->getLabel(Tile::sym.lockelake);
+                if (dest)
+                    c->location->coords = *dest;
 
                 /* Teleport the whirlpool that sent you there far away from lockelake */
                 this->setCoords(Coords(0,0,0));
@@ -405,11 +408,11 @@ void Creature::act(CombatController *controller) {
         if (hasRandomRanged())
             setRandomRanged();
 
-        MapCoords m_coords = getCoords(),
+        Coords m_coords = getCoords(),
             p_coords = target->getCoords();
 
         // figure out which direction to fire the weapon
-        int dir = m_coords.getRelativeDirection(p_coords);
+        int dir = map_getRelativeDirection(m_coords, p_coords);
 
         soundPlay(SOUND_NPC_ATTACK, false);                                    // NPC_ATTACK, ranged
 
@@ -500,15 +503,15 @@ bool Creature::divide(Map* map) {
 
     /* make sure there's a place to put the divided creature! */
     if (d != DIR_NONE) {
-        MapCoords coords(getCoords());
+        Coords new_c(coords);
 
         screenMessage("%s Divides!\n", CSTR(name));
 
         /* find a spot to put our new creature */
-        coords.move(d, map);
+        map_move(new_c, d, map);
 
         /* create our new creature! */
-        Creature * addedCreature = map->addCreature(this, coords);
+        Creature * addedCreature = map->addCreature(this, new_c);
         int dividedHp = (this->hp + 1) / 2;
         addedCreature->hp = dividedHp;
         this->hp = dividedHp;
@@ -564,12 +567,13 @@ Creature *Creature::nearestOpponent(Map* map, int *dist, bool ranged) {
         /* if jinxed is false, find anything that isn't self */
         if ((amPlayer != fightingPlayer) ||
             (jinx && !amPlayer && *i != this)) {
-            MapCoords objCoords = (*i)->getCoords();
+            Coords objCoords = (*i)->getCoords();
 
             /* if ranged, get the distance using diagonals, otherwise get movement distance */
             if (ranged)
-                d = objCoords.distance(getCoords());
-            else d = objCoords.movementDistance(getCoords());
+                d = map_distance(objCoords, getCoords());
+            else
+                d = map_movementDistance(objCoords, getCoords());
 
             /* skip target 50% of time if same distance */
             if (d < leastDist || (d == leastDist && xu4_random(2) == 0)) {

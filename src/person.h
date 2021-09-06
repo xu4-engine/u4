@@ -48,7 +48,7 @@ public:
     bool isVendor() const;
     virtual string getName() const;
     void setDialogue(Dialogue *d);
-    MapCoords &getStart() { return start; }
+    Coords &getStart() { return start; }
     PersonNpcType getNpcType() const { return npcType; }
     void setNpcType(PersonNpcType t);
 
@@ -66,7 +66,7 @@ public:
 
 private:
     Dialogue* dialogue;
-    MapCoords start;
+    Coords start;
     PersonNpcType npcType;
 };
 

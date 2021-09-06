@@ -27,7 +27,7 @@ bool collisionOverride = false;
  * keystroke.  Returns zero if the avatar is blocked.
  */
 void moveAvatar(MoveEvent &event) {
-    MapCoords newCoords;
+    Coords newCoords;
     int slowed = 0;
     SlowedType slowedType = SLOWED_BY_TILE;
 
@@ -59,7 +59,7 @@ void moveAvatar(MoveEvent &event) {
 
     /* figure out our new location we're trying to move to */
     newCoords = c->location->coords;
-    newCoords.move(event.dir, c->location->map);
+    map_move(newCoords, event.dir, c->location->map);
 
     /* see if we moved off the map */
     if (MAP_IS_OOB(c->location->map, newCoords)) {
@@ -115,7 +115,7 @@ void moveAvatar(MoveEvent &event) {
  * Moves the avatar while in dungeon view
  */
 void moveAvatarInDungeon(MoveEvent &event) {
-    MapCoords newCoords;
+    Coords newCoords;
     Direction realDir = dirNormalize((Direction)c->saveGame->orientation, event.dir); /* get our real direction */
     int advancing = realDir == c->saveGame->orientation,
         retreating = realDir == dirReverse((Direction)c->saveGame->orientation);
@@ -133,7 +133,7 @@ void moveAvatarInDungeon(MoveEvent &event) {
 
     /* figure out our new location */
     newCoords = c->location->coords;
-    newCoords.move(realDir, c->location->map);
+    map_move(newCoords, realDir, c->location->map);
 
     tile = c->location->map->tileTypeAt(newCoords, WITH_OBJECTS);
 
@@ -169,10 +169,10 @@ void moveAvatarInDungeon(MoveEvent &event) {
  * tile direction changed, or object simply cannot move
  * (fixed objects, nowhere to go, etc.)
  */
-int moveObject(Map *map, Creature *obj, MapCoords avatar) {
+int moveObject(Map *map, Creature *obj, const Coords& avatar) {
     int dirmask = DIR_NONE;
     Direction dir;
-    MapCoords new_coords = obj->getCoords();
+    Coords new_coords = obj->getCoords();
     int slowed = 0;
 
     /* determine a direction depending on the object's movement behavior */
@@ -200,13 +200,13 @@ int moveObject(Map *map, Creature *obj, MapCoords avatar) {
             break;
         }
 
-        dir = new_coords.pathTo(avatar, dirmask, true, c->location->map);
+        dir = map_pathTo(new_coords, avatar, dirmask, true, c->location->map);
         break;
     }
 
     /* now, get a new x and y for the object */
     if (dir)
-        new_coords.move(dir, c->location->map);
+        map_move(new_coords, dir, c->location->map);
     else
         return 0;
 
@@ -252,8 +252,8 @@ int moveObject(Map *map, Creature *obj, MapCoords avatar) {
 /**
  * Moves an object in combat according to its chosen combat action
  */
-int moveCombatObject(int act, Map *map, Creature *obj, MapCoords target) {
-    MapCoords new_coords = obj->getCoords();
+int moveCombatObject(int act, Map *map, Creature *obj, const Coords& target) {
+    Coords new_coords = obj->getCoords();
     int valid_dirs = map->getValidMoves(new_coords, obj->getTile());
     Direction dir;
     CombatAction action = (CombatAction)act;
@@ -266,7 +266,7 @@ int moveCombatObject(int act, Map *map, Creature *obj, MapCoords target) {
 
     if (action == CA_FLEE) {
         /* run away from our target instead! */
-        dir = new_coords.pathAway(target, valid_dirs);
+        dir = map_pathAway(new_coords, target, valid_dirs);
 
     } else {
         ASSERT(action == CA_ADVANCE, "action must be CA_ADVANCE or CA_FLEE");
@@ -280,11 +280,11 @@ int moveCombatObject(int act, Map *map, Creature *obj, MapCoords target) {
         else if (new_coords.y >= (signed)(map->height - 1))
             valid_dirs = DIR_REMOVE_FROM_MASK(DIR_SOUTH, valid_dirs);
 
-        dir = new_coords.pathTo(target, valid_dirs);
+        dir = map_pathTo(new_coords, target, valid_dirs);
     }
 
     if (dir)
-        new_coords.move(dir, c->location->map);
+        map_move(new_coords, dir, c->location->map);
     else
         return 0;
 
@@ -322,14 +322,14 @@ void movePartyMember(MoveEvent &event) {
     CombatController *ct = dynamic_cast<CombatController *>(xu4.eventHandler->getController());
     CombatMap *cm = getCombatMap();
     int member = ct->getFocus();
-    MapCoords newCoords;
+    Coords newCoords;
     PartyMemberVector *party = ct->getParty();
 
     event.result = MOVE_SUCCEEDED;
 
     /* find our new location */
     newCoords = (*party)[member]->getCoords();
-    newCoords.move(event.dir, c->location->map);
+    map_move(newCoords, event.dir, c->location->map);
 
     if (MAP_IS_OOB(c->location->map, newCoords)) {
         bool sameExit = (!cm->isDungeonRoom() || (ct->getExitDir() == DIR_NONE) || (event.dir == ct->getExitDir()));
@@ -380,11 +380,11 @@ void movePartyMember(MoveEvent &event) {
                    wipe the creature table and replace it with the triggered creatures. Thus, retriggering
                    it will reset the creatures.
                    */
-                MapCoords trigger(triggers[i].x, triggers[i].y, c->location->coords.z);
+                Coords trigger(triggers[i].x, triggers[i].y, c->location->coords.z);
 
                 /* see if we're on a trigger */
                 if (newCoords == trigger) {
-                    MapCoords change1(triggers[i].change_x1, triggers[i].change_y1, c->location->coords.z),
+                    Coords change1(triggers[i].change_x1, triggers[i].change_y1, c->location->coords.z),
                               change2(triggers[i].change_x2, triggers[i].change_y2, c->location->coords.z);
 
                     /**

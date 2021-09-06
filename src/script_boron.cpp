@@ -111,7 +111,7 @@ CFUNC(cf_music)
 */
 CFUNC(cf_relocate)
 {
-    MapCoords* pc = &c->location->coords;
+    Coords* pc = &c->location->coords;
     (void) ut;
 
     pc->x = a1->coord.n[0];

@@ -432,7 +432,7 @@ Portal* conf_makePortal(ConfigBoron* cfg, UBlockIt& bi)
     portal->portalConditionsMet = NULL;
     portal->retroActiveDest = NULL;
 
-    portal->coords = MapCoords(numA[0], numA[1], numA[2]);
+    portal->coords = Coords(numA[0], numA[1], numA[2]);
     portal->start.x = numA[3];
     portal->start.y = numA[4];
     portal->start.z = numA[5];
@@ -462,9 +462,9 @@ Portal* conf_makePortal(ConfigBoron* cfg, UBlockIt& bi)
     const UCell* rad = bi.it + 4;
     if (ur_is(rad, UT_COORD)) {
         portal->retroActiveDest = new PortalDestination;
-        portal->retroActiveDest->coords = MapCoords(rad->coord.n[0],
-                                                    rad->coord.n[1],
-                                                    rad->coord.n[2]);
+        portal->retroActiveDest->coords = Coords(rad->coord.n[0],
+                                                 rad->coord.n[1],
+                                                 rad->coord.n[2]);
         portal->retroActiveDest->mapid = (MapId) rad->coord.n[3];
     }
 
@@ -487,14 +487,14 @@ static void conf_createMoongate(ConfigBoron* cfg, const UCell* coordC) {
     coords.y = coordC->coord.n[2];
 }
 
-static std::pair<Symbol, MapCoords> conf_initLabel(const UCell* it)
+static std::pair<Symbol, Coords> conf_initLabel(const UCell* it)
 {
     assert(ur_is(it, UT_WORD));
     assert(ur_is(it+1, UT_COORD));
     assert(it[1].coord.len == 3);
 
     const int16_t* pos = it[1].coord.n;
-    return std::pair<Symbol, MapCoords> (ur_atom(it), MapCoords(pos[0], pos[1], pos[2]));
+    return std::pair<Symbol, Coords> (ur_atom(it), Coords(pos[0], pos[1], pos[2]));
 }
 
 static Map* conf_makeMap(ConfigBoron* cfg, Tileset* tiles, UBlockIt& bi)

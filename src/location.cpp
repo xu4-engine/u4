@@ -28,8 +28,8 @@ Location *locationPop(Location **stack);
  * Add a new location to the stack, or
  * start a new stack if 'prev' is NULL
  */
-Location::Location(MapCoords coords, Map *map, int viewmode, LocationContext ctx,
-                   TurnCompleter *turnCompleter, Location *prev) {
+Location::Location(const Coords& coords, Map *map, int viewmode,
+        LocationContext ctx, TurnCompleter *turnCompleter, Location *prev) {
 
     this->coords = coords;
     this->map = map;
@@ -43,7 +43,7 @@ Location::Location(MapCoords coords, Map *map, int viewmode, LocationContext ctx
 /**
  * Return the entire stack of objects at the given location.
  */
-std::vector<MapTile> Location::tilesAt(MapCoords coords, bool &focus) {
+std::vector<MapTile> Location::tilesAt(const Coords& coords, bool &focus) {
     std::vector<MapTile> tiles;
     std::list<Annotation *> a = map->annotations->ptrsToAllAt(coords);
     std::list<Annotation *>::iterator i;
@@ -145,30 +145,30 @@ std::vector<MapTile> Location::tilesAt(MapCoords coords, bool &focus) {
  * is marked as a valid replacement (or waterReplacement) tile in tiles.xml.  If a valid replacement
  * cannot be found, it returns a "best guess" tile.
  */
-TileId Location::getReplacementTile(MapCoords atCoords, const Tile * forTile) {
+TileId Location::getReplacementTile(const Coords& atCoords, const Tile * forTile) {
     std::map<TileId, int> validMapTileCount;
 
     const static int dirs[][2] = {{-1,0},{1,0},{0,-1},{0,1}};
     const static int dirs_per_step = sizeof(dirs) / sizeof(*dirs);
     int loop_count = 0;
 
-    std::set<MapCoords> searched;
-    std::list<MapCoords> searchQueue;
+    std::set<Coords> searched;
+    std::list<Coords> searchQueue;
 
     //Pathfinding to closest traversable tile with appropriate replacement properties.
     //For tiles marked water-replaceable, pathfinding includes swimmables.
     searchQueue.push_back(atCoords);
     do
     {
-        MapCoords currentStep = searchQueue.front();
+        Coords currentStep = searchQueue.front();
         searchQueue.pop_front();
 
         searched.insert(currentStep);
 
         for (int i = 0; i < dirs_per_step; i++)
         {
-            MapCoords newStep(currentStep);
-            newStep.move(dirs[i][0], dirs[i][1], map);
+            Coords newStep(currentStep);
+            map_move(newStep, dirs[i][0], dirs[i][1], map);
 
             Tile const * tileType = map->tileTypeAt(newStep,WITHOUT_OBJECTS);
 
@@ -223,7 +223,7 @@ TileId Location::getReplacementTile(MapCoords atCoords, const Tile * forTile) {
  *     If in combat - returns the coordinates of party member with focus
  *     If elsewhere - returns the coordinates of the avatar
  */
-int Location::getCurrentPosition(MapCoords *coords) {
+int Location::getCurrentPosition(Coords *coords) {
     if (context & CTX_COMBAT) {
         CombatController *cc = dynamic_cast<CombatController *>(xu4.eventHandler->getController());
         PartyMemberVector *party = cc->getParty();
