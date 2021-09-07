@@ -22,6 +22,7 @@ enum GLObject {
 
 enum GLTextureUnit {
     GTU_CMAP,
+    GTU_MATERIAL,
     GTU_SHADOW,
     GTU_SCALER_LUT
 };
@@ -49,17 +50,16 @@ struct OpenGLResources {
 
     GLuint shadeColor;
     GLint  slocTrans;
-    GLint  slocCmap;
     GLint  slocTint;
     GLint  slocScroll;
 
     GLuint shadeWorld;
     GLint  worldTrans;
-    GLint  worldCmap;
     GLint  worldShadowMap;
     GLint  worldScroll;
 
     GLuint tilesTex;            // Managed by user.
+    GLuint tilesMat;            // Managed by user.
     float  tilesVDim;
     float  time;
     int    dbuf;

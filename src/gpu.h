@@ -9,7 +9,7 @@ void     gpu_viewport(int x, int y, int w, int h);
 uint32_t gpu_makeTexture(const Image32* img);
 void     gpu_blitTexture(uint32_t tex, int x, int y, const Image32* img);
 void     gpu_freeTexture(uint32_t id);
-void     gpu_setTilesTexture(void* res, uint32_t tex, float vDim);
+void     gpu_setTilesTexture(void* res, uint32_t tex, uint32_t mat, float vDim);
 void     gpu_background(void* res, const float* color, const Image32* img);
 float*   gpu_beginDraw(void* res);
 void     gpu_endDraw(void* res, float* attr);

@@ -46,14 +46,16 @@ const char* cmap_vertShader =
 const char* cmap_fragShader =
     "#version 330\n"
     "uniform sampler2D cmap;\n"
+    "uniform sampler2D mmap;\n"
     "uniform vec4 tint;\n"
     "uniform vec2 scroll;\n"
     "in vec4 texCoord;\n"
     "out vec4 fragColor;\n"
     "void main() {\n"
     "  vec4 texel;\n"
-    "  if (texCoord.q == 5.0) {\n"
-    "    vec2 tc = texCoord.st; \n"
+    "  vec4 material = texture(mmap, texCoord.st);\n"
+    "  if (material.b > 0.95) {\n"
+    "    vec2 tc = texCoord.sq; \n"
     "    float nv = texCoord.p - scroll.t * 0.3;\n"
     "    tc.t += (nv - floor(nv)) * scroll.s;\n"
     "    texel = texture(cmap, tc);\n"
@@ -83,6 +85,7 @@ const char* world_vertShader =
 const char* world_fragShader =
     "#version 330\n"
     "uniform sampler2D cmap;\n"
+    "uniform sampler2D mmap;\n"
     "uniform sampler2D shadowMap;\n"
     "uniform vec2 scroll;\n"
     "in vec4 texCoord;\n"
@@ -90,8 +93,9 @@ const char* world_fragShader =
     "out vec4 fragColor;\n"
     "void main() {\n"
     "  vec4 texel;\n"
-    "  if (texCoord.q == 5.0) {\n"
-    "    vec2 tc = texCoord.st; \n"
+    "  vec4 material = texture(mmap, texCoord.st);\n"
+    "  if (material.b > 0.95) {\n"
+    "    vec2 tc = texCoord.sq; \n"
     "    float nv = texCoord.p - scroll.t * 0.3;\n"
     "    tc.t += (nv - floor(nv)) * scroll.s;\n"
     "    texel = texture(cmap, tc);\n"
@@ -118,7 +122,7 @@ static const float unitMatrix[16] = {
 #define ATTR_COUNT      7
 #define ATTR_STRIDE     (sizeof(float) * ATTR_COUNT)
 static const float quadAttr[] = {
-    // X   Y   Z       U  V  VUnit  Effect
+    // X   Y   Z       U  V  vunit  scrollSourceV
    -1.0,-1.0, 0.0,   0.0, 1.0, 0.0, 0.0,
     1.0,-1.0, 0.0,   1.0, 1.0, 0.0, 0.0,
     1.0, 1.0, 0.0,   1.0, 0.0, 0.0, 0.0,
@@ -367,6 +371,7 @@ bool gpu_init(void* res, int w, int h, int scale)
 {
     OpenGLResources* gr = (OpenGLResources*) res;
     GLuint sh;
+    GLint cmap, mmap;
 
     assert(sizeof(GLuint) == sizeof(uint32_t));
 
@@ -461,13 +466,15 @@ bool gpu_init(void* res, int w, int h, int scale)
         return false;
 
     gr->slocTrans   = glGetUniformLocation(sh, "transform");
-    gr->slocCmap    = glGetUniformLocation(sh, "cmap");
+    cmap            = glGetUniformLocation(sh, "cmap");
+    mmap            = glGetUniformLocation(sh, "mmap");
     gr->slocTint    = glGetUniformLocation(sh, "tint");
     gr->slocScroll  = glGetUniformLocation(sh, "scroll");
 
     glUseProgram(sh);
     glUniformMatrix4fv(gr->slocTrans, 1, GL_FALSE, unitMatrix);
-    glUniform1i(gr->slocCmap, GTU_CMAP);
+    glUniform1i(cmap, GTU_CMAP);
+    glUniform1i(mmap, GTU_MATERIAL);
     glUniform4f(gr->slocTint, 1.0, 1.0, 1.0, 1.0);
 
 
@@ -477,13 +484,15 @@ bool gpu_init(void* res, int w, int h, int scale)
         return false;
 
     gr->worldTrans     = glGetUniformLocation(sh, "transform");
-    gr->worldCmap      = glGetUniformLocation(sh, "cmap");
+    cmap               = glGetUniformLocation(sh, "cmap");
+    mmap               = glGetUniformLocation(sh, "mmap");
     gr->worldShadowMap = glGetUniformLocation(sh, "shadowMap");
     gr->worldScroll    = glGetUniformLocation(sh, "scroll");
 
     glUseProgram(sh);
     glUniformMatrix4fv(gr->worldTrans, 1, GL_FALSE, unitMatrix);
-    glUniform1i(gr->worldCmap, GTU_CMAP);
+    glUniform1i(cmap, GTU_CMAP);
+    glUniform1i(mmap, GTU_MATERIAL);
     glUniform1i(gr->worldShadowMap, GTU_SHADOW);
 
 
@@ -557,10 +566,11 @@ void gpu_freeTexture(uint32_t tex)
     glDeleteTextures(1, &tex);
 }
 
-void gpu_setTilesTexture(void* res, uint32_t tex, float vDim)
+void gpu_setTilesTexture(void* res, uint32_t tex, uint32_t mat, float vDim)
 {
     OpenGLResources* gr = (OpenGLResources*) res;
     gr->tilesTex = tex;
+    gr->tilesMat = mat;
     gr->tilesVDim = vDim;
 }
 
@@ -704,7 +714,7 @@ float* gpu_emitQuad(float* attr, const float* drawRect, const float* uvRect)
 }
 
 float* gpu_emitQuadScroll(float* attr, const float* drawRect,
-                          const float* uvRect)
+                          const float* uvRect, float scrollSourceV)
 {
     float w = drawRect[2];
     float h = drawRect[3];
@@ -714,17 +724,17 @@ float* gpu_emitQuadScroll(float* attr, const float* drawRect,
     *attr++ = u; \
     *attr++ = v; \
     *attr++ = vunit; \
-    *attr++ = 5.0f
+    *attr++ = scrollSourceV
 
     // NOTE: We only do writes to attr here (avoid memcpy).
 
     // First vertex, lower-left corner
     EMIT_POS(drawRect[0], drawRect[1]);
-    EMIT_UVS(uvRect[0], uvRect[1], 1.0f);
+    EMIT_UVS(uvRect[0], uvRect[3], 1.0f);
 
     // Lower-right corner
     EMIT_POS(drawRect[0] + w, drawRect[1]);
-    EMIT_UVS(uvRect[2], uvRect[1], 1.0f);
+    EMIT_UVS(uvRect[2], uvRect[3], 1.0f);
 
     // Top-right corner
     for (i = 0; i < 2; ++i) {
@@ -738,7 +748,7 @@ float* gpu_emitQuadScroll(float* attr, const float* drawRect,
 
     // Repeat first vertex
     EMIT_POS(drawRect[0], drawRect[1]);
-    EMIT_UVS(uvRect[0], uvRect[1], 1.0f);
+    EMIT_UVS(uvRect[0], uvRect[3], 1.0f);
 
     return attr;
 }
@@ -799,8 +809,11 @@ static void _buildChunkGeo(GLuint vbo, const uint8_t* chunk, int dim,
         for (x = 0; x < dim; ++x) {
             c = *chunk++;
             uvCur = uvTable + c*4;
-            if (c < 3)
-                attr = gpu_emitQuadScroll(attr, drawRect, uvCur);
+            // TODO: Use config (tileset & tileanims) to activate scrolling.
+            if (c < 3 || (c > 67 && c < 72))
+                attr = gpu_emitQuadScroll(attr, drawRect, uvCur, uvCur[1]);
+            else if (c > 48 && c < 53)
+                attr = gpu_emitQuadScroll(attr, drawRect, uvCur, uvTable[9]);
             else
                 attr = gpu_emitQuad(attr, drawRect, uvCur);
             drawRect[0] += drawRect[2];
@@ -1001,6 +1014,8 @@ void gpu_drawMap(void* res, const Map* map, const float* tileUVs,
 
     glActiveTexture(GL_TEXTURE0 + GTU_CMAP);
     glBindTexture(GL_TEXTURE_2D, gr->tilesTex);
+    glActiveTexture(GL_TEXTURE0 + GTU_MATERIAL);
+    glBindTexture(GL_TEXTURE_2D, gr->tilesMat);
 
     glDisable(GL_BLEND);
 

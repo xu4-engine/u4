@@ -6,6 +6,7 @@ imageset EGA [
         hud     17, 0
         charset 17,33
     ]
+    image (name: material filename: "ega/material.png")
     image (name: tiles filename: "u4/shapes.ega" width: 16 height: 4096 depth: 4 filetype: u4raw tiles: 256 fixup: blackTransparencyHack) [
         at 0,0 size 16,16
         ; subimages
@@ -730,6 +731,7 @@ imageset EGA/VGA [
 
 tileanimset EGA [
     scroll:     [scroll 0]
+    scroll_pool:[scroll 1,0,0,2]    ; 2=tile_shallows
     frame:      [random 50 frame]
     slow_frame: [random  5 frame]
     cityflag:   [random 50 invert 5,2,4,4]
@@ -757,6 +759,7 @@ tileanimset EGA [
 
 tileanimset VGA [
     scroll:     [scroll 1]
+    scroll_pool:[scroll 1,0,0,2]    ; 2=tile_shallows
     frame:      [random 50 frame]
     slow_frame: [random  5 frame]
     cityflag:   [random 50 invert 5,2,5,4]

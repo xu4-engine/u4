@@ -534,9 +534,9 @@ process-cfg [
                     ]
             ) into [some [
                 'random int!    ; Ignore, handled above.
-              | 'invert set n coord! (new-transform 0 n)
-              | 'scroll set n int!   (new-transform 1 n)
-              | 'frame               (new-transform 2 0)
+              | 'invert set n coord!      (new-transform 0 n)
+              | 'scroll set n int!/coord! (new-transform 1 n)
+              | 'frame                    (new-transform 2 0)
               | 'pixel_color set n coord! (new-transform 3 n) into [
                     2 coord!
                 ]
