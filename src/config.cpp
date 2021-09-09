@@ -353,29 +353,31 @@ static void conf_tileLoad(ConfigXML* cfg, Tile* tile, const ConfigElement &conf)
         tile->setDirections(conf.getString("directions").c_str());
 }
 
-static void conf_tilesetLoad(ConfigXML* cfg, Tileset* ts, const ConfigElement& conf) {
-    //ts->name = conf.getString("name");
-    if (conf.exists("imageName"))
-        ts->imageName = conf.getString("imageName");
-
-    int index = 0;
+static Tileset* conf_tilesetLoad(ConfigXML* cfg, const ConfigElement& conf) {
     int moduleId = 0;
     vector<ConfigElement> children = conf.getChildren();
     vector<ConfigElement>::iterator it;
+
+    Tileset* ts = new Tileset(children.size());
+    Tile* tile = ts->tiles;
+
+    /*
+    ts->name = conf.getString("name");
+    if (conf.exists("imageName"))
+        ts->imageName = conf.getString("imageName");
+    */
+
     foreach (it, children) {
         if (it->getName() != "tile")
             continue;
 
-        Tile* tile = new Tile(moduleId++);
+        tile->id = moduleId++;
         conf_tileLoad(cfg, tile, *it);
-
-        /* add the tile to our tileset */
-        ts->tiles.push_back( tile );
-        ts->nameMap[tile->name] = tile;
-
-        index += tile->getFrames();
+        ts->nameMap[tile->name] = tile;     // Add tile to nameMap
+        ++tile;
     }
-    ts->totalFrames = index;
+    ts->tileCount = moduleId;
+    return ts;
 }
 
 static void conf_ultimaSaveIds(ConfigXML* cfg, UltimaSaveIds* usaveIds, Tileset* ts, const ConfigElement &conf) {
@@ -961,8 +963,7 @@ ConfigXML::ConfigXML() {
     ce = getElement("tilesets").getChildren();
     foreach (it, ce) {
         if (it->getName() == "tileset") {
-            xcd.tileset = new Tileset;
-            conf_tilesetLoad(this, xcd.tileset, *it);
+            xcd.tileset = conf_tilesetLoad(this, *it);
             break;      // Only support one tileset.
         }
     }
@@ -1308,7 +1309,7 @@ Map* Config::map(uint32_t id) {
 
     Map* rmap = CB->mapList[id];
     /* if the map hasn't been loaded yet, load it! */
-    if (! rmap->data.size()) {
+    if (! rmap->data) {
         if (! loadMap(rmap, NULL))
             errorFatal("loadMap failed to read \"%s\" (type %d)",
                        confString(rmap->fname), rmap->type);
@@ -1322,7 +1323,7 @@ Map* Config::restoreMap(uint32_t id) {
         return NULL;
 
     Map* rmap = CB->mapList[id];
-    if (! rmap->data.size()) {
+    if (! rmap->data) {
         FILE* sav = NULL;
         bool ok;
 

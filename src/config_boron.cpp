@@ -274,7 +274,7 @@ static int conf_tileRule(TileRule* rule, UBlockIt& bi)
     return 1;
 }
 
-static Tile* conf_tile(ConfigBoron* cfg, int id, UBlockIt& bi)
+static Tile* conf_tile(ConfigBoron* cfg, Tile* tile, int id, UBlockIt& bi)
 {
     static const uint8_t tparam[6] = {
         // name   rule   image   animation   directions   numA
@@ -283,7 +283,8 @@ static Tile* conf_tile(ConfigBoron* cfg, int id, UBlockIt& bi)
     if (! validParam(bi, sizeof(tparam), tparam))
         return NULL;
 
-    Tile* tile = new Tile(id);
+    tile->id = id;
+    tile->scale = 1;
     tile->name = ur_atom(bi.it);
 
     const UCell* cell = bi.it+1;
@@ -977,19 +978,18 @@ fail:
 
     // tileset (requires tileRules)
     if (blockIt(&bi, CI_TILESET)) {
-        Tile* tile;
-        int frameCount = 0;
-        int moduleId = 0;
-        Tileset* ts = xcd.tileset = new Tileset;
+        int moduleId;
+        int tileCount = (bi.end - bi.it) / 6;
+        Tileset* ts = xcd.tileset = new Tileset(tileCount);
+        Tile* tile = ts->tiles;
 
-        while ((tile = conf_tile(this, moduleId++, bi))) {
-            /* add the tile to our tileset */
-            ts->tiles.push_back(tile);
-            ts->nameMap[tile->name] = tile;
-
-            frameCount += tile->getFrames();
+        for (moduleId = 0; moduleId < tileCount; ++moduleId) {
+            if (! conf_tile(this, tile, moduleId, bi))
+                break;
+            ts->nameMap[tile->name] = tile;     // Add tile to nameMap
+            ++tile;
         }
-        ts->totalFrames = frameCount;
+        ts->tileCount = moduleId;
     }
 
     // u4-save-ids
@@ -1298,7 +1298,7 @@ Map* Config::map(uint32_t id) {
 
     Map* rmap = CB->mapList[id];
     /* if the map hasn't been loaded yet, load it! */
-    if (! rmap->data.size()) {
+    if (! rmap->data) {
         if (! loadMap(rmap, NULL))
             errorFatal("loadMap failed to read \"%s\" (type %d)",
                        confString(rmap->fname), rmap->type);
@@ -1312,7 +1312,7 @@ Map* Config::restoreMap(uint32_t id) {
         return NULL;
 
     Map* rmap = CB->mapList[id];
-    if (! rmap->data.size()) {
+    if (! rmap->data) {
         FILE* sav = NULL;
         bool ok;
 

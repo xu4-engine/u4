@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include "tileset.h"
 #include "u4.h"     // VIEWPORT_W
 
 extern uint32_t getTicks();
@@ -779,15 +780,23 @@ void gpu_resetMap(void* res, const Map* map)
 
 #define VIEW_TILE_SIZE  (2.0f / VIEWPORT_W)
 
-static void _buildChunkGeo(GLuint vbo, const uint8_t* chunk, int dim,
-                           const float* uvTable )
+/*
+ * \param chunk    Map data aligned at top-left of chunk.
+ * \param dim      Chunk tile dimensions
+ * \param stride   Chunk stride (map tile width)
+ */
+static void _buildChunkGeo(GLuint vbo, const TileId* chunk, int dim,
+                           int stride, const TileRenderData* renderData,
+                           const float* uvTable)
 {
     float drawRect[4];  // x, y, width, height
     const float* uvCur;
+    const float* uvScroll;
     float* attr;
+    const TileId* ip;
+    const TileRenderData* tr;
     float startX;
     int x, y;
-    int c;
     int vcount = dim * dim * 6;
 
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -806,34 +815,33 @@ static void _buildChunkGeo(GLuint vbo, const uint8_t* chunk, int dim,
 
     for (y = 0; y < dim; ++y) {
         drawRect[0] = startX;
+        ip = chunk;
         for (x = 0; x < dim; ++x) {
-            c = *chunk++;
-            uvCur = uvTable + c*4;
-            // TODO: Use config (tileset & tileanims) to activate scrolling.
-            if (c < 3 || (c > 67 && c < 72))
-                attr = gpu_emitQuadScroll(attr, drawRect, uvCur, uvCur[1]);
-            else if (c > 48 && c < 53)
-                attr = gpu_emitQuadScroll(attr, drawRect, uvCur, uvTable[9]);
-            else
+            tr = renderData + *ip++;
+            uvCur = uvTable + tr->vid*4;
+            if (tr->scroll != VID_UNSET) {
+                uvScroll = uvTable + tr->scroll*4;
+                attr = gpu_emitQuadScroll(attr, drawRect, uvCur, uvScroll[1]);
+            } else
                 attr = gpu_emitQuad(attr, drawRect, uvCur);
             drawRect[0] += drawRect[2];
         }
         drawRect[1] -= drawRect[3];
+        chunk += stride;
     }
 
     glUnmapBuffer(GL_ARRAY_BUFFER);
 }
 
 struct ChunkInfo {
-    const uint8_t* chunks;
+    const TileId* mapData;
+    const TileRenderData* renderData;
     const float* uvs;
     const GLuint* vbo;
     uint16_t* mapChunkLoc;
     int mapW;
     int mapH;
     int cdim;
-    int clen;
-    int chunksAcross;
     int geoUsedMask;
 };
 
@@ -899,8 +907,8 @@ static int _obtainChunkGeo(ChunkInfo* ci, int x, int y, int bumpPass)
 build:
     ci->mapChunkLoc[i] = chunkId;
     _buildChunkGeo(ci->vbo[i],
-                   ci->chunks + ci->clen * (crow * ci->chunksAcross + ccol),
-                   ci->cdim, ci->uvs);
+                   ci->mapData + (crow * ci->mapW + ccol) * ci->cdim,
+                   ci->cdim, ci->mapW, ci->renderData, ci->uvs);
 used:
     ci->geoUsedMask |= 1 << i;
     return i;
@@ -959,15 +967,14 @@ void gpu_drawMap(void* res, const Map* map, const float* tileUVs,
     int bindex[4];  // Chunk vertex buffer index (0-3) at view corner.
     int left, top, right, bot;
 
-    ci.chunks = map->chunks;
+    ci.mapData = map->data;
+    ci.renderData = map->tileset->render;
     ci.uvs    = tileUVs;
     ci.vbo    = gr->vbo + GLOB_MAP_CHUNK0;
     ci.mapChunkLoc = gr->mapChunkLoc;
     ci.mapW   = map->width;
     ci.mapH   = map->height;
     ci.cdim   = gr->mapChunkDim;
-    ci.clen   = ci.cdim * ci.cdim;
-    ci.chunksAcross = map->width / ci.cdim;
     ci.geoUsedMask  = 0;
 
     left  = cx - viewRadius;

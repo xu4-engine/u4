@@ -24,8 +24,6 @@ class Tileset;
 struct Portal;
 
 typedef std::vector<Portal *> PortalList;
-//typedef std::list<int> CompressedChunkList;
-typedef std::vector<TileId> MapData;
 
 /* flags */
 #define SHOW_AVATAR (1 << 0)
@@ -116,16 +114,13 @@ public:
     uint16_t        music;
     unsigned int    offset;
 
-    //CompressedChunkList compressed_chunks;
+    //uint8_t* compressed_chunks;       // Ultima 5 map
     PortalList      portals;
-    AnnotationMgr  *annotations;
-    MapData         data;
-#ifdef USE_GL
-    uint8_t* chunks;
-#endif
+    AnnotationMgr*  annotations;
+    TileId*         data;
     ObjectDeque     objects;
     std::map<Symbol, Coords> labels;
-    const Tileset  *tileset;
+    const Tileset*  tileset;
 
 private:
     // disallow map copying: all maps should be created and accessed

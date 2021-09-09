@@ -2,6 +2,7 @@
  * tileset.cpp
  */
 
+#include <cstring>
 #include "tileset.h"
 
 #include "error.h"
@@ -9,6 +10,7 @@
 #include "imagemgr.h"
 #include "settings.h"
 #include "tile.h"
+#include "tileanim.h"
 #include "xu4.h"
 
 /**
@@ -24,10 +26,11 @@ void Tileset::loadImages() {
             return;
 
         std::map<Symbol, int>::iterator j;
-        std::vector<Tile*>::iterator it;
-        foreach (it, ts->tiles) {
-            Tile* tile = *it;
-            tile->scale = SCALED_BASE;
+        Tile* tile = ts->tiles;
+        Tile* end  = tile + ts->tileCount;
+        TileRenderData* rit = ts->render;
+        for (; tile != end; ++rit, ++tile) {
+            rit->scroll = VID_UNSET;
 
             j = info->subImageIndex.find(tile->imageName);
             if (j != info->subImageIndex.end()) {
@@ -35,19 +38,30 @@ void Tileset::loadImages() {
                 tile->frames = subimage->celCount;
 
                 // Set visual to subimage index.
-                tile->vid = subimage - info->subImages;
+                rit->vid = subimage - info->subImages;
+
+                tile->loadImage();      // Set anim.
+                if (tile->anim) {
+                    const TileAnimTransform* trans = tile->anim->transforms[0];
+                    if (trans->animType == ATYPE_SCROLL) {
+                        if (trans->var.scroll.vid)
+                            rit->scroll = trans->var.scroll.vid;
+                        else
+                            rit->scroll = rit->vid;
+                    }
+                }
             } else {
-                tile->vid = VID_UNSET;
+                rit->vid = VID_UNSET;
                 errorWarning("No subimage found for tile '%s'", tile->nameStr());
             }
-            tile->loadImage();
             //printf("KR tile %d %s vid %d frames %d\n",
-            //       tile->id, tile->nameStr(), tile->vid, tile->frames);
+            //       tile->id, tile->nameStr(), rit->vid, tile->frames);
         }
 #else
-        std::vector<Tile*>::iterator it;
-        foreach (it, ts->tiles)
-            (*it)->loadImage();
+        Tile* it  = ts->tiles;
+        Tile* end = it + ts->tileCount;
+        for (; it != end; ++it)
+            it->loadImage();
 #endif
     }
 }
@@ -59,9 +73,10 @@ void Tileset::unloadImages() {
 #ifndef GPU_RENDER
     Tileset* ts = (Tileset*) xu4.config->tileset();
     if (ts) {
-        std::vector<Tile*>::iterator it;
-        foreach (it, ts->tiles)
-            (*it)->deleteImage();
+        Tile* it  = ts->tiles;
+        Tile* end = it + ts->tileCount;
+        for (; it != end; ++it)
+            it->deleteImage();
     }
 #endif
 }
@@ -77,19 +92,23 @@ const Tile* Tileset::findTileById(TileId id) {
     return xu4.config->tileset()->get(id);
 }
 
+Tileset::Tileset(int count) : tileCount(0) {
+    tiles  = new Tile[count];
+    render = new TileRenderData[count];
+    memset(tiles, 0, sizeof(Tile) * count);
+}
+
 Tileset::~Tileset() {
-    /* free all the tiles */
-    std::vector<Tile*>::iterator it;
-    foreach (it, tiles)
-        delete *it;
+    delete[] tiles;
+    delete[] render;
 }
 
 /**
  * Returns the tile with the given id in the tileset
  */
 const Tile* Tileset::get(TileId id) const {
-    if (id < tiles.size())
-        return tiles[id];
+    if (id < tileCount)
+        return tiles + id;
     return NULL;
 }
 

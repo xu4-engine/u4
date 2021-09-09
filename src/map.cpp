@@ -216,10 +216,8 @@ Map::Map() {
     flags = 0;
     offset = 0;
     id = 0;
+    data = NULL;
     tileset = NULL;
-#ifdef USE_GL
-    chunks = NULL;
-#endif
 }
 
 Map::~Map() {
@@ -229,9 +227,7 @@ Map::~Map() {
     }
     clearObjects();
     delete annotations;
-#ifdef USE_GL
-    delete[] chunks;
-#endif
+    delete[] data;
 }
 
 const char* Map::getName() const {
@@ -325,7 +321,7 @@ void Map::queryVisible(const Coords& center, int radius,
                        void* user, const Object** focusPtr) const {
     int minX, minY, maxX, maxY;
     const Coords* cp;
-    const std::vector<Tile*>& tiles = tileset->tiles;
+    const TileRenderData* rd = tileset->render;
     VisualId vid;
 
     *focusPtr = NULL;
@@ -346,7 +342,7 @@ void Map::queryVisible(const Coords& center, int radius,
             continue;
         //printf("KR ann %d %d %d,%d\n",
         //        ann.tile.id, ann.tile.frame, cp->x, cp->y);
-        vid = tiles[ann.tile.id]->vid;
+        vid = rd[ann.tile.id].vid;
         func(cp, vid, user);
     }
 
@@ -361,7 +357,7 @@ void Map::queryVisible(const Coords& center, int radius,
             *focusPtr = obj;
         //printf("KR obj %d %d %d,%d\n",
         //        obj->tile.id, obj->tile.frame, cp->x, cp->y);
-        vid = tiles[obj->tile.id]->vid;
+        vid = rd[obj->tile.id].vid;
         if (obj->animId != ANIM_UNUSED)
             vid += anim_valueI(animator, obj->animId);
         func(cp, vid, user);
@@ -371,7 +367,7 @@ void Map::queryVisible(const Coords& center, int radius,
         cp = &c->location->coords;
         if (! OUTSIDE(cp)) {
             MapTile trans = c->party->getTransport();
-            vid = tiles[trans.id]->vid;
+            vid = rd[trans.id].vid;
             func(cp, vid, user);
         }
     }

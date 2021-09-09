@@ -78,28 +78,6 @@ void Tile::initSymbols(Config* cfg) {
         "dungeon_floor\n");
 }
 
-Tile::Tile(int tid)
-    : id(tid)
-    , animationRule(0)
-    , w(0)
-    , h(0)
-    , frames(0)
-    , scale(1)
-    , opaque(false)
-    , foreground()
-    , waterForeground()
-    , tiledInDungeon(false)
-    , rule(NULL)
-    , image(NULL)
-    , anim(NULL)
-    , directionCount(0)
-{
-}
-
-Tile::~Tile() {
-    delete image;
-}
-
 void Tile::setDirections(const char* dirs) {
     const unsigned maxDir = sizeof(directions);
     directionCount = strlen(dirs);
@@ -131,9 +109,9 @@ const char* Tile::nameStr() const {
  * Loads the tile image
  */
 void Tile::loadImage() {
-    if (!image) {
 #ifndef GPU_RENDER
-        vid = VID_UNSET;
+    if (!image) {
+        //vid = VID_UNSET;
         scale = SCALED_BASE;
 
         const SubImage* subimage;
@@ -172,25 +150,32 @@ void Tile::loadImage() {
                 tiles->drawSubRectOn(image, 0, 0, subimage->x * scale, subimage->y * scale, subimage->width * scale, subimage->height * scale);
 
                 // Set visual to subimage index.
-                vid = subimage - info->subImages;
+                //vid = subimage - info->subImages;
             }
             else info->image->drawOn(image, 0, 0);
 
             if (wasBlending)
                 Image::enableBlend(1);
         }
+    }
 #endif
 
-        if (animationRule) {
-            const TileAnimSet* tileanims = screenState()->tileanims;
+    if (animationRule) {
+        const TileAnimSet* tileanims = screenState()->tileanims;
 
+        anim = NULL;
+        if (tileanims)
+            anim = tileanims->getByName(animationRule);
+        if (anim == NULL)
+            errorWarning("animation '%s' not found",
+                         xu4.config->symbolName(animationRule));
+#ifndef GPU_RENDER
+        // Hack to disable scroll_pool if not using GPU.
+        else if (anim->transforms[0]->animType == ATYPE_SCROLL &&
+                 anim->transforms[0]->var.scroll.vid) {
             anim = NULL;
-            if (tileanims)
-                anim = tileanims->getByName(animationRule);
-            if (anim == NULL)
-                errorWarning("animation '%s' not found",
-                             xu4.config->symbolName(animationRule));
         }
+#endif
     }
 }
 

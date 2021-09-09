@@ -22,12 +22,7 @@
 
 #ifdef U5_DAT
 static bool isChunkCompressed(Map *map, int chunk) {
-    CompressedChunkList::iterator i;
-    for (i = map->compressed_chunks.begin(); i != map->compressed_chunks.end(); i++) {
-        if (chunk == *i)
-            return true;
-    }
-    return false;
+    return map->compressed_chunks[ chunk ] == 255;
 }
 #endif
 
@@ -35,29 +30,34 @@ static bool isChunkCompressed(Map *map, int chunk) {
  * Loads raw data from the given file.
  */
 static bool loadMapData(Map *map, U4FILE *uf) {
-    unsigned int x, xch, y, ych;
+    unsigned int x, xch, y, ych, di;
+    uint8_t* chunk;
+    uint8_t* cp;
     const UltimaSaveIds* usaveIds = xu4.config->usaveIds();
+    bool ok = false;
 #ifdef U5_DAT
     Symbol sym_sea = SYM_UNSET;
 #endif
 
     /* allocate the space we need for the map data */
-    map->data.resize(map->height * map->width, 0);
+    map->data = new TileId[map->width * map->height];
 
     if (map->chunk_height == 0)
         map->chunk_height = map->height;
     if (map->chunk_width == 0)
         map->chunk_width = map->width;
 
-    u4fseek(uf, map->offset, SEEK_CUR);
-
-#ifdef USE_GL
     size_t chunkLen = map->chunk_width * map->chunk_height;
-    map->chunks = new uint8_t[map->width * map->height];
-    uint8_t* cp = map->chunks;
-#endif
+    chunk = new uint8_t[chunkLen];
+
+    if (map->offset)
+        u4fseek(uf, map->offset, SEEK_CUR);
+
     for(ych = 0; ych < (map->height / map->chunk_height); ++ych) {
         for(xch = 0; xch < (map->width / map->chunk_width); ++xch) {
+            di = (xch * map->chunk_width) +
+                 (ych * map->chunk_height * map->width);
+
 #ifdef U5_DAT
             if (isChunkCompressed(map, ych * map->chunk_width + xch)) {
                 if (! sym_sea)
@@ -65,36 +65,33 @@ static bool loadMapData(Map *map, U4FILE *uf) {
                 MapTile water = map->tileset->getByName(sym_sea)->getId();
                 for(y = 0; y < map->chunk_height; ++y) {
                     for(x = 0; x < map->chunk_width; ++x) {
-                        map->data[x + (y * map->width) + (xch * map->chunk_width) + (ych * map->chunk_height * map->width)] = water.id;
+                        map->data[x + (y * map->width) + di] = water.id;
                     }
                 }
             }
             else
 #endif
             {
-#ifdef USE_GL
-                size_t n = u4fread(cp, 1, chunkLen, uf);
+                size_t n = u4fread(chunk, 1, chunkLen, uf);
                 if (n != chunkLen)
-                    return false;
-#endif
+                    goto cleanup;
+
+                cp = chunk;
                 for(y = 0; y < map->chunk_height; ++y) {
                     for(x = 0; x < map->chunk_width; ++x) {
-#ifdef USE_GL
                         int c = *cp++;
-#else
-                        int c = u4fgetc(uf);
-                        if (c == EOF)
-                            return false;
-#endif
                         MapTile mt = usaveIds->moduleId(c);
-                        map->data[x + (y * map->width) + (xch * map->chunk_width) + (ych * map->chunk_height * map->width)] = mt.id;
+                        map->data[x + (y * map->width) + di] = mt.id;
                     }
                 }
             }
         }
     }
+    ok = true;
 
-    return true;
+cleanup:
+    delete[] chunk;
+    return ok;
 }
 
 enum PersonDataOffset {
@@ -276,11 +273,15 @@ static void initDungeonRoom(Dungeon *dng, int room) {
     cmap->id = 0;
     cmap->border_behavior = Map::BORDER_FIXED;
     cmap->width = cmap->height = 11;
-    cmap->data = dng->rooms[room].map_data; // Load map data
     cmap->music = MUSIC_COMBAT;
     cmap->type = Map::COMBAT;
     cmap->flags |= NO_LINE_OF_SIGHT;
     cmap->tileset = xu4.config->tileset();
+
+    // Copy map data.
+    size_t tcount = cmap->width * cmap->height;
+    cmap->data = new TileId[tcount];
+    memcpy(cmap->data, &dng->rooms[room].map_data[0], tcount * sizeof(TileId));
 }
 
 /**
@@ -310,10 +311,14 @@ static bool loadDungeonMap(Map *map, U4FILE *uf, FILE *sav) {
     if (i != bytes)
         return false;
 
+    if (! dungeon->data)
+        dungeon->data = new TileId[bytes];
+
+    TileId* dp = dungeon->data;
     for (i = 0; i < bytes; i++) {
         j = *rawMap++;
         MapTile tile(usaveIds->dngMapToModule(j), 0);
-        dungeon->data.push_back(tile.id);
+        *dp++ = tile.id;
         //printf( "KR dng tile %d: %d => %d\n", i, j, tile.id);
     }
 
