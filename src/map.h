@@ -15,8 +15,6 @@
 #include "types.h"
 #include "u4file.h"
 
-#define MAP_IS_OOB(mapptr, c) (((c).x) < 0 || ((c).x) >= (static_cast<int>((mapptr)->width)) || ((c).y) < 0 || ((c).y) >= (static_cast<int>((mapptr)->height)) || ((c).z) < 0 || ((c).z) >= (static_cast<int>((mapptr)->levels)))
-
 class AnnotationMgr;
 class Object;
 class Creature;
@@ -110,6 +108,8 @@ public:
                     levels;
     uint16_t        chunk_width,
                     chunk_height;
+    uint16_t        boundMaxX,
+                    boundMaxY;
     uint16_t        flags;
     uint16_t        music;
     unsigned int    offset;
@@ -146,5 +146,8 @@ void map_move(Coords&, int dx, int dy, const Map *map = NULL);
 int  map_getRelativeDirection(const Coords& a, const Coords& b, const Map* map = NULL);
 int  map_movementDistance(const Coords& a, const Coords &b, const Map *map = NULL);
 int  map_distance(const Coords& a, const Coords& b, const Map* map = NULL);
+bool map_outOfBounds(const Map* map, const Coords& c);
+
+#define MAP_IS_OOB(M,C) map_outOfBounds(M, C)
 
 #endif

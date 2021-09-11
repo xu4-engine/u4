@@ -201,6 +201,12 @@ int map_distance(const Coords& a, const Coords& b, const Map *map) {
     return dist;
 }
 
+bool map_outOfBounds(const Map* map, const Coords& c) {
+    return (c.x < 0 || c.x >= (int) map->boundMaxX ||
+            c.y < 0 || c.y >= (int) map->boundMaxY ||
+            c.z < 0 || c.z >= (int) map->levels);
+}
+
 /**
  * Map Class Implementation
  */
@@ -213,6 +219,7 @@ Map::Map() {
     levels = 1;
     chunk_width = 0;
     chunk_height = 0;
+    boundMaxX = boundMaxY = 0;
     flags = 0;
     offset = 0;
     id = 0;

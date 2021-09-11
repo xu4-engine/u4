@@ -29,8 +29,9 @@ static bool isChunkCompressed(Map *map, int chunk) {
 /**
  * Loads raw data from the given file.
  */
-static bool loadMapData(Map *map, U4FILE *uf) {
+static bool loadMapData(Map *map, U4FILE *uf, Symbol borderTile) {
     unsigned int x, xch, y, ych, di;
+    unsigned int chunkCols, chunkRows;
     uint8_t* chunk;
     uint8_t* cp;
     const UltimaSaveIds* usaveIds = xu4.config->usaveIds();
@@ -39,13 +40,41 @@ static bool loadMapData(Map *map, U4FILE *uf) {
     Symbol sym_sea = SYM_UNSET;
 #endif
 
-    /* allocate the space we need for the map data */
-    map->data = new TileId[map->width * map->height];
-
     if (map->chunk_height == 0)
         map->chunk_height = map->height;
     if (map->chunk_width == 0)
         map->chunk_width = map->width;
+
+    map->boundMaxX = map->width;
+    map->boundMaxY = map->height;
+
+    chunkCols = map->width / map->chunk_width;
+    chunkRows = map->height / map->chunk_height;
+
+#ifdef GPU_RENDER
+    bool addBorder = false;
+    if (map->border_behavior == Map::BORDER_EXIT2PARENT && borderTile) {
+        // gpu_drawMap() always wraps the map so adding border chunks to the
+        // bottom & right edges will render these borders on all edges.
+        map->width  += map->chunk_width;
+        map->height += map->chunk_height;
+        addBorder = true;
+    }
+#endif
+
+    /* allocate the space we need for the map data */
+    map->data = new TileId[map->width * map->height];
+
+#ifdef GPU_RENDER
+    if (addBorder) {
+        // Fill the entire map with borderTile.
+        TileId borderId = Tileset::findTileByName(borderTile)->id;
+        TileId* it = map->data;
+        TileId* end = it + map->width * map->height;
+        while (it != end)
+            *it++ = borderId;
+    }
+#endif
 
     size_t chunkLen = map->chunk_width * map->chunk_height;
     chunk = new uint8_t[chunkLen];
@@ -53,8 +82,8 @@ static bool loadMapData(Map *map, U4FILE *uf) {
     if (map->offset)
         u4fseek(uf, map->offset, SEEK_CUR);
 
-    for(ych = 0; ych < (map->height / map->chunk_height); ++ych) {
-        for(xch = 0; xch < (map->width / map->chunk_width); ++xch) {
+    for(ych = 0; ych < chunkRows; ++ych) {
+        for(xch = 0; xch < chunkCols; ++xch) {
             di = (xch * map->chunk_width) +
                  (ych * map->chunk_height * map->width);
 
@@ -132,7 +161,7 @@ static bool loadCityMap(Map *map, U4FILE *ult) {
     ASSERT(city->width == CITY_WIDTH, "map width is %d, should be %d", city->width, CITY_WIDTH);
     ASSERT(city->height == CITY_HEIGHT, "map height is %d, should be %d", city->height, CITY_HEIGHT);
 
-    if (! loadMapData(city, ult))
+    if (! loadMapData(city, ult, Tile::sym.grass))
         return false;
 
     data = new uint8_t[PD_SIZE];
@@ -260,7 +289,7 @@ static bool loadCombatMap(Map *map, U4FILE *uf) {
         u4fseek(uf, 16L, SEEK_CUR);
     }
 
-    return loadMapData(map, uf);
+    return loadMapData(map, uf, SYM_UNSET);
 }
 
 /**
@@ -464,7 +493,7 @@ bool loadMap(Map *map, FILE* sav) {
                 break;
 
             case Map::WORLD:
-                ok = loadMapData(map, uf);
+                ok = loadMapData(map, uf, SYM_UNSET);
                 break;
         }
         u4fclose(uf);

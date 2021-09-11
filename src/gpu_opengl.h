@@ -67,5 +67,5 @@ struct OpenGLResources {
     int    blockCount;
     GLsizei mapChunkVertCount;
     uint16_t mapChunkDim;       // Size in tiles (width & height are the same).
-    uint16_t mapChunkLoc[4];    // Chunk X,Y of associated GLOB_MAP_CHUNK.
+    uint16_t mapChunkId[4];     // Chunk X,Y of associated GLOB_MAP_CHUNK.
 };

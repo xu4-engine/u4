@@ -775,7 +775,7 @@ void gpu_resetMap(void* res, const Map* map)
     }
 
     // Clear chunk cache.
-    memset(gr->mapChunkLoc, 0xff, 4*sizeof(uint16_t));
+    memset(gr->mapChunkId, 0xff, 4*sizeof(uint16_t));
 }
 
 #define VIEW_TILE_SIZE  (2.0f / VIEWPORT_W)
@@ -833,21 +833,32 @@ static void _buildChunkGeo(GLuint vbo, const TileId* chunk, int dim,
     glUnmapBuffer(GL_ARRAY_BUFFER);
 }
 
+struct ChunkLoc {
+    int16_t x, y;
+};
+
 struct ChunkInfo {
     const TileId* mapData;
     const TileRenderData* renderData;
     const float* uvs;
     const GLuint* vbo;
-    uint16_t* mapChunkLoc;
+    uint16_t* mapChunkId;
+    ChunkLoc* chunkLoc;
     int mapW;
     int mapH;
     int cdim;
     int geoUsedMask;
 };
 
-#define WRAP(x,w) \
-    if (x < 0) x += w; \
-    else if (x >= w) x -= w;
+#define WRAP(x,loc,limit) \
+    if (x < 0) { \
+        x += limit; \
+        loc = -limit; \
+    } else if (x >= limit) { \
+        x -= limit; \
+        loc = limit; \
+    } else \
+        loc = 0;
 
 // LIMIT: Maximum of 256x256 chunks.
 #define CHUNK_ID(c,r)       (c<<8 | r)
@@ -866,10 +877,12 @@ static int _obtainChunkGeo(ChunkInfo* ci, int x, int y, int bumpPass)
 {
     int i;
     int ccol, crow;
+    int wx, wy;
     uint16_t chunkId;
+    ChunkLoc* loc;
 
-    WRAP(x, ci->mapW);
-    WRAP(y, ci->mapH);
+    WRAP(x, wx, ci->mapW);
+    WRAP(y, wy, ci->mapH);
     ccol = x / ci->cdim;
     crow = y / ci->cdim;
     chunkId = CHUNK_ID(ccol, crow);
@@ -890,13 +903,13 @@ static int _obtainChunkGeo(ChunkInfo* ci, int x, int y, int bumpPass)
     {
         // Check if already made.
         for (i = 0; i < CHUNK_CACHE_SIZE; ++i) {
-            if (ci->mapChunkLoc[i] == chunkId)
+            if (ci->mapChunkId[i] == chunkId)
                 goto used;
         }
 
         // Find unused VBO.
         for (i = 0; i < CHUNK_CACHE_SIZE; ++i) {
-            if (ci->mapChunkLoc[i] == 0xffff)
+            if (ci->mapChunkId[i] == 0xffff)
                 goto build;
         }
 
@@ -905,11 +918,14 @@ static int _obtainChunkGeo(ChunkInfo* ci, int x, int y, int bumpPass)
     }
 
 build:
-    ci->mapChunkLoc[i] = chunkId;
+    ci->mapChunkId[i] = chunkId;
     _buildChunkGeo(ci->vbo[i],
                    ci->mapData + (crow * ci->mapW + ccol) * ci->cdim,
                    ci->cdim, ci->mapW, ci->renderData, ci->uvs);
 used:
+    loc = ci->chunkLoc + i;
+    loc->x = wx + (ccol * ci->cdim);
+    loc->y = wy + (crow * ci->cdim);
     ci->geoUsedMask |= 1 << i;
     return i;
 }
@@ -928,6 +944,7 @@ void gpu_drawMap(void* res, const Map* map, const float* tileUVs,
                  int cx, int cy, int viewRadius)
 {
     OpenGLResources* gr = (OpenGLResources*) res;
+    ChunkLoc cloc[4];   // Tile location of chunks on the map.
     int i, usedMask;
 
 #if 1
@@ -971,7 +988,8 @@ void gpu_drawMap(void* res, const Map* map, const float* tileUVs,
     ci.renderData = map->tileset->render;
     ci.uvs    = tileUVs;
     ci.vbo    = gr->vbo + GLOB_MAP_CHUNK0;
-    ci.mapChunkLoc = gr->mapChunkLoc;
+    ci.mapChunkId = gr->mapChunkId;
+    ci.chunkLoc = cloc;
     ci.mapW   = map->width;
     ci.mapH   = map->height;
     ci.cdim   = gr->mapChunkDim;
@@ -1003,8 +1021,6 @@ void gpu_drawMap(void* res, const Map* map, const float* tileUVs,
 
     {
     float matrix[16];
-    int wx, wy;         // Tile location of chunk on the map.
-    uint16_t chunkId;
 
     gr->time = ((float) getTicks()) * 0.001;
     memcpy(matrix, unitMatrix, sizeof(matrix));
@@ -1029,11 +1045,8 @@ void gpu_drawMap(void* res, const Map* map, const float* tileUVs,
     for (i = 0; i < 4; ++i) {
         if (usedMask & (1 << i)) {
             // Position chunk in viewport.
-            chunkId = gr->mapChunkLoc[i];
-            wx = (chunkId >> 8)  * gr->mapChunkDim;
-            wy = (chunkId & 255) * gr->mapChunkDim;
-            matrix[ MAT_X ] = (float) (wx - cx) * VIEW_TILE_SIZE;
-            matrix[ MAT_Y ] = (float) (cy - wy) * VIEW_TILE_SIZE;
+            matrix[ MAT_X ] = (float) (cloc[i].x - cx) * VIEW_TILE_SIZE;
+            matrix[ MAT_Y ] = (float) (cy - cloc[i].y) * VIEW_TILE_SIZE;
             glUniformMatrix4fv(gr->slocTrans, 1, GL_FALSE, matrix);
 
             glBindVertexArray(gr->vao[ GLOB_MAP_CHUNK0 + i ]);
