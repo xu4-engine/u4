@@ -356,7 +356,7 @@ void Map::queryVisible(const Coords& center, int radius,
     const Animator* animator = &xu4.eventHandler->flourishAnim;
     ObjectDeque::const_iterator it;
     for(it = objects.begin(); it != objects.end(); it++) {
-        const Object* obj = *it;
+        Object* obj = *it;
         cp = &obj->coords;
         if (OUTSIDE(cp))
             continue;
@@ -364,9 +364,10 @@ void Map::queryVisible(const Coords& center, int radius,
             *focusPtr = obj;
         //printf("KR obj %d %d %d,%d\n",
         //        obj->tile.id, obj->tile.frame, cp->x, cp->y);
-        vid = rd[obj->tile.id].vid;
-        if (obj->animId != ANIM_UNUSED)
-            vid += anim_valueI(animator, obj->animId);
+        if (obj->animId != ANIM_UNUSED) {
+            obj->tile.frame = anim_valueI(animator, obj->animId);
+        }
+        vid = rd[obj->tile.id].vid + obj->tile.frame;
         func(cp, vid, user);
     }
 
@@ -374,7 +375,7 @@ void Map::queryVisible(const Coords& center, int radius,
         cp = &c->location->coords;
         if (! OUTSIDE(cp)) {
             MapTile trans = c->party->getTransport();
-            vid = rd[trans.id].vid;
+            vid = rd[trans.id].vid + trans.frame;
             func(cp, vid, user);
         }
     }
