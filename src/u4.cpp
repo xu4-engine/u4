@@ -178,7 +178,7 @@ void servicesInit(XU4GameServices* gs, Options* opt) {
     if (! (opt->flags & OPT_NO_AUDIO))
         soundInit();
 
-    gs->eventHandler = new EventHandler;
+    gs->eventHandler = new EventHandler(1000/gs->settings->gameCyclesPerSecond);
 
     gs->stage = (opt->flags & OPT_NO_INTRO) ? StagePlay : StageIntro;
 }

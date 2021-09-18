@@ -191,7 +191,7 @@ void EventHandler::wait_msecs(unsigned int msec) {
                 if (event.timer.source == sa->refreshTimer) {
                     redraw = true;
                 } else {
-                    eh->getTimer()->tick();
+                    eh->timedEvents.tick();
                 }
                 if (getTicks() >= endTime)
                     sleeping = false;
@@ -243,7 +243,7 @@ void EventHandler::run() {
                 if (event.timer.source == sa->refreshTimer)
                     redraw = true;
                 else
-                    getTimer()->tick();
+                    timedEvents.tick();
                 break;
             /*
             case SDL_ACTIVEEVENT:

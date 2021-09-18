@@ -978,8 +978,8 @@ bool GameController::keyPressed(int key) {
                     settings.gameCyclesPerSecond = DEFAULT_CYCLES_PER_SECOND;
 
                 if (old_cycles != settings.gameCyclesPerSecond) {
-                    eventTimerGranularity = (1000 / settings.gameCyclesPerSecond);
-                    xu4.eventHandler->getTimer()->reset(eventTimerGranularity);
+                    xu4.eventHandler->setTimerInterval(1000 /
+                                                settings.gameCyclesPerSecond);
 
                     if (settings.gameCyclesPerSecond == DEFAULT_CYCLES_PER_SECOND)
                         screenMessage("Speed: Normal\n");
@@ -2925,8 +2925,7 @@ void GameController::timerFired() {
         }
 
         updateMoons(true);
-        anim_advance(&xu4.eventHandler->flourishAnim,
-                     float(eventTimerGranularity) * 0.001f);
+        xu4.eventHandler->advanceFlourishAnim();
         screenCycle();
         gameUpdateScreen();
 

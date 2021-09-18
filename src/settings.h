@@ -175,13 +175,14 @@ public:
 
     void init(const char* profileName);
     void setData(const SettingsData &data);
-    bool read();
     bool write();
     const std::string &getUserPath() const { return userPath; }
 
     std::string profile;
 
 private:
+    bool read();
+
     std::string userPath;
     std::string filename;
 };

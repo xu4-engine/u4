@@ -9,7 +9,6 @@
 
 #include "debug.h"
 #include "error.h"
-#include "event.h"
 #include "filesystem.h"
 #include "screen.h"
 #include "utils.h"
@@ -157,7 +156,6 @@ uint8_t Settings::settingEnum(const char** names, const char* value) {
 bool Settings::read() {
     char buffer[256];
     FILE *settingsFile;
-    extern int eventTimerGranularity;
 
     /* default settings */
     scale                 = DEFAULT_SCALE;
@@ -355,8 +353,6 @@ bool Settings::read() {
     }
 
     fclose(settingsFile);
-
-    eventTimerGranularity = (1000 / gameCyclesPerSecond);
     return true;
 }
 
