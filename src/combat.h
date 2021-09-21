@@ -82,10 +82,7 @@ public:
 
     // attack functions
     void attack();
-    bool attackAt(const Coords &coords, PartyMember *attacker, int dir, int range, int distance);
-    bool rangedAttack(const Coords &coords, Creature *attacker);
-    void rangedMiss(const Coords &coords, Creature *attacker);
-    bool returnWeaponToOwner(const Coords &coords, int distance, int dir, const Weapon *weapon);
+    bool creatureRangedAttack(Creature* attacker, int dir);
 
     // Key handlers
     virtual bool keyPressed(int key);
@@ -115,6 +112,10 @@ protected:
 private:
     CombatController(const CombatController&);
     const CombatController &operator=(const CombatController&);
+
+    bool attackAt(const Coords &coords, PartyMember *attacker, int dir, int range, int distance);
+    bool returnWeaponToOwner(const Coords &coords, int distance, int dir,
+                             const Weapon *weapon);
 };
 
 typedef std::vector<Creature *> CreatureVector;

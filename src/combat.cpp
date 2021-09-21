@@ -564,11 +564,12 @@ bool CombatController::attackAt(const Coords &coords, PartyMember *attacker, int
     return true;
 }
 
-bool CombatController::rangedAttack(const Coords &coords, Creature *attacker) {
-    MapTile hittile = map->tileset->getByName(attacker->getHitTile())->getId();
-    MapTile misstile = map->tileset->getByName(attacker->getMissTile())->getId();
+static bool rangedAttack(const Coords &coords, CombatMap* map,
+                         Creature *attacker,
+                         const MapTile& hittile, const MapTile& misstile) {
 
-    Creature *target = isCreature(attacker) ? map->partyMemberAt(coords) : map->creatureAt(coords);
+    Creature *target = isCreature(attacker) ? map->partyMemberAt(coords)
+                                            : map->creatureAt(coords);
 
     /* If we haven't hit something valid, stop now */
     if (!target) {
@@ -642,11 +643,26 @@ bool CombatController::rangedAttack(const Coords &coords, Creature *attacker) {
     return true;
 }
 
-void CombatController::rangedMiss(const Coords &coords, Creature *attacker) {
-    /* If the creature leaves a tile behind, do it here! (lava lizard, etc) */
-    const Tile *ground = map->tileTypeAt(coords, WITH_GROUND_OBJECTS);
-    if (attacker->leavesTile() && ground->isWalkable())
-        map->annotations->add(coords, map->tileset->getByName(attacker->getHitTile())->getId());
+bool CombatController::creatureRangedAttack(Creature* attacker, int dir) {
+    MapTile hit  = map->tileset->getByName(attacker->getHitTile())->getId();
+    MapTile miss = map->tileset->getByName(attacker->getMissTile())->getId();
+    vector<Coords> path = gameGetDirectionalActionPath(dir, MASK_DIR_ALL,
+                                attacker->getCoords(), 1, 11,
+                                &Tile::canAttackOverTile, false);
+    vector<Coords>::iterator it;
+    for (it = path.begin(); it != path.end(); it++) {
+        if (rangedAttack(*it, map, attacker, hit, miss))
+            return true;
+    }
+
+    // If a miss leaves a tile behind, do it here! (lava lizard, etc)
+    if (attacker->leavesTile() && path.size() > 0) {
+        const Coords& coords = path[path.size() - 1];
+        const Tile *ground = map->tileTypeAt(coords, WITH_GROUND_OBJECTS);
+        if (ground->isWalkable())
+            map->annotations->add(coords, hit);
+    }
+    return false;
 }
 
 bool CombatController::returnWeaponToOwner(const Coords &coords, int distance, int dir, const Weapon *weapon) {
@@ -1078,14 +1094,15 @@ void CombatController::attack() {
 
     // the attack was already made, even if there is no valid target
     // so play the attack sound
-    soundPlay(SOUND_PC_ATTACK, false);                                        // PC_ATTACK, melee and ranged
+    soundPlay(SOUND_PC_ATTACK, false);
 
 
-    vector<Coords> path = gameGetDirectionalActionPath(MASK_DIR(dir), MASK_DIR_ALL,
-                                                       attacker->getCoords(),
-                                                       1, range,
-                                                       weapon->canAttackThroughObjects() ? NULL : &Tile::canAttackOverTile,
-                                                       false);
+    vector<Coords> path =
+        gameGetDirectionalActionPath(MASK_DIR(dir), MASK_DIR_ALL,
+                                attacker->getCoords(), 1, range,
+                                weapon->canAttackThroughObjects() ? NULL
+                                                    : &Tile::canAttackOverTile,
+                                false);
 
     bool foundTarget = false;
     int targetDistance = path.size();
@@ -1112,9 +1129,12 @@ void CombatController::attack() {
     }
 
     // does weapon leave a tile behind? (e.g. flaming oil)
-    const Tile *ground = map->tileTypeAt(targetCoords, WITHOUT_OBJECTS);
-    if (weapon->leaveTile && ground->isWalkable())
-        map->annotations->add(targetCoords, map->tileset->getByName(weapon->leaveTile)->getId());
+    if (weapon->leaveTile) {
+        const Tile *ground = map->tileTypeAt(targetCoords, WITHOUT_OBJECTS);
+        if (ground->isWalkable())
+            map->annotations->add(targetCoords,
+                    map->tileset->getByName(weapon->leaveTile)->getId());
+    }
 
     /* show the 'miss' tile */
     if (!foundTarget) {
