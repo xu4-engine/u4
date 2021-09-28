@@ -8,7 +8,7 @@ class ImageMgr;
 struct Screen;
 class Image;
 class EventHandler;
-class SaveGame;
+struct SaveGame;
 class IntroController;
 class GameController;
 
