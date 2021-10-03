@@ -30,7 +30,7 @@ if [ "$1" == "win" ]; then
   copr -t mingw use_gl:false make_util:false
 ' >$HDIR/${SCRIPT}
 
-	podman run -d -it --name=$ID dev/f33-mingw:1.3 /bin/bash || exit
+	podman run -d -it --name=$ID xu4/f33-mingw:1.0 /bin/bash || exit
 	podman cp ${WSM}/allegro-x86_64-w64-mingw32-gcc-10.2.0-posix-seh-static-5.2.7.0.zip $ID:$CDIR
 	podman cp ${WSM}/boron-x86_64-w64-mingw32-static-2.0.6.zip $ID:$CDIR
 	podman cp project.tar.gz $ID:$CDIR
@@ -55,7 +55,7 @@ else
   copr use_gl:false make_util:false boron_sdk:%../boron
 ' >$HDIR/${SCRIPT}
 
-	podman run -d -it --name=$ID dev/f33-xu4:1.1 /bin/bash || exit
+	podman run -d -it --name=$ID xu4/f33-gcc:1.0 /bin/bash || exit
 	podman cp ${WSL}/boron-x86_64-static-2.0.6.tar.bz2 $ID:$CDIR
 	podman cp project.tar.gz $ID:$CDIR
 	podman cp $HDIR/${SCRIPT} $ID:$CDIR/${SCRIPT}

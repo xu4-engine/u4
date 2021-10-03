@@ -1,0 +1,8 @@
+# Image for building Windows programs using the MinGW cross compiler.
+
+FROM xu4/fedora33:base
+
+USER root
+RUN dnf -y install mingw64-gcc-c++ mingw64-zlib mingw64-zlib-static mingw64-libogg mingw64-libvorbis mingw64-libpng mingw64-freetype mingw32-openal-soft
+
+USER build
