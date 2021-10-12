@@ -162,6 +162,7 @@ const UBuffer* ConfigBoron::blockBuffer(int value, uint32_t n, int dataType) con
 #define WORD_NONE   (UT_BI_COUNT + UT_WORD)
 #define COORD_NONE  (UT_BI_COUNT + UT_COORD)
 #define STRING_NONE (UT_BI_COUNT + UT_STRING)
+#define FILE_NONE   (UT_BI_COUNT + UT_FILE)
 #define BLOCK_NONE  (UT_BI_COUNT + UT_BLOCK)
 
 static bool validParam(const UBlockIt& bi, int count, const uint8_t* dtype)
@@ -507,7 +508,7 @@ static Map* conf_makeMap(ConfigBoron* cfg, Tileset* tiles, UBlockIt& bi)
 {
     static const uint8_t mparam[3] = {
         // fname  numA  numB
-        UT_FILE, UT_COORD, UT_COORD
+        FILE_NONE, UT_COORD, UT_COORD
     };
     if (! validParam(bi, sizeof(mparam), mparam))
         return NULL;
@@ -543,7 +544,10 @@ static Map* conf_makeMap(ConfigBoron* cfg, Tileset* tiles, UBlockIt& bi)
     if (! map)
         return NULL;
 
-    map->fname  = ASTR(bi.it->series.buf);
+    if (ur_is(bi.it, UT_FILE))
+        map->fname = ASTR(bi.it->series.buf);   // Data from original U4 file.
+    else
+        map->fname = UR_INVALID_BUF;            // Data from Config::mapFile.
     map->id     = (MapId) numA[0];
     map->type   = mtype;
     map->border_behavior = numA[2];
@@ -1184,6 +1188,14 @@ const CDIEntry* Config::fileEntry( const char* sourceFilename ) const {
  */
 const CDIEntry* Config::imageFile( const char* id ) const {
     uint32_t appId = CDI32(id[0], id[1], id[2], id[3]);
+    return cdi_findAppId(CX->toc, CX->tocUsed, appId);
+}
+
+/*
+ * Return a CDIEntry pointer for the given Map::id.
+ */
+const CDIEntry* Config::mapFile( uint32_t id ) const {
+    uint32_t appId = CDI32('M', 'A', (id >> 8), (id & 255));
     return cdi_findAppId(CX->toc, CX->tocUsed, appId);
 }
 

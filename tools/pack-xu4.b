@@ -29,6 +29,7 @@ fatal: func ['code msg] [
     print msg
     quit/return select [
         usage   64  ; EX_USAGE
+        data    65  ; EX_DATAERR
         noinput 66  ; EX_NOINPUT
         config  78  ; EX_CONFIG
     ] code
@@ -70,6 +71,8 @@ apair: func [series a b] [append append series a b]
 enum-value: func [list val] [
     either pos: find list val [sub index? pos 1] 0
 ]
+
+file-ext: func [file] [find/last file '.']
 
 class-constraint: context [
     mage:   0x01  bard:    0x02  fighter: 0x04  druid:    0x08
@@ -124,6 +127,61 @@ attribute-flags: func [blk spec] [
 
 none-zero: func [v] [either v v 0]
 none-neg1: func [v] [either v v -1]
+
+;---------------------------------------
+; TMX Map
+
+tmx-fatal: func [file msg] [fatal data ["TMX" file '-' msg]]
+
+load-tmx: func [file /extern width height data /local it] [
+    w: csv: none
+
+    ; See https://doc.mapeditor.org/en/stable/reference/tmx-map-format/
+    parse read/text file [
+        thru "<map "
+        thru "<layer " thru {width="} w: thru {height="} h:
+        thru "<data " thru {encoding="} enc: thru '>'
+        csv: to "</data" :csv (
+            w: to-int w
+            h: to-int h
+            enc: slice enc 3
+        )
+    ]
+
+    case [
+        none? w         [tmx-fatal file "no map layer found"]
+        none? csv       [tmx-fatal file "no map data found"]
+        ne? enc "csv"   [tmx-fatal file "data encoding is not CSV"]
+        not zero? and w 31 [tmx-fatal file "width is not a multiple of 32"]
+        not zero? and h 31 [tmx-fatal file "height is not a multiple of 32"]
+    ]
+
+    context [
+        width: w
+        height: h
+        data: to-block construct csv [',' ' ']
+        map it data [sub it 1]      ; Convert indices to zero base.
+    ]
+]
+
+; Return data as a series of chunks.
+; Chunk-dim is the tile width & height of a single chunk.
+map-chunks: func [tile-w tile-h data chunk-dim] [
+    cdata: make binary! size? data
+    chunks-y: div tile-h chunk-dim
+    loop div tile-w chunk-dim [
+        x: 0
+        loop chunks-y [
+            in-row: skip data mul ++ x chunk-dim
+            loop chunk-dim [
+                append cdata slice in-row chunk-dim
+                in-row: skip in-row tile-w
+            ]
+        ]
+        data: skip data mul chunk-dim tile-w
+    ]
+    cdata
+]
 
 ;---------------------------------------
 ; CDI Package
@@ -197,6 +255,7 @@ file-id: func [str /extern file-id-seen] [
 ]
 
 img_id: "IM^0^0"
+tmx_id: "MA^0^0"
 file_buf: make binary! 4096
 
 ; Return app_id of PNG chunk.
@@ -209,6 +268,21 @@ pack-png: func [path filename] [
         cdi-chunk 0x1002 img_id read/into join path filename file_buf
     ]
     img_id
+]
+
+; Return app_id of map chunk.
+pack-tmx: func [id filename chunk-dim] [
+    poke tmx_id 3 div id 256
+    poke tmx_id 4 and id 255
+
+    tmx: load-tmx filename
+    data: tmx/data
+    if chunk-dim [
+        data: map-chunks tmx/width tmx/height data chunk-dim
+    ]
+    cdi-chunk 0x1FC0 tmx_id data
+
+    tmx_id
 ]
 
 print-toc: does [
@@ -263,7 +337,7 @@ process-sound: func [blk app_id] [
                 ".wav" 0x2006
                 ".mp3" 0x2007
                 ".ogg" 0x2008
-            ] ext: find/last fname '.'
+            ] ext: file-ext fname
             ifn fmt [fatal config ["Unknown audio file extension" ext]]
 
             poke app_id 3 div n 256
@@ -483,8 +557,7 @@ process-cfg [
         ) into [some [
             'image set at paren! tok: opt block! (
                 fname: at/filename
-                ext: find/last fname '.'
-                either eq? ".png" ext [
+                either eq? ".png" file-ext fname [
                     fname: copy pack-png image-path fname
                     ftype: 'png
                 ][
@@ -601,7 +674,16 @@ process-cfg [
 
     process-blk maps [
         'map set at paren! (
-            apair blk mark-sol to-file at/fname to-coord reduce [
+            fname: at/fname
+            chunk-dim: at/chunk-dim
+            either eq? ".tmx" file-ext fname [
+                copy pack-tmx at/id fname chunk-dim
+                fname: none
+            ][
+                fname: to-file fname
+            ]
+
+            apair blk mark-sol fname to-coord reduce [
                 at/id
                 enum-value [world city shrine combat dungeon] at/type
                 enum-value [wrap exit fixed] at/borderbehavior
@@ -610,8 +692,8 @@ process-cfg [
                 at/levels
             ]
             append blk to-coord reduce [
-                none-zero at/chunkwidth
-                none-zero at/chunkheight
+                none-zero chunk-dim
+                none-zero chunk-dim
                 attribute-flags at [
                     0x02 nolineofsight
                     0x04 firstperson
@@ -720,7 +802,7 @@ process-cfg [
 if exists? spath: join root-path %shader/ [
     sl_id: "SL^0^0"
     foreach file read spath [
-        switch find/last file '.' [
+        switch file-ext file [
             %.glsl [
                 n: file-id file
                 poke sl_id 3 div n 256

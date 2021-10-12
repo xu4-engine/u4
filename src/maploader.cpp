@@ -474,9 +474,25 @@ static bool loadDungeonMap(Map *map, U4FILE *uf, FILE *sav) {
 }
 
 bool loadMap(Map *map, FILE* sav) {
+    U4FILE* uf;
     bool ok = false;
+
+#ifdef CONF_MODULE
+    if (map->fname) {
+        string fname( xu4.config->confString(map->fname) );
+        uf = u4fopen(fname);
+    } else {
+        const CDIEntry* ent = xu4.config->mapFile(map->id);
+        if (ent) {
+            uf = u4fopen_stdio(xu4.config->modulePath());
+            u4fseek(uf, ent->offset, SEEK_SET);
+        } else
+            uf = NULL;
+    }
+#else
     string fname( xu4.config->confString(map->fname) );
-    U4FILE* uf = u4fopen(fname);
+    uf = u4fopen(fname);
+#endif
     if (uf) {
         switch (map->type) {
             case Map::CITY:
