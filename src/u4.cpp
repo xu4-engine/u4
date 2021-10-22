@@ -145,6 +145,9 @@ missing_value:
 
 
 void servicesInit(XU4GameServices* gs, Options* opt) {
+    if (opt->flags & OPT_VERBOSE)
+        verbose = true;
+
     if (!u4fsetup())
     {
         errorFatal( "xu4 requires the PC version of Ultima IV to be present.\n"
@@ -164,9 +167,6 @@ void servicesInit(XU4GameServices* gs, Options* opt) {
         gs->settings->scale = opt->scale;
     if (opt->filter)
         gs->settings->filter = opt->filter;
-
-    if (opt->flags & OPT_VERBOSE)
-        verbose = true;
 
     Debug::initGlobal("debug/global.txt");
 
