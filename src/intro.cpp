@@ -26,6 +26,10 @@
 #include "utils.h"
 #include "xu4.h"
 
+#ifdef USE_GL
+#include "gpu.h"
+#endif
+
 #ifdef IOS
 #include "ios_helpers.h"
 #endif
@@ -1048,6 +1052,10 @@ void IntroController::timerFired() {
         beastie1Cycle = 0;
     if (xu4_random(2) && ++beastie2Cycle >= IntroBinData::BEASTIE2_FRAMES)
         beastie2Cycle = 0;
+
+#ifdef USE_GL
+    gpu_blitTexture(gpu_screenTexture(xu4.gpu), 0, 0, xu4.screenImage);
+#endif
 }
 
 /**

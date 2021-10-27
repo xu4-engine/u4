@@ -388,17 +388,14 @@ static void updateDisplay(int x, int y, int w, int h) {
 
     CPU_END("ut:")
 }
+#else
+extern void screenRender();
 #endif
 
 void screenSwapBuffers() {
 #ifdef USE_GL
     CPU_START()
-#ifndef GPU_RENDER
-    const ScreenAllegro* sa = SA;
-    gpu_viewport(0, 0, al_get_display_width(sa->disp),
-                       al_get_display_height(sa->disp));
-    gpu_background(xu4.gpu, NULL, xu4.screenImage);
-#endif
+    screenRender();
     al_flip_display();
     CPU_END("ut:")
 #else
@@ -408,6 +405,10 @@ void screenSwapBuffers() {
 
 void screenWait(int numberOfAnimationFrames) {
     ScreenAllegro* sa = SA;
+
+#if defined(USE_GL) && ! defined(GPU_RENDER)
+    gpu_blitTexture(gpu_screenTexture(xu4.gpu), 0, 0, xu4.screenImage);
+#endif
 
     // Does this wait need to handle world animation or input (e.g. user
     // quits game)?

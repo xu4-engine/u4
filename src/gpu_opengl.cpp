@@ -132,7 +132,6 @@ static const float quadAttr[] = {
    -1.0,-1.0, 0.0,   0.0, 1.0, 0.0, 0.0
 };
 
-#define DRAW_BUF_SIZE   (ATTR_STRIDE * 6 * 400)
 #define SHADOW_DIM      512
 
 
@@ -368,6 +367,30 @@ static U4FILE* openHQXTableImage(int scale)
 #endif
 }
 
+/*
+ * Define 2D texture storage.
+ *
+ * \param data  Pointer to RGBA uint8_t pixels or NULL.
+ */
+static void gpu_defineTex(GLuint tex, int w, int h, const void* data,
+                          GLint internalFormat, GLenum filter)
+{
+    glBindTexture(GL_TEXTURE_2D, tex);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter);
+    glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, w, h,
+                 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+}
+
+static void reserveDrawList(const GLuint* vbo, int byteSize)
+{
+    int i;
+    for (i = 0; i < 2; ++i) {
+        glBindBuffer(GL_ARRAY_BUFFER, vbo[i]);
+        glBufferData(GL_ARRAY_BUFFER, byteSize, NULL, GL_DYNAMIC_DRAW);
+    }
+}
+
 bool gpu_init(void* res, int w, int h, int scale)
 {
     OpenGLResources* gr = (OpenGLResources*) res;
@@ -383,6 +406,10 @@ bool gpu_init(void* res, int w, int h, int scale)
     gr->blockCount = 0;
     gr->tilesTex = 0;
     */
+    gr->dl[0].buf = GLOB_DRAW_LIST0;
+    gr->dl[0].byteSize = ATTR_STRIDE * 6 * 400;
+    gr->dl[1].buf = GLOB_FX_LIST0;
+    gr->dl[1].byteSize = ATTR_STRIDE * 6 * 20;
 
 #ifdef DEBUG_GL
     enableGLDebug();
@@ -390,16 +417,9 @@ bool gpu_init(void* res, int w, int h, int scale)
 
     // Create screen & shadow textures.
     glGenTextures(2, &gr->screenTex);
-
-    glBindTexture(GL_TEXTURE_2D, gr->screenTex);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-
-    glBindTexture(GL_TEXTURE_2D, gr->shadowTex);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, SHADOW_DIM, SHADOW_DIM,
-                 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    gpu_defineTex(gr->screenTex, 320, 200, NULL, GL_RGB, GL_NEAREST);
+    gpu_defineTex(gr->shadowTex, SHADOW_DIM, SHADOW_DIM, NULL,
+                  GL_RGBA, GL_LINEAR);
 
     gr->shadowFbo = _makeFramebuffer(gr->shadowTex);
     if (! gr->shadowFbo)
@@ -500,12 +520,9 @@ bool gpu_init(void* res, int w, int h, int scale)
     // Create our vertex buffers.
     glGenBuffers(GLOB_COUNT, gr->vbo);
 
-    // Reserve space in the double-buffered draw list.
-    for(int i = GLOB_DRAW_LIST0; i < GLOB_DRAW_LIST0+2; ++i) {
-        glBindBuffer(GL_ARRAY_BUFFER, gr->vbo[i]);
-        glBufferData(GL_ARRAY_BUFFER, DRAW_BUF_SIZE, NULL, GL_DYNAMIC_DRAW);
-    }
-    gr->dbuf = 0;
+    // Reserve space in the double-buffered draw lists.
+    reserveDrawList(gr->vbo + GLOB_DRAW_LIST0, gr->dl[0].byteSize);
+    reserveDrawList(gr->vbo + GLOB_FX_LIST0,   gr->dl[1].byteSize);
 
     // Create quad geometry.
     glBindBuffer(GL_ARRAY_BUFFER, gr->vbo[GLOB_QUAD]);
@@ -547,11 +564,7 @@ uint32_t gpu_makeTexture(const Image32* img)
 {
     GLuint tex;
     glGenTextures(1, &tex);
-    glBindTexture(GL_TEXTURE_2D, tex);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, img->w, img->h,
-                 0, GL_RGBA, GL_UNSIGNED_BYTE, img->pixels);
+    gpu_defineTex(tex, img->w, img->h, img->pixels, GL_RGBA, GL_NEAREST);
     return tex;
 }
 
@@ -567,6 +580,15 @@ void gpu_freeTexture(uint32_t tex)
     glDeleteTextures(1, &tex);
 }
 
+/*
+ * Return the identifier of the screen texture which is created by gpu_init().
+ */
+uint32_t gpu_screenTexture(void* res)
+{
+    OpenGLResources* gr = (OpenGLResources*) res;
+    return gr->screenTex;
+}
+
 void gpu_setTilesTexture(void* res, uint32_t tex, uint32_t mat, float vDim)
 {
     OpenGLResources* gr = (OpenGLResources*) res;
@@ -576,83 +598,92 @@ void gpu_setTilesTexture(void* res, uint32_t tex, uint32_t mat, float vDim)
 }
 
 /*
- * Begin a rendered frame with a background which may be either a solid color
- * or an image.
+ * Render a background image using the scale defined with gpu_init().
  */
-void gpu_background(void* res, const float* color, const Image32* img)
+void gpu_drawTextureScaled(void* res, uint32_t tex)
 {
     OpenGLResources* gr = (OpenGLResources*) res;
 
-    if (img) {
-        glActiveTexture(GL_TEXTURE0 + GTU_CMAP);
-        glBindTexture(GL_TEXTURE_2D, gr->screenTex);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, img->w, img->h,
-                     0, GL_RGBA, GL_UNSIGNED_BYTE, img->pixels);
+    glActiveTexture(GL_TEXTURE0 + GTU_CMAP);
+    glBindTexture(GL_TEXTURE_2D, tex);
 
-        if (gr->scaler) {
-            glUseProgram(gr->scaler);
-            glActiveTexture(GL_TEXTURE0 + GTU_SCALER_LUT);
-            glBindTexture(GL_TEXTURE_2D, gr->scalerLut);
-        } else {
-            glUseProgram(gr->shadeColor);
-            glUniformMatrix4fv(gr->slocTrans, 1, GL_FALSE, unitMatrix);
-        }
+    if (gr->scaler) {
+        glUseProgram(gr->scaler);
+        glActiveTexture(GL_TEXTURE0 + GTU_SCALER_LUT);
+        glBindTexture(GL_TEXTURE_2D, gr->scalerLut);
+    } else {
+        glUseProgram(gr->shadeColor);
+        glUniformMatrix4fv(gr->slocTrans, 1, GL_FALSE, unitMatrix);
+    }
 
-        glDisable(GL_BLEND);
-        glBindVertexArray(gr->vao[ GLOB_QUAD ]);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-    }
-    else if (color) {
-        glClearColor(color[0], color[1], color[2], color[3]);
-        glClear(GL_COLOR_BUFFER_BIT);
-    }
+    glDisable(GL_BLEND);
+    glBindVertexArray(gr->vao[ GLOB_QUAD ]);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
 /*
- * Begin adding triangles to the double-buffered draw list.
+ * Begin a rendered frame cleared to a solid color.
+ */
+void gpu_clear(void* res, const float* color)
+{
+    glClearColor(color[0], color[1], color[2], color[3]);
+    glClear(GL_COLOR_BUFFER_BIT);
+}
+
+/*
+ * Begin adding triangles to a double-buffered draw list.
  *
  * Returns a pointer to the start of the attributes buffer.
- * This should be advanced and passed to gpu_endDraw() when all triangles
+ * This should be advanced and passed to gpu_endTris() when all triangles
  * have been generated.
  */
-float* gpu_beginDraw(void* res)
+float* gpu_beginTris(void* res, int list)
 {
     OpenGLResources* gr = (OpenGLResources*) res;
+    DrawList* dl = gr->dl + list;
 
-    glBindBuffer(GL_ARRAY_BUFFER, gr->vbo[ gr->dbuf ]);
-    gr->dptr = (GLfloat*) glMapBufferRange(GL_ARRAY_BUFFER, 0, DRAW_BUF_SIZE,
+    dl->buf ^= 1;
+    glBindBuffer(GL_ARRAY_BUFFER, gr->vbo[ dl->buf ]);
+    gr->dptr = (GLfloat*) glMapBufferRange(GL_ARRAY_BUFFER, 0, dl->byteSize,
                                            GL_MAP_WRITE_BIT);
     return gr->dptr;
 }
 
 /*
- * Draw any triangles generated since gpu_beginDraw().
- * Each call to gpu_beginDraw() must be paired with gpu_endDraw().
+ * Complete the list of triangles generated since gpu_beginTris().
+ * Each call to gpu_beginTris() must be paired with gpu_endTris().
+ * Each list must be created separately; these calls cannot be interleaved.
  */
-void gpu_endDraw(void* res, float* attr)
+void gpu_endTris(void* res, int list, float* attr)
 {
     OpenGLResources* gr = (OpenGLResources*) res;
-    GLsizei dcount;     // Number of floats.
 
     glUnmapBuffer(GL_ARRAY_BUFFER);
 
     assert(gr->dptr);
-    dcount = attr - gr->dptr;
+    gr->dl[ list ].count = attr - gr->dptr;
     gr->dptr = NULL;
+}
 
-    if (dcount) {
-        //dprint("gpu_endDraw %d\n", dcount);
+/*
+ * Draw any triangles created between the last gpu_beginTris/endTris calls.
+ */
+void gpu_drawTris(void* res, int list)
+{
+    OpenGLResources* gr = (OpenGLResources*) res;
+    DrawList* dl = gr->dl + list;
 
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glBlendEquation(GL_FUNC_ADD);
+    if (! dl->count)
+        return;
+    //dprint("gpu_drawTris %d\n", dl->count);
 
-        glUniformMatrix4fv(gr->slocTrans, 1, GL_FALSE, unitMatrix);
-        glBindVertexArray(gr->vao[ gr->dbuf ]);
-        glDrawArrays(GL_TRIANGLES, 0, dcount / ATTR_COUNT);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glBlendEquation(GL_FUNC_ADD);
 
-        gr->dbuf ^= 1;
-    }
+    glUniformMatrix4fv(gr->slocTrans, 1, GL_FALSE, unitMatrix);
+    glBindVertexArray(gr->vao[ dl->buf ]);
+    glDrawArrays(GL_TRIANGLES, 0, dl->count / ATTR_COUNT);
 }
 
 float* gpu_emitQuad(float* attr, const float* drawRect, const float* uvRect)

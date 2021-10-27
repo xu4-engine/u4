@@ -12,6 +12,8 @@
 enum GLObject {
     GLOB_DRAW_LIST0,
     GLOB_DRAW_LIST1,
+    GLOB_FX_LIST0,
+    GLOB_FX_LIST1,
     GLOB_QUAD,
     GLOB_MAP_CHUNK0,
     GLOB_MAP_CHUNK1,
@@ -25,6 +27,12 @@ enum GLTextureUnit {
     GTU_MATERIAL,
     GTU_SHADOW,
     GTU_SCALER_LUT
+};
+
+struct DrawList {
+    int     buf;        // GLObject vbo index toggle.
+    int     byteSize;
+    GLsizei count;      // Number of floats.
 };
 
 struct OpenGLResources {
@@ -62,7 +70,7 @@ struct OpenGLResources {
     GLuint tilesMat;            // Managed by user.
     float  tilesVDim;
     float  time;
-    int    dbuf;
+    DrawList dl[2];
     float* dptr;
     int    blockCount;
     GLsizei mapChunkVertCount;
