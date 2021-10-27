@@ -666,6 +666,16 @@ void gpu_endTris(void* res, int list, float* attr)
 }
 
 /*
+ * Set the triangle count for the list to zero.  gpu_drawTris() becomes a
+ * no-op until a new list is created.
+ */
+void gpu_clearTris(void* res, int list)
+{
+    OpenGLResources* gr = (OpenGLResources*) res;
+    gr->dl[list].count = 0;
+}
+
+/*
  * Draw any triangles created between the last gpu_beginTris/endTris calls.
  */
 void gpu_drawTris(void* res, int list)
@@ -788,6 +798,8 @@ float* gpu_emitQuadScroll(float* attr, const float* drawRect,
 //--------------------------------------
 // Map Rendering
 
+#define CHUNK_CACHE_SIZE    4
+
 void gpu_resetMap(void* res, const Map* map)
 {
     OpenGLResources* gr = (OpenGLResources*) res;
@@ -799,14 +811,14 @@ void gpu_resetMap(void* res, const Map* map)
     gr->mapChunkDim = map->chunk_width;
     gr->mapChunkVertCount = gr->mapChunkDim * gr->mapChunkDim * 6;
 
-    for (int i = 0; i < 4; ++i) {
+    for (int i = 0; i < CHUNK_CACHE_SIZE; ++i) {
         glBindBuffer(GL_ARRAY_BUFFER, gr->vbo[ GLOB_MAP_CHUNK0+i ]);
         glBufferData(GL_ARRAY_BUFFER, gr->mapChunkVertCount * ATTR_STRIDE,
                      NULL, GL_DYNAMIC_DRAW);
     }
 
     // Clear chunk cache.
-    memset(gr->mapChunkId, 0xff, 4*sizeof(uint16_t));
+    memset(gr->mapChunkId, 0xff, CHUNK_CACHE_SIZE*sizeof(uint16_t));
 }
 
 #define VIEW_TILE_SIZE  (2.0f / VIEWPORT_W)
@@ -893,8 +905,6 @@ struct ChunkInfo {
 
 // LIMIT: Maximum of 256x256 chunks.
 #define CHUNK_ID(c,r)       (c<<8 | r)
-
-#define CHUNK_CACHE_SIZE    4
 
 /*
  * Find (or create) chunk geometry in the four reserved VBO slots.

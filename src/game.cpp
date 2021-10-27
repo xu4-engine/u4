@@ -642,14 +642,23 @@ void GameController::finishTurn() {
  * by weapons, cannon fire, spells, etc.
  */
 void GameController::flashTile(const Coords &coords, MapTile tile, int frames) {
-    c->location->map->annotations->add(coords, tile, true);
-
+#ifdef GPU_RENDER
+    int fx = xu4.game->mapArea.showEffect(coords, tile.id);
+#else
+    Map* map = c->location->map;
+    map->annotations->add(coords, tile, true);
     screenTileUpdate(&xu4.game->mapArea, coords);
+#endif
 
-    screenWait(frames);
-    c->location->map->annotations->remove(coords, tile);
+    EventHandler::wait_msecs(frames * 1000 /
+                             xu4.settings->screenAnimationFramesPerSecond);
 
+#ifdef GPU_RENDER
+    xu4.game->mapArea.removeEffect(fx);
+#else
+    map->annotations->remove(coords, tile);
     screenTileUpdate(&xu4.game->mapArea, coords);
+#endif
 }
 
 void GameController::flashTile(const Coords &coords, Symbol tilename, int timeFactor) {

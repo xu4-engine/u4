@@ -2,6 +2,13 @@
  * $Id$
  */
 
+#ifdef GPU_RENDER
+#include <string.h>
+#include "event.h"
+#include "image32.h"
+#include "gpu.h"
+#endif
+
 #include "config.h"
 #include "debug.h"
 #include "image.h"
@@ -26,6 +33,11 @@ TileView::TileView(int x, int y, int columns, int rows) : View(x, y, columns * T
     tileset = xu4.config->tileset();
     SCALED_VAR
     animated = Image::create(SCALED(tileWidth), SCALED(tileHeight));
+
+#ifdef GPU_RENDER
+    effectCount = 0;
+    memset(effect, 0, sizeof(effect));      // Sets method to VE_FREE.
+#endif
 }
 
 TileView::~TileView() {
@@ -183,3 +195,84 @@ void TileView::drawFocus(int x, int y) {
                          0xff, 0xff, 0xff);
     }
 }
+
+#ifdef GPU_RENDER
+/*
+ * Return effect id or -1 if effect limit is reached.
+ */
+int TileView::showEffect(const Coords &coords, TileId tile, AnimId moveAnim) {
+    for (int i = 0; i < VE_MAX; ++i) {
+        if (effect[i].method == VE_FREE) {
+            VisualEffect* it = effect + i;
+            it->pos[0] = (float) coords.x;
+            it->pos[1] = (float) coords.y;
+            it->method = (moveAnim == ANIM_UNUSED) ? VE_SPRITE : VE_SPRITE_MOVE;
+            it->vid = tileset->render[tile].vid;
+            it->anim = moveAnim;
+            if (i >= effectCount)
+                effectCount = i + 1;
+            return i;
+        }
+    }
+    return -1;
+}
+
+void TileView::removeEffect(int id) {
+    if (id >= 0) {
+        VisualEffect* it = effect + id;
+        it->method = VE_FREE;
+        int last = effectCount - 1;
+        if (id == last) {
+            do {
+                --last;
+            } while (last >= 0 && effect[last].method == VE_FREE);
+            effectCount = last + 1;
+        }
+    }
+}
+
+#define VIEW_TILE_SIZE  (2.0f / VIEWPORT_W)
+
+/*
+ * \param cx        View center X.
+ * \param cy        View center Y.
+ * \param uvTable   Texture coordinate min & max indexed by VisualId.
+ */
+void TileView::updateEffects(float cx, float cy, const float* uvTable) {
+    const int TRIS_MAP_FX = 1;
+    const float halfTile = VIEW_TILE_SIZE * -0.5f;
+
+    if (effectCount) {
+        const Animator* fxAnim = &xu4.eventHandler->fxAnim;
+        float* animPos;
+        float* attr = gpu_beginTris(xu4.gpu, TRIS_MAP_FX);
+        float rect[4];
+        int uvIndex;
+        VisualEffect* it = effect;
+        VisualEffect* end = it + effectCount;
+
+        rect[2] = rect[3] = VIEW_TILE_SIZE;
+
+        for (; it != end; ++it) {
+            switch (it->method) {
+                case VE_SPRITE_MOVE:
+                    animPos = anim_valueF2(fxAnim, it->anim);
+                    it->pos[0] = animPos[0];
+                    it->pos[1] = animPos[1];
+                    // Fall through...
+
+                case VE_SPRITE:
+                    // Similar to emitSprite() in screen.cpp.
+                    rect[0] = halfTile + (it->pos[0] - cx) * VIEW_TILE_SIZE;
+                    rect[1] = halfTile + (cy - it->pos[1]) * VIEW_TILE_SIZE;
+                    uvIndex = VID_INDEX(it->vid);
+                    attr = gpu_emitQuad(attr, rect, uvTable + uvIndex*4);
+                    break;
+            }
+        }
+        gpu_endTris(xu4.gpu, TRIS_MAP_FX, attr);
+    } else {
+        gpu_clearTris(xu4.gpu, TRIS_MAP_FX);
+    }
+}
+#endif

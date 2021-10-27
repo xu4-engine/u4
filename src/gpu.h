@@ -15,6 +15,7 @@ void     gpu_drawTextureScaled(void* res, uint32_t tex);
 void     gpu_clear(void* res, const float* color);
 float*   gpu_beginTris(void* res, int list);
 void     gpu_endTris(void* res, int list, float* attr);
+void     gpu_clearTris(void* res, int list);
 void     gpu_drawTris(void* res, int list);
 float*   gpu_emitQuad(float* attr, const float* drawRect, const float* uvRect);
 //void     gpu_render(void* res, const Image* screen);

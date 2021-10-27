@@ -27,10 +27,12 @@ EventHandler::EventHandler(int gameCycleDuration) :
     timedEvents(timerInterval), updateScreen(NULL) {
     controllerDone = ended = false;
     anim_init(&flourishAnim, 64, NULL, NULL);
+    anim_init(&fxAnim, 32, NULL, NULL);
 }
 
 EventHandler::~EventHandler() {
     anim_free(&flourishAnim);
+    anim_free(&fxAnim);
 }
 
 void EventHandler::setTimerInterval(int msecs) {

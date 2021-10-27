@@ -506,15 +506,62 @@ void CombatController::awardLoot() {
     }
 }
 
-bool CombatController::attackHit(Creature *attacker, Creature *defender) {
+bool CombatController::attackHit(const Creature* attacker,
+                                 const Creature* defender) {
     ASSERT(attacker != NULL, "attacker must not be NULL");
     ASSERT(defender != NULL, "defender must not be NULL");
 
     int attackValue = xu4_random(0x100) + attacker->getAttackBonus();
-    int defenseValue = defender->getDefense();
-
-    return attackValue > defenseValue;
+    return attackValue > defender->getDefense();
 }
+
+#ifdef GPU_RENDER
+#include <math.h>
+
+static void animateAttack(const vector<Coords>& path, int range, TileId tid) {
+    float vec[4];
+
+    vec[0] = path[0].x;
+    vec[1] = path[0].y;
+    vec[2] = path[range].x;
+    vec[3] = path[range].y;
+
+    float dx = vec[2] - vec[0];
+    float dy = vec[3] - vec[1];
+    float duration = sqrtf(dx*dx + dy*dy) /
+                float(xu4.settings->screenAnimationFramesPerSecond);
+    AnimId move = anim_startLinearF2(&xu4.eventHandler->fxAnim, duration, 0,
+                                     vec, vec + 2);
+
+    int fx = xu4.game->mapArea.showEffect(path[0], tid, move);
+    EventHandler::wait_msecs(duration * 1000.0);
+    xu4.game->mapArea.removeEffect(fx);
+}
+
+enum AttackResult {
+    AR_None,
+    AR_NoTarget,
+    AR_Miss,
+    AR_Hit
+};
+
+static int attackAt2(CombatMap* map, const Coords& coords,
+                     const PartyMember* attacker,
+                     const Weapon* weapon, Creature** cptr) {
+    Creature* creature = map->creatureAt(coords);
+    if (! creature)
+        return AR_NoTarget; // No target found.
+    *cptr = creature;
+
+    if (c->location->prev->map->id == MAP_ABYSS && ! weapon->isMagic())
+        return AR_Miss;     // Non-magical weapons in the Abyss miss.
+
+    if (CombatController::attackHit(attacker, creature))
+        return AR_Hit;      // The weapon hit!
+
+    return AR_Miss;         // Player naturally missed.
+}
+#endif
 
 bool CombatController::attackAt(const Coords &coords, PartyMember *attacker, int dir, int range, int distance) {
     const Weapon *weapon = attacker->getWeapon();
@@ -1083,13 +1130,10 @@ void CombatController::attack() {
     int range = weapon->range;
     if (weapon->canChooseDistance()) {
         screenMessage("Range: ");
-        int choice = ReadChoiceController::get("123456789");
-        if ((choice - '0') >= 1 && (choice - '0') <= weapon->range) {
-            range = choice - '0';
-            screenMessage("%d\n", range);
-        } else {
+        range = ReadChoiceController::get("123456789") - '0';
+        if (range < 1 || range > weapon->range)
             return;
-        }
+        screenMessage("%d\n", range);
     }
 
     // the attack was already made, even if there is no valid target
@@ -1104,13 +1148,61 @@ void CombatController::attack() {
                                                     : &Tile::canAttackOverTile,
                                 false);
 
-    bool foundTarget = false;
     int targetDistance = path.size();
-    Coords targetCoords(attacker->getCoords());
-    if (path.size() > 0)
+    Coords targetCoords;
+    if (targetDistance > 0)
         targetCoords = path.back();
+    else
+        targetCoords = attacker->getCoords();
 
+    bool foundTarget = false;
     int distance = 1;
+#ifdef GPU_RENDER
+    Creature* target = NULL;
+    MapTile missTile = map->tileset->getByName(weapon->missTile)->id;
+    int result = AR_None;
+    if (weapon->rangeAbsolute()) {
+        if (range == targetDistance) {
+            distance = range;
+            result = attackAt2(map, path[range], attacker, weapon, &target);
+        }
+    } else {
+        for (; distance < targetDistance; ++distance) {
+            result = attackAt2(map, path[distance], attacker, weapon, &target);
+            if (result != AR_NoTarget) {
+                foundTarget = true;
+                targetDistance = distance;
+                targetCoords = path[distance];
+                break;
+            }
+        }
+    }
+
+    if (weapon->showTravel())
+        animateAttack(path, distance - 1, missTile.id);
+
+    switch (result) {
+        case AR_None:
+        case AR_NoTarget:
+            break;
+        case AR_Miss:
+            screenMessage("Missed!\n");
+            GameController::flashTile(targetCoords, missTile, 1);
+            break;
+        case AR_Hit:
+            GameController::flashTile(targetCoords, missTile, 1);
+            soundPlay(SOUND_NPC_STRUCK, false, -1);
+
+            MapTile hitTile = map->tileset->getByName(weapon->hitTile)->getId();
+            GameController::flashTile(targetCoords, hitTile, 3);
+
+            /* apply the damage to the creature */
+            if (! attacker->dealDamage(map, target, attacker->getDamage())) {
+                GameController::flashTile(targetCoords, hitTile, 1);
+            }
+            break;
+    }
+#else
     for (vector<Coords>::iterator i = path.begin(); i != path.end(); i++) {
         if (attackAt(*i, attacker, MASK_DIR(dir), range, distance)) {
             foundTarget = true;
@@ -1120,6 +1212,7 @@ void CombatController::attack() {
         }
         distance++;
     }
+#endif
 
     // is weapon lost? (e.g. dagger)
     if (weapon->loseWhenUsed() ||

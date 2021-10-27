@@ -508,7 +508,11 @@ struct SpriteRenderData {
     int cx, cy;
 };
 
-#define TRIS_MAP_OBJ    0
+enum TriangleList {
+    TRIS_MAP_OBJ,
+    TRIS_MAP_FX
+};
+
 #define VIEW_TILE_SIZE  (2.0f / VIEWPORT_W)
 
 static void emitSprite(const Coords* loc, VisualId vid, void* user) {
@@ -651,7 +655,7 @@ void screenUpdate(TileView *view, bool showmap, bool blackout) {
 
 #ifdef USE_GL
 void screenRender() {
-    Screen* sp = xu4.screen;
+    const Screen* sp = xu4.screen;
     void* gpu = xu4.gpu;
 
     gpu_viewport(0, 0, sp->width, sp->height);
@@ -665,7 +669,12 @@ void screenRender() {
                     &sp->blockingGroups, sp->blockX, sp->blockY,
                     VIEWPORT_W / 2);
         gpu_drawTris(gpu, TRIS_MAP_OBJ);
-        //gpu_drawTris(gpu, TRIS_MAP_FX);
+
+        anim_advance(&xu4.eventHandler->fxAnim, 1.0f / 24.0f);
+        sp->renderMapView->updateEffects((float) sp->blockX,
+                                         (float) sp->blockY,
+                                         sp->textureInfo->tileTexCoord);
+        gpu_drawTris(gpu, TRIS_MAP_FX);
     }
 #endif
 }

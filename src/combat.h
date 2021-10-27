@@ -42,6 +42,8 @@ class CombatController : public Controller, public Observer<Party *, PartyEvent 
 protected:
     CombatController();
 public:
+    static bool attackHit(const Creature *attacker, const Creature *defender);
+
     CombatController(CombatMap *m);
     CombatController(MapId id);
     virtual ~CombatController();
@@ -77,7 +79,6 @@ public:
     void placeCreatures();
     void placePartyMembers();
     bool setActivePlayer(int player);
-    bool attackHit(Creature *attacker, Creature *defender);
     virtual void awardLoot();
 
     // attack functions

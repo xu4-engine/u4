@@ -305,6 +305,7 @@ public:
     }
 
     Animator flourishAnim;
+    Animator fxAnim;
 
 protected:
     int timerInterval;          // Milliseconds between timedEvents ticks.
