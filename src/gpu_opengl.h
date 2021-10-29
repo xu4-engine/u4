@@ -9,11 +9,15 @@
 #include <GL/gl.h>
 #endif
 
+#include "anim.h"
+
 enum GLObject {
     GLOB_DRAW_LIST0,
     GLOB_DRAW_LIST1,
     GLOB_FX_LIST0,
     GLOB_FX_LIST1,
+    GLOB_MAPFX_LIST0,
+    GLOB_MAPFX_LIST1,
     GLOB_QUAD,
     GLOB_MAP_CHUNK0,
     GLOB_MAP_CHUNK1,
@@ -33,6 +37,14 @@ struct DrawList {
     int     buf;        // GLObject vbo index toggle.
     int     byteSize;
     GLsizei count;      // Number of floats.
+};
+
+#define CHUNK_FX_LIMIT  8
+
+struct MapFx {
+    float x, y, w, h;
+    float u, v, u2, v2;
+    AnimId anim;
 };
 
 struct OpenGLResources {
@@ -70,10 +82,12 @@ struct OpenGLResources {
     GLuint tilesMat;            // Managed by user.
     float  tilesVDim;
     float  time;
-    DrawList dl[2];
+    DrawList dl[3];
     float* dptr;
     int    blockCount;
     GLsizei mapChunkVertCount;
     uint16_t mapChunkDim;       // Size in tiles (width & height are the same).
     uint16_t mapChunkId[4];     // Chunk X,Y of associated GLOB_MAP_CHUNK.
+    uint16_t mapChunkFxUsed[4];
+    MapFx mapChunkFx[4*CHUNK_FX_LIMIT];
 };

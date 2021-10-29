@@ -31,10 +31,13 @@ void Tileset::loadImages() {
         TileRenderData* rit = ts->render;
         for (; tile != end; ++rit, ++tile) {
             rit->scroll = VID_UNSET;
+            rit->animType = -1; //ATYPE_NONE;
 
             j = info->subImageIndex.find(tile->imageName);
             if (j != info->subImageIndex.end()) {
                 const SubImage* subimage = info->subImages + j->second;
+                tile->w = subimage->width;
+                tile->h = subimage->height;
                 tile->frames = subimage->celCount;
 
                 // Set visual to subimage index.
@@ -48,7 +51,10 @@ void Tileset::loadImages() {
                             rit->scroll = trans->var.scroll.vid;
                         else
                             rit->scroll = rit->vid;
+                    } else if (trans->animType == ATYPE_INVERT) {
+                        rit->scroll = 0;
                     }
+                    rit->animType = trans->animType;
                 }
             } else {
                 rit->vid = VID_UNSET;

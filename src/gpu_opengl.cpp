@@ -21,14 +21,17 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include "event.h"
+#include "tileanim.h"
 #include "tileset.h"
 #include "u4.h"     // VIEWPORT_W
 
-extern uint32_t getTicks();
-
 //#include "gpu_opengl.h"
 
-#define dprint  printf
+extern uint32_t getTicks();
+extern "C" int xu4_random(int);
+
+#define MAP_ANIMATOR    &xu4.eventHandler->flourishAnim
 
 #define LOC_POS     0
 #define LOC_UV      1
@@ -410,6 +413,8 @@ bool gpu_init(void* res, int w, int h, int scale)
     gr->dl[0].byteSize = ATTR_STRIDE * 6 * 400;
     gr->dl[1].buf = GLOB_FX_LIST0;
     gr->dl[1].byteSize = ATTR_STRIDE * 6 * 20;
+    gr->dl[2].buf = GLOB_MAPFX_LIST0;
+    gr->dl[2].byteSize = ATTR_STRIDE * 6 * 8;
 
 #ifdef DEBUG_GL
     enableGLDebug();
@@ -523,6 +528,7 @@ bool gpu_init(void* res, int w, int h, int scale)
     // Reserve space in the double-buffered draw lists.
     reserveDrawList(gr->vbo + GLOB_DRAW_LIST0, gr->dl[0].byteSize);
     reserveDrawList(gr->vbo + GLOB_FX_LIST0,   gr->dl[1].byteSize);
+    reserveDrawList(gr->vbo + GLOB_MAPFX_LIST0,gr->dl[2].byteSize);
 
     // Create quad geometry.
     glBindBuffer(GL_ARRAY_BUFFER, gr->vbo[GLOB_QUAD]);
@@ -636,6 +642,8 @@ void gpu_clear(void* res, const float* color)
  * Returns a pointer to the start of the attributes buffer.
  * This should be advanced and passed to gpu_endTris() when all triangles
  * have been generated.
+ *
+ * /param list  The list identifier in the range 0-2.
  */
 float* gpu_beginTris(void* res, int list)
 {
@@ -685,7 +693,7 @@ void gpu_drawTris(void* res, int list)
 
     if (! dl->count)
         return;
-    //dprint("gpu_drawTris %d\n", dl->count);
+    //printf("gpu_drawTris %d\n", dl->count);
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -712,7 +720,7 @@ float* gpu_emitQuad(float* attr, const float* drawRect, const float* uvRect)
     */
 
 #if 0
-    dprint( "gpu_emitQuad %f,%f,%f,%f  %f,%f,%f,%f\n",
+    printf( "gpu_emitQuad %f,%f,%f,%f  %f,%f,%f,%f\n",
             drawRect[0], drawRect[1], drawRect[2], drawRect[3],
             uvRect[0], uvRect[1], uvRect[2], uvRect[3]);
 #endif
@@ -800,6 +808,17 @@ float* gpu_emitQuadScroll(float* attr, const float* drawRect,
 
 #define CHUNK_CACHE_SIZE    4
 
+static void stopChunkAnimations(Animator* animator, MapFx* it, int count)
+{
+    MapFx* end = it + count;
+    for (; it != end; ++it) {
+        if (it->anim != ANIM_UNUSED) {
+            anim_setState(animator, it->anim, ANIM_FREE);
+            it->anim = ANIM_UNUSED;
+        }
+    }
+}
+
 void gpu_resetMap(void* res, const Map* map)
 {
     OpenGLResources* gr = (OpenGLResources*) res;
@@ -815,22 +834,80 @@ void gpu_resetMap(void* res, const Map* map)
         glBindBuffer(GL_ARRAY_BUFFER, gr->vbo[ GLOB_MAP_CHUNK0+i ]);
         glBufferData(GL_ARRAY_BUFFER, gr->mapChunkVertCount * ATTR_STRIDE,
                      NULL, GL_DYNAMIC_DRAW);
+
+        int fxUsed = gr->mapChunkFxUsed[i];
+        if (fxUsed)
+            stopChunkAnimations(MAP_ANIMATOR,
+                                gr->mapChunkFx + i*CHUNK_FX_LIMIT, fxUsed);
     }
 
     // Clear chunk cache.
     memset(gr->mapChunkId, 0xff, CHUNK_CACHE_SIZE*sizeof(uint16_t));
+    memset(gr->mapChunkFxUsed, 0, CHUNK_CACHE_SIZE*sizeof(uint16_t));
 }
+
+struct ChunkLoc {
+    int16_t x, y;
+};
+
+struct ChunkInfo {
+    OpenGLResources* gr;
+    const TileId* mapData;
+    const TileRenderData* renderData;
+    const float* uvs;
+    uint16_t* mapChunkId;
+    ChunkLoc* chunkLoc;
+    int mapW;
+    int mapH;
+    int geoUsedMask;
+};
 
 #define VIEW_TILE_SIZE  (2.0f / VIEWPORT_W)
 
+static void _initFxInvert(MapFx* fx, TileId tid, float* drawRect,
+                          const float* uvCur)
+{
+    const Tile* tile = Tileset::findTileById(tid);
+    float pixelW = tile->w;
+    float pixelH = tile->h;
+    float tileTexCoordW = (uvCur[2] - uvCur[0]) / pixelW;
+    float tileTexCoordH = (uvCur[3] - uvCur[1]) / pixelH;
+    float tileViewW = VIEW_TILE_SIZE / pixelW;
+    float tileViewH = VIEW_TILE_SIZE / pixelH;
+
+    assert(tile->anim);
+    TileAnimTransform* tf = tile->anim->transforms[0];
+    float px = (float) tf->var.invert.x;
+    float py = (float) tf->var.invert.y;
+    float pw = (float) tf->var.invert.w;
+    float ph = (float) tf->var.invert.h;
+
+    //printf("KR tr %d,%d %f,%f,%f,%f\n", tile->w, tile->h, px, py, pw, ph);
+    //printf("KR uv %f,%f,%f,%f\n", uvCur[0], uvCur[1], uvCur[2], uvCur[3]);
+
+    fx->x  = drawRect[0] + tileViewW * px;
+    fx->y  = drawRect[1] + tileViewH * (pixelH - (py + ph));
+    fx->w  = tileViewW * pw;
+    fx->h  = tileViewH * ph;
+    fx->u  = uvCur[0] + tileTexCoordW * px;
+    fx->u2 =    fx->u + tileTexCoordW * pw;
+#if 0
+    fx->v  = uvCur[1] + tileTexCoordH * py;
+    fx->v2 =    fx->v + tileTexCoordH * ph;
+#else
+    fx->v2 = uvCur[1] + tileTexCoordH * py;
+    fx->v  =   fx->v2 + tileTexCoordH * ph;
+#endif
+
+    fx->anim = anim_startCycleRandomI(MAP_ANIMATOR,
+                                      0.25, ANIM_FOREVER, 0,
+                                      0, 2, tile->anim->random);
+}
+
 /*
  * \param chunk    Map data aligned at top-left of chunk.
- * \param dim      Chunk tile dimensions
- * \param stride   Chunk stride (map tile width)
  */
-static void _buildChunkGeo(GLuint vbo, const TileId* chunk, int dim,
-                           int stride, const TileRenderData* renderData,
-                           const float* uvTable)
+static void _buildChunkGeo(ChunkInfo* ci, int i, const TileId* chunk)
 {
     float drawRect[4];  // x, y, width, height
     const float* uvCur;
@@ -838,12 +915,26 @@ static void _buildChunkGeo(GLuint vbo, const TileId* chunk, int dim,
     float* attr;
     const TileId* ip;
     const TileRenderData* tr;
+    const float* uvTable = ci->uvs;
+    OpenGLResources* gr = ci->gr;
     float startX;
     int x, y;
-    int vcount = dim * dim * 6;
+    int stride = ci->mapW;          // Map tile width
+    int cdim   = gr->mapChunkDim;   // Chunk tile dimensions
+    int fxUsed;
 
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    attr = (float*) glMapBufferRange(GL_ARRAY_BUFFER, 0, vcount * ATTR_STRIDE,
+
+    // Stop any running animations.
+    fxUsed = gr->mapChunkFxUsed[i];
+    if (fxUsed) {
+        stopChunkAnimations(MAP_ANIMATOR,
+                            gr->mapChunkFx + i*CHUNK_FX_LIMIT, fxUsed);
+        fxUsed = 0;
+    }
+
+    glBindBuffer(GL_ARRAY_BUFFER, gr->vbo[GLOB_MAP_CHUNK0 + i]);
+    attr = (float*) glMapBufferRange(GL_ARRAY_BUFFER, 0,
+                                     gr->mapChunkVertCount * ATTR_STRIDE,
                                      GL_MAP_WRITE_BIT);
     if (! attr) {
         fprintf(stderr, "buildChunkGeo: glMapBufferRange failed\n");
@@ -856,17 +947,23 @@ static void _buildChunkGeo(GLuint vbo, const TileId* chunk, int dim,
     drawRect[2] = VIEW_TILE_SIZE;
     drawRect[3] = VIEW_TILE_SIZE;
 
-    for (y = 0; y < dim; ++y) {
+    for (y = 0; y < cdim; ++y) {
         drawRect[0] = startX;
         ip = chunk;
-        for (x = 0; x < dim; ++x) {
-            tr = renderData + *ip++;
+        for (x = 0; x < cdim; ++x) {
+            tr = ci->renderData + *ip++;
             uvCur = uvTable + tr->vid*4;
-            if (tr->scroll != VID_UNSET) {
+            if (tr->animType == ATYPE_SCROLL) {
                 uvScroll = uvTable + tr->scroll*4;
                 attr = gpu_emitQuadScroll(attr, drawRect, uvCur, uvScroll[1]);
-            } else
+            } else {
+                if (tr->animType == ATYPE_INVERT && fxUsed < CHUNK_FX_LIMIT) {
+                    _initFxInvert(gr->mapChunkFx + i*CHUNK_FX_LIMIT + fxUsed,
+                                  ip[-1], drawRect, uvCur);
+                    ++fxUsed;
+                }
                 attr = gpu_emitQuad(attr, drawRect, uvCur);
+            }
             drawRect[0] += drawRect[2];
         }
         drawRect[1] -= drawRect[3];
@@ -874,24 +971,8 @@ static void _buildChunkGeo(GLuint vbo, const TileId* chunk, int dim,
     }
 
     glUnmapBuffer(GL_ARRAY_BUFFER);
+    gr->mapChunkFxUsed[i] = fxUsed;
 }
-
-struct ChunkLoc {
-    int16_t x, y;
-};
-
-struct ChunkInfo {
-    const TileId* mapData;
-    const TileRenderData* renderData;
-    const float* uvs;
-    const GLuint* vbo;
-    uint16_t* mapChunkId;
-    ChunkLoc* chunkLoc;
-    int mapW;
-    int mapH;
-    int cdim;
-    int geoUsedMask;
-};
 
 #define WRAP(x,loc,limit) \
     if (x < 0) { \
@@ -918,14 +999,15 @@ static int _obtainChunkGeo(ChunkInfo* ci, int x, int y, int bumpPass)
 {
     int i;
     int ccol, crow;
+    int cdim = ci->gr->mapChunkDim;
     int wx, wy;
     uint16_t chunkId;
     ChunkLoc* loc;
 
     WRAP(x, wx, ci->mapW);
     WRAP(y, wy, ci->mapH);
-    ccol = x / ci->cdim;
-    crow = y / ci->cdim;
+    ccol = x / cdim;
+    crow = y / cdim;
     chunkId = CHUNK_ID(ccol, crow);
 
     if (bumpPass)
@@ -960,13 +1042,11 @@ static int _obtainChunkGeo(ChunkInfo* ci, int x, int y, int bumpPass)
 
 build:
     ci->mapChunkId[i] = chunkId;
-    _buildChunkGeo(ci->vbo[i],
-                   ci->mapData + (crow * ci->mapW + ccol) * ci->cdim,
-                   ci->cdim, ci->mapW, ci->renderData, ci->uvs);
+    _buildChunkGeo(ci, i, ci->mapData + (crow * ci->mapW + ccol) * cdim);
 used:
     loc = ci->chunkLoc + i;
-    loc->x = wx + (ccol * ci->cdim);
-    loc->y = wy + (crow * ci->cdim);
+    loc->x = wx + (ccol * cdim);
+    loc->y = wy + (crow * cdim);
     ci->geoUsedMask |= 1 << i;
     return i;
 }
@@ -1025,15 +1105,14 @@ void gpu_drawMap(void* res, const Map* map, const float* tileUVs,
     int bindex[4];  // Chunk vertex buffer index (0-3) at view corner.
     int left, top, right, bot;
 
+    ci.gr = gr;
     ci.mapData = map->data;
     ci.renderData = map->tileset->render;
     ci.uvs    = tileUVs;
-    ci.vbo    = gr->vbo + GLOB_MAP_CHUNK0;
     ci.mapChunkId = gr->mapChunkId;
     ci.chunkLoc = cloc;
     ci.mapW   = map->width;
     ci.mapH   = map->height;
-    ci.cdim   = gr->mapChunkDim;
     ci.geoUsedMask  = 0;
 
     left  = cx - viewRadius;
@@ -1062,6 +1141,7 @@ void gpu_drawMap(void* res, const Map* map, const float* tileUVs,
 
     {
     float matrix[16];
+    int fxUsed = 0;
 
     gr->time = ((float) getTicks()) * 0.001;
     memcpy(matrix, unitMatrix, sizeof(matrix));
@@ -1092,7 +1172,42 @@ void gpu_drawMap(void* res, const Map* map, const float* tileUVs,
 
             glBindVertexArray(gr->vao[ GLOB_MAP_CHUNK0 + i ]);
             glDrawArrays(GL_TRIANGLES, 0, gr->mapChunkVertCount);
+
+            if (gr->mapChunkFxUsed[i])
+                fxUsed = 1;
         }
+    }
+
+    if (fxUsed) {
+        const int MAPFX_LIST = 2;
+        const Animator* animator = MAP_ANIMATOR;
+        float rect[4];
+        float xoff, yoff;
+        float* fxAttr = gpu_beginTris(gr, MAPFX_LIST);
+        for (i = 0; i < 4; ++i) {
+            if (usedMask & (1 << i) && gr->mapChunkFxUsed[i]) {
+                xoff = (float) (cloc[i].x - cx) * VIEW_TILE_SIZE;
+                yoff = (float) (cy - cloc[i].y) * VIEW_TILE_SIZE;
+
+                const MapFx* it  = gr->mapChunkFx + i*CHUNK_FX_LIMIT;
+                const MapFx* end = it + gr->mapChunkFxUsed[i];
+                for (; it != end; ++it) {
+                    // Assuming only ATYPE_INVERT effects are used for now.
+                    if (anim_valueI(animator, it->anim))
+                        continue;
+
+                    rect[0] = xoff + it->x;
+                    rect[1] = yoff + it->y;
+                    rect[2] = it->w;
+                    rect[3] = it->h;
+
+                    //printf("KR fx %f,%f %f,%f\n", it->x, it->y, it->w, it->h);
+                    fxAttr = gpu_emitQuad(fxAttr, rect, &it->u);
+                }
+            }
+        }
+        gpu_endTris(gr, MAPFX_LIST, fxAttr);
+        gpu_drawTris(gr, MAPFX_LIST);
     }
     }
 }

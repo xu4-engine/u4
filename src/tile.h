@@ -181,6 +181,7 @@ public:
 struct TileRenderData {
     VisualId vid;       /**< The default rendering resource identifier */
     VisualId scroll;    /**< The scrolling rendering resource identifier */
+    int16_t  animType;  /**< TileAnimType */
 };
 
 #endif
