@@ -82,16 +82,11 @@ IntroBinData::IntroBinData() :
 }
 
 IntroBinData::~IntroBinData() {
-    if (sigData)
-        delete [] sigData;
-    if (scriptTable)
-        delete [] scriptTable;
-    if (baseTileTable)
-        delete [] baseTileTable;
-    if (beastie1FrameTable)
-        delete [] beastie1FrameTable;
-    if (beastie2FrameTable)
-        delete [] beastie2FrameTable;
+    delete [] sigData;
+    delete [] scriptTable;
+    delete [] baseTileTable;
+    delete [] beastie1FrameTable;
+    delete [] beastie2FrameTable;
 
     introQuestions.clear();
     introText.clear();
@@ -128,8 +123,7 @@ bool IntroBinData::load() {
 
     u4fseek(title, INTRO_SCRIPT_TABLE_OFFSET, SEEK_SET);
     scriptTable = new unsigned char[INTRO_SCRIPT_TABLE_SIZE];
-    for (i = 0; i < INTRO_SCRIPT_TABLE_SIZE; i++)
-        scriptTable[i] = u4fgetc(title);
+    u4fread(scriptTable, 1, INTRO_SCRIPT_TABLE_SIZE, title);
 
     u4fseek(title, INTRO_BASETILE_TABLE_OFFSET, SEEK_SET);
     baseTileTable = new const Tile*[INTRO_BASETILE_TABLE_SIZE];
@@ -462,11 +456,13 @@ void IntroController::drawMap() {
         sleepCycles--;
     }
     else {
+        int frame;
         unsigned char commandNibble;
         unsigned char dataNibble;
+        const unsigned char* script = binData->scriptTable;
 
         do {
-            commandNibble = binData->scriptTable[scrPos] >> 4;
+            commandNibble = script[scrPos] >> 4;
 
             switch(commandNibble) {
                 /* 0-4 = set object position and tile frame */
@@ -483,20 +479,20 @@ void IntroController::drawMap() {
                    y = y coordinate
                    t = tile frame (3 most significant bits of second byte)
                    ---------------------------------------------------------- */
-                dataNibble = binData->scriptTable[scrPos] & 0xf;
-                objectStateTable[dataNibble].x = binData->scriptTable[scrPos+1] & 0x1f;
+                dataNibble = script[scrPos] & 0xf;
+                objectStateTable[dataNibble].x = script[scrPos+1] & 0x1f;
                 objectStateTable[dataNibble].y = commandNibble;
 
                 // See if the tile id needs to be recalculated
-                if ((binData->scriptTable[scrPos+1] >> 5) >= binData->baseTileTable[dataNibble]->getFrames()) {
-                    int frame = (binData->scriptTable[scrPos+1] >> 5) - binData->baseTileTable[dataNibble]->getFrames();
+                frame = script[scrPos+1] >> 5;
+                if (frame >= binData->baseTileTable[dataNibble]->getFrames()) {
+                    frame -= binData->baseTileTable[dataNibble]->getFrames();
                     objectStateTable[dataNibble].tile = MapTile(binData->baseTileTable[dataNibble]->getId() + 1);
-                    objectStateTable[dataNibble].tile.frame = frame;
                 }
                 else {
                     objectStateTable[dataNibble].tile = MapTile(binData->baseTileTable[dataNibble]->getId());
-                    objectStateTable[dataNibble].tile.frame = (binData->scriptTable[scrPos+1] >> 5);
                 }
+                objectStateTable[dataNibble].tile.frame = frame;
 
                 scrPos += 2;
                 break;
@@ -506,7 +502,7 @@ void IntroController::drawMap() {
                    Format: 7i
                    i = table index
                    --------------- */
-                dataNibble = binData->scriptTable[scrPos] & 0xf;
+                dataNibble = script[scrPos] & 0xf;
                 objectStateTable[dataNibble].tile = 0;
                 scrPos++;
                 break;
@@ -520,7 +516,7 @@ void IntroController::drawMap() {
                 drawMapAnimated();
 
                 /* set sleep cycles */
-                sleepCycles = binData->scriptTable[scrPos] & 0xf;
+                sleepCycles = script[scrPos] & 0xf;
                 scrPos++;
                 break;
             case 0xf:
