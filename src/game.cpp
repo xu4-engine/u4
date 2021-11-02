@@ -10,7 +10,6 @@
 
 #include "game.h"
 
-#include "annotation.h"
 #include "camp.h"
 #include "cheat.h"
 #include "city.h"
@@ -532,7 +531,7 @@ int GameController::exitToParentMap() {
 
         // free map info only if previous location was on a different map
         if (c->location->prev->map != c->location->map) {
-            c->location->map->annotations->clear();
+            c->location->map->annotations.clear();
             c->location->map->clearObjects();
 
             /* quench the torch of we're on the world map */
@@ -598,7 +597,7 @@ void GameController::finishTurn() {
         }
 
         /* update map annotations */
-        map->annotations->passTurn();
+        map->annotations.passTurn();
 
         if (!c->party->isImmobilized())
             break;
@@ -646,7 +645,7 @@ void GameController::flashTile(const Coords &coords, MapTile tile, int frames) {
     int fx = xu4.game->mapArea.showEffect(coords, tile.id);
 #else
     Map* map = c->location->map;
-    map->annotations->add(coords, tile, true);
+    map->annotations.add(coords, tile, true);
     screenTileUpdate(&xu4.game->mapArea, coords);
 #endif
 
@@ -656,7 +655,7 @@ void GameController::flashTile(const Coords &coords, MapTile tile, int frames) {
 #ifdef GPU_RENDER
     xu4.game->mapArea.removeEffect(fx);
 #else
-    map->annotations->remove(coords, tile);
+    map->annotations.remove(coords, tile);
     screenTileUpdate(&xu4.game->mapArea, coords);
 #endif
 }
@@ -2078,7 +2077,7 @@ void GameController::updateMoons(bool showmoongates)
 
         if (showmoongates)
         {
-            AnnotationMgr* annot = c->location->map->annotations;
+            AnnotationList* annot = &c->location->map->annotations;
             const UltimaSaveIds* usaveIds = xu4.config->usaveIds();
 
             /* update the moongates if trammel changed */
@@ -2317,7 +2316,7 @@ bool jimmyAt(const Coords &coords) {
         const Tile *door = map->tileset->getByName(Tile::sym.door);
         ASSERT(door, "no door tile found in tileset");
         c->saveGame->keys--;
-        map->annotations->add(coords, door->getId());
+        map->annotations.add(coords, door->getId());
         screenMessage("\nUnlocked!\n");
     } else
         screenMessage("%cNo keys left!%c\n", FG_GREY, FG_WHITE);
@@ -2368,7 +2367,9 @@ bool openAt(const Coords &coords) {
 
     const Tile *floor = c->location->map->tileset->getByName(Tile::sym.brickFloor);
     ASSERT(floor, "no floor tile found in tileset");
-    c->location->map->annotations->add(coords, floor->getId(), false, true)->setTTL(4);
+    Annotation* ann =
+        c->location->map->annotations.add(coords, floor->getId(), false, true);
+    ann->ttl = 4;
 
     screenMessage("\nOpened!\n");
 

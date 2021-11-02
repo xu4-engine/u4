@@ -4,7 +4,6 @@
 
 #include "player.h"
 
-#include "annotation.h"
 #include "combat.h"
 #include "config.h"
 #include "context.h"
@@ -377,7 +376,8 @@ bool PartyMember::applyDamage(Map* map, int damage, bool) {
 
     if (isCombatMap(map) && isDead()) {
         TileId corpseId = Tileset::findTileByName(Tile::sym.corpse)->getId();
-        map->annotations->add(coords, corpseId)->setTTL(party->size() * 2);
+        Annotation* ann = map->annotations.add(coords, corpseId);
+        ann->ttl = party->size() * 2;
 
         if (party) {
             party->setChanged();

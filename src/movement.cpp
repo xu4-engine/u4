@@ -4,7 +4,6 @@
 
 #include "movement.h"
 
-#include "annotation.h"
 #include "combat.h"
 #include "context.h"
 #include "debug.h"
@@ -390,17 +389,18 @@ void movePartyMember(MoveEvent &event) {
                     /**
                      * Remove any previous annotations placed at our target coordinates
                      */
-                    c->location->map->annotations->remove(c->location->map->annotations->allAt(change1));
-                    c->location->map->annotations->remove(c->location->map->annotations->allAt(change2));
+                    AnnotationList& alist = c->location->map->annotations;
+                    alist.removeAllAt(change1);
+                    alist.removeAllAt(change2);
 
                     /* change the tiles! */
                     if (change1.x || change1.y) {
                         /*if (m) combatAddCreature(m, triggers[i].change_x1, triggers[i].change_y1, c->location->coords.z);
-                        else*/ c->location->map->annotations->add(change1, triggers[i].tile, false, true);
+                        else*/ alist.add(change1, triggers[i].tile, false, true);
                     }
                     if (change2.x || change2.y) {
                         /*if (m) combatAddCreature(m, triggers[i].change_x2, triggers[i].change_y2, c->location->coords.z);
-                        else*/ c->location->map->annotations->add(change2, triggers[i].tile, false, true);
+                        else*/ alist.add(change2, triggers[i].tile, false, true);
                     }
                 }
             }

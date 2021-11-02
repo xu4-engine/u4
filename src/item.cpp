@@ -4,7 +4,6 @@
 
 #include "item.h"
 
-#include "annotation.h"
 #include "codex.h"
 #include "combat.h"
 #include "context.h"
@@ -470,7 +469,7 @@ void useStone(int item) {
                         Coords coords;
                         screenMessage("\n\nThe altar changes before thyne eyes!\n");
                         c->location->getCurrentPosition(&coords);
-                        c->location->map->annotations->add(coords, c->location->map->tileset->getByName(SYM_DOWN_LADDER)->getId());
+                        c->location->map->annotations.add(coords, c->location->map->tileset->getByName(SYM_DOWN_LADDER)->getId());
                     }
                     /* start chamber of the codex sequence... */
                     else {

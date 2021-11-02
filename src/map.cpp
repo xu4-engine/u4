@@ -6,7 +6,6 @@
 
 #include "map.h"
 
-#include "annotation.h"
 #include "config.h"
 #include "context.h"
 #include "debug.h"
@@ -212,7 +211,6 @@ bool map_outOfBounds(const Map* map, const Coords& c) {
  */
 
 Map::Map() {
-    annotations = new AnnotationMgr();
     _pad = 0;
     width = 0;
     height = 0;
@@ -233,7 +231,6 @@ Map::~Map() {
         delete *i;
     }
     clearObjects();
-    delete annotations;
     delete[] data;
 }
 
@@ -340,9 +337,8 @@ void Map::queryVisible(const Coords& center, int radius,
     maxX = center.x + radius;
     maxY = center.y + radius;
 
-    Annotation::List::const_iterator ait;
-    Annotation::List& alist = annotations->annotations;
-    for(ait = alist.begin(); ait != alist.end(); ait++) {
+    AnnotationList::const_iterator ait;
+    for(ait = annotations.begin(); ait != annotations.end(); ait++) {
         const Annotation& ann = *ait;
         cp = &ann.coords;
         if (OUTSIDE(cp))
@@ -377,6 +373,23 @@ void Map::queryVisible(const Coords& center, int radius,
             MapTile trans = c->party->getTransport();
             vid = rd[trans.id].vid + trans.frame;
             func(cp, vid, user);
+        }
+    }
+}
+
+/*
+ * Call a function for each Annotation at a given coordinate.
+ * The callback must return Map::QueryDone or Map::QueryContinue.
+ */
+void Map::queryAnnotations(const Coords& pos,
+                           int (*func)(const Annotation*, void*),
+                           void* user) const {
+    AnnotationList::const_iterator ait;
+	for (ait = annotations.begin(); ait != annotations.end(); ++ait) {
+        const Annotation& ann = *ait;
+        if (ann.coords == pos) {
+            if (func(&ann, user) == Map::QueryDone)
+                break;
         }
     }
 }
@@ -442,12 +455,11 @@ TileId Map::getTileFromData(const Coords &coords) const {
 const Tile* Map::tileTypeAt(const Coords &coords, int withObjects) const {
     /* FIXME: this should return a list of tiles, with the most visible at the front */
     /* FIXME: this only returns the first valid annotation it can find */
-    Annotation::List::const_iterator ait;
-    Annotation::List& alist = annotations->annotations;
-    for(ait = alist.begin(); ait != alist.end(); ait++) {
+    AnnotationList::const_iterator ait;
+    for(ait = annotations.begin(); ait != annotations.end(); ait++) {
         const Annotation& ann = *ait;
-        if (ann.getCoords() == coords && ! ann.isVisualOnly())
-            return tileset->get( ann.getTile().id );
+        if (ann.coords == coords && ! ann.visualOnly)
+            return tileset->get( ann.tile.id );
     }
 
     TileId tid = 0;

@@ -25,7 +25,6 @@
 #include "tileanim.h"
 #include "tileset.h"
 #include "tileview.h"
-#include "annotation.h"
 #include "xu4.h"
 
 #ifdef USE_GL

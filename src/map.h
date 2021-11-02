@@ -8,6 +8,7 @@
 #include <map>
 #include <vector>
 
+#include "annotation.h"
 #include "coords.h"
 #include "direction.h"
 #include "object.h"
@@ -15,7 +16,6 @@
 #include "types.h"
 #include "u4file.h"
 
-class AnnotationMgr;
 class Object;
 class Creature;
 class Tileset;
@@ -58,6 +58,11 @@ public:
         BORDER_FIXED
     };
 
+    enum QueryResult {
+        QueryDone,
+        QueryContinue
+    };
+
     Map();
     virtual ~Map();
 
@@ -68,6 +73,9 @@ public:
     void queryVisible(const Coords &coords, int radius,
                       void (*func)(const Coords*, VisualId, void*),
                       void* user, const Object** focus) const;
+    void queryAnnotations(const Coords& pos,
+                          int (*func)(const Annotation*, void*),
+                          void* user) const;
     const Object* objectAt(const Coords &coords) const;
     Object* objectAt(const Coords &coords) {
         return (Object*) static_cast<const Map*>(this)->objectAt(coords);
@@ -116,7 +124,7 @@ public:
 
     //uint8_t* compressed_chunks;       // Ultima 5 map
     PortalList      portals;
-    AnnotationMgr*  annotations;
+    AnnotationList  annotations;
     TileId*         data;
     ObjectDeque     objects;
     std::map<Symbol, Coords> labels;

@@ -1,78 +1,34 @@
 /*
- * $Id$
+ * annotation.cpp
  */
 
 #include "annotation.h"
 
-#include "context.h"
-#include "debug.h"
-#include "error.h"
-#include "event.h"
-#include "map.h"
-#include "settings.h"
-
-/**
- * Annotation class implementation
- */
-/**
- * Constructors
- */
-Annotation::Annotation(const Coords &c, MapTile t, bool v, bool coverUp) :
-    coords(c),
-    tile(t),
-    visual(v),
-    ttl(-1),
-    coverUp(coverUp)
-{}
-
-/**
- * Members
- */
-void Annotation::debug_output() const {
-    printf("x: %d\n", coords.x);
-    printf("y: %d\n", coords.y);
-    printf("z: %d\n", coords.z);
-    printf("tile: %d\n", tile.getId());
-    printf("visual: %s\n", visual ? "Yes" : "No");
-}
-
-/**
- * Operators
- */
-bool Annotation::operator==(const Annotation &a) const {
-    return ((coords == a.getCoords()) && (tile == a.tile)) ? true : false;
-}
-
-/**
- * AnnotationMgr implementation
- */
-/**
- * Constructors
- */
-AnnotationMgr::AnnotationMgr() {}
-
-/**
- * Members
- */
-
 /**
  * Adds an annotation to the current map
  */
-Annotation *AnnotationMgr::add(Coords coords, MapTile tile, bool visual, bool isCoverUp) {
+Annotation *AnnotationList::add(const Coords& coords, const MapTile& tile,
+                                bool visual, bool isCoverUp) {
     /* new annotations go to the front so they're handled "on top" */
-    annotations.push_front(Annotation(coords, tile, visual, isCoverUp));
-    return &annotations.front();
+    Annotation ann;
+    ann.coords  = coords;
+    ann.tile    = tile;
+    ann.ttl     = -1;
+    ann.visualOnly = visual;
+    ann.coverUp = isCoverUp;
+    push_front(ann);
+    return &front();
 }
 
 /**
  * Returns all annotations found at the given map coordinates
  */
-Annotation::List AnnotationMgr::allAt(Coords coords) {
-    Annotation::List list;
-    Annotation::List::iterator i;
+AnnotationList AnnotationList::allAt(Coords coords) {
+    AnnotationList list;
+    AnnotationList::iterator i;
 
-    for (i = annotations.begin(); i != annotations.end(); i++) {
-        if (i->getCoords() == coords)
+    for (i = begin(); i != end(); i++) {
+        if (i->coords == coords)
             list.push_back(*i);
     }
 
@@ -82,12 +38,12 @@ Annotation::List AnnotationMgr::allAt(Coords coords) {
 /**
  * Returns pointers to all annotations found at the given map coordinates
  */
-std::list<Annotation *> AnnotationMgr::ptrsToAllAt(Coords coords) {
+std::list<Annotation *> AnnotationList::ptrsToAllAt(const Coords& coords) {
     std::list<Annotation *> list;
-    Annotation::List::iterator i;
+    iterator i;
 
-    for (i = annotations.begin(); i != annotations.end(); i++) {
-        if (i->getCoords() == coords)
+    for (i = begin(); i != end(); i++) {
+        if (i->coords == coords)
             list.push_back(&(*i));
     }
 
@@ -95,60 +51,44 @@ std::list<Annotation *> AnnotationMgr::ptrsToAllAt(Coords coords) {
 }
 
 /**
- * Removes all annotations on the map
- */
-void AnnotationMgr::clear() {
-    annotations.clear();
-}
-
-/**
  * Passes a turn for annotations and removes any
  * annotations whose TTL has expired
  */
-void AnnotationMgr::passTurn() {
-    Annotation::List::iterator i;
-    for (i = annotations.begin(); i != annotations.end(); i++) {
-        if (i->getTTL() == 0) {
-            i = annotations.erase(i);
-            if (i == annotations.end())
-                break;
+void AnnotationList::passTurn() {
+    iterator i = begin();
+    while (i != end()) {
+        if (i->ttl == 0) {
+            i = erase(i);
+        } else {
+            if (i->ttl > 0)
+                --i->ttl;       // Passes a turn for the annotation.
+            ++i;
         }
-        else if (i->getTTL() > 0)
-            i->passTurn();
     }
 }
 
 /**
  * Removes an annotation from the current map
  */
-void AnnotationMgr::remove(Coords coords, MapTile tile) {
-    Annotation look_for(coords, tile);
-    remove(look_for);
-}
-
-void AnnotationMgr::remove(Annotation &a) {
-    Annotation::List::iterator i;
-    for (i = annotations.begin(); i != annotations.end(); i++) {
-        if (*i == a) {
-            i = annotations.erase(i);
+void AnnotationList::remove(const Coords& coords, const MapTile& tile) {
+    iterator i;
+    for (i = begin(); i != end(); i++) {
+        if (i->coords == coords && i->tile == tile) {
+            erase(i);
             break;
         }
     }
 }
 
 /**
- * Removes an entire list of annotations
+ * Removes all annotations at a specific position.
  */
-void AnnotationMgr::remove(Annotation::List l) {
-    Annotation::List::iterator i;
-    for (i = l.begin(); i != l.end(); i++) {
-        remove(*i);
+void AnnotationList::removeAllAt(const Coords& pos) {
+    iterator it = begin();
+    while (it != end()) {
+        if (it->coords == pos)
+            it = erase(it);
+        else
+            ++it;
     }
-}
-
-/**
- * Returns the number of annotations on the map
- */
-int AnnotationMgr::size() {
-    return annotations.size();
 }

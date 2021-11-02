@@ -7,7 +7,6 @@
 
 #include "shrine.h"
 
-#include "annotation.h"
 #include "config.h"
 #include "context.h"
 #include "event.h"
@@ -124,7 +123,7 @@ void Shrine::enter() {
 
 void Shrine::enhancedSequence() {
     /* replace the 'static' avatar tile with grass */
-    annotations->add(Coords(5, 6, c->location->coords.z),
+    annotations.add(Coords(5, 6, c->location->coords.z),
             tileset->getByName(Tile::sym.grass)->getId(), false, true);
 
     screenDisableCursor();

@@ -7,7 +7,6 @@
 
 #include "combat.h"
 
-#include "annotation.h"
 #include "config.h"
 #include "context.h"
 #include "creature.h"
@@ -707,7 +706,7 @@ bool CombatController::creatureRangedAttack(Creature* attacker, int dir) {
         const Coords& coords = path[path.size() - 1];
         const Tile *ground = map->tileTypeAt(coords, WITH_GROUND_OBJECTS);
         if (ground->isWalkable())
-            map->annotations->add(coords, hit);
+            map->annotations.add(coords, hit);
     }
     return false;
 }
@@ -756,7 +755,7 @@ void CombatController::finishTurn() {
     if (!quick || player->isDisabled()){
 
         do {
-            map->annotations->passTurn();
+            map->annotations.passTurn();
 
             /* put a sleeping person in place of the player,
                or restore an awakened member to their original state */
@@ -826,7 +825,7 @@ void CombatController::finishTurn() {
                   (c->party->getActivePlayer() != focus)));
     }
     else
-        map->annotations->passTurn();
+        map->annotations.passTurn();
 
 #if 0
     if (focus != 0) {
@@ -1225,7 +1224,7 @@ void CombatController::attack() {
     if (weapon->leaveTile) {
         const Tile *ground = map->tileTypeAt(targetCoords, WITHOUT_OBJECTS);
         if (ground->isWalkable())
-            map->annotations->add(targetCoords,
+            map->annotations.add(targetCoords,
                     map->tileset->getByName(weapon->leaveTile)->getId());
     }
 

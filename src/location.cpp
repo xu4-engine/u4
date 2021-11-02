@@ -8,7 +8,6 @@
 
 #include "location.h"
 
-#include "annotation.h"
 #include "context.h"
 #include "combat.h"
 #include "creature.h"
@@ -55,8 +54,6 @@ void locationFree(Location **stack) {
  */
 std::vector<MapTile> Location::tilesAt(const Coords& coords, bool &focus) {
     std::vector<MapTile> tiles;
-    std::list<Annotation *> a = map->annotations->ptrsToAllAt(coords);
-    std::list<Annotation *>::iterator i;
     Object *obj = map->objectAt(coords);
     Creature *m = dynamic_cast<Creature *>(obj);
     focus = false;
@@ -80,16 +77,18 @@ std::vector<MapTile> Location::tilesAt(const Coords& coords, bool &focus) {
         tiles.push_back(c->party->getTransport());
 
     /* Add visual-only annotations to the list */
-    for (i = a.begin(); i != a.end(); i++) {
-        if ((*i)->isVisualOnly())
+    std::list<Annotation *> annot = map->annotations.ptrsToAllAt(coords);
+    std::list<Annotation *>::const_iterator i;
+    for (i = annot.begin(); i != annot.end(); i++) {
+        if ((*i)->visualOnly)
         {
-            tiles.push_back((*i)->getTile());
+            tiles.push_back((*i)->tile);
 
             /* If this is the first cover-up annotation,
              * everything underneath it will be invisible,
              * so stop here
              */
-            if ((*i)->isCoverUp())
+            if ((*i)->coverUp)
                 return tiles;
         }
     }
@@ -120,15 +119,15 @@ std::vector<MapTile> Location::tilesAt(const Coords& coords, bool &focus) {
         tiles.push_back(c->party->getTransport());
 
     /* then permanent annotations */
-    for (i = a.begin(); i != a.end(); i++) {
-        if (!(*i)->isVisualOnly()) {
-            tiles.push_back((*i)->getTile());
+    for (i = annot.begin(); i != annot.end(); i++) {
+        if (!(*i)->visualOnly) {
+            tiles.push_back((*i)->tile);
 
             /* If this is the first cover-up annotation,
              * everything underneath it will be invisible,
              * so stop here
              */
-            if ((*i)->isCoverUp())
+            if ((*i)->coverUp)
                 return tiles;
         }
     }
