@@ -21,8 +21,6 @@
 #include "tileset.h"
 #include "xu4.h"
 
-Location *locationPush(Location *stack, Location *loc);
-Location *locationPop(Location **stack);
 
 /**
  * Add a new location to the stack, or
@@ -37,7 +35,19 @@ Location::Location(const Coords& coords, Map *map, int viewmode,
     this->context = ctx;
     this->turnCompleter = turnCompleter;
 
-    locationPush(prev, this);
+    // Push location onto the stack.
+    this->prev = prev;
+}
+
+/**
+ * Pop a location from the stack and free the memory
+ */
+void locationFree(Location **stack) {
+    Location* loc = *stack;
+    *stack = loc->prev;
+    loc->prev = NULL;
+
+    delete loc;
 }
 
 /**
@@ -256,30 +266,4 @@ MoveResult Location::move(Direction dir, bool userEvent) {
     notifyObservers(event);
 
     return event.result;
-}
-
-
-/**
- * Pop a location from the stack and free the memory
- */
-void locationFree(Location **stack) {
-    delete locationPop(stack);
-}
-
-/**
- * Push a location onto the stack
- */
-Location *locationPush(Location *stack, Location *loc) {
-    loc->prev = stack;
-    return loc;
-}
-
-/**
- * Pop a location off the stack
- */
-Location *locationPop(Location **stack) {
-    Location *loc = *stack;
-    *stack = (*stack)->prev;
-    loc->prev = NULL;
-    return loc;
 }
