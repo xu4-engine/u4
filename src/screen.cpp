@@ -512,7 +512,7 @@ enum TriangleList {
     TRIS_MAP_FX
 };
 
-#define VIEW_TILE_SIZE  (2.0f / VIEWPORT_W)
+#define VIEW_TILE_SIZE  (2.0f / VIEWPORT_W)     //1.0f
 
 static void emitSprite(const Coords* loc, VisualId vid, void* user) {
     SpriteRenderData* rd = (SpriteRenderData*) user;
@@ -527,6 +527,66 @@ static void emitSprite(const Coords* loc, VisualId vid, void* user) {
     printf("KR emitSprite %d,%d vid:%d:%d\n",
             loc->x, loc->y, VID_BANK(vid), VID_INDEX(vid));
 #endif
+}
+
+void screenDisableMap() {
+    xu4.screen->renderMapView = NULL;
+}
+
+/*
+ * \param center    Center of view.
+ */
+void screenUpdateMap(TileView* view, const Coords& center) {
+    const Map* map = view->map;
+    Screen* sp = xu4.screen;
+
+    sp->renderMapView = view;
+
+    // Reset map rendering data when the location changes.
+    if (sp->mapId != map->id) {
+        sp->mapId = map->id;
+        sp->blockX = -1;
+        gpu_resetMap(xu4.gpu, map);
+    }
+
+    // Update the map render position & remake the blocking groups if
+    // the view has moved.
+    if (sp->blockX != center.x || sp->blockY != center.y) {
+        sp->blockX = center.x;
+        sp->blockY = center.y;
+
+        if ((map->flags & NO_LINE_OF_SIGHT) == 0) {
+            BlockingGroups* blocks = &sp->blockingGroups;
+            map->queryBlocking(blocks,
+                               center.x - view->columns / 2,
+                               center.y - view->rows / 2,
+                               view->columns, view->rows);
+            //printf("KR groups %d,%d,%d\n",
+            //       blocks->left, blocks->center, blocks->right);
+        }
+    }
+
+    {
+    SpriteRenderData rd;
+    const Object* focusObj;
+
+    rd.uvTable = sp->textureInfo->tileTexCoord;
+    rd.rect[2] = rd.rect[3] = VIEW_TILE_SIZE;
+    rd.cx = center.x;
+    rd.cy = center.y;
+    rd.attr = gpu_beginTris(xu4.gpu, TRIS_MAP_OBJ);
+
+    map->queryVisible(center, view->columns / 2, emitSprite, &rd, &focusObj);
+
+    if (focusObj) {
+        if ((screenState()->currentCycle * 4 / SCR_CYCLE_PER_SECOND) % 2) {
+            const Coords& floc = focusObj->getCoords();
+            emitSprite(&floc, sp->focusReticle, &rd);
+        }
+    }
+
+    gpu_endTris(xu4.gpu, TRIS_MAP_OBJ, rd.attr);
+    }
 }
 #endif
 
@@ -554,58 +614,7 @@ void screenUpdate(TileView *view, bool showmap, bool blackout) {
     }
     else if (showmap) {
 #ifdef GPU_RENDER
-        Location* loc = c->location;
-        const Map* map = loc->map;
-        const Coords& coord = loc->coords;   // Center of view.
-        Screen* sp = xu4.screen;
-
-        sp->renderMapView = view;
-
-        // Reset map rendering data when the location changes.
-        if (sp->mapId != map->id) {
-            sp->mapId = map->id;
-            sp->blockX = -1;
-            gpu_resetMap(xu4.gpu, map);
-        }
-
-        // Update the map render position & remake the blocking groups if
-        // the view has moved.
-        if (sp->blockX != coord.x || sp->blockY != coord.y) {
-            sp->blockX = coord.x;
-            sp->blockY = coord.y;
-
-            if ((map->flags & NO_LINE_OF_SIGHT) == 0) {
-                BlockingGroups* blocks = &sp->blockingGroups;
-                map->queryBlocking(blocks,
-                                   coord.x - VIEWPORT_W / 2,
-                                   coord.y - VIEWPORT_H / 2,
-                                   VIEWPORT_W, VIEWPORT_H);
-                //printf("KR groups %d,%d,%d\n",
-                //       blocks->left, blocks->center, blocks->right);
-            }
-        }
-
-        {
-        SpriteRenderData rd;
-        const Object* focusObj;
-
-        rd.uvTable = sp->textureInfo->tileTexCoord;
-        rd.rect[2] = rd.rect[3] = VIEW_TILE_SIZE;
-        rd.cx = coord.x;
-        rd.cy = coord.y;
-        rd.attr = gpu_beginTris(xu4.gpu, TRIS_MAP_OBJ);
-
-        map->queryVisible(coord, VIEWPORT_W / 2, emitSprite, &rd, &focusObj);
-
-        if (focusObj) {
-            if ((screenState()->currentCycle * 4 / SCR_CYCLE_PER_SECOND) % 2) {
-                const Coords& floc = focusObj->getCoords();
-                emitSprite(&floc, sp->focusReticle, &rd);
-            }
-        }
-
-        gpu_endTris(xu4.gpu, TRIS_MAP_OBJ, rd.attr);
-        }
+        screenUpdateMap(view, c->location->coords);
 #else
         MapTile black = c->location->map->tileset->getByName(Tile::sym.black)->getId();
         vector<MapTile> viewTiles[VIEWPORT_W][VIEWPORT_H];
@@ -661,19 +670,23 @@ void screenRender() {
     gpu_drawTextureScaled(gpu, gpu_screenTexture(gpu));
 
 #ifdef GPU_RENDER
-    if (xu4.stage == StagePlay && sp->renderMapView) {
-        const int* vrect = sp->renderMapView->screenRect;
-        gpu_viewport(vrect[0], vrect[1], vrect[2], vrect[3]);
-        gpu_drawMap(gpu, c->location->map, sp->textureInfo->tileTexCoord,
-                    &sp->blockingGroups, sp->blockX, sp->blockY,
-                    VIEWPORT_W / 2);
+    TileView* view = sp->renderMapView;
+    if (view) {
+        if (view->scissor)
+            gpu_setScissor(view->scissor);
+
+        gpu_drawMap(gpu, view, sp->textureInfo->tileTexCoord,
+                    &sp->blockingGroups, sp->blockX, sp->blockY, view->scale);
         gpu_drawTris(gpu, TRIS_MAP_OBJ);
 
         anim_advance(&xu4.eventHandler->fxAnim, 1.0f / 24.0f);
-        sp->renderMapView->updateEffects((float) sp->blockX,
-                                         (float) sp->blockY,
-                                         sp->textureInfo->tileTexCoord);
+        view->updateEffects((float) sp->blockX,
+                            (float) sp->blockY,
+                            sp->textureInfo->tileTexCoord);
         gpu_drawTris(gpu, TRIS_MAP_FX);
+
+        if (view->scissor)
+            gpu_setScissor(NULL);
     }
 #endif
 }
@@ -756,6 +769,8 @@ void screenCycle() {
     if (cycle >= SCR_CYCLE_MAX)
         cycle = 0;
     xu4.screen->state.currentCycle = cycle;
+
+    xu4.eventHandler->advanceFlourishAnim();
 }
 
 void screenUpdateCursor() {

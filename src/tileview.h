@@ -15,13 +15,17 @@
 class Tileset;
 
 #ifdef GPU_RENDER
+class Map;
+
 enum VisualEffectMethod {
     VE_FREE,
     VE_SPRITE,
-    VE_SPRITE_MOVE
+    VE_SPRITE_FLOURISH,
+    VE_SPRITE_MOVE,
+    VE_HIDE = 0x8000
 };
 
-#define VE_MAX  4
+#define VE_MAX  16
 
 struct VisualEffect {
     float pos[2];
@@ -53,15 +57,21 @@ public:
 #ifdef GPU_RENDER
     int showEffect(const Coords &coords, TileId tile,
                    AnimId moveAnim = ANIM_UNUSED);
+    VisualEffect* useEffect(int id, TileId tile, float x, float y);
     void removeEffect(int id);
     void updateEffects(float cx, float cy, const float* uvTable);
+
+    Map* map;
+    int* scissor;
+    float aspect;
+    float scale;
 #endif
 
-protected:
     int columns, rows;
     int tileWidth, tileHeight;
     const Tileset *tileset;
     Image *animated;        /**< a scratchpad image for drawing animations */
+
 #ifdef GPU_RENDER
     int effectCount;
     VisualEffect effect[VE_MAX];

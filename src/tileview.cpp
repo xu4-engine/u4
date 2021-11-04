@@ -3,6 +3,7 @@
  */
 
 #ifdef GPU_RENDER
+#include <cassert>
 #include <string.h>
 #include "event.h"
 #include "image32.h"
@@ -35,6 +36,10 @@ TileView::TileView(int x, int y, int columns, int rows) : View(x, y, columns * T
     animated = Image::create(SCALED(tileWidth), SCALED(tileHeight));
 
 #ifdef GPU_RENDER
+    map = NULL;
+    scissor = NULL;
+    aspect = float(columns) / float(rows);
+    scale = 2.0f / float(columns);
     effectCount = 0;
     memset(effect, 0, sizeof(effect));      // Sets method to VE_FREE.
 #endif
@@ -198,17 +203,24 @@ void TileView::drawFocus(int x, int y) {
 
 #ifdef GPU_RENDER
 /*
- * Return effect id or -1 if effect limit is reached.
+ * Find a free effect slot and initialize it.
+ *
+ * If moveAnim is ANIM_UNUSED then the VisualEffect::method is set to VE_SPRITE.
+ * Otherwise the method will be VE_SPRITE_MOVE.
+ *
+ * \return Effect id or -1 if effect limit is reached.
  */
 int TileView::showEffect(const Coords &coords, TileId tile, AnimId moveAnim) {
     for (int i = 0; i < VE_MAX; ++i) {
         if (effect[i].method == VE_FREE) {
             VisualEffect* it = effect + i;
+
             it->pos[0] = (float) coords.x;
             it->pos[1] = (float) coords.y;
             it->method = (moveAnim == ANIM_UNUSED) ? VE_SPRITE : VE_SPRITE_MOVE;
             it->vid = tileset->render[tile].vid;
             it->anim = moveAnim;
+
             if (i >= effectCount)
                 effectCount = i + 1;
             return i;
@@ -217,9 +229,51 @@ int TileView::showEffect(const Coords &coords, TileId tile, AnimId moveAnim) {
     return -1;
 }
 
+/*
+ * Initialize a specific effect slot.  This is useful to control the draw
+ * order of effects (a higher id is drawn later).
+ *
+ * If the tile has a frame animation that will be started and the method
+ * is set to VE_SPRITE_FLOURISH.  Otherwise the method is set to VE_SPRITE.
+ * The anim & method members are only set if the effect slot is already free.
+ * Calling useEffect on an already allocated slot will not change either
+ * of those members, but will update tile, x, & y.
+ *
+ * \return VisualEffect pointer of the specified id.
+ */
+VisualEffect* TileView::useEffect(int id, TileId tile, float x, float y) {
+    VisualEffect* it = effect + id;
+    assert(id < VE_MAX);
+    it->pos[0] = x;
+    it->pos[1] = y;
+    it->vid = tileset->render[tile].vid;
+    if (it->method == VE_FREE) {
+        it->anim = tileset->get(tile)->startFrameAnim();
+        it->method = (it->anim == ANIM_UNUSED) ? VE_SPRITE
+                                               : VE_SPRITE_FLOURISH;
+    }
+    if (id >= effectCount)
+        effectCount = id + 1;
+    return it;
+}
+
+/*
+ * Stop any animation and free the effect slot.
+ */
 void TileView::removeEffect(int id) {
     if (id >= 0) {
         VisualEffect* it = effect + id;
+
+        if (it->anim != ANIM_UNUSED) {
+            Animator* asys;
+            if (it->method == VE_SPRITE_FLOURISH)
+                asys = &xu4.eventHandler->flourishAnim;
+            else
+                asys = &xu4.eventHandler->fxAnim;
+            anim_setState(asys, it->anim, ANIM_FREE);
+            it->anim = ANIM_UNUSED;
+        }
+
         it->method = VE_FREE;
         int last = effectCount - 1;
         if (id == last) {
@@ -231,7 +285,7 @@ void TileView::removeEffect(int id) {
     }
 }
 
-#define VIEW_TILE_SIZE  (2.0f / VIEWPORT_W)
+#define VIEW_TILE_SIZE  1.0f
 
 /*
  * \param cx        View center X.
@@ -247,14 +301,21 @@ void TileView::updateEffects(float cx, float cy, const float* uvTable) {
         float* animPos;
         float* attr = gpu_beginTris(xu4.gpu, TRIS_MAP_FX);
         float rect[4];
+        float scaleY = scale * aspect;
         int uvIndex;
         VisualEffect* it = effect;
         VisualEffect* end = it + effectCount;
 
-        rect[2] = rect[3] = VIEW_TILE_SIZE;
+        rect[2] = scale  * VIEW_TILE_SIZE;
+        rect[3] = scaleY * VIEW_TILE_SIZE;
 
         for (; it != end; ++it) {
             switch (it->method) {
+                case VE_SPRITE_FLOURISH:
+                    uvIndex = VID_INDEX(it->vid) +
+                        anim_valueI(&xu4.eventHandler->flourishAnim, it->anim);
+                    goto draw;
+
                 case VE_SPRITE_MOVE:
                     animPos = anim_valueF2(fxAnim, it->anim);
                     it->pos[0] = animPos[0];
@@ -262,10 +323,11 @@ void TileView::updateEffects(float cx, float cy, const float* uvTable) {
                     // Fall through...
 
                 case VE_SPRITE:
-                    // Similar to emitSprite() in screen.cpp.
-                    rect[0] = halfTile + (it->pos[0] - cx) * VIEW_TILE_SIZE;
-                    rect[1] = halfTile + (cy - it->pos[1]) * VIEW_TILE_SIZE;
                     uvIndex = VID_INDEX(it->vid);
+draw:
+                    // Similar to emitSprite() in screen.cpp.
+                    rect[0] = scale  * (halfTile + (it->pos[0] - cx));
+                    rect[1] = scaleY * (halfTile + (cy - it->pos[1]));
                     attr = gpu_emitQuad(attr, rect, uvTable + uvIndex*4);
                     break;
             }

@@ -27,6 +27,9 @@
 #include "xu4.h"
 
 #ifdef USE_GL
+#ifdef GPU_RENDER
+extern bool loadMapData(Map *map, U4FILE *uf, Symbol borderTile);
+#endif
 #include "gpu.h"
 #endif
 
@@ -50,12 +53,14 @@ using namespace std;
 #define GYP_SEGUE1 13
 #define GYP_SEGUE2 14
 
+#ifndef GPU_RENDER
 class IntroObjectState {
 public:
     IntroObjectState() : x(0), y(0), tile(0) {}
     int x, y;
     MapTile tile; /* base tile + tile frame */
 };
+#endif
 
 /* temporary place-holder for settings changes */
 SettingsData settingsChanged;
@@ -117,9 +122,19 @@ bool IntroBinData::load() {
     u4fread(sigData, 1, 533, title);
 
     u4fseek(title, INTRO_MAP_OFFSET, SEEK_SET);
+#ifdef GPU_RENDER
+    introMap.id     = 255;      // Unique Id required by screenUpdateMap.
+    introMap.border_behavior = Map::BORDER_WRAP;
+    introMap.width  = INTRO_MAP_WIDTH;
+    introMap.height = INTRO_MAP_HEIGHT;
+    introMap.flags  = NO_LINE_OF_SIGHT;
+    introMap.tileset = xu4.config->tileset();
+    loadMapData(&introMap, title, 0);
+#else
     introMap.resize(INTRO_MAP_WIDTH * INTRO_MAP_HEIGHT, MapTile(0));
     for (i = 0; i < INTRO_MAP_HEIGHT * INTRO_MAP_WIDTH; i++)
         introMap[i] = usaveIds->moduleId(u4fgetc(title));
+#endif
 
     u4fseek(title, INTRO_SCRIPT_TABLE_OFFSET, SEEK_SET);
     scriptTable = new unsigned char[INTRO_SCRIPT_TABLE_SIZE];
@@ -279,6 +294,19 @@ IntroController::~IntroController() {
     }
 }
 
+#ifdef GPU_RENDER
+void IntroController::enableMap() {
+    Coords center(INTRO_MAP_WIDTH / 2, INTRO_MAP_HEIGHT / 2);
+    screenUpdateMap(&mapArea, center);
+}
+
+#define MAP_ENABLE  enableMap()
+#define MAP_DISABLE screenDisableMap()
+#else
+#define MAP_ENABLE
+#define MAP_DISABLE
+#endif
+
 /**
  * Initializes intro state and loads in introduction graphics, text
  * and map data from title.exe.
@@ -293,6 +321,10 @@ bool IntroController::init() {
     // sigData is referenced during Titles initialization
     binData = new IntroBinData();
     binData->load();
+#ifdef GPU_RENDER
+    mapArea.map = &binData->introMap;
+    MAP_DISABLE;
+#endif
 
     Symbol sym[2];
     xu4.config->internSymbols(sym, 2, "beast0frame00 beast1frame00");
@@ -332,7 +364,9 @@ bool IntroController::init() {
 
     sleepCycles = 0;
     scrPos = 0;
+#ifndef GPU_RENDER
     objectStateTable = new IntroObjectState[IntroBinData::INTRO_BASETILE_TABLE_SIZE];
+#endif
 
     backgroundArea.reinit();
     menuArea.reinit();
@@ -360,8 +394,17 @@ void IntroController::deleteIntro() {
     delete binData;
     binData = NULL;
 
+#ifdef GPU_RENDER
+    // Ensure that any running map animations are freed.
+    Animator* fa = &xu4.eventHandler->flourishAnim;
+    if (fa->used)
+        anim_clear(fa);
+
+    mapArea.map = NULL;
+#else
     delete [] objectStateTable;
     objectStateTable = NULL;
+#endif
 
     xu4.imageMgr->freeResourceGroup(StageIntro);
     beastiesImg = NULL;
@@ -386,6 +429,7 @@ bool IntroController::keyPressed(int key) {
         break;
 
     case INTRO_MAP:
+        MAP_DISABLE;
         mode = INTRO_MENU;
         updateScreen();
         break;
@@ -401,6 +445,7 @@ bool IntroController::keyPressed(int key) {
         case 'r':
             mode = INTRO_MAP;
             updateScreen();
+            MAP_ENABLE;
             break;
         case 'c': {
             // Make a copy of our settings so we can change them
@@ -456,7 +501,9 @@ void IntroController::drawMap() {
         sleepCycles--;
     }
     else {
+        TileId tileId;
         int frame;
+        int x, y;
         unsigned char commandNibble;
         unsigned char dataNibble;
         const unsigned char* script = binData->scriptTable;
@@ -480,19 +527,29 @@ void IntroController::drawMap() {
                    t = tile frame (3 most significant bits of second byte)
                    ---------------------------------------------------------- */
                 dataNibble = script[scrPos] & 0xf;
-                objectStateTable[dataNibble].x = script[scrPos+1] & 0x1f;
-                objectStateTable[dataNibble].y = commandNibble;
+                x = script[scrPos+1] & 0x1f;
+                y = commandNibble;
 
                 // See if the tile id needs to be recalculated
+                tileId = binData->baseTileTable[dataNibble]->getId();
                 frame = script[scrPos+1] >> 5;
                 if (frame >= binData->baseTileTable[dataNibble]->getFrames()) {
                     frame -= binData->baseTileTable[dataNibble]->getFrames();
-                    objectStateTable[dataNibble].tile = MapTile(binData->baseTileTable[dataNibble]->getId() + 1);
+                    tileId += 1;
                 }
-                else {
-                    objectStateTable[dataNibble].tile = MapTile(binData->baseTileTable[dataNibble]->getId());
+
+#ifdef GPU_RENDER
+                {
+                VisualEffect* fx =
+                    mapArea.useEffect(dataNibble, tileId, (float)x, (float)y);
+                fx->vid += frame;
                 }
+#else
+                objectStateTable[dataNibble].x = x;
+                objectStateTable[dataNibble].y = y;
+                objectStateTable[dataNibble].tile = MapTile(tileId);
                 objectStateTable[dataNibble].tile.frame = frame;
+#endif
 
                 scrPos += 2;
                 break;
@@ -503,7 +560,11 @@ void IntroController::drawMap() {
                    i = table index
                    --------------- */
                 dataNibble = script[scrPos] & 0xf;
+#ifdef GPU_RENDER
+                mapArea.removeEffect(dataNibble);
+#else
                 objectStateTable[dataNibble].tile = 0;
+#endif
                 scrPos++;
                 break;
             case 8:
@@ -538,15 +599,18 @@ void IntroController::drawMap() {
 }
 
 void IntroController::drawMapStatic() {
+#ifndef GPU_RENDER
     int x, y;
 
     // draw unmodified map
     for (y = 0; y < INTRO_MAP_HEIGHT; y++)
         for (x = 0; x < INTRO_MAP_WIDTH; x++)
             mapArea.drawTile(binData->introMap[x + (y * INTRO_MAP_WIDTH)], x, y);
+#endif
 }
 
 void IntroController::drawMapAnimated() {
+#ifndef GPU_RENDER
     int i;
 
     // draw animated objects
@@ -557,6 +621,7 @@ void IntroController::drawMapAnimated() {
             mapArea.drawTile(state.tile, state.x, state.y);
     }
     Image::enableBlend(0);
+#endif
 }
 
 /**
@@ -1036,6 +1101,7 @@ void IntroController::timerFired() {
             beastiesVisible = true;
             musicPlay(introMusic);
             updateScreen();
+            MAP_ENABLE;
         }
 
     if (mode == INTRO_MAP)
@@ -1506,6 +1572,7 @@ void IntroController::initPlayers(SaveGame *saveGame) {
  */
 void IntroController::preloadMap()
 {
+#ifndef GPU_RENDER
     int x, y, i;
 
     // draw unmodified map
@@ -1518,6 +1585,7 @@ void IntroController::preloadMap()
         if (objectStateTable[i].tile != 0)
             mapArea.loadTile(objectStateTable[i].tile);
     }
+#endif
 }
 
 
@@ -1969,7 +2037,23 @@ bool IntroController::updateTitle()
                 SCALED( (step+1) * 8 ),
                 SCALED( title->srcImage->height()) );
 
+#ifdef GPU_RENDER
+            //printf( "KR reveal %d\n", step );
+            if (step >= mapArea.columns)
+                mapArea.scissor = NULL;
+            else {
+                int scale = xu4.settings->scale;
+                mapScissor[0] = scale * (160 - step * 8);   // Left
+                mapScissor[1] = mapArea.screenRect[1];      // Bottom
+                mapScissor[2] = scale * (step * 2 * 8);     // Width
+                mapScissor[3] = mapArea.screenRect[3];      // Height
+                mapArea.scissor = mapScissor;
 
+                if (step == 1) {
+                    MAP_ENABLE;
+                }
+            }
+#else
             // create a destimage for the map tiles
             int newtime = getTicks();
             if (newtime > title->timeDuration + 250/4)
@@ -1993,7 +2077,7 @@ bool IntroController::updateTitle()
                 SCALED( 8 ),
                 SCALED( (step * 2) * 8 ),
                 SCALED( (10 * 8) ) );
-
+#endif
             break;
         }
     }

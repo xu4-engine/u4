@@ -29,9 +29,10 @@ static bool isChunkCompressed(Map *map, int chunk) {
 /**
  * Loads raw data from the given file.
  */
-static bool loadMapData(Map *map, U4FILE *uf, Symbol borderTile) {
+bool loadMapData(Map *map, U4FILE *uf, Symbol borderTile) {
     unsigned int x, xch, y, ych, di;
     unsigned int chunkCols, chunkRows;
+    size_t chunkLen;
     uint8_t* chunk;
     uint8_t* cp;
     const UltimaSaveIds* usaveIds = xu4.config->usaveIds();
@@ -40,16 +41,19 @@ static bool loadMapData(Map *map, U4FILE *uf, Symbol borderTile) {
     Symbol sym_sea = SYM_UNSET;
 #endif
 
+    map->boundMaxX = map->width;
+    map->boundMaxY = map->height;
+
     if (map->chunk_height == 0)
         map->chunk_height = map->height;
     if (map->chunk_width == 0)
         map->chunk_width = map->width;
 
-    map->boundMaxX = map->width;
-    map->boundMaxY = map->height;
-
     chunkCols = map->width / map->chunk_width;
     chunkRows = map->height / map->chunk_height;
+
+    chunkLen = map->chunk_width * map->chunk_height;
+    chunk = new uint8_t[chunkLen];
 
 #ifdef GPU_RENDER
     bool addBorder = false;
@@ -60,12 +64,18 @@ static bool loadMapData(Map *map, U4FILE *uf, Symbol borderTile) {
         map->height += map->chunk_height;
         addBorder = true;
     }
-#endif
+
+    // gpu_drawMap() requires chunk_width & chunk_height to be the same, so
+    // the size is adjusted to be square.
+    // This code assumes the width is never less than height and handles the
+    // intro 19x5 map.
+    int padRows = 0;
+    if (map->chunk_height < map->chunk_width)
+        padRows = map->chunk_width - map->chunk_height;
 
     /* allocate the space we need for the map data */
-    map->data = new TileId[map->width * map->height];
+    map->data = new TileId[map->width * (map->height + padRows)];
 
-#ifdef GPU_RENDER
     if (addBorder) {
         // Fill the entire map with borderTile.
         TileId borderId = Tileset::findTileByName(borderTile)->id;
@@ -74,10 +84,10 @@ static bool loadMapData(Map *map, U4FILE *uf, Symbol borderTile) {
         while (it != end)
             *it++ = borderId;
     }
+#else
+    /* allocate the space we need for the map data */
+    map->data = new TileId[map->width * map->height];
 #endif
-
-    size_t chunkLen = map->chunk_width * map->chunk_height;
-    chunk = new uint8_t[chunkLen];
 
     if (map->offset)
         u4fseek(uf, map->offset, SEEK_CUR);
@@ -117,6 +127,16 @@ static bool loadMapData(Map *map, U4FILE *uf, Symbol borderTile) {
         }
     }
     ok = true;
+
+#ifdef GPU_RENDER
+    if (padRows) {
+        // Force square chunks and clear padded rows.
+        memset(map->data + map->width * map->height, 0,
+               sizeof(TileId) * map->width * padRows);
+        map->height += padRows;
+        map->chunk_height = map->chunk_width;
+    }
+#endif
 
 cleanup:
     delete[] chunk;

@@ -16,6 +16,10 @@
 #include "textview.h"
 #include "tileview.h"
 
+#ifdef GPU_RENDER
+#include "map.h"
+#endif
+
 class IntroObjectState;
 class Tile;
 
@@ -42,7 +46,11 @@ public:
 
     bool load();
 
+#ifdef GPU_RENDER
+    Map introMap;
+#else
     std::vector<MapTile> introMap;
+#endif
     unsigned char *sigData;
     unsigned char *scriptTable;
     const Tile **baseTileTable;
@@ -129,6 +137,9 @@ public:
     void showStory();
     void journeyOnward();
     void about();
+#ifdef GPU_RENDER
+    void enableMap();
+#endif
 #ifdef IOS
 private:
 #endif
@@ -226,7 +237,11 @@ private:
     bool beastiesVisible;
     int sleepCycles;
     int scrPos;  /* current position in the script table */
+#ifdef GPU_RENDER
+    int mapScissor[4];
+#else
     IntroObjectState *objectStateTable;
+#endif
     ImageInfo* beastiesImg;
 
     bool justInitiatedNewGame;

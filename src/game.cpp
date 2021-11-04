@@ -504,6 +504,9 @@ void GameController::setMap(Map *map, bool saveLocation, const Portal *portal, T
     c->location = new Location(coords, map, viewMode, context, turnCompleter, c->location);
     c->location->addObserver(this);
     c->party->setActivePlayer(activePlayer);
+#ifdef GPU_RENDER
+    mapArea.map = map;
+#endif
 #ifdef IOS
     U4IOS::updateGameControllerContext(c->location->context);
 #endif
@@ -539,6 +542,9 @@ int GameController::exitToParentMap() {
                 c->party->quenchTorch();
         }
         locationFree(&c->location);
+#ifdef GPU_RENDER
+        mapArea.map = c->location->map;
+#endif
 
 #ifdef IOS
         U4IOS::updateGameControllerContext(c->location->context);
@@ -2935,7 +2941,6 @@ void GameController::timerFired() {
         }
 
         updateMoons(true);
-        xu4.eventHandler->advanceFlourishAnim();
         screenCycle();
         gameUpdateScreen();
 

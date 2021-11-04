@@ -24,7 +24,7 @@
 #include "event.h"
 #include "tileanim.h"
 #include "tileset.h"
-#include "u4.h"     // VIEWPORT_W
+#include "tileview.h"
 
 //#include "gpu_opengl.h"
 
@@ -636,6 +636,16 @@ void gpu_clear(void* res, const float* color)
     glClear(GL_COLOR_BUFFER_BIT);
 }
 
+void gpu_setScissor(int* box)
+{
+    if (box) {
+        glEnable(GL_SCISSOR_TEST);
+        glScissor(box[0], box[1], box[2], box[3]);
+    } else {
+        glDisable(GL_SCISSOR_TEST);
+    }
+}
+
 /*
  * Begin adding triangles to a double-buffered draw list.
  *
@@ -803,6 +813,7 @@ float* gpu_emitQuadScroll(float* attr, const float* drawRect,
     return attr;
 }
 
+#ifdef GPU_RENDER
 //--------------------------------------
 // Map Rendering
 
@@ -862,7 +873,7 @@ struct ChunkInfo {
     int geoUsedMask;
 };
 
-#define VIEW_TILE_SIZE  (2.0f / VIEWPORT_W)
+#define VIEW_TILE_SIZE  1.0f
 
 static void _initFxInvert(MapFx* fx, TileId tid, float* drawRect,
                           const float* uvCur)
@@ -1052,19 +1063,20 @@ used:
 }
 
 /*
- * \param map           Pointer to map.
+ * \param view          Pointer to TileView with a valid map.
  * \param tileUVs       Table of four floats (minU,minV,maxU,maxV) per tile.
  * \param blocks        Sets the occluder shapes for shadowcasting.
  *                      Pass NULL to reuse any previously set shapes.
  * \param cx            Map tile row to center view on.
  * \param cy            Map tile column to center view on.
- * \param viewRadius    Number of tiles (horiz & vert) to draw around cx,cy.
+ * \param scale         Normal = 2.0 / view->columns.
  */
-void gpu_drawMap(void* res, const Map* map, const float* tileUVs,
+void gpu_drawMap(void* res, const TileView* view, const float* tileUVs,
                  const BlockingGroups* blocks,
-                 int cx, int cy, int viewRadius)
+                 int cx, int cy, float scale)
 {
     OpenGLResources* gr = (OpenGLResources*) res;
+    const Map* map = view->map;
     ChunkLoc cloc[4];   // Tile location of chunks on the map.
     int i, usedMask;
 
@@ -1074,9 +1086,6 @@ void gpu_drawMap(void* res, const Map* map, const float* tileUVs,
         gr->blockCount = blocks->left + blocks->center + blocks->right;
 
     if (gr->blockCount) {
-        GLint vp[4];
-        glGetIntegerv(GL_VIEWPORT, vp);
-
         glUseProgram(gr->shadow);
 
         if (blocks) {
@@ -1096,7 +1105,6 @@ void gpu_drawMap(void* res, const Map* map, const float* tileUVs,
         glDrawArrays(GL_TRIANGLES, 0, 6);
 
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-        glViewport(vp[0], vp[1], vp[2], vp[3]);
     }
 #endif
 
@@ -1104,6 +1112,7 @@ void gpu_drawMap(void* res, const Map* map, const float* tileUVs,
     ChunkInfo ci;
     int bindex[4];  // Chunk vertex buffer index (0-3) at view corner.
     int left, top, right, bot;
+    int halfW, halfH;
 
     ci.gr = gr;
     ci.mapData = map->data;
@@ -1115,10 +1124,14 @@ void gpu_drawMap(void* res, const Map* map, const float* tileUVs,
     ci.mapH   = map->height;
     ci.geoUsedMask  = 0;
 
-    left  = cx - viewRadius;
-    top   = cy - viewRadius;
-    right = cx + viewRadius;
-    bot   = cy + viewRadius;
+    // FIXME: Apply scale.
+    halfW = view->columns / 2;
+    halfH = view->rows / 2;
+
+    left  = cx - halfW;
+    right = cx + halfW;
+    top   = cy - halfH;
+    bot   = cy + halfH;
 
     // First pass to see what chunks are cached.
     bindex[0] = _obtainChunkGeo(&ci, left,  top, 0);
@@ -1140,11 +1153,19 @@ void gpu_drawMap(void* res, const Map* map, const float* tileUVs,
     }
 
     {
+    const int* vrect = view->screenRect;
+    glViewport(vrect[0], vrect[1], vrect[2], vrect[3]);
+    }
+
+    {
     float matrix[16];
+    float scaleY = scale * view->aspect;
     int fxUsed = 0;
 
     gr->time = ((float) getTicks()) * 0.001;
     memcpy(matrix, unitMatrix, sizeof(matrix));
+    matrix[0] = matrix[10] = scale;
+    matrix[5] = scaleY;
 
     if (gr->blockCount) {
         glUseProgram(gr->shadeWorld);
@@ -1166,8 +1187,8 @@ void gpu_drawMap(void* res, const Map* map, const float* tileUVs,
     for (i = 0; i < 4; ++i) {
         if (usedMask & (1 << i)) {
             // Position chunk in viewport.
-            matrix[ MAT_X ] = (float) (cloc[i].x - cx) * VIEW_TILE_SIZE;
-            matrix[ MAT_Y ] = (float) (cy - cloc[i].y) * VIEW_TILE_SIZE;
+            matrix[ MAT_X ] = (float) (cloc[i].x - cx) * scale;
+            matrix[ MAT_Y ] = (float) (cy - cloc[i].y) * scaleY;
             glUniformMatrix4fv(gr->slocTrans, 1, GL_FALSE, matrix);
 
             glBindVertexArray(gr->vao[ GLOB_MAP_CHUNK0 + i ]);
@@ -1186,8 +1207,8 @@ void gpu_drawMap(void* res, const Map* map, const float* tileUVs,
         float* fxAttr = gpu_beginTris(gr, MAPFX_LIST);
         for (i = 0; i < 4; ++i) {
             if (usedMask & (1 << i) && gr->mapChunkFxUsed[i]) {
-                xoff = (float) (cloc[i].x - cx) * VIEW_TILE_SIZE;
-                yoff = (float) (cy - cloc[i].y) * VIEW_TILE_SIZE;
+                xoff = (float) (cloc[i].x - cx);
+                yoff = (float) (cy - cloc[i].y);
 
                 const MapFx* it  = gr->mapChunkFx + i*CHUNK_FX_LIMIT;
                 const MapFx* end = it + gr->mapChunkFxUsed[i];
@@ -1196,10 +1217,10 @@ void gpu_drawMap(void* res, const Map* map, const float* tileUVs,
                     if (anim_valueI(animator, it->anim))
                         continue;
 
-                    rect[0] = xoff + it->x;
-                    rect[1] = yoff + it->y;
-                    rect[2] = it->w;
-                    rect[3] = it->h;
+                    rect[0] = scale  * (xoff + it->x);
+                    rect[1] = scaleY * (yoff + it->y);
+                    rect[2] = scale  * it->w;
+                    rect[3] = scaleY * it->h;
 
                     //printf("KR fx %f,%f %f,%f\n", it->x, it->y, it->w, it->h);
                     fxAttr = gpu_emitQuad(fxAttr, rect, &it->u);
@@ -1211,3 +1232,4 @@ void gpu_drawMap(void* res, const Map* map, const float* tileUVs,
     }
     }
 }
+#endif
