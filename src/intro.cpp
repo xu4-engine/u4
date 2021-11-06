@@ -944,7 +944,8 @@ string IntroController::getQuestion(int v1, int v2) {
  * Starts the game.
  */
 void IntroController::journeyOnward() {
-    if (saveGameLoad()) {
+    // Return to a running game or attempt to load a saved one.
+    if (xu4.saveGame || saveGameLoad()) {
         xu4.stage = StagePlay;
         xu4.eventHandler->setControllerDone();
     } else {
