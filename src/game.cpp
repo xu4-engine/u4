@@ -1331,7 +1331,6 @@ bool GameController::keyPressed(int key) {
 
                 screenMessage("Quit to menu?");
                 char choice = ReadChoiceController::get("yn \n\033");
-                screenMessage("%c", choice);
                 if (choice != 'y') {
                     screenMessage("\n");
                     break;
