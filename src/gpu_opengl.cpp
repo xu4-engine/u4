@@ -1080,33 +1080,28 @@ void gpu_drawMap(void* res, const TileView* view, const float* tileUVs,
     ChunkLoc cloc[4];   // Tile location of chunks on the map.
     int i, usedMask;
 
-#if 1
     // Render shadows.
-    if (blocks)
+    if (blocks) {
         gr->blockCount = blocks->left + blocks->center + blocks->right;
-
-    if (gr->blockCount) {
-        glUseProgram(gr->shadow);
-
-        if (blocks) {
+        if (gr->blockCount) {
+            glUseProgram(gr->shadow);
             glUniformMatrix4fv(gr->shadowTrans, 1, GL_FALSE, unitMatrix);
             glUniform4f(gr->shadowVport, 0.0f, 0.0f, SHADOW_DIM, SHADOW_DIM);
             glUniform3f(gr->shadowViewer, 0.0f, 0.0f, 11.0f);
             glUniform3i(gr->shadowCounts, blocks->left, blocks->center,
                                           blocks->right);
             glUniform3fv(gr->shadowShapes, gr->blockCount, blocks->tilePos);
+
+            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, gr->shadowFbo);
+            glViewport(0, 0, SHADOW_DIM, SHADOW_DIM);
+
+            glDisable(GL_BLEND);
+            glBindVertexArray(gr->vao[ GLOB_QUAD ]);
+            glDrawArrays(GL_TRIANGLES, 0, 6);
+
+            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
         }
-
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, gr->shadowFbo);
-        glViewport(0, 0, SHADOW_DIM, SHADOW_DIM);
-
-        glDisable(GL_BLEND);
-        glBindVertexArray(gr->vao[ GLOB_QUAD ]);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
     }
-#endif
 
     {
     ChunkInfo ci;

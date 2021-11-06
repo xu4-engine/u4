@@ -61,6 +61,7 @@ struct Screen {
     int mapId;          // Tracks map changes.
     int blockX;         // Tracks changes to view point.
     int blockY;
+    BlockingGroups* blockingUpdate;
     BlockingGroups blockingGroups;
 #else
     uint8_t blockingGrid[VIEWPORT_W * VIEWPORT_H];
@@ -135,6 +136,7 @@ static void screenInit_data(Screen* scr, Settings& settings) {
 #ifdef GPU_RENDER
     scr->mapId = -1;
     scr->blockX = scr->blockY = -1;
+    scr->blockingUpdate = NULL;
 #endif
 
     scr->filterScaler = scalerGet(settings.filter);
@@ -541,6 +543,7 @@ void screenUpdateMap(TileView* view, const Coords& center) {
     Screen* sp = xu4.screen;
 
     sp->renderMapView = view;
+    sp->blockingUpdate = NULL;
 
     // Reset map rendering data when the location changes.
     if (sp->mapId != map->id) {
@@ -561,6 +564,7 @@ void screenUpdateMap(TileView* view, const Coords& center) {
                                center.x - view->columns / 2,
                                center.y - view->rows / 2,
                                view->columns, view->rows);
+            sp->blockingUpdate = blocks;
             //printf("KR groups %d,%d,%d\n",
             //       blocks->left, blocks->center, blocks->right);
         }
@@ -676,7 +680,7 @@ void screenRender() {
             gpu_setScissor(view->scissor);
 
         gpu_drawMap(gpu, view, sp->textureInfo->tileTexCoord,
-                    &sp->blockingGroups, sp->blockX, sp->blockY, view->scale);
+                    sp->blockingUpdate, sp->blockX, sp->blockY, view->scale);
         gpu_drawTris(gpu, TRIS_MAP_OBJ);
 
         anim_advance(&xu4.eventHandler->fxAnim, 1.0f / 24.0f);
