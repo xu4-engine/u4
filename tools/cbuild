@@ -3,7 +3,7 @@
 
 if [ ! -s project.tar.gz ]; then
 	sed -i "s/KR-1.0/DR-$(git rev-parse --short HEAD)/" project.b
-	copr -a -t mingw
+	copr -a -t mingw use_gl:true gpu_render:true
 fi
 
 
@@ -12,6 +12,7 @@ SCRIPT=build-$TIME
 ID=${SCRIPT}
 HDIR=/tmp
 CDIR=/tmp
+ARC_DIR=/tmp/xu4
 SDK_DIR=dist/sdk
 
 if [ ! -d ${SDK_DIR} ]; then
@@ -19,6 +20,10 @@ if [ ! -d ${SDK_DIR} ]; then
 	echo "Run \"make -C dist cbuild-sdks\""
 	exit
 fi
+
+clean_dir () {
+	if [ -d "$1" ]; then rm -rf "$1"/*; else mkdir -p "$1"; fi
+}
 
 case $1 in
 windows)
@@ -29,7 +34,7 @@ windows)
   mkdir u4
   cd u4
   tar xf /tmp/project.tar.gz
-  copr -t mingw use_gl:false make_util:false
+  copr -t mingw use_gl:true make_util:false
 ' >$HDIR/${SCRIPT}
 
 	podman run -d -it --name=$ID xu4/f33-mingw:1.0 /bin/bash || exit
@@ -38,15 +43,16 @@ windows)
 	podman cp project.tar.gz $ID:$CDIR
 	podman cp $HDIR/${SCRIPT} $ID:$CDIR/${SCRIPT}
 	podman exec -it -u build $ID /bin/bash $CDIR/${SCRIPT}
-	podman cp $ID:/home/build/u4/u4.exe /tmp/u4.exe-$TIME
+	podman cp $ID:/home/build/u4/u4.exe /tmp/u4.exe-$TIME || exit
 
 	# Build zip archive.
 	if [ "$2" != "-b" ]; then
-		mkdir -p /tmp/xu4
+		clean_dir ${ARC_DIR}
 		FN=`readlink -f ${SDK_DIR}/allegro-dll.tar.bz2`
-		tar xf $FN -C /tmp/xu4
-		cp /tmp/u4.exe-$TIME /tmp/xu4/u4.exe
-		cd /tmp; zip -r xu4-win32.zip xu4
+		tar xf $FN -C ${ARC_DIR}
+		cp /tmp/u4.exe-$TIME ${ARC_DIR}/u4.exe
+		cp u4.mod ${ARC_DIR}
+		cd ${ARC_DIR%/*}; zip -r xu4-win32.zip ${ARC_DIR##*/}
 	fi
 	;;
 
@@ -56,7 +62,7 @@ linux)
   mkdir u4
   cd u4
   tar xf /tmp/project.tar.gz
-  copr use_gl:false make_util:false boron_sdk:%../boron
+  copr use_gl:true make_util:false boron_sdk:%../boron
 ' >$HDIR/${SCRIPT}
 
 	podman run -d -it --name=$ID xu4/f33-gcc:1.0 /bin/bash || exit
@@ -64,7 +70,16 @@ linux)
 	podman cp project.tar.gz $ID:$CDIR
 	podman cp $HDIR/${SCRIPT} $ID:$CDIR/${SCRIPT}
 	podman exec -it $ID /bin/bash $CDIR/${SCRIPT}
-	podman cp $ID:/home/build/u4/u4 /tmp/u4-$TIME
+	podman cp $ID:/home/build/u4/u4 /tmp/u4-$TIME || exit
+
+	# Build archive.
+	if [ "$2" != "-b" ]; then
+		clean_dir ${ARC_DIR}
+		cp /tmp/u4-$TIME ${ARC_DIR}/u4
+		cp u4.mod ${ARC_DIR}
+		cp dist/README.linux-dr ${ARC_DIR}/README
+		tar czf /tmp/xu4-linux.tar.gz -C ${ARC_DIR%/*} ${ARC_DIR##*/}
+	fi
 	;;
 
 *)
