@@ -679,10 +679,12 @@ void CombatController::finishTurn() {
         return;
     }
 
+    Map* map = c->location->map;
+
     /* make sure the player with the focus is still in battle (hasn't fled or died) */
     if (player) {
         /* apply effects from tile player is standing on */
-        player->applyEffect(c->location->map->tileTypeAt(player->getCoords(), WITH_GROUND_OBJECTS)->getEffect());
+        player->applyEffect(map, map->tileTypeAt(player->getCoords(), WITH_GROUND_OBJECTS)->getEffect());
     }
 
     quick = (*c->aura == Aura::QUICKNESS) && player && (xu4_random(2) == 0) ? 1 : 0;
@@ -691,7 +693,7 @@ void CombatController::finishTurn() {
     if (!quick || player->isDisabled()){
 
         do {
-            c->location->map->annotations->passTurn();
+            map->annotations->passTurn();
 
             /* put a sleeping person in place of the player,
                or restore an awakened member to their original state */
@@ -760,7 +762,8 @@ void CombatController::finishTurn() {
                   !party[c->party->getActivePlayer()]->isDisabled() && /* and the active player is not disabled */
                   (c->party->getActivePlayer() != focus)));
     }
-    else c->location->map->annotations->passTurn();
+    else
+        map->annotations->passTurn();
 
 #if 0
     if (focus != 0) {

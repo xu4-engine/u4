@@ -137,6 +137,7 @@ void dungeonDrinkFountain() {
     if (player == -1)
         return;
 
+    PartyMember* pc = c->party->member(player);
     Dungeon *dungeon = dynamic_cast<Dungeon *>(c->location->map);
     FountainType type = (FountainType) dungeon->currentSubToken();
 
@@ -148,33 +149,36 @@ void dungeonDrinkFountain() {
 
     /* healing fountain */
     case FOUNTAIN_HEALING:
-        if (c->party->member(player)->heal(HT_FULLHEAL))
+        if (pc->heal(HT_FULLHEAL))
             screenMessage("\nAhh-Refreshing!\n");
-        else screenMessage("\nHmmm--No Effect!\n");
+        else
+            screenMessage("\nHmmm--No Effect!\n");
         break;
 
     /* acid fountain */
     case FOUNTAIN_ACID:
-        c->party->member(player)->applyDamage(100); /* 100 damage to drinker */
+        pc->applyDamage(dungeon, 100);      /* 100 damage to drinker */
         screenMessage("\nBleck--Nasty!\n");
         break;
 
     /* cure fountain */
     case FOUNTAIN_CURE:
-        if (c->party->member(player)->heal(HT_CURE))
+        if (pc->heal(HT_CURE))
             screenMessage("\nHmmm--Delicious!\n");
-        else screenMessage("\nHmmm--No Effect!\n");
+        else
+            screenMessage("\nHmmm--No Effect!\n");
         break;
 
     /* poison fountain */
     case FOUNTAIN_POISON:
-        if (c->party->member(player)->getStatus() != STAT_POISONED) {
+        if (pc->getStatus() != STAT_POISONED) {
             soundPlay(SOUND_POISON_DAMAGE);
-            c->party->member(player)->applyEffect(EFFECT_POISON);
-            c->party->member(player)->applyDamage(100); /* 100 damage to drinker also */
+            pc->applyEffect(dungeon, EFFECT_POISON);
+            pc->applyDamage(dungeon, 100);  /* 100 damage to drinker also */
             screenMessage("\nArgh-Choke-Gasp!\n");
         }
-        else screenMessage("\nHmm--No Effect!\n");
+        else
+            screenMessage("\nHmm--No Effect!\n");
         break;
 
     default:
@@ -227,7 +231,7 @@ void dungeonTouchOrb() {
     }
 
     /* deal damage to the party member who touched the orb */
-    c->party->member(player)->applyDamage(damage);
+    c->party->member(player)->applyDamage(loc->map, damage);
 
     /* remove the orb from the map */
     loc->map->setTileAt(loc->coords,
@@ -248,11 +252,11 @@ bool dungeonHandleTrap(TrapType trap) {
         // Treat falling rocks and pits like bomb traps
         // XXX: That's a little harsh.
         screenMessage("\nFalling Rocks!\n");
-        c->party->applyEffect(EFFECT_LAVA);
+        c->party->applyEffect(dungeon, EFFECT_LAVA);
         break;
     case TRAP_PIT:
         screenMessage("\nPit!\n");
-        c->party->applyEffect(EFFECT_LAVA);
+        c->party->applyEffect(dungeon, EFFECT_LAVA);
         break;
     default: break;
     }

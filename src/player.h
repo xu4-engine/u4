@@ -116,7 +116,7 @@ public:
     virtual void addStatus(StatusType status);
     void adjustMp(int pts);
     void advanceLevel();
-    void applyEffect(TileEffect effect);
+    void applyEffect(Map*, TileEffect effect);
     void awardXp(int xp);
     bool heal(HealType type);
     virtual void removeStatus(StatusType status);
@@ -125,7 +125,7 @@ public:
     EquipError setArmor(const Armor *a);
     EquipError setWeapon(const Weapon *w);
 
-    virtual bool applyDamage(int damage, bool byplayer = false);
+    virtual bool applyDamage(Map*, int damage, bool byplayer = false);
     virtual int getAttackBonus() const;
     virtual int getDefense() const;
     virtual bool dealDamage(Map*, Creature *m, int damage);
@@ -180,7 +180,7 @@ public:
     void adjustFood(int food);
     void adjustGold(int gold);
     void adjustKarma(KarmaAction action);
-    void applyEffect(TileEffect effect);
+    void applyEffect(Map*, TileEffect effect);
     bool attemptElevation(Virtue virtue);
     bool burnTorch(int turns = 1);
     bool canEnterShrine(Virtue virtue);

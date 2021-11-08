@@ -141,7 +141,7 @@ CFUNC(cf_damagePc)
 
     if (player > 0 && hp > 0) {
         PartyMember* p = c->party->member(player - 1);
-        p->applyDamage(hp);
+        p->applyDamage(c->location->map, hp);
     }
 
     ur_setId(res, UT_UNSET);

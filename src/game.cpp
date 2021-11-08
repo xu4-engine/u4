@@ -573,6 +573,7 @@ void GameController::finishTurn() {
     Creature *attacker = NULL;
 
     while (xu4.stage == StagePlay) {
+        Map* map = c->location->map;
 
         /* adjust food and moves */
         c->party->endTurn();
@@ -592,10 +593,10 @@ void GameController::finishTurn() {
         if (!c->party->isFlying()) {
 
             // apply effects from tile avatar is standing on
-            c->party->applyEffect(c->location->map->tileTypeAt(c->location->coords, WITH_GROUND_OBJECTS)->getEffect());
+            c->party->applyEffect(map, map->tileTypeAt(c->location->coords, WITH_GROUND_OBJECTS)->getEffect());
 
             // Move creatures and see if something is attacking the avatar
-            attacker = c->location->map->moveObjects(c->location->coords);
+            attacker = map->moveObjects(c->location->coords);
 
             // Something's attacking!  Start combat!
             if (attacker) {
@@ -610,7 +611,7 @@ void GameController::finishTurn() {
         }
 
         /* update map annotations */
-        c->location->map->annotations->passTurn();
+        map->annotations->passTurn();
 
         if (!c->party->isImmobilized())
             break;
@@ -692,7 +693,7 @@ void GameController::update(Party *party, PartyEvent &event) {
 
         // 2 damage to each party member for starving!
         for (i = 0; i < c->saveGame->members; i++)
-            c->party->member(i)->applyDamage(2);
+            c->party->member(i)->applyDamage(c->location->map, 2);
         break;
     default:
         break;
@@ -1999,9 +2000,11 @@ bool getChestTrapHandler(int player) {
         if ((player >= 0) &&
             (c->saveGame->players[player].dex + 25 < xu4_random(100)))
         {
+            Map* map = c->location->map;
             if (trapType == EFFECT_LAVA) /* bomb trap */
-                c->party->applyEffect(trapType);
-            else c->party->member(player)->applyEffect(trapType);
+                c->party->applyEffect(map, trapType);
+            else
+                c->party->member(player)->applyEffect(map, trapType);
         }
         else screenMessage("Evaded!\n");
 
@@ -3280,7 +3283,7 @@ void gameDamageParty(int minDamage, int maxDamage) {
             damage = ((minDamage >= 0) && (minDamage < maxDamage)) ?
                 xu4_random((maxDamage + 1) - minDamage) + minDamage :
                 maxDamage;
-            c->party->member(i)->applyDamage(damage);
+            c->party->member(i)->applyDamage(c->location->map, damage);
             c->stats->highlightPlayer(i);
             lastdmged = i;
             EventHandler::wait_msecs(50);

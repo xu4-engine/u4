@@ -193,7 +193,7 @@ void PartyMember::advanceLevel() {
 /**
  * Apply an effect to the party member
  */
-void PartyMember::applyEffect(TileEffect effect) {
+void PartyMember::applyEffect(Map* map, TileEffect effect) {
     if (isDead())
         return;
 
@@ -202,7 +202,7 @@ void PartyMember::applyEffect(TileEffect effect) {
         break;
     case EFFECT_LAVA:
     case EFFECT_FIRE:
-        applyDamage(16 + (xu4_random(32)));
+        applyDamage(map, 16 + (xu4_random(32)));
 
         /*else if (player == ALL_PLAYERS && xu4_random(2) == 0)
             playerApplyDamage(&(c->saveGame->players[i]), 10 + (xu4_random(25)));*/
@@ -359,7 +359,7 @@ EquipError PartyMember::setWeapon(const Weapon *w) {
  * there anything special about being killed by a party member in U5?)  Also
  * keeps interface consistent for virtual base function Creature::applydamage()
  */
-bool PartyMember::applyDamage(int damage, bool) {
+bool PartyMember::applyDamage(Map* map, int damage, bool) {
     int newHp = player->hp;
 
     if (isDead())
@@ -375,7 +375,6 @@ bool PartyMember::applyDamage(int damage, bool) {
     player->hp = newHp;
     notifyOfChange();
 
-    Map* map = c->location->map;
     if (isCombatMap(map) && isDead()) {
         TileId corpseId = Tileset::findTileByName(Tile::sym.corpse)->getId();
         map->annotations->add(coords, corpseId)->setTTL(party->size() * 2);
@@ -675,25 +674,25 @@ void Party::adjustKarma(KarmaAction action) {
 /**
  * Apply effects to the entire party
  */
-void Party::applyEffect(TileEffect effect) {
+void Party::applyEffect(Map* map, TileEffect effect) {
     int i;
 
     for (i = 0; i < size(); i++) {
         switch(effect) {
         case EFFECT_NONE:
         case EFFECT_ELECTRICITY:
-            members[i]->applyEffect(effect);
+            members[i]->applyEffect(map, effect);
             break;
         case EFFECT_LAVA:
         case EFFECT_FIRE:
         case EFFECT_SLEEP:
             if (xu4_random(2) == 0)
-                members[i]->applyEffect(effect);
+                members[i]->applyEffect(map, effect);
             break;
         case EFFECT_POISONFIELD:
         case EFFECT_POISON:
             if (xu4_random(5) == 0)
-                members[i]->applyEffect(effect);
+                members[i]->applyEffect(map, effect);
             break;
         }
     }
@@ -787,6 +786,7 @@ bool Party::donate(int quantity) {
  * Ends the party's turn
  */
 void Party::endTurn() {
+    Location* loc = c->location;
     int i;
 
     saveGame->moves++;
@@ -794,7 +794,7 @@ void Party::endTurn() {
     for (i = 0; i < size(); i++) {
 
         /* Handle player status (only for non-combat turns) */
-        if ((c->location->context & CTX_NON_COMBAT) == c->location->context) {
+        if ((loc->context & CTX_NON_COMBAT) == loc->context) {
 
             /* party members eat food (also non-combat) */
             if (!members[i]->isDead())
@@ -814,7 +814,7 @@ void Party::endTurn() {
                  * screen appears
                  */
                 soundPlay(SOUND_POISON_DAMAGE, false);
-                members[i]->applyDamage(2);
+                members[i]->applyDamage(loc->map, 2);
                 break;
 
             default:
@@ -828,14 +828,14 @@ void Party::endTurn() {
     }
 
     /* The party is starving! */
-    if ((saveGame->food == 0) && ((c->location->context & CTX_NON_COMBAT) == c->location->context)) {
+    if ((saveGame->food == 0) && ((loc->context & CTX_NON_COMBAT) == loc->context)) {
         setChanged();
         PartyEvent event(PartyEvent::STARVING, 0);
         notifyObservers(event);
     }
 
     /* heal ship (25% chance it is healed each turn) */
-    if ((c->location->context == CTX_WORLDMAP) && (saveGame->shiphull < 50) && xu4_random(4) == 0)
+    if ((loc->context == CTX_WORLDMAP) && (saveGame->shiphull < 50) && xu4_random(4) == 0)
         healShip(1);
 }
 
