@@ -6,10 +6,7 @@
 #include "tileset.h"
 
 #include "error.h"
-#include "config.h"
 #include "imagemgr.h"
-#include "settings.h"
-#include "tile.h"
 #include "tileanim.h"
 #include "xu4.h"
 

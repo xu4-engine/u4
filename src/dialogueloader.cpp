@@ -2,10 +2,7 @@
  * $Id$
  */
 
-#include <cstdlib>
-#include <cstring>
 #include "debug.h"
-#include "conversation.h"
 #include "dialogueloader.h"
 
 std::map<std::string, DialogueLoader *> *DialogueLoader::loaderMap = NULL;

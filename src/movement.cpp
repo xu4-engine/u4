@@ -4,17 +4,9 @@
 
 #include "movement.h"
 
-#include "combat.h"
 #include "context.h"
 #include "debug.h"
 #include "dungeon.h"
-#include "event.h"
-#include "location.h"
-#include "creature.h"
-#include "object.h"
-#include "player.h"
-#include "savegame.h"
-#include "tile.h"
 #include "utils.h"
 #include "xu4.h"
 

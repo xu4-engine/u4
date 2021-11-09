@@ -5,15 +5,7 @@
 #ifndef DUNGEONVIEW_H
 #define DUNGEONVIEW_H
 
-#include "context.h"
-#include "debug.h"
-#include "direction.h"
-#include "dungeon.h"
-#include "location.h"
-#include "savegame.h"
-#include "tileset.h"
 #include "tileview.h"
-#include "types.h"
 
 typedef enum {
     DNGGRAPHIC_NONE,
@@ -26,6 +18,7 @@ typedef enum {
     DNGGRAPHIC_BASETILE
 } DungeonGraphicType;
 
+class Context;
 class ImageInfo;
 class SubImage;
 

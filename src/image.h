@@ -5,8 +5,7 @@
 #ifndef IMAGE_H
 #define IMAGE_H
 
-#include <string>
-#include <stdint.h>
+#include <cstddef>
 #include "textcolor.h"
 #include "support/image32.h"
 

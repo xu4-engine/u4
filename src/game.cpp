@@ -2,12 +2,6 @@
  * $Id$
  */
 
-#include <cctype>
-#include <ctime>
-#include <map>
-
-#include "u4.h"
-
 #include "game.h"
 
 #include "camp.h"
@@ -17,37 +11,24 @@
 #include "conversation.h"
 #include "debug.h"
 #include "dungeon.h"
-#include "combat.h"
-#include "context.h"
 #include "death.h"
 #include "debug.h"
-#include "direction.h"
 #include "error.h"
-#include "event.h"
 #include "intro.h"
 #include "item.h"
 #include "imagemgr.h"
 #include "location.h"
 #include "mapmgr.h"
-#include "menu.h"
-#include "creature.h"
-#include "movement.h"
-#include "names.h"
-#include "person.h"
-#include "player.h"
 #include "portal.h"
 #include "progress_bar.h"
 #include "savegame.h"
 #include "screen.h"
 #include "settings.h"
-#include "shrine.h"
-#include "sound.h"
 #include "spell.h"
 #include "stats.h"
 #include "tileset.h"
-#include "utils.h"
+#include "u4.h"
 #include "weapon.h"
-#include "dungeonview.h"
 #include "xu4.h"
 
 #ifdef IOS

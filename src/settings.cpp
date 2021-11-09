@@ -7,11 +7,9 @@
 
 #include "settings.h"
 
-#include "debug.h"
 #include "error.h"
 #include "filesystem.h"
 #include "screen.h"
-#include "utils.h"
 
 #if defined(_WIN32) || defined(__CYGWIN__)
 #include <windows.h>

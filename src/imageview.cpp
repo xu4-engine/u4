@@ -2,9 +2,7 @@
  * $Id$
  */
 
-#include "debug.h"
 #include "error.h"
-#include "image.h"
 #include "imagemgr.h"
 #include "imageview.h"
 #include "settings.h"

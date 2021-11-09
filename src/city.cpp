@@ -7,9 +7,6 @@
 #include "config.h"
 #include "context.h"
 #include "conversation.h"
-#include "creature.h"
-#include "object.h"
-#include "person.h"
 #include "player.h"
 #include "xu4.h"
 

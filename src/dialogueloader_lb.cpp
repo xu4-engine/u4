@@ -9,8 +9,6 @@
 #include "conversation.h"
 #include "dialogueloader_lb.h"
 #include "player.h"
-#include "savegame.h"
-#include "u4file.h"
 
 using std::string;
 using std::vector;

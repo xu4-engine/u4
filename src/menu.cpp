@@ -5,7 +5,6 @@
 #include "menu.h"
 
 #include "error.h"
-#include "event.h"
 #include "textview.h"
 
 Menu::Menu() :

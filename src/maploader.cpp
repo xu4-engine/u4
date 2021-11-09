@@ -6,18 +6,19 @@
 #include "u4.h"
 
 #include "city.h"
-#include "combat.h"
 #include "config.h"
 #include "dialogueloader.h"
 #include "debug.h"
 #include "dungeon.h"
 #include "error.h"
-#include "map.h"
 #include "mapmgr.h"
 #include "person.h"
-#include "tileset.h"
 #include "u4file.h"
 #include "xu4.h"
+
+#ifdef GPU_RENDER
+#include "tileset.h"
+#endif
 
 
 #ifdef U5_DAT

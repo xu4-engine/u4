@@ -4,16 +4,12 @@
 
 #include "player.h"
 
-#include "combat.h"
 #include "config.h"
 #include "context.h"
 #include "debug.h"
-#include "game.h"
-#include "location.h"
 #include "mapmgr.h"
-#include "names.h"
+#include "sound.h"
 #include "tileset.h"
-#include "types.h"
 #include "utils.h"
 #include "weapon.h"
 #include "xu4.h"

@@ -3,24 +3,18 @@
  */
 
 
-#include <algorithm>
 #include <cstring>
 #include "u4.h"
 
 #include "intro.h"
 
-#include "config.h"
 #include "debug.h"
 #include "error.h"
-#include "event.h"
 #include "imagemgr.h"
-#include "menu.h"
 #include "sound.h"
 #include "player.h"
-#include "savegame.h"
 #include "screen.h"
 #include "settings.h"
-#include "shrine.h"
 #include "tileset.h"
 #include "u4file.h"
 #include "utils.h"

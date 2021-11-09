@@ -9,7 +9,6 @@
 #include <string>
 
 #include "creature.h"
-#include "types.h"
 
 using std::list;
 using std::string;

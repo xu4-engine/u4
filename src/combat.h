@@ -5,18 +5,8 @@
 #ifndef COMBAT_H
 #define COMBAT_H
 
-#include <map>
-
-#include "direction.h"
-#include "map.h"
-#include "controller.h"
-#include "creature.h"
 #include "game.h"
-#include "object.h"
-#include "observer.h"
 #include "player.h"
-#include "savegame.h"
-#include "types.h"
 
 #define AREA_CREATURES   16
 #define AREA_PLAYERS    8

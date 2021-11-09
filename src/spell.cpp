@@ -2,27 +2,16 @@
  * $Id$
  */
 
-#include "u4.h"
+#include <cstring>
 
 #include "spell.h"
 
-#include <cstring>
-#include "combat.h"
 #include "config.h"
-#include "context.h"
 #include "debug.h"
-#include "direction.h"
 #include "dungeon.h"
-#include "event.h"
-#include "game.h"
-#include "location.h"
-#include "map.h"
 #include "mapmgr.h"
-#include "creature.h"
-#include "player.h"
 #include "screen.h"
 #include "settings.h"
-#include "tile.h"
 #include "tileset.h"
 #include "utils.h"
 #include "xu4.h"

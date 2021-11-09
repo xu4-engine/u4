@@ -2,26 +2,14 @@
  * map.cpp
  */
 
-#include "u4.h"
-
 #include "map.h"
 
 #include "config.h"
-#include "context.h"
 #include "debug.h"
-#include "direction.h"
 #include "event.h"
-#include "location.h"
-#include "movement.h"
-#include "object.h"
-#include "person.h"
 #include "player.h"
 #include "portal.h"
-#include "savegame.h"
 #include "tileset.h"
-#include "types.h"
-#include "utils.h"
-#include "settings.h"
 #include "xu4.h"
 
 

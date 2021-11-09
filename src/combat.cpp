@@ -2,26 +2,15 @@
  * combat.cpp
  */
 
-#include <ctime>
-#include "u4.h"
-
 #include "combat.h"
 
 #include "config.h"
-#include "context.h"
-#include "creature.h"
 #include "death.h"
 #include "debug.h"
 #include "dungeon.h"
-#include "event.h"
-#include "game.h"
 #include "item.h"
 #include "location.h"
 #include "mapmgr.h"
-#include "movement.h"
-#include "names.h"
-#include "object.h"
-#include "player.h"
 #include "portal.h"
 #include "screen.h"
 #include "settings.h"

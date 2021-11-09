@@ -7,10 +7,8 @@
 
 #include <vector>
 
-#include "map.h"
 #include "movement.h"
 #include "observable.h"
-#include "types.h"
 
 typedef enum {
     CTX_WORLDMAP    = 0x0001,
@@ -26,6 +24,7 @@ typedef enum {
 #define CTX_NON_COMBAT      (LocationContext)(CTX_ANY & ~CTX_COMBAT)
 #define CTX_CAN_SAVE_GAME   (LocationContext)(CTX_WORLDMAP | CTX_DUNGEON)
 
+class Map;
 class TurnCompleter;
 
 class Location : public Observable<Location *, MoveEvent &> {

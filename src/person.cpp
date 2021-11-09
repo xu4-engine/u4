@@ -2,30 +2,18 @@
  * $Id$
  */
 
-#include <cctype>
-#include <string>
 #include <cstring>
 #include <vector>
 
-#include "u4.h"
-
 #include "person.h"
 
-#include "city.h"
 #include "context.h"
 #include "conversation.h"
 #include "debug.h"
-#include "event.h"
 #include "game.h"   // Included for ReadPlayerController
-#include "location.h"
-#include "names.h"
 #include "player.h"
-#include "savegame.h"
 #include "settings.h"
-#include "stats.h"
-#include "types.h"
-#include "u4file.h"
-#include "utils.h"
+#include "u4.h"
 #include "xu4.h"
 
 #ifdef USE_BORON

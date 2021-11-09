@@ -11,20 +11,17 @@
 
 #include "screen.h"
 
-#include "config.h"
 #include "context.h"
 #include "debug.h"
 #include "dungeonview.h"
 #include "error.h"
 #include "event.h"
+#include "game.h"
 #include "imagemgr.h"
-#include "object.h"
 #include "scale.h"
 #include "settings.h"
-#include "textcolor.h"
 #include "tileanim.h"
 #include "tileset.h"
-#include "tileview.h"
 #include "xu4.h"
 
 #ifdef USE_GL

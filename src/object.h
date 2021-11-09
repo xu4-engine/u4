@@ -9,7 +9,6 @@
 #include "anim.h"
 #include "coords.h"
 #include "tile.h"
-#include "types.h"
 
 typedef enum {
     MOVEMENT_FIXED,

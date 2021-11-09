@@ -6,9 +6,6 @@
 #define SPELL_H
 
 #include "context.h"
-#include "location.h"
-#include "map.h"
-#include "savegame.h"
 #include "sound.h"
 
 enum SpellCastError {

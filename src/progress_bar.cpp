@@ -4,7 +4,6 @@
 
 #include "progress_bar.h"
 
-#include "image.h"
 #include "settings.h"
 #include "screen.h"
 #include "xu4.h"

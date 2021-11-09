@@ -3,24 +3,16 @@
  */
 
 #include <string>
-#include <vector>
 
 #include "shrine.h"
 
-#include "config.h"
-#include "context.h"
-#include "event.h"
 #include "game.h"
 #include "imagemgr.h"
-#include "location.h"
-#include "creature.h"
-#include "names.h"
 #include "player.h"
 #include "portal.h"
 #include "screen.h"
 #include "settings.h"
 #include "tileset.h"
-#include "types.h"
 #include "u4.h"
 #include "xu4.h"
 

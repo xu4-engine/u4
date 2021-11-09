@@ -2,18 +2,8 @@
  * $Id$
  */
 
-#include <ctime>
-#include "u4.h"
-
-#include "death.h"
-
-#include "map.h"
-#include "city.h"
 #include "config.h"
-#include "context.h"
-#include "event.h"
 #include "game.h"
-#include "location.h"
 #include "mapmgr.h"
 #include "player.h"
 #include "portal.h"

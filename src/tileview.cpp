@@ -10,18 +10,14 @@
 #include "gpu.h"
 #endif
 
-#include "config.h"
 #include "debug.h"
-#include "image.h"
 #include "imagemgr.h"
 #include "settings.h"
 #include "screen.h"
-#include "tile.h"
 #include "tileanim.h"
 #include "tileset.h"
 #include "tileview.h"
 #include "u4.h"
-#include "error.h"
 #include "xu4.h"
 
 using std::vector;

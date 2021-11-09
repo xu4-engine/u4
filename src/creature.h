@@ -7,7 +7,6 @@
 
 #include "object.h"
 #include "movement.h"
-#include "types.h"
 
 class CombatController;
 class Tile;

@@ -9,16 +9,9 @@
 #include "config.h"
 #include "context.h"
 #include "debug.h"
-#include "error.h"
-#include "game.h"       /* required by specialAction and specialEffect functions */
-#include "location.h"
-#include "map.h"
-#include "player.h"     /* required by specialAction and specialEffect functions */
-#include "savegame.h"
-#include "screen.h"     /* FIXME: remove dependence on this */
+#include "screen.h"
 #include "settings.h"
-#include "textcolor.h"  /* required to change the color of screen message text */
-#include "tileset.h"
+#include "textcolor.h"  // required to change the color of screen message text
 #include "utils.h"
 #include "xu4.h"
 

@@ -6,14 +6,8 @@
 
 #include "city.h"
 #include "config.h"
-#include "context.h"
 #include "dungeon.h"
-#include "game.h"
-#include "location.h"
-#include "names.h"
 #include "screen.h"
-#include "shrine.h"
-#include "tile.h"
 #include "xu4.h"
 
 /**

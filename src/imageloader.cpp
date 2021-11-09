@@ -3,13 +3,10 @@
  */
 
 #include <assert.h>
-#include "config.h"
 #include "debug.h"
-#include "error.h"
 #include "imageloader.h"
 #include "imagemgr.h"
 #include "screen.h"
-#include "u4file.h"
 #include "xu4.h"
 
 

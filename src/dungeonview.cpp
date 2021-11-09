@@ -2,16 +2,17 @@
  * dungeonview.cpp
  */
 
+#include "context.h"
 #include "debug.h"
+#include "dungeon.h"
 #include "dungeonview.h"
-#include "image.h"
+#include "error.h"
 #include "imagemgr.h"
 #include "settings.h"
 #include "screen.h"
 #include "tileanim.h"
 #include "tileset.h"
 #include "u4.h"
-#include "error.h"
 #include "xu4.h"
 
 

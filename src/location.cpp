@@ -10,12 +10,6 @@
 
 #include "context.h"
 #include "combat.h"
-#include "creature.h"
-#include "event.h"
-#include "game.h"
-#include "map.h"
-#include "object.h"
-#include "savegame.h"
 #include "settings.h"
 #include "tileset.h"
 #include "xu4.h"

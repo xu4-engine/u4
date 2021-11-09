@@ -7,17 +7,13 @@
 
 #include "config.h"
 #include "context.h"
-#include "creature.h"
 #include "error.h"
 #include "event.h"
-#include "image.h"
 #include "imagemgr.h"
-#include "location.h"
 #include "settings.h"
 #include "screen.h"
 #include "tileanim.h"
 #include "tileset.h"
-#include "utils.h"
 #include "xu4.h"
 
 

@@ -7,15 +7,11 @@
 
 #include <string>
 #include "observable.h"
-#include "observer.h"
 #include "menu.h"
 #include "textview.h"
 
-struct SaveGame;
 class Aura;
 class Ingredients;
-class Menu;
-class MenuEvent;
 class Party;
 class PartyEvent;
 

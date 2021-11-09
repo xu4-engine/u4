@@ -1,20 +1,9 @@
 /*
- * $Id$
+ * Ultima 4 Constants
  */
 
 #ifndef U4_H
 #define U4_H
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-/* Microsoft VC port */
-#if defined(_MSC_VER)
-#ifndef VERSION
-    #define VERSION "1.1svn"
-#endif
-#endif
 
 /* info for loading city data from *.ult and *.tlk */
 #define CITY_HEIGHT 32
@@ -82,9 +71,5 @@ extern "C" {
 #define WIND_AREA_W 10
 #define WIND_AREA_H 1
 #define WIND_SECONDS_PER_PHASE 1
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif

@@ -7,7 +7,6 @@
 
 #include <string.h>
 #include "context.h"
-#include "map.h"
 
 typedef enum {
     ACTION_NONE         = 0x0,

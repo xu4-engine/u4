@@ -2,31 +2,16 @@
  * $Id$
  */
 
-#include "u4.h"
-
 #include "camp.h"
 
 #include "city.h"
-#include "combat.h"
 #include "config.h"
 #include "context.h"
 #include "conversation.h"
-#include "event.h"
-#include "game.h"
-#include "location.h"
-#include "map.h"
 #include "mapmgr.h"
-#include "creature.h"
-#include "names.h"
-#include "object.h"
-#include "person.h"
-#include "player.h"
 #include "screen.h"
 #include "settings.h"
-#include "sound.h"
-#include "stats.h"
 #include "tileset.h"
-#include "utils.h"
 #include "xu4.h"
 
 

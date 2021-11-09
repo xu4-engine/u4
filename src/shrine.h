@@ -6,7 +6,6 @@
 #define SHRINE_H
 
 #include "map.h"
-#include "savegame.h"
 
 #define SHRINE_MEDITATION_INTERVAL  100
 #define MEDITATION_MANTRAS_PER_CYCLE 16

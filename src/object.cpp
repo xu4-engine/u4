@@ -5,10 +5,15 @@
 #include <algorithm>
 
 #include "object.h"
-#include "event.h"
+#include "game.h"
 #include "map.h"
-#include "tileset.h"
+#include "screen.h"
 #include "xu4.h"
+
+#ifdef GPU_RENDER
+#include "event.h"
+#include "tileset.h"
+#endif
 
 Object::~Object() {
 #ifdef GPU_RENDER
@@ -54,9 +59,6 @@ void Object::removeFromMaps() {
     }
 }
 
-
-#include "screen.h"
-#include "game.h"
 void Object::animateMovement()
 {
     //TODO abstract movement - also make screen.h and game.h not required

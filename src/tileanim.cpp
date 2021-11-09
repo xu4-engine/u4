@@ -2,10 +2,7 @@
  * tileanim.cpp
  */
 
-#include <vector>
-
 #include "config.h"
-#include "direction.h"
 #include "image.h"
 #include "screen.h"
 #include "tileanim.h"

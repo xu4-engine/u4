@@ -7,7 +7,6 @@
 
 #include "debug.h"
 #include "event.h"
-#include "image.h"
 #include "imagemgr.h"
 #include "settings.h"
 #include "textview.h"

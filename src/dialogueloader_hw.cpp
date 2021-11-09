@@ -2,7 +2,6 @@
  * $Id$
  */
 
-#include <string>
 #include <cstring>
 #include <vector>
 
@@ -10,12 +9,8 @@
 #include "conversation.h"
 #include "dialogueloader_hw.h"
 #include "player.h"
-#include "savegame.h"
-#include "u4file.h"
-#include "utils.h"
 
 using std::string;
-using std::vector;
 
 Response *hawkwindGetAdvice(DynamicResponse *kw);
 Response *hawkwindGetIntro(DynamicResponse *dynResp);
@@ -33,7 +28,7 @@ Response *hawkwindGetIntro(DynamicResponse *dynResp);
 #define HW_GOTOSHRINE 51
 #define HW_BYE 52
 
-vector<string> hawkwindText;
+std::vector<string> hawkwindText;
 
 DialogueLoader* U4HWDialogueLoader::instance = DialogueLoader::registerLoader(new U4HWDialogueLoader, "application/x-u4hwtlk");
 

@@ -7,12 +7,10 @@
 #include "config.h"
 #include "debug.h"
 #include "error.h"
-#include "image.h"
 #include "imageloader.h"
 #include "imagemgr.h"
 #include "intro.h"
 #include "settings.h"
-#include "u4file.h"
 #include "xu4.h"
 
 #ifdef USE_GL

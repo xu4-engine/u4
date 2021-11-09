@@ -5,16 +5,11 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
-#include <list>
 #include <string>
 #include <vector>
 
 #include "creature.h"
-#include "direction.h"
 #include "observable.h"
-#include "savegame.h"
-#include "tile.h"
-#include "types.h"
 #ifdef IOS
 #include "ios_helpers.h"
 #endif

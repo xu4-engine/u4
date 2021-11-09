@@ -2,25 +2,17 @@
  * $Id$
  */
 
-#include "u4.h"
+#include <cstring>
 
 #include "stats.h"
 
-#include <cstring>
-
 #include "config.h"
-#include "context.h"
 #include "debug.h"
-#include "menu.h"
-#include "names.h"
 #include "player.h"
-#include "savegame.h"
 #include "spell.h"
-#include "tile.h"
 #include "weapon.h"
+#include "u4.h"
 #include "xu4.h"
-
-extern bool verbose;
 
 /**
  * StatsArea class implementation

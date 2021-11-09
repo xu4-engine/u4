@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * u4.cpp
  */
 
 /** \mainpage xu4 Main Page
@@ -9,27 +9,21 @@
  * intro stuff goes here...
  */
 
-#include "xu4.h"
-#include "u4.h"
 #include <cstring>
+#include "xu4.h"
 #include "config.h"
 #include "debug.h"
 #include "error.h"
-#include "event.h"
 #include "game.h"
-#include "imagemgr.h"
 #include "intro.h"
-#include "person.h"
 #include "progress_bar.h"
 #include "screen.h"
 #include "settings.h"
 #include "sound.h"
-#include "tileset.h"
 #include "utils.h"
 
 #if defined(MACOSX)
 #include "macosx/osxinit.h"
-#include "SDL.h"
 #endif
 
 #ifdef DEBUG

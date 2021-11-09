@@ -8,8 +8,6 @@
 #include <vector>
 
 #include "combat.h"
-#include "map.h"
-#include "types.h"
 
 #define DNGROOM_NTRIGGERS 4
 

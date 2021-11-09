@@ -13,10 +13,8 @@
 #include "direction.h"
 #include "object.h"
 #include "savegame.h"
-#include "types.h"
 #include "u4file.h"
 
-class Object;
 class Creature;
 class Tileset;
 struct Portal;

@@ -2,12 +2,8 @@
  * image.cpp
  */
 
-#include <string.h>
-#include <assert.h>
-#include <memory>
 #include <list>
 #include "image.h"
-#include "settings.h"
 #include "screen.h"
 #include "xu4.h"
 

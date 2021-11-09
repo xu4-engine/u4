@@ -5,7 +5,6 @@
 #include <cstring>
 #include "conversation.h"
 #include "debug.h"
-#include "person.h"
 #ifndef USE_BORON
 #include "script.h"
 #endif
