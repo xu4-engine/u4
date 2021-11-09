@@ -68,6 +68,10 @@ struct OpenGLResources {
     GLint  shadowCounts;
     GLint  shadowShapes;
 
+    GLuint shadeSolid;
+    GLint  solidTrans;
+    GLint  solidColor;
+
     GLuint shadeColor;
     GLint  slocTrans;
     GLint  slocTint;

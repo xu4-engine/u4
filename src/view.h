@@ -28,6 +28,7 @@ public:
     virtual void unhighlight();
 
 #ifdef USE_GL
+    bool highlightActive() const { return highlighted; }
     int screenRect[4];
 #endif
 

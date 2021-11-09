@@ -689,6 +689,9 @@ void screenRender() {
                             sp->textureInfo->tileTexCoord);
         gpu_drawTris(gpu, TRIS_MAP_FX);
 
+        if (view->highlightActive())
+            gpu_invertColors(gpu);
+
         if (view->scissor)
             gpu_setScissor(NULL);
     }

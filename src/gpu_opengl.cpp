@@ -36,6 +36,22 @@ extern "C" int xu4_random(int);
 #define LOC_POS     0
 #define LOC_UV      1
 
+const char* solid_vertShader =
+    "#version 330\n"
+    "uniform mat4 transform;\n"
+    "layout(location = 0) in vec3 position;\n"
+    "void main() {\n"
+    "  gl_Position = transform * vec4(position, 1.0);\n"
+    "}\n";
+
+const char* solid_fragShader =
+    "#version 330\n"
+    "uniform vec4 color;\n"
+    "out vec4 fragColor;\n"
+    "void main() {\n"
+    "  fragColor = color;\n"
+    "}\n";
+
 const char* cmap_vertShader =
     "#version 330\n"
     "uniform mat4 transform;\n"
@@ -486,6 +502,19 @@ bool gpu_init(void* res, int w, int h, int scale)
     gr->shadowShapes = glGetUniformLocation(sh, "shapes");
 
 
+    // Create solid shader.
+    gr->shadeSolid = sh = glCreateProgram();
+    if (compileShaders(sh, solid_vertShader, solid_fragShader))
+        return false;
+
+    gr->solidTrans  = glGetUniformLocation(sh, "transform");
+    gr->solidColor  = glGetUniformLocation(sh, "color");
+
+    glUseProgram(sh);
+    glUniformMatrix4fv(gr->solidTrans, 1, GL_FALSE, unitMatrix);
+    glUniform4f(gr->solidColor, 1.0, 1.0, 1.0, 1.0);
+
+
     // Create colormap shader.
     gr->shadeColor = sh = glCreateProgram();
     if (compileShaders(sh, cmap_vertShader, cmap_fragShader))
@@ -554,6 +583,7 @@ void gpu_free(void* res)
 
     glDeleteVertexArrays(GLOB_COUNT, gr->vao);
     glDeleteBuffers(GLOB_COUNT, gr->vbo);
+    glDeleteProgram(gr->shadeSolid);
     glDeleteProgram(gr->shadeColor);
     glDeleteProgram(gr->shadeWorld);
     glDeleteProgram(gr->shadow);
@@ -634,6 +664,20 @@ void gpu_clear(void* res, const float* color)
 {
     glClearColor(color[0], color[1], color[2], color[3]);
     glClear(GL_COLOR_BUFFER_BIT);
+}
+
+/*
+ * Invert the colors of all pixels in the current viewport.
+ */
+void gpu_invertColors(void* res)
+{
+    OpenGLResources* gr = (OpenGLResources*) res;
+
+    glUseProgram(gr->shadeSolid);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_ONE_MINUS_DST_COLOR, GL_ZERO);
+    glBindVertexArray(gr->vao[ GLOB_QUAD ]);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
 void gpu_setScissor(int* box)

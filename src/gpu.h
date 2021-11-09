@@ -14,6 +14,7 @@ uint32_t gpu_screenTexture(void* res);
 void     gpu_setTilesTexture(void* res, uint32_t tex, uint32_t mat, float vDim);
 void     gpu_drawTextureScaled(void* res, uint32_t tex);
 void     gpu_clear(void* res, const float* color);
+void     gpu_invertColors(void* res);
 void     gpu_setScissor(int* box);
 float*   gpu_beginTris(void* res, int list);
 void     gpu_endTris(void* res, int list, float* attr);
