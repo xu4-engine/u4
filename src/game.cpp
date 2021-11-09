@@ -166,9 +166,21 @@ GameController::~GameController() {
     c = NULL;
 }
 
-void GameController::initScreen()
-{
+bool GameController::present() {
     xu4.screenImage->fill(Image::black);
+
+    if (c == NULL || (xu4.intro && xu4.intro->hasInitiatedNewGame()))
+        return initContext();   // Loads current savegame
+
+    // Inits screen stuff without renewing game
+    initScreenWithoutReloadingState();
+    mapArea.reinit();
+    return true;
+}
+
+void GameController::conclude() {
+    xu4.eventHandler->popMouseAreaSet();
+    screenSetMouseCursor(MC_DEFAULT);
 }
 
 void GameController::initScreenWithoutReloadingState()
@@ -202,13 +214,11 @@ public:
  *
  * Return true if loading is successful.
  */
-bool GameController::init() {
+bool GameController::initContext() {
     Debug gameDbg("debug/game.txt", "Game");
     const Settings& settings = *xu4.settings;
 
     TRACE(gameDbg, "gameInit() running.");
-
-    initScreen();
 
     ProgressBar pb((320/2) - (200/2), (200/2), 200, 10, 0, 4);
     pb.setBorderColor(240, 240, 240);

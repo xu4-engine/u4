@@ -41,10 +41,13 @@ void EventHandler::setTimerInterval(int msecs) {
 }
 
 void EventHandler::runController(Controller* con) {
-    pushController(con);
-    run();
-    popController();
-    setControllerDone(false);
+    if (con->present()) {
+        pushController(con);
+        run();
+        popController();
+        setControllerDone(false);
+        con->conclude();
+    }
 }
 
 /** Sets the controller exit flag for the event handler */

@@ -31,6 +31,22 @@ int Controller::getTimerInterval() {
 }
 
 /**
+ * Perform any subclass setup before a controller becomes active.
+ *
+ * Return true if the controller should be run.
+ */
+bool Controller::present() {
+    return true;
+}
+
+/**
+ * Perform any subclass cleanup after a controller has run.
+ *
+ * The conclude method is invoked only if present returned true.
+ */
+void Controller::conclude() {}
+
+/**
  * The keyboard input handler for a controller.
  * The base keyPressed method returns true (consumes all key events).
  */

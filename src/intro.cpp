@@ -294,6 +294,16 @@ IntroController::~IntroController() {
     }
 }
 
+bool IntroController::present() {
+    init();
+    preloadMap();
+    return true;
+}
+
+void IntroController::conclude() {
+    deleteIntro();
+}
+
 #ifdef GPU_RENDER
 void IntroController::enableMap() {
     Coords center(INTRO_MAP_WIDTH / 2, INTRO_MAP_HEIGHT / 2);

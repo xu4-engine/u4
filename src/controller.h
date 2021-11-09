@@ -21,6 +21,8 @@ public:
     static void timerCallback(void *data);
 
     /* control methods subclasses may want to override */
+    virtual bool present();
+    virtual void conclude();
     virtual bool keyPressed(int key);
     virtual void timerFired();
     virtual bool isCombatController() const { return false; }

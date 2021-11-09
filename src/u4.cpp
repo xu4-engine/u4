@@ -218,7 +218,7 @@ int main(int argc, char *argv[]) {
 #ifdef DEBUG
     if (opt.flags & OPT_TEST_SAVE) {
         xu4.game = new GameController();
-        xu4.game->init();
+        xu4.game->initContext();
         gameSave("/tmp/xu4/");
         servicesFree(&xu4);
         return 0;
@@ -242,39 +242,15 @@ int main(int argc, char *argv[]) {
     while( xu4.stage != StageExitGame )
     {
         if( xu4.stage == StageIntro ) {
+            /* Show the introduction */
             if (! xu4.intro)
                 xu4.intro = new IntroController;
-
-            /* Show the introduction */
-            xu4.intro->init();
-            xu4.intro->preloadMap();
-
             xu4.eventHandler->runController(xu4.intro);
-
-            xu4.intro->deleteIntro();
         } else {
-
             /* Play the game! */
-
-            if (! xu4.game) {
+            if (! xu4.game)
                 xu4.game = new GameController();
-                if (! xu4.game->init())
-                    continue;
-            } else if (xu4.intro && xu4.intro->hasInitiatedNewGame()) {
-                //Loads current savegame
-                if (! xu4.game->init())
-                    continue;
-            } else {
-                //Inits screen stuff without renewing game
-                xu4.game->initScreen();
-                xu4.game->initScreenWithoutReloadingState();
-                xu4.game->mapArea.reinit();
-            }
-
             xu4.eventHandler->runController(xu4.game);
-
-            xu4.eventHandler->popMouseAreaSet();
-            screenSetMouseCursor(MC_DEFAULT);
         }
     }
 

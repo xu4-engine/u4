@@ -86,16 +86,14 @@ public:
     IntroController();
     ~IntroController();
 
-    bool init();
     bool hasInitiatedNewGame();
 
-    void deleteIntro();
+    bool present();
+    void conclude();
     bool keyPressed(int key);
     unsigned char *getSigData();
     void updateScreen();
     void timerFired();
-
-    void preloadMap();
 
     void update(Menu *menu, MenuEvent &event);
     void updateConfMenu(MenuEvent &event);
@@ -107,13 +105,14 @@ public:
     void updateGameplayMenu(MenuEvent &event);
     void updateInterfaceMenu(MenuEvent &event);
 
-    //
-    // Title methods
-    //
+private:
+    bool init();
+    void preloadMap();
+    void deleteIntro();
+
     void initTitles();
     bool updateTitle();
 
-private:
     void drawMap();
     void drawMapStatic();
     void drawMapAnimated();

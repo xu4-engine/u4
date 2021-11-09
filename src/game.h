@@ -94,13 +94,12 @@ public:
     ~GameController();
 
     /* controller functions */
+    virtual bool present();
+    virtual void conclude();
     virtual bool keyPressed(int key);
     virtual void timerFired();
 
     /* main game functions */
-    bool init();
-    void initScreen();
-    void initScreenWithoutReloadingState();
     void setMap(Map *map, bool saveLocation, const Portal *portal, TurnCompleter *turnCompleter = NULL);
     int exitToParentMap();
     virtual void finishTurn();
@@ -108,7 +107,7 @@ public:
     virtual void update(Party *party, PartyEvent &event);
     virtual void update(Location *location, MoveEvent &event);
 
-    void initMoons();
+    bool initContext();
     void updateMoons(bool showmoongates);
 
     static void flashTile(const Coords &coords, MapTile tile, int timeFactor);
@@ -119,6 +118,9 @@ public:
     int pausedTimer;
 
 private:
+    void initScreenWithoutReloadingState();
+    void initMoons();
+
     void avatarMoved(MoveEvent &event);
     void avatarMovedInDungeon(MoveEvent &event);
 
