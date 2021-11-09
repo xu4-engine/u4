@@ -1,5 +1,5 @@
 maps: [
-    map (id: 0 type: world fname: "world.map" width: 256 height: 256 levels: 1 chunkwidth: 32 chunkheight: 32 borderbehavior: wrap music: 1) [
+    map (id: 0 type: world fname: "world.map" width: 256 height: 256 levels: 1 chunk-dim: 32 borderbehavior: wrap music: 1) [
         portal (x: 86 y: 107 destmapid: 1 startx: 15 starty: 30 action: enter savelocation: true transport: footorhorse)
         portal (x: 218 y: 107 destmapid: 2 startx: 15 starty: 30 action: enter savelocation: true transport: footorhorse)
         portal (x: 28 y: 50 destmapid: 3 startx: 15 starty: 30 action: enter savelocation: true transport: footorhorse)

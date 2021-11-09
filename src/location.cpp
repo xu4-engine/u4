@@ -8,7 +8,6 @@
 
 #include "location.h"
 
-#include "annotation.h"
 #include "context.h"
 #include "combat.h"
 #include "creature.h"
@@ -21,8 +20,6 @@
 #include "tileset.h"
 #include "xu4.h"
 
-Location *locationPush(Location *stack, Location *loc);
-Location *locationPop(Location **stack);
 
 /**
  * Add a new location to the stack, or
@@ -37,7 +34,19 @@ Location::Location(const Coords& coords, Map *map, int viewmode,
     this->context = ctx;
     this->turnCompleter = turnCompleter;
 
-    locationPush(prev, this);
+    // Push location onto the stack.
+    this->prev = prev;
+}
+
+/**
+ * Pop a location from the stack and free the memory
+ */
+void locationFree(Location **stack) {
+    Location* loc = *stack;
+    *stack = loc->prev;
+    loc->prev = NULL;
+
+    delete loc;
 }
 
 /**
@@ -45,8 +54,6 @@ Location::Location(const Coords& coords, Map *map, int viewmode,
  */
 std::vector<MapTile> Location::tilesAt(const Coords& coords, bool &focus) {
     std::vector<MapTile> tiles;
-    std::list<Annotation *> a = map->annotations->ptrsToAllAt(coords);
-    std::list<Annotation *>::iterator i;
     Object *obj = map->objectAt(coords);
     Creature *m = dynamic_cast<Creature *>(obj);
     focus = false;
@@ -70,16 +77,18 @@ std::vector<MapTile> Location::tilesAt(const Coords& coords, bool &focus) {
         tiles.push_back(c->party->getTransport());
 
     /* Add visual-only annotations to the list */
-    for (i = a.begin(); i != a.end(); i++) {
-        if ((*i)->isVisualOnly())
+    std::list<Annotation *> annot = map->annotations.ptrsToAllAt(coords);
+    std::list<Annotation *>::const_iterator i;
+    for (i = annot.begin(); i != annot.end(); i++) {
+        if ((*i)->visualOnly)
         {
-            tiles.push_back((*i)->getTile());
+            tiles.push_back((*i)->tile);
 
             /* If this is the first cover-up annotation,
              * everything underneath it will be invisible,
              * so stop here
              */
-            if ((*i)->isCoverUp())
+            if ((*i)->coverUp)
                 return tiles;
         }
     }
@@ -110,15 +119,15 @@ std::vector<MapTile> Location::tilesAt(const Coords& coords, bool &focus) {
         tiles.push_back(c->party->getTransport());
 
     /* then permanent annotations */
-    for (i = a.begin(); i != a.end(); i++) {
-        if (!(*i)->isVisualOnly()) {
-            tiles.push_back((*i)->getTile());
+    for (i = annot.begin(); i != annot.end(); i++) {
+        if (!(*i)->visualOnly) {
+            tiles.push_back((*i)->tile);
 
             /* If this is the first cover-up annotation,
              * everything underneath it will be invisible,
              * so stop here
              */
-            if ((*i)->isCoverUp())
+            if ((*i)->coverUp)
                 return tiles;
         }
     }
@@ -256,30 +265,4 @@ MoveResult Location::move(Direction dir, bool userEvent) {
     notifyObservers(event);
 
     return event.result;
-}
-
-
-/**
- * Pop a location from the stack and free the memory
- */
-void locationFree(Location **stack) {
-    delete locationPop(stack);
-}
-
-/**
- * Push a location onto the stack
- */
-Location *locationPush(Location *stack, Location *loc) {
-    loc->prev = stack;
-    return loc;
-}
-
-/**
- * Pop a location off the stack
- */
-Location *locationPop(Location **stack) {
-    Location *loc = *stack;
-    *stack = (*stack)->prev;
-    loc->prev = NULL;
-    return loc;
 }

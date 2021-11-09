@@ -57,6 +57,7 @@ struct TileAnimTransform {
         } invert;
         struct {
             int16_t increment, current, lastOffset;
+            uint16_t vid;   // Source tile VisualId for scrolled pixels
         } scroll;
         struct {
             int16_t current;

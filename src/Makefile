@@ -7,6 +7,7 @@
 PREFIX ?= /usr/local
 UI ?= allegro
 CONF ?= boron
+GPU ?= false
 
 bindir=$(PREFIX)/bin
 libdir=$(PREFIX)/lib
@@ -18,6 +19,12 @@ UIFLAGS=$(shell sdl-config --cflags)
 else
 UILIBS=-lallegro_acodec -lallegro_audio -lallegro
 UIFLAGS=
+endif
+
+ifeq ($(GPU),true)
+	CONF=boron
+	UIFLAGS+=-DUSE_GL -DGPU_RENDER
+	UILIBS+=-lGL
 endif
 
 ifeq ($(CONF),xml)

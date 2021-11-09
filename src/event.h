@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "anim.h"
 #include "controller.h"
 #include "types.h"
 
@@ -35,8 +36,6 @@ using std::string;
 #define U4_LEFT_ALT     308
 #define U4_RIGHT_META   309
 #define U4_LEFT_META    310
-
-extern int eventTimerGranularity;
 
 struct _MouseArea;
 class EventHandler;
@@ -258,7 +257,8 @@ public:
     typedef std::list<_MouseArea*> MouseAreaList;
 
     /* Constructors */
-    EventHandler();
+    EventHandler(int gameCycleDuration);
+    ~EventHandler();
 
     /* Static functions */
     static void wait_msecs(unsigned int msecs);
@@ -266,6 +266,7 @@ public:
     static int setKeyRepeat(int delay, int interval);
 
     /* Member functions */
+    void setTimerInterval(int msecs);
     TimedEventMgr* getTimer();
 
     /* Event functions */
@@ -299,7 +300,15 @@ public:
     _MouseArea* getMouseAreaSet() const;
     _MouseArea* mouseAreaForPoint(int x, int y);
 
+    void advanceFlourishAnim() {
+        anim_advance(&flourishAnim, float(timerInterval) * 0.001f);
+    }
+
+    Animator flourishAnim;
+    Animator fxAnim;
+
 protected:
+    int timerInterval;          // Milliseconds between timedEvents ticks.
     bool controllerDone;
     bool ended;
     TimedEventMgr timedEvents;

@@ -8,6 +8,7 @@
 #include <map>
 #include <vector>
 
+#include "annotation.h"
 #include "coords.h"
 #include "direction.h"
 #include "object.h"
@@ -15,17 +16,12 @@
 #include "types.h"
 #include "u4file.h"
 
-#define MAP_IS_OOB(mapptr, c) (((c).x) < 0 || ((c).x) >= (static_cast<int>((mapptr)->width)) || ((c).y) < 0 || ((c).y) >= (static_cast<int>((mapptr)->height)) || ((c).z) < 0 || ((c).z) >= (static_cast<int>((mapptr)->levels)))
-
-class AnnotationMgr;
 class Object;
 class Creature;
 class Tileset;
 struct Portal;
 
 typedef std::vector<Portal *> PortalList;
-//typedef std::list<int> CompressedChunkList;
-typedef std::vector<TileId> MapData;
 
 /* flags */
 #define SHOW_AVATAR (1 << 0)
@@ -36,6 +32,12 @@ typedef std::vector<TileId> MapData;
 #define WITHOUT_OBJECTS     0
 #define WITH_GROUND_OBJECTS 1
 #define WITH_OBJECTS        2
+
+#define BLOCKING_POS_SIZE   128*3
+struct BlockingGroups {
+    int left, center, right;
+    float tilePos[BLOCKING_POS_SIZE];
+};
 
 /**
  * Map class
@@ -56,15 +58,24 @@ public:
         BORDER_FIXED
     };
 
+    enum QueryResult {
+        QueryDone,
+        QueryContinue
+    };
+
     Map();
     virtual ~Map();
 
     // Member functions
     virtual const char* getName() const;
 
+    void queryBlocking(BlockingGroups*, int sx, int sy, int vw, int vh) const;
     void queryVisible(const Coords &coords, int radius,
                       void (*func)(const Coords*, VisualId, void*),
-                      void* user) const;
+                      void* user, const Object** focus) const;
+    void queryAnnotations(const Coords& pos,
+                          int (*func)(const Annotation*, void*),
+                          void* user) const;
     const Object* objectAt(const Coords &coords) const;
     Object* objectAt(const Coords &coords) {
         return (Object*) static_cast<const Map*>(this)->objectAt(coords);
@@ -105,20 +116,19 @@ public:
                     levels;
     uint16_t        chunk_width,
                     chunk_height;
+    uint16_t        boundMaxX,
+                    boundMaxY;
     uint16_t        flags;
     uint16_t        music;
     unsigned int    offset;
 
-    //CompressedChunkList compressed_chunks;
+    //uint8_t* compressed_chunks;       // Ultima 5 map
     PortalList      portals;
-    AnnotationMgr  *annotations;
-    MapData         data;
-#ifdef USE_GL
-    uint8_t* chunks;
-#endif
+    AnnotationList  annotations;
+    TileId*         data;
     ObjectDeque     objects;
     std::map<Symbol, Coords> labels;
-    const Tileset  *tileset;
+    const Tileset*  tileset;
 
 private:
     // disallow map copying: all maps should be created and accessed
@@ -144,5 +154,8 @@ void map_move(Coords&, int dx, int dy, const Map *map = NULL);
 int  map_getRelativeDirection(const Coords& a, const Coords& b, const Map* map = NULL);
 int  map_movementDistance(const Coords& a, const Coords &b, const Map *map = NULL);
 int  map_distance(const Coords& a, const Coords& b, const Map* map = NULL);
+bool map_outOfBounds(const Map* map, const Coords& c);
+
+#define MAP_IS_OOB(M,C) map_outOfBounds(M, C)
 
 #endif

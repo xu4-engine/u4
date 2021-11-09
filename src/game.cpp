@@ -10,7 +10,6 @@
 
 #include "game.h"
 
-#include "annotation.h"
 #include "camp.h"
 #include "cheat.h"
 #include "city.h"
@@ -55,22 +54,10 @@
 #include "ios_helpers.h"
 #endif
 
-using namespace std;
-
 /*-----------------*/
 /* Functions BEGIN */
 
-/* main game functions */
-void gameAdvanceLevel(PartyMember *player);
-void gameInnHandler(void);
-void gameLostEighth(Virtue virtue);
-void gamePartyStarving(void);
-time_t gameTimeSinceLastCommand(void);
-
 /* spell functions */
-void gameCastSpell(unsigned int spell, int caster, int param);
-bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients);
-
 void mixReagents();
 bool mixReagentsForSpellU4(int spell);
 bool mixReagentsForSpellU5(int spell);
@@ -101,7 +88,6 @@ void gameCreatureAttack(Creature *obj);
 /* Functions END */
 /*---------------*/
 
-//extern Object *party[8];
 Context *c = NULL;
 
 MouseArea mouseAreas[] = {
@@ -518,6 +504,9 @@ void GameController::setMap(Map *map, bool saveLocation, const Portal *portal, T
     c->location = new Location(coords, map, viewMode, context, turnCompleter, c->location);
     c->location->addObserver(this);
     c->party->setActivePlayer(activePlayer);
+#ifdef GPU_RENDER
+    mapArea.map = map;
+#endif
 #ifdef IOS
     U4IOS::updateGameControllerContext(c->location->context);
 #endif
@@ -545,7 +534,7 @@ int GameController::exitToParentMap() {
 
         // free map info only if previous location was on a different map
         if (c->location->prev->map != c->location->map) {
-            c->location->map->annotations->clear();
+            c->location->map->annotations.clear();
             c->location->map->clearObjects();
 
             /* quench the torch of we're on the world map */
@@ -553,6 +542,9 @@ int GameController::exitToParentMap() {
                 c->party->quenchTorch();
         }
         locationFree(&c->location);
+#ifdef GPU_RENDER
+        mapArea.map = c->location->map;
+#endif
 
 #ifdef IOS
         U4IOS::updateGameControllerContext(c->location->context);
@@ -611,7 +603,7 @@ void GameController::finishTurn() {
         }
 
         /* update map annotations */
-        map->annotations->passTurn();
+        map->annotations.passTurn();
 
         if (!c->party->isImmobilized())
             break;
@@ -655,14 +647,23 @@ void GameController::finishTurn() {
  * by weapons, cannon fire, spells, etc.
  */
 void GameController::flashTile(const Coords &coords, MapTile tile, int frames) {
-    c->location->map->annotations->add(coords, tile, true);
-
+#ifdef GPU_RENDER
+    int fx = xu4.game->mapArea.showEffect(coords, tile.id);
+#else
+    Map* map = c->location->map;
+    map->annotations.add(coords, tile, true);
     screenTileUpdate(&xu4.game->mapArea, coords);
+#endif
 
-    screenWait(frames);
-    c->location->map->annotations->remove(coords, tile);
+    EventHandler::wait_msecs(frames * 1000 /
+                             xu4.settings->screenAnimationFramesPerSecond);
 
+#ifdef GPU_RENDER
+    xu4.game->mapArea.removeEffect(fx);
+#else
+    map->annotations.remove(coords, tile);
     screenTileUpdate(&xu4.game->mapArea, coords);
+#endif
 }
 
 void GameController::flashTile(const Coords &coords, Symbol tilename, int timeFactor) {
@@ -991,8 +992,8 @@ bool GameController::keyPressed(int key) {
                     settings.gameCyclesPerSecond = DEFAULT_CYCLES_PER_SECOND;
 
                 if (old_cycles != settings.gameCyclesPerSecond) {
-                    eventTimerGranularity = (1000 / settings.gameCyclesPerSecond);
-                    xu4.eventHandler->getTimer()->reset(eventTimerGranularity);
+                    xu4.eventHandler->setTimerInterval(1000 /
+                                                settings.gameCyclesPerSecond);
 
                     if (settings.gameCyclesPerSecond == DEFAULT_CYCLES_PER_SECOND)
                         screenMessage("Speed: Normal\n");
@@ -2082,7 +2083,7 @@ void GameController::updateMoons(bool showmoongates)
 
         if (showmoongates)
         {
-            AnnotationMgr* annot = c->location->map->annotations;
+            AnnotationList* annot = &c->location->map->annotations;
             const UltimaSaveIds* usaveIds = xu4.config->usaveIds();
 
             /* update the moongates if trammel changed */
@@ -2321,7 +2322,7 @@ bool jimmyAt(const Coords &coords) {
         const Tile *door = map->tileset->getByName(Tile::sym.door);
         ASSERT(door, "no door tile found in tileset");
         c->saveGame->keys--;
-        map->annotations->add(coords, door->getId());
+        map->annotations.add(coords, door->getId());
         screenMessage("\nUnlocked!\n");
     } else
         screenMessage("%cNo keys left!%c\n", FG_GREY, FG_WHITE);
@@ -2372,7 +2373,9 @@ bool openAt(const Coords &coords) {
 
     const Tile *floor = c->location->map->tileset->getByName(Tile::sym.brickFloor);
     ASSERT(floor, "no floor tile found in tileset");
-    c->location->map->annotations->add(coords, floor->getId(), false, true)->setTTL(4);
+    Annotation* ann =
+        c->location->map->annotations.add(coords, floor->getId(), false, true);
+    ann->ttl = 4;
 
     screenMessage("\nOpened!\n");
 
@@ -2908,6 +2911,10 @@ void ztatsFor(int player) {
     ctrl.waitFor();
 }
 
+static time_t gameTimeSinceLastCommand() {
+    return time(NULL) - c->lastCommandTime;
+}
+
 /**
  * This function is called every quarter second.
  */
@@ -3134,10 +3141,6 @@ void gameFixupObjects(Map *map, const SaveGameMonsterRecord* table) {
                 map->addObject(tile, oldTile, coords);
         }
     }
-}
-
-time_t gameTimeSinceLastCommand() {
-    return time(NULL) - c->lastCommandTime;
 }
 
 /**

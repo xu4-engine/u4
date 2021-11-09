@@ -34,7 +34,7 @@ inline void AdjustValueMin(unsigned short &v, int val, int min) { v += val; if (
 inline void AdjustValue(unsigned short &v, int val, int max, int min) { v += val; if (v > max) v = max; if (v < min) v = min; }
 
 void xu4_srandom(void);
-int xu4_random(int upperval);
+extern "C" int xu4_random(int upperval);
 string& trim(string &val, const string &chars_to_trim = "\t\013\014 \n\r");
 string& lowercase(string &val);
 string& uppercase(string &val);

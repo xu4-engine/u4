@@ -4,7 +4,6 @@
 
 #include "dungeon.h"
 
-#include "annotation.h"
 #include "config.h"
 #include "context.h"
 #include "debug.h"
@@ -86,15 +85,22 @@ DungeonToken Dungeon::tokenAt(const Coords& coords) const {
     return tokenForTile(getTileFromData(coords));
 }
 
+static int anyAnnotation(const Annotation* ann, void* data) {
+    (void) ann;
+    *((bool*) data) = true;
+    return Map::QueryDone;
+}
+
 /**
  * Handles 's'earching while in dungeons
  */
 void dungeonSearch(void) {
     Dungeon *dungeon = dynamic_cast<Dungeon *>(c->location->map);
     DungeonToken token = dungeon->currentToken();
-    Annotation::List a = dungeon->annotations->allAt(c->location->coords);
-    const ItemLocation *item;
-    if (a.size() > 0)
+
+    bool found = false;
+    dungeon->queryAnnotations(c->location->coords, anyAnnotation, &found);
+    if (found)
         token = DUNGEON_CORRIDOR;
 
     screenMessage("Search...\n\n");
@@ -111,6 +117,7 @@ void dungeonSearch(void) {
     default:
         {
             /* see if there is an item at the current location (stones on altars, etc.) */
+            const ItemLocation *item;
             item = itemAtLocation(dungeon, c->location->coords);
             if (item) {
                 if (*item->isItemInInventory != NULL && (*item->isItemInInventory)(item->data))
@@ -264,44 +271,48 @@ bool dungeonHandleTrap(TrapType trap) {
     return true;
 }
 
+struct Contains {
+    TileId tid;
+    bool found;
+};
+
+static int contains(const Annotation* ann, void* data) {
+    Contains* con = (Contains*) data;
+    if (ann->tile.id == con->tid) {
+        con->found = true;
+        return Map::QueryDone;
+    }
+    return Map::QueryContinue;
+}
+
 /**
  * Returns true if a ladder-up is found at the given coordinates
  */
 bool Dungeon::ladderUpAt(const Coords& coords) const {
-    Annotation::List a = annotations->allAt(coords);
-
     if (tokenAt(coords) == DUNGEON_LADDER_UP ||
         tokenAt(coords) == DUNGEON_LADDER_UPDOWN)
         return true;
 
-    if (a.size() > 0) {
-        Annotation::List::iterator i;
-        for (i = a.begin(); i != a.end(); i++) {
-            if (i->getTile() == tileset->getByName(SYM_UP_LADDER)->getId())
-                return true;
-        }
-    }
-    return false;
+    Contains query;
+    query.tid = tileset->getByName(SYM_UP_LADDER)->getId();
+    query.found = false;
+    queryAnnotations(coords, contains, &query);
+    return query.found;
 }
 
 /**
  * Returns true if a ladder-down is found at the given coordinates
  */
 bool Dungeon::ladderDownAt(const Coords& coords) const {
-    Annotation::List a = annotations->allAt(coords);
-
     if (tokenAt(coords) == DUNGEON_LADDER_DOWN ||
         tokenAt(coords) == DUNGEON_LADDER_UPDOWN)
         return true;
 
-    if (a.size() > 0) {
-        Annotation::List::iterator i;
-        for (i = a.begin(); i != a.end(); i++) {
-            if (i->getTile() == tileset->getByName(SYM_DOWN_LADDER)->getId())
-                return true;
-        }
-    }
-    return false;
+    Contains query;
+    query.tid = tileset->getByName(SYM_DOWN_LADDER)->getId();
+    query.found = false;
+    queryAnnotations(coords, contains, &query);
+    return query.found;
 }
 
 bool Dungeon::validTeleportLocation(const Coords& coords) const {

@@ -323,7 +323,7 @@ static void conf_tileLoad(ConfigXML* cfg, Tile* tile, const ConfigElement &conf)
         tile->animationRule = cfg->propSymbol(conf, "animation");
 
     /* see if the tile is opaque */
-    tile->opaque = conf.getBool("opaque");
+    tile->opaque = conf.getBool("opaque") ? 1 : 0;
 
     tile->foreground = conf.getBool("usesReplacementTileAsBackground");
     tile->waterForeground = conf.getBool("usesWaterReplacementTileAsBackground");
@@ -353,29 +353,31 @@ static void conf_tileLoad(ConfigXML* cfg, Tile* tile, const ConfigElement &conf)
         tile->setDirections(conf.getString("directions").c_str());
 }
 
-static void conf_tilesetLoad(ConfigXML* cfg, Tileset* ts, const ConfigElement& conf) {
-    //ts->name = conf.getString("name");
-    if (conf.exists("imageName"))
-        ts->imageName = conf.getString("imageName");
-
-    int index = 0;
+static Tileset* conf_tilesetLoad(ConfigXML* cfg, const ConfigElement& conf) {
     int moduleId = 0;
     vector<ConfigElement> children = conf.getChildren();
     vector<ConfigElement>::iterator it;
+
+    Tileset* ts = new Tileset(children.size());
+    Tile* tile = ts->tiles;
+
+    /*
+    ts->name = conf.getString("name");
+    if (conf.exists("imageName"))
+        ts->imageName = conf.getString("imageName");
+    */
+
     foreach (it, children) {
         if (it->getName() != "tile")
             continue;
 
-        Tile* tile = new Tile(moduleId++);
+        tile->id = moduleId++;
         conf_tileLoad(cfg, tile, *it);
-
-        /* add the tile to our tileset */
-        ts->tiles.push_back( tile );
-        ts->nameMap[tile->name] = tile;
-
-        index += tile->getFrames();
+        ts->nameMap[tile->name] = tile;     // Add tile to nameMap
+        ++tile;
     }
-    ts->totalFrames = index;
+    ts->tileCount = moduleId;
+    return ts;
 }
 
 static void conf_ultimaSaveIds(ConfigXML* cfg, UltimaSaveIds* usaveIds, Tileset* ts, const ConfigElement &conf) {
@@ -961,8 +963,7 @@ ConfigXML::ConfigXML() {
     ce = getElement("tilesets").getChildren();
     foreach (it, ce) {
         if (it->getName() == "tileset") {
-            xcd.tileset = new Tileset;
-            conf_tilesetLoad(this, xcd.tileset, *it);
+            xcd.tileset = conf_tilesetLoad(this, *it);
             break;      // Only support one tileset.
         }
     }
@@ -1308,7 +1309,7 @@ Map* Config::map(uint32_t id) {
 
     Map* rmap = CB->mapList[id];
     /* if the map hasn't been loaded yet, load it! */
-    if (! rmap->data.size()) {
+    if (! rmap->data) {
         if (! loadMap(rmap, NULL))
             errorFatal("loadMap failed to read \"%s\" (type %d)",
                        confString(rmap->fname), rmap->type);
@@ -1322,7 +1323,7 @@ Map* Config::restoreMap(uint32_t id) {
         return NULL;
 
     Map* rmap = CB->mapList[id];
-    if (! rmap->data.size()) {
+    if (! rmap->data) {
         FILE* sav = NULL;
         bool ok;
 
@@ -1369,7 +1370,7 @@ const Coords* Config::moongateCoords(int phase) const {
 //--------------------------------------
 // Graphics config
 
-static void loadSubImage(ConfigXML* cfg, SubImage* subimage, Symbol imgName, const ConfigElement &conf) {
+static void loadSubImage(ConfigXML* cfg, SubImage* subimage, const ConfigElement &conf) {
     static int x = 0,
                y = 0,
                last_width = 0,
@@ -1378,7 +1379,6 @@ static void loadSubImage(ConfigXML* cfg, SubImage* subimage, Symbol imgName, con
     subimage->name = cfg->propSymbol(conf, "name");
     subimage->width = conf.getInt("width");
     subimage->height = conf.getInt("height");
-    subimage->srcImageName = imgName;
     if (conf.exists("x") && conf.exists("y")) {
         x = subimage->x = conf.getInt("x");
         y = subimage->y = conf.getInt("y");
@@ -1467,7 +1467,7 @@ static ImageInfo* loadImageInfo(ConfigXML* cfg, const ConfigElement &conf) {
         count = 0;
         foreach (it, children) {
             if (it->getName() == "subimage") {
-                loadSubImage(cfg, simg, info->name, *it);
+                loadSubImage(cfg, simg, *it);
                 info->subImageIndex[ simg->name ] = count++;
                 ++simg;
             }

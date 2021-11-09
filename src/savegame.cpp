@@ -437,7 +437,6 @@ SaveGame* saveGameLoad() {
 
 #ifndef SAVE_UTIL
 #include "config.h"
-#include "tile.h"
 #include "tileset.h"
 
 static const int dngTableLen = 16+4;    // DungeonToken + Magic fields

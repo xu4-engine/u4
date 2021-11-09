@@ -6,7 +6,6 @@
 
 #include "camp.h"
 
-#include "annotation.h"
 #include "city.h"
 #include "combat.h"
 #include "config.h"

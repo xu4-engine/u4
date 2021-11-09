@@ -28,7 +28,7 @@ void xu4_srandom() {
  * to compensate for older generators that have low entropy in the
  * lower bits (e.g. MacOS X).
  */
-int xu4_random(int upperRange) {
+extern "C" int xu4_random(int upperRange) {
 #if (defined(BSD) && (BSD >= 199103)) || (defined (MACOSX) || defined (IOS))
     int r = random();
 #else

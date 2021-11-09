@@ -7,7 +7,6 @@
 #include "spell.h"
 
 #include <cstring>
-#include "annotation.h"
 #include "combat.h"
 #include "config.h"
 #include "context.h"
@@ -471,16 +470,17 @@ static int spellDispel(int dir) {
      * (or other unwalkable surface).  So, we need to provide a valid replacement
      * annotation to fill in the gap :)
      */
-    AnnotationMgr* annot = loc->map->annotations;
-    Annotation::List a = annot->allAt(fpos);
+    AnnotationList& annot = loc->map->annotations;
+    AnnotationList a = annot.allAt(fpos);
     if (a.size() > 0) {
-        Annotation::List::iterator i;
+        AnnotationList::iterator i;
         for (i = a.begin(); i != a.end(); i++) {
-            if (i->getTile().getTileType()->canDispel()) {
+            tile = i->tile.getTileType();
+            if (tile->canDispel()) {
                 // get a replacement tile for the field
-                MapTile newTile(loc->getReplacementTile(fpos, i->getTile().getTileType()));
-                annot->remove(*i);
-                annot->add(fpos, newTile, false, true);
+                MapTile newTile(loc->getReplacementTile(fpos, tile));
+                annot.remove(*i);
+                annot.add(fpos, newTile, false, true);
                 return 1;
             }
         }
@@ -535,18 +535,18 @@ static int spellEField(int param) {
         if (!tile->isWalkable()) return 0;
 
         /* Get rid of old field, if any */
-        Annotation::List a = c->location->map->annotations->allAt(coords);
+        AnnotationList a = c->location->map->annotations.allAt(coords);
         if (a.size() > 0) {
-            Annotation::List::iterator i;
+            AnnotationList::iterator i;
             for (i = a.begin(); i != a.end(); i++) {
-                if (i->getTile().getTileType()->canDispel())
-                    c->location->map->annotations->remove(*i);
+                if (i->tile.getTileType()->canDispel())
+                    c->location->map->annotations.remove(*i);
             }
         }
 
         MapTile fieldTile;
         fieldTile = c->location->map->tileset->getByName(fsym)->getId();
-        c->location->map->annotations->add(coords, fieldTile);
+        c->location->map->annotations.add(coords, fieldTile);
     }
 
     return 1;

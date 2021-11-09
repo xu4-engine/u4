@@ -100,8 +100,6 @@ public:
     static bool canAttackOverTile(const Tile *tile) {return tile->canAttackOver() != 0;}
 
 
-    Tile(int tid);
-    ~Tile();
     void setDirections(const char* dirs);
     const char* nameStr() const;
 
@@ -157,6 +155,7 @@ public:
 
     void loadImage();
     void deleteImage();
+    uint16_t startFrameAnim() const;
 
     TileId id;          /**< an id that is unique across all tilesets */
     Symbol name;        /**< The name of this tile */
@@ -166,7 +165,7 @@ public:
     int16_t h;          /**< Pixel height of the tile */
     int16_t frames;     /**< The number of frames this tile has */
     int16_t scale;      /**< The scale of the tile */
-    bool opaque;        /**< Is this tile opaque? */
+    uint8_t opaque;     /**< Visibility blocking shape (1=square, 2=round) */
 
     bool foreground;    /**< As a maptile, is a foreground that will search neighbour maptiles for a land-based background replacement. ex: chests */
     bool waterForeground;/**< As a maptile, is a foreground that will search neighbour maptiles for a water-based background replacement. ex: chests */
@@ -177,12 +176,12 @@ public:
     TileAnim *anim;     /**< The tile animation for this tile */
     uint8_t directionCount;
     uint8_t directions[7];  /**< Directions used = frames (if present) */
-
-private:
-    // Prevent copying.
-    Tile(const Tile&);
-    const Tile &operator=(const Tile&);
 };
 
+struct TileRenderData {
+    VisualId vid;       /**< The default rendering resource identifier */
+    VisualId scroll;    /**< The scrolling rendering resource identifier */
+    int16_t  animType;  /**< TileAnimType */
+};
 
 #endif

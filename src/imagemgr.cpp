@@ -367,17 +367,151 @@ U4FILE * ImageMgr::getImageFile(ImageInfo *info)
     return file;
 }
 
+ImageInfo* ImageMgr::imageInfo(Symbol name, const SubImage** subPtr) {
+    const SubImage* subImg = NULL;
+    ImageInfo* info = get(name);
+    if (! info) {
+        subImg = getSubImage(name, &info);
+        if (subImg) {
+            if (! info->image)
+                info = load(info, false);
+        }
+    }
+    *subPtr = subImg;
+    return info;
+}
+
 /**
  * Load in a background image from a ".ega" file.
  */
 ImageInfo *ImageMgr::get(Symbol name, bool returnUnscaled) {
     ImageInfo *info = getInfoFromSet(name, baseSet);
-    if (!info)
+    if (! info)
         return NULL;
 
     /* return if already loaded */
     if (info->image != NULL)
         return info;
+
+    return load(info, returnUnscaled);
+}
+
+#ifdef CONF_MODULE
+static Image* buildAtlas(ImageMgr* mgr, ImageInfo* atlas) {
+    const int maxChild = 8;
+    AtlasSubImage asi[maxChild];
+    const ImageInfo* subInfo[maxChild];
+    const ImageInfo* info;
+    int i, n;
+    int siCount = 0;
+    int count = xu4.config->atlasImages(atlas->filename, asi, maxChild);
+    Image* image = Image::create(atlas->width, atlas->height);
+
+    // Blit the child images and count the total number of SubImages.
+    for (i = 0; i < count; ++i) {
+        subInfo[i] = info = mgr->get(asi[i].name, true);
+        if (info && info->image) {
+            image32_blit(image, asi[i].x, asi[i].y, info->image, 0);
+
+            n = info->subImageCount;
+            if (! n)
+                n = info->tiles;
+            siCount += n;
+        }
+    }
+
+    // Merge and adjust all SubImages for the atlas.
+    if (siCount) {
+        const SubImage* it;
+        const SubImage* end;
+        SubImage* sid = new SubImage[siCount];
+
+        atlas->subImageCount = siCount;
+        atlas->subImages = sid;
+
+        for (i = 0; i < count; ++i) {
+            info = subInfo[i];
+            if (! info)
+                continue;
+
+            if (info->subImageCount) {
+                it  = info->subImages;
+                end = it + info->subImageCount;
+                while (it != end) {
+                    *sid = *it++;
+                    sid->x += asi[i].x;
+                    sid->y += asi[i].y;
+
+                    atlas->subImageIndex[sid->name] = sid - atlas->subImages;
+                    /*
+                    printf("KR atlas si %d %d,%d %s\n",
+                           int(sid - atlas->subImages), sid->x, sid->y,
+                           xu4.config->symbolName(sid->name));
+                    */
+                    ++sid;
+                }
+            } else if (info->tiles) {
+                // Create SubImages for unnamed tiles.
+                // NOTE: This code assumes the image is one tile wide.
+                int tileDim = info->width;
+                int tileY = asi[i].y;
+                for (n = 0; n < info->tiles; ++n) {
+                    sid->x      = asi[i].x;
+                    sid->y      = tileY;
+                    sid->width  = tileDim;
+                    sid->height = tileDim;
+
+                    if (n) {
+                        sid->name = SYM_UNSET;
+#ifdef USE_GL
+                        sid->celCount = 0;
+#endif
+                    } else {
+                        sid->name = info->name;
+                        atlas->subImageIndex[info->name] = sid - atlas->subImages;
+#ifdef USE_GL
+                        sid->celCount = info->tiles;
+#endif
+                    }
+                    ++sid;
+
+                    tileY += tileDim;
+                }
+            }
+        }
+
+#ifdef USE_GL
+        // Compute UVs.
+        if (! atlas->tileTexCoord) {
+            float* uv;
+            float iwf = (float) atlas->width;
+            float ihf = (float) atlas->height;
+            atlas->tileTexCoord = uv = new float[siCount * 4];
+            it = (SubImage*) atlas->subImages;
+            for (i = 0; i < siCount; ++i) {
+                *uv++ = it->x / iwf;
+                *uv++ = it->y / ihf;
+                *uv++ = (it->x + it->width) / iwf;
+                *uv++ = (it->y + it->height) / ihf;
+                ++it;
+            }
+        }
+
+        atlas->tex = gpu_makeTexture(image);
+#endif
+    }
+    return image;
+}
+#endif
+
+ImageInfo* ImageMgr::load(ImageInfo* info, bool returnUnscaled) {
+#ifdef CONF_MODULE
+    if (info->filetype == FTYPE_ATLAS) {
+        info->image = buildAtlas(this, info);
+        info->resGroup = resGroup;
+        return info;
+    }
+#endif
 
     U4FILE *file = getImageFile(info);
     Image *unscaled = NULL;
@@ -411,9 +545,10 @@ ImageInfo *ImageMgr::get(Symbol name, bool returnUnscaled) {
             float tileH = iwf;
             float tileY = 0.0f;
             float *uv;
+            int tileCount = info->tiles;
 
-            info->tileTexCoord = uv = new float[info->tiles * 4];
-            for (int i = 0; i < info->tiles; ++i) {
+            info->tileTexCoord = uv = new float[tileCount * 4];
+            for (int i = 0; i < tileCount; ++i) {
                 *uv++ = 0.0f;
                 *uv++ = tileY / ihf;
                 *uv++ = 1.0f;
@@ -486,10 +621,13 @@ ImageInfo *ImageMgr::get(Symbol name, bool returnUnscaled) {
             int opacity = xu4.settings->enhancementsOptions.u4TileTransparencyHackPixelShadowOpacity;
 
             // NOTE: The first 16 tiles are landscape and must be fully opaque!
-            int f = (name == BKGD_SHAPES) ? 16 : 0;
+            int f = (info->name == BKGD_SHAPES) ? 16 : 0;
             int frames = info->tiles;
-            for ( ; f < frames; ++f)
+            for ( ; f < frames; ++f) {
+                if (f == 126)
+                    continue;   // Skip tile_black
                 unscaled->performTransparencyHack(Image::black, frames, f, transparency_shadow_size, opacity);
+            }
         }
         break;
     }
@@ -501,7 +639,7 @@ ImageInfo *ImageMgr::get(Symbol name, bool returnUnscaled) {
 
 #ifdef USE_GL
     info->image = unscaled;
-    info->tex = gpu_makeTexture(info->image);
+    //info->tex = gpu_makeTexture(info->image);
 #else
     if (returnUnscaled)
     {
@@ -536,7 +674,7 @@ ImageInfo *ImageMgr::get(Symbol name, bool returnUnscaled) {
 /**
  * Returns information for the given image set.
  */
-const SubImage* ImageMgr::getSubImage(Symbol name) {
+const SubImage* ImageMgr::getSubImage(Symbol name, ImageInfo** infoPtr) {
     std::map<Symbol, ImageInfo *>::iterator it;
     ImageSet *set = baseSet;
 
@@ -544,8 +682,10 @@ const SubImage* ImageMgr::getSubImage(Symbol name) {
         foreach (it, set->info) {
             ImageInfo *info = (ImageInfo *) it->second;
             std::map<Symbol, int>::iterator j = info->subImageIndex.find(name);
-            if (j != info->subImageIndex.end())
+            if (j != info->subImageIndex.end()) {
+                *infoPtr = info;
                 return info->subImages + j->second;
+            }
         }
         set = scheme(set->extends);
     }
@@ -576,8 +716,10 @@ void ImageMgr::freeResourceGroup(uint16_t group) {
             if (info->image && (info->resGroup == group)) {
                 //dprint("ImageMgr::freeRes %s\n", info->filename.c_str());
 #ifdef USE_GL
-                gpu_freeTexture(info->tex);
-                info->tex = 0;
+                if (info->tex) {
+                    gpu_freeTexture(info->tex);
+                    info->tex = 0;
+                }
 #endif
                 delete info->image;
                 info->image = NULL;

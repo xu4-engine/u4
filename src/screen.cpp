@@ -25,7 +25,6 @@
 #include "tileanim.h"
 #include "tileset.h"
 #include "tileview.h"
-#include "annotation.h"
 #include "xu4.h"
 
 #ifdef USE_GL
@@ -48,13 +47,26 @@ struct Screen {
     ImageInfo* gemTilesInfo;
     ScreenState state;
     Scaler filterScaler;
+    int width;
+    int height;
     int cursorX;
     int cursorY;
     int cursorStatus;
     int cursorEnabled;
     int needPrompt;
+#ifdef GPU_RENDER
+    ImageInfo* textureInfo;
+    TileView* renderMapView;
+    VisualId focusReticle;
+    int mapId;          // Tracks map changes.
+    int blockX;         // Tracks changes to view point.
+    int blockY;
+    BlockingGroups* blockingUpdate;
+    BlockingGroups blockingGroups;
+#else
     uint8_t blockingGrid[VIEWPORT_W * VIEWPORT_H];
     uint8_t screenLos[VIEWPORT_W * VIEWPORT_H];
+#endif
 
     Screen() {
         gemLayout = NULL;
@@ -66,11 +78,15 @@ struct Screen {
         state.currentCycle = 0;
         state.vertOffset = 0;
         state.formatIsABGR = true;
-        cursorX = 0;
-        cursorY = 0;
+        width = height = 0;
+        cursorX = cursorY = 0;
         cursorStatus = 0;
         cursorEnabled = 1;
         needPrompt = 1;
+#ifdef GPU_RENDER
+        textureInfo = NULL;
+        renderMapView = NULL;
+#endif
     }
 
     ~Screen() {
@@ -79,14 +95,16 @@ struct Screen {
 };
 
 static void screenLoadLayoutsFromConf(Screen*);
+#ifndef GPU_RENDER
 static void screenFindLineOfSight();
+#endif
 
 static const int BufferSize = 1024;
 
 extern bool verbose;
 
 // Just extern the system functions here. That way people aren't tempted to call them as part of the public API.
-extern void screenInit_sys(const Settings*, int reset);
+extern void screenInit_sys(const Settings*, int* dim, int reset);
 extern void screenDelete_sys();
 
 static void initDungeonTileChars(std::map<string, int>& dungeonTileChars) {
@@ -115,6 +133,12 @@ static void initDungeonTileChars(std::map<string, int>& dungeonTileChars) {
 }
 
 static void screenInit_data(Screen* scr, Settings& settings) {
+#ifdef GPU_RENDER
+    scr->mapId = -1;
+    scr->blockX = scr->blockY = -1;
+    scr->blockingUpdate = NULL;
+#endif
+
     scr->filterScaler = scalerGet(settings.filter);
     if (! scr->filterScaler)
         errorFatal("Invalid filter %d", settings.filter);
@@ -139,8 +163,31 @@ static void screenInit_data(Screen* scr, Settings& settings) {
         errorLoadImage(BKGD_CHARSET);
 
 #ifdef USE_GL
+#ifdef GPU_RENDER
+    {
+    ImageInfo* tinfo;
+    ImageInfo* minfo;
+    Symbol symbol[3];
+    uint32_t matId = 0;
+
+    xu4.config->internSymbols(symbol, 3, "texture material reticle");
+    scr->textureInfo = tinfo = xu4.imageMgr->get(symbol[0]);
+    if (tinfo) {
+        minfo = xu4.imageMgr->get(symbol[1]);
+        if (minfo) {
+            if (! minfo->tex)
+                minfo->tex = gpu_makeTexture(minfo->image);
+            matId = minfo->tex;
+        }
+
+        gpu_setTilesTexture(xu4.gpu, tinfo->tex, matId, tinfo->tileTexCoord[3]);
+        scr->focusReticle = tinfo->subImageIndex.find(symbol[2])->second;
+    }
+    }
+#else
     ImageInfo* shapes = xu4.imageMgr->get(BKGD_SHAPES);
-    gpu_setTilesTexture(xu4.gpu, shapes->tex);
+    gpu_setTilesTexture(xu4.gpu, shapes->tex, 0, 0.0f);
+#endif
 #endif
 
     assert(scr->state.tileanims == NULL);
@@ -187,7 +234,7 @@ enum ScreenSystemStage {
  */
 void screenInit() {
     xu4.screen = new Screen;
-    screenInit_sys(xu4.settings, SYS_CLEAN);
+    screenInit_sys(xu4.settings, &xu4.screen->width, SYS_CLEAN);
     screenInit_data(xu4.screen, *xu4.settings);
 }
 
@@ -205,7 +252,7 @@ void screenDelete() {
  */
 void screenReInit() {
     screenDelete_data(xu4.screen);
-    screenInit_sys(xu4.settings, SYS_RESET);
+    screenInit_sys(xu4.settings, &xu4.screen->width, SYS_RESET);
     screenInit_data(xu4.screen, *xu4.settings); // Load new backgrounds, etc.
 }
 
@@ -420,12 +467,6 @@ bool screenTileUpdate(TileView *view, const Coords &coords)
     if (loc->map->flags & FIRST_PERSON)
         return false;
 
-    // Get the tiles
-    bool focus;
-    Coords mc(coords);
-    map_wrap(mc, loc->map);
-    vector<MapTile> tiles = loc->tilesAt(mc, focus);
-
     // Get the screen coordinates
     int x = coords.x;
     int y = coords.y;
@@ -437,17 +478,28 @@ bool screenTileUpdate(TileView *view, const Coords &coords)
         y = y - loc->coords.y + VIEWPORT_H / 2;
     }
 
+#ifdef GPU_RENDER
+    if (x >= 0 && y >= 0 && x < VIEWPORT_W && y < VIEWPORT_H)
+        return true;
+#else
     // Draw if it is on screen
     if (x >= 0 && y >= 0 && x < VIEWPORT_W && y < VIEWPORT_H &&
         xu4.screen->screenLos[y*VIEWPORT_W + x])
     {
-        view->drawTile(tiles, focus, x, y);
+        // Get the tiles
+        bool focus;
+        Coords mc(coords);
+        map_wrap(mc, loc->map);
+        vector<MapTile> tiles = loc->tilesAt(mc, focus);
+
+        view->drawTile(tiles, x, y);
+        if (focus)
+            view->drawFocus(x, y);
         return true;
     }
+#endif
     return false;
 }
-
-//#define GPU_RENDER
 
 #ifdef GPU_RENDER
 struct SpriteRenderData {
@@ -457,9 +509,14 @@ struct SpriteRenderData {
     int cx, cy;
 };
 
-#define VIEW_TILE_SIZE  (2.0f / VIEWPORT_W)
+enum TriangleList {
+    TRIS_MAP_OBJ,
+    TRIS_MAP_FX
+};
 
-static void drawSprite(const Coords* loc, VisualId vid, void* user) {
+#define VIEW_TILE_SIZE  (2.0f / VIEWPORT_W)     //1.0f
+
+static void emitSprite(const Coords* loc, VisualId vid, void* user) {
     SpriteRenderData* rd = (SpriteRenderData*) user;
     float* rect = rd->rect;
     const float halfTile = VIEW_TILE_SIZE * -0.5f;
@@ -469,9 +526,71 @@ static void drawSprite(const Coords* loc, VisualId vid, void* user) {
     rect[1] = halfTile + (float) (rd->cy - loc->y) * VIEW_TILE_SIZE;
     rd->attr = gpu_emitQuad(rd->attr, rect, rd->uvTable + uvIndex*4);
 #if 0
-    printf("KR drawSprite %d,%d vid:%d:%d\n",
+    printf("KR emitSprite %d,%d vid:%d:%d\n",
             loc->x, loc->y, VID_BANK(vid), VID_INDEX(vid));
 #endif
+}
+
+void screenDisableMap() {
+    xu4.screen->renderMapView = NULL;
+}
+
+/*
+ * \param center    Center of view.
+ */
+void screenUpdateMap(TileView* view, const Coords& center) {
+    const Map* map = view->map;
+    Screen* sp = xu4.screen;
+
+    sp->renderMapView = view;
+    sp->blockingUpdate = NULL;
+
+    // Reset map rendering data when the location changes.
+    if (sp->mapId != map->id) {
+        sp->mapId = map->id;
+        sp->blockX = -1;
+        gpu_resetMap(xu4.gpu, map);
+    }
+
+    // Update the map render position & remake the blocking groups if
+    // the view has moved.
+    if (sp->blockX != center.x || sp->blockY != center.y) {
+        sp->blockX = center.x;
+        sp->blockY = center.y;
+
+        if ((map->flags & NO_LINE_OF_SIGHT) == 0) {
+            BlockingGroups* blocks = &sp->blockingGroups;
+            map->queryBlocking(blocks,
+                               center.x - view->columns / 2,
+                               center.y - view->rows / 2,
+                               view->columns, view->rows);
+            sp->blockingUpdate = blocks;
+            //printf("KR groups %d,%d,%d\n",
+            //       blocks->left, blocks->center, blocks->right);
+        }
+    }
+
+    {
+    SpriteRenderData rd;
+    const Object* focusObj;
+
+    rd.uvTable = sp->textureInfo->tileTexCoord;
+    rd.rect[2] = rd.rect[3] = VIEW_TILE_SIZE;
+    rd.cx = center.x;
+    rd.cy = center.y;
+    rd.attr = gpu_beginTris(xu4.gpu, TRIS_MAP_OBJ);
+
+    map->queryVisible(center, view->columns / 2, emitSprite, &rd, &focusObj);
+
+    if (focusObj) {
+        if ((screenState()->currentCycle * 4 / SCR_CYCLE_PER_SECOND) % 2) {
+            const Coords& floc = focusObj->getCoords();
+            emitSprite(&floc, sp->focusReticle, &rd);
+        }
+    }
+
+    gpu_endTris(xu4.gpu, TRIS_MAP_OBJ, rd.attr);
+    }
 }
 #endif
 
@@ -483,84 +602,41 @@ static void drawSprite(const Coords* loc, VisualId vid, void* user) {
 void screenUpdate(TileView *view, bool showmap, bool blackout) {
     ASSERT(c != NULL, "context has not yet been initialized");
 
-#ifdef GPU_RENDER
-    //static const float clearColor[4] = {0.0, 0.5, 0.8, 1.0};
-    const Image* screen = xu4.screenImage;
-    Location* loc = c->location;
-    const Map* map = loc->map;
-
-    if (blackout) {
-        screenEraseMapArea();
-        goto raster_update;
-    }
-    else if (map->flags & FIRST_PERSON) {
-        xu4.screen->dungeonView->display(c, view);
-        xu4.game->mapArea.update();
-
-raster_update:
-        screenUpdateCursor();
-        screenUpdateMoons();
-        screenUpdateWind();
-
-        gpu_viewport(0, 0, screen->width(), screen->height());
-        gpu_background(xu4.gpu, NULL, screen);
-    }
-    else if (showmap) {
-        ImageInfo* shapes = xu4.imageMgr->get(BKGD_SHAPES);
-        const Coords& coord = loc->coords;   // Center of view.
-
-        screenUpdateCursor();
-        screenUpdateMoons();
-        screenUpdateWind();
-
-        gpu_viewport(0, 0, screen->width(), screen->height());
-        gpu_background(xu4.gpu, NULL, screen);
-
-#if 0
-        // Unscaled pixel rect. on screen.
-        printf( "KR view %d,%d %d,%d\n",
-                view->x, view->y, view->width, view->height );
-#endif
-        const int* vrect = view->screenRect;
-        gpu_viewport(vrect[0], vrect[1], vrect[2], vrect[3]);
-        gpu_drawMap(xu4.gpu, map, shapes->tileTexCoord,
-                    coord.x, coord.y, VIEWPORT_W / 2);
-
-        {
-        SpriteRenderData rd;
-
-        rd.uvTable = shapes->tileTexCoord;
-        rd.rect[2] = rd.rect[3] = VIEW_TILE_SIZE;
-        rd.cx = coord.x;
-        rd.cy = coord.y;
-        rd.attr = gpu_beginDraw(xu4.gpu);
-
-        map->queryVisible(coord, VIEWPORT_W / 2, drawSprite, &rd);
-
-        gpu_endDraw(xu4.gpu, rd.attr);
-        }
-    }
-#else
     if (blackout)
     {
         screenEraseMapArea();
+#ifdef GPU_RENDER
+        xu4.screen->renderMapView = NULL;
+#endif
     }
     else if (c->location->map->flags & FIRST_PERSON) {
         xu4.screen->dungeonView->display(c, view);
         screenRedrawMapArea();
+#ifdef GPU_RENDER
+        xu4.screen->renderMapView = NULL;
+#endif
     }
     else if (showmap) {
+#ifdef GPU_RENDER
+        screenUpdateMap(view, c->location->coords);
+#else
         MapTile black = c->location->map->tileset->getByName(Tile::sym.black)->getId();
         vector<MapTile> viewTiles[VIEWPORT_W][VIEWPORT_H];
         uint8_t* blocked = xu4.screen->blockingGrid;
-        bool viewportFocus[VIEWPORT_W][VIEWPORT_H];
+        bool focus;
+        int focusX, focusY;
         int x, y;
 
+        focusX = -1;
         for (y = 0; y < VIEWPORT_H; y++) {
             for (x = 0; x < VIEWPORT_W; x++) {
                 viewTiles[x][y] = screenViewportTile(VIEWPORT_W, VIEWPORT_H,
-                                                     x, y, viewportFocus[x][y]);
+                                                     x, y, focus);
                 *blocked++ = viewTiles[x][y].front().getTileType()->isOpaque();
+                if (focus) {
+                    focusX = x;
+                    focusY = y;
+                }
             }
         }
 
@@ -569,21 +645,56 @@ raster_update:
         const uint8_t* lineOfSight = xu4.screen->screenLos;
         for (y = 0; y < VIEWPORT_H; y++) {
             for (x = 0; x < VIEWPORT_W; x++) {
-                if (*lineOfSight++) {
-                    view->drawTile(viewTiles[x][y],
-                                   viewportFocus[x][y], x, y);
-                } else
-                    view->drawTile(black, false, x, y);
+                if (*lineOfSight++)
+                    view->drawTile(viewTiles[x][y], x, y);
+                else
+                    view->drawTile(black, x, y);
             }
         }
+        if (focusX >= 0)
+            view->drawFocus(focusX, focusY);
         screenRedrawMapArea();
+#endif
     }
 
     screenUpdateCursor();
     screenUpdateMoons();
     screenUpdateWind();
+#ifdef USE_GL
+    gpu_blitTexture(gpu_screenTexture(xu4.gpu), 0, 0, xu4.screenImage);
 #endif
 }
+
+#ifdef USE_GL
+void screenRender() {
+    const Screen* sp = xu4.screen;
+    void* gpu = xu4.gpu;
+
+    gpu_viewport(0, 0, sp->width, sp->height);
+    gpu_drawTextureScaled(gpu, gpu_screenTexture(gpu));
+
+#ifdef GPU_RENDER
+    TileView* view = sp->renderMapView;
+    if (view) {
+        if (view->scissor)
+            gpu_setScissor(view->scissor);
+
+        gpu_drawMap(gpu, view, sp->textureInfo->tileTexCoord,
+                    sp->blockingUpdate, sp->blockX, sp->blockY, view->scale);
+        gpu_drawTris(gpu, TRIS_MAP_OBJ);
+
+        anim_advance(&xu4.eventHandler->fxAnim, 1.0f / 24.0f);
+        view->updateEffects((float) sp->blockX,
+                            (float) sp->blockY,
+                            sp->textureInfo->tileTexCoord);
+        gpu_drawTris(gpu, TRIS_MAP_FX);
+
+        if (view->scissor)
+            gpu_setScissor(NULL);
+    }
+#endif
+}
+#endif
 
 void screenDrawImageInMapArea(Symbol name) {
     ImageInfo *info;
@@ -662,6 +773,8 @@ void screenCycle() {
     if (cycle >= SCR_CYCLE_MAX)
         cycle = 0;
     xu4.screen->state.currentCycle = cycle;
+
+    xu4.eventHandler->advanceFlourishAnim();
 }
 
 void screenUpdateCursor() {
@@ -756,6 +869,7 @@ void screenMakeDungeonView() {
                                               VIEWPORT_W, VIEWPORT_H);
 }
 
+#ifndef GPU_RENDER
 #define BLOCKING(x,y)   blocking[(y) * VIEWPORT_W + (x)]
 #define LOS(x,y)        lineOfSight[(y) * VIEWPORT_W + (x)]
 
@@ -1104,6 +1218,7 @@ static void screenFindLineOfSight() {
         CPU_END()
     }
 }
+#endif
 
 /**
  * Generates terms a and b for equation "ax + b = y" that defines the
@@ -1391,6 +1506,9 @@ void screenGemUpdate() {
     screenUpdateCursor();
     screenUpdateMoons();
     screenUpdateWind();
+#ifdef USE_GL
+    gpu_blitTexture(gpu_screenTexture(xu4.gpu), 0, 0, xu4.screenImage);
+#endif
 }
 
 /**

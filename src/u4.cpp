@@ -145,6 +145,9 @@ missing_value:
 
 
 void servicesInit(XU4GameServices* gs, Options* opt) {
+    if (opt->flags & OPT_VERBOSE)
+        verbose = true;
+
     if (!u4fsetup())
     {
         errorFatal( "xu4 requires the PC version of Ultima IV to be present.\n"
@@ -165,9 +168,6 @@ void servicesInit(XU4GameServices* gs, Options* opt) {
     if (opt->filter)
         gs->settings->filter = opt->filter;
 
-    if (opt->flags & OPT_VERBOSE)
-        verbose = true;
-
     Debug::initGlobal("debug/global.txt");
 
     xu4_srandom();
@@ -178,7 +178,7 @@ void servicesInit(XU4GameServices* gs, Options* opt) {
     if (! (opt->flags & OPT_NO_AUDIO))
         soundInit();
 
-    gs->eventHandler = new EventHandler;
+    gs->eventHandler = new EventHandler(1000/gs->settings->gameCyclesPerSecond);
 
     gs->stage = (opt->flags & OPT_NO_INTRO) ? StagePlay : StageIntro;
 }

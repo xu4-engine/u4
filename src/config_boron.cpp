@@ -117,6 +117,7 @@ struct ConfigBoron : public Config {
     Symbol sym_abyss;
     Symbol sym_imageset;
     Symbol sym_tileanims;
+    Symbol sym_Ucel;
 };
 
 #define CB  static_cast<ConfigData*>(backend)
@@ -161,6 +162,7 @@ const UBuffer* ConfigBoron::blockBuffer(int value, uint32_t n, int dataType) con
 #define WORD_NONE   (UT_BI_COUNT + UT_WORD)
 #define COORD_NONE  (UT_BI_COUNT + UT_COORD)
 #define STRING_NONE (UT_BI_COUNT + UT_STRING)
+#define FILE_NONE   (UT_BI_COUNT + UT_FILE)
 #define BLOCK_NONE  (UT_BI_COUNT + UT_BLOCK)
 
 static bool validParam(const UBlockIt& bi, int count, const uint8_t* dtype)
@@ -273,16 +275,17 @@ static int conf_tileRule(TileRule* rule, UBlockIt& bi)
     return 1;
 }
 
-static Tile* conf_tile(ConfigBoron* cfg, int id, UBlockIt& bi)
+static Tile* conf_tile(ConfigBoron* cfg, Tile* tile, int id, UBlockIt& bi)
 {
     static const uint8_t tparam[6] = {
-        // name   rule   image  animation  directions  frames,flags
+        // name   rule   image   animation   directions   numA
         UT_WORD, WORD_NONE, WORD_NONE, WORD_NONE, WORD_NONE, UT_COORD
     };
     if (! validParam(bi, sizeof(tparam), tparam))
         return NULL;
 
-    Tile* tile = new Tile(id);
+    tile->id = id;
+    tile->scale = 1;
     tile->name = ur_atom(bi.it);
 
     const UCell* cell = bi.it+1;
@@ -308,16 +311,20 @@ static Tile* conf_tile(ConfigBoron* cfg, int id, UBlockIt& bi)
         tile->animationRule = ur_atom(cell);
     ++cell;
 
+    // numA: frames opaque flags
+    const int16_t* numA = bi.it[5].coord.n;
+
     // Set frames before calling setDirections().
-    int frames = bi.it[5].coord.n[0];
+    int frames = numA[0];
     tile->frames = frames ? frames : 1;
 
     /* Fill directions if they are specified. */
     if (ur_is(cell, UT_WORD))
         tile->setDirections( ur_atomCStr(cfg->ut, ur_atom(cell)) );
 
-    int flags = bi.it[5].coord.n[1];
-    tile->opaque          = flags & 1;
+    tile->opaque = numA[1];
+
+    int flags = numA[2];
     tile->foreground      = flags & 2; // usesReplacementTileAsBackground
     tile->waterForeground = flags & 4; // usesWaterReplacementTileAsBackground
     tile->tiledInDungeon  = flags & 8;
@@ -501,7 +508,7 @@ static Map* conf_makeMap(ConfigBoron* cfg, Tileset* tiles, UBlockIt& bi)
 {
     static const uint8_t mparam[3] = {
         // fname  numA  numB
-        UT_FILE, UT_COORD, UT_COORD
+        FILE_NONE, UT_COORD, UT_COORD
     };
     if (! validParam(bi, sizeof(mparam), mparam))
         return NULL;
@@ -537,7 +544,10 @@ static Map* conf_makeMap(ConfigBoron* cfg, Tileset* tiles, UBlockIt& bi)
     if (! map)
         return NULL;
 
-    map->fname  = ASTR(bi.it->series.buf);
+    if (ur_is(bi.it, UT_FILE))
+        map->fname = ASTR(bi.it->series.buf);   // Data from original U4 file.
+    else
+        map->fname = UR_INVALID_BUF;            // Data from Config::mapFile.
     map->id     = (MapId) numA[0];
     map->type   = mtype;
     map->border_behavior = numA[2];
@@ -853,7 +863,7 @@ ConfigBoron::ConfigBoron(const char* modulePath)
     }
 
     ur_internAtoms(ut, "hit_flash miss_flash random shrine abyss"
-                       " imageset tileanims", &sym_hitFlash);
+                       " imageset tileanims _cel", &sym_hitFlash);
 
 
     // Read package table of contents.
@@ -972,19 +982,18 @@ fail:
 
     // tileset (requires tileRules)
     if (blockIt(&bi, CI_TILESET)) {
-        Tile* tile;
-        int frameCount = 0;
-        int moduleId = 0;
-        Tileset* ts = xcd.tileset = new Tileset;
+        int moduleId;
+        int tileCount = (bi.end - bi.it) / 6;
+        Tileset* ts = xcd.tileset = new Tileset(tileCount);
+        Tile* tile = ts->tiles;
 
-        while ((tile = conf_tile(this, moduleId++, bi))) {
-            /* add the tile to our tileset */
-            ts->tiles.push_back(tile);
-            ts->nameMap[tile->name] = tile;
-
-            frameCount += tile->getFrames();
+        for (moduleId = 0; moduleId < tileCount; ++moduleId) {
+            if (! conf_tile(this, tile, moduleId, bi))
+                break;
+            ts->nameMap[tile->name] = tile;     // Add tile to nameMap
+            ++tile;
         }
-        ts->totalFrames = frameCount;
+        ts->tileCount = moduleId;
     }
 
     // u4-save-ids
@@ -1183,6 +1192,14 @@ const CDIEntry* Config::imageFile( const char* id ) const {
 }
 
 /*
+ * Return a CDIEntry pointer for the given Map::id.
+ */
+const CDIEntry* Config::mapFile( uint32_t id ) const {
+    uint32_t appId = CDI32('M', 'A', (id >> 8), (id & 255));
+    return cdi_findAppId(CX->toc, CX->tocUsed, appId);
+}
+
+/*
  * Return a CDIEntry pointer for the given MusicTrack id (see sound.h)
  */
 const CDIEntry* Config::musicFile( uint32_t id ) const {
@@ -1293,7 +1310,7 @@ Map* Config::map(uint32_t id) {
 
     Map* rmap = CB->mapList[id];
     /* if the map hasn't been loaded yet, load it! */
-    if (! rmap->data.size()) {
+    if (! rmap->data) {
         if (! loadMap(rmap, NULL))
             errorFatal("loadMap failed to read \"%s\" (type %d)",
                        confString(rmap->fname), rmap->type);
@@ -1307,7 +1324,7 @@ Map* Config::restoreMap(uint32_t id) {
         return NULL;
 
     Map* rmap = CB->mapList[id];
-    if (! rmap->data.size()) {
+    if (! rmap->data) {
         FILE* sav = NULL;
         bool ok;
 
@@ -1334,16 +1351,49 @@ const Coords* Config::moongateCoords(int phase) const {
 //--------------------------------------
 // Graphics config
 
+int Config::atlasImages(StringId spec, AtlasSubImage* images, int max) {
+    UCell cell;
+    UBlockIt bi;
+    int count = 0;
+
+    // Spec is actually a block! not a string!.
+    ur_setId(&cell, UT_BLOCK);
+    ur_setSeries(&cell, spec, 0);
+
+    ur_blockIt(CX->ut, &bi, &cell);
+    ur_foreach (bi) {
+        if (ur_is(bi.it, UT_WORD) && ur_is(bi.it+1, UT_COORD)) {
+            images->name = ur_atom(bi.it);
+            ++bi.it;
+            images->x = bi.it->coord.n[0];
+            images->y = bi.it->coord.n[1];
+            ++images;
+            if (++count >= max)
+                break;
+        }
+    }
+    return count;
+}
+
 static ImageInfo* loadImageInfo(const ConfigBoron* cfg, UBlockIt& bi) {
+    static const uint8_t atlasParam[4] = {
+        // name  'atlas   numA      spec
+        UT_WORD, UT_WORD, UT_COORD, UT_BLOCK
+    };
     static const uint8_t imageParam[4] = {
         // name  filename   numA      numB
         UT_WORD, UT_STRING, UT_COORD, UT_COORD
     };
-    if (! validParam(bi, sizeof(imageParam), imageParam))
-        errorFatal("Invalid image parameters");
+    int isAtlas = 0;
 
-    const int16_t* numA = bi.it[2].coord.n;     // width height depth
-    const int16_t* numB = bi.it[3].coord.n;     // filetype tiles fixup
+    if (! validParam(bi, sizeof(imageParam), imageParam)) {
+        if (validParam(bi, sizeof(atlasParam), atlasParam))
+            isAtlas = 1;
+        else
+            errorFatal("Invalid image parameters");
+    }
+
+    const int16_t* numA = bi.it[2].coord.n;     // width height (depth)
 
 #if 0
     UThread* ut = cfg->ut;
@@ -1354,20 +1404,35 @@ static ImageInfo* loadImageInfo(const ConfigBoron* cfg, UBlockIt& bi) {
 
     ImageInfo* info = new ImageInfo;
     info->name     = ur_atom(bi.it);
-    info->filename = ASTR(bi.it[1].series.buf);
     info->resGroup = 0;
     info->width    = numA[0];
     info->height   = numA[1];
     info->subImageCount = 0;
-    info->depth    = numA[2];
     info->prescale = 0;
-    info->filetype = numB[0];
-    info->tiles    = numB[1];
     info->transparentIndex = -1;
-    info->fixup    = numB[2];
     info->image    = NULL;
     info->subImages = NULL;
 
+    if (isAtlas) {
+        // An atlas ImageInfo is denoted by filetype FTYPE_ATLAS.
+        // The filename is the spec. block UIndex, not a string!
+
+        info->filename = bi.it[3].series.buf;
+        info->depth    = 0;
+        info->filetype = FTYPE_ATLAS;
+        info->tiles    = 0;
+        info->fixup    = FIXUP_NONE;
+    } else {
+        const int16_t* numB = bi.it[3].coord.n;     // filetype tiles fixup
+
+        info->filename = ASTR(bi.it[1].series.buf);
+        info->depth    = numA[2];
+        info->filetype = numB[0];
+        info->tiles    = numB[1];
+        info->fixup    = numB[2];
+    }
+
+    assert(sizeof(atlasParam) == sizeof(imageParam));
     bi.it += sizeof(imageParam);
 
     // Optional subimages block!
@@ -1375,6 +1440,7 @@ static ImageInfo* loadImageInfo(const ConfigBoron* cfg, UBlockIt& bi) {
         UBlockIt sit;
         SubImage* subimage;
         int n = 0;
+        int celCount;
 
         ur_blockIt(cfg->ut, &sit, bi.it);
         ++bi.it;
@@ -1383,8 +1449,10 @@ static ImageInfo* loadImageInfo(const ConfigBoron* cfg, UBlockIt& bi) {
         info->subImages = subimage = new SubImage[info->subImageCount];
 
         ur_foreach (sit) {
-            subimage->name  = ur_atom(sit.it);
-            subimage->srcImageName = info->name;
+            subimage->name = ur_atom(sit.it);
+            if (subimage->name != cfg->sym_Ucel)
+                info->subImageIndex[subimage->name] = n;
+            ++n;
 
             ++sit.it;
             numA = sit.it->coord.n;
@@ -1392,8 +1460,17 @@ static ImageInfo* loadImageInfo(const ConfigBoron* cfg, UBlockIt& bi) {
             subimage->y      = numA[1];
             subimage->width  = numA[2];
             subimage->height = numA[3];
+            celCount         = (sit.it->coord.len > 4) ? numA[4] : 1;
 
-            info->subImageIndex[subimage->name] = n++;
+#ifdef USE_GL
+            subimage->celCount = celCount;
+#endif
+#ifndef GPU_RENDER
+            // Animated tiles denoted by height. TODO: Eliminate this.
+            if (celCount > 1)
+                subimage->height *= celCount;
+#endif
+
             ++subimage;
         }
     }

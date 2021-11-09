@@ -6,11 +6,11 @@
 
 #include "map.h"
 
-#include "annotation.h"
 #include "config.h"
 #include "context.h"
 #include "debug.h"
 #include "direction.h"
+#include "event.h"
 #include "location.h"
 #include "movement.h"
 #include "object.h"
@@ -200,25 +200,29 @@ int map_distance(const Coords& a, const Coords& b, const Map *map) {
     return dist;
 }
 
+bool map_outOfBounds(const Map* map, const Coords& c) {
+    return (c.x < 0 || c.x >= (int) map->boundMaxX ||
+            c.y < 0 || c.y >= (int) map->boundMaxY ||
+            c.z < 0 || c.z >= (int) map->levels);
+}
+
 /**
  * Map Class Implementation
  */
 
 Map::Map() {
-    annotations = new AnnotationMgr();
     _pad = 0;
     width = 0;
     height = 0;
     levels = 1;
     chunk_width = 0;
     chunk_height = 0;
+    boundMaxX = boundMaxY = 0;
     flags = 0;
     offset = 0;
     id = 0;
+    data = NULL;
     tileset = NULL;
-#ifdef USE_GL
-    chunks = NULL;
-#endif
 }
 
 Map::~Map() {
@@ -227,14 +231,85 @@ Map::~Map() {
         delete *i;
     }
     clearObjects();
-    delete annotations;
-#ifdef USE_GL
-    delete[] chunks;
-#endif
+    delete[] data;
 }
 
 const char* Map::getName() const {
     return xu4.config->confString(fname);
+}
+
+/*
+ * Build BlockingGroups for use by the shadow casting shader.
+ */
+void Map::queryBlocking(BlockingGroups* bg, int sx, int sy, int vw, int vh) const {
+    const Tile* tile;
+    int centerX, leftEndX, maxX;
+    int centerY, maxY;
+    int x, y, di;
+    int count;
+    float* pos = bg->tilePos;
+    float* posEnd = pos + BLOCKING_POS_SIZE;
+
+    centerX = sx + vw / 2;
+    centerY = sy + vw / 2;
+
+    // Initialize counts in case the function aborts (buffer_full).
+    bg->left = bg->center = bg->right = 0;
+
+    // Handle negative start positions.
+    if (sx < 0) {
+        vw += sx;   // Subtracts sx.
+        sx = 0;
+    }
+    if (sy < 0) {
+        vh += sy;   // Subtracts sy.
+        sy = 0;
+    }
+
+    maxX = sx + vw;
+    if (maxX > width)
+        maxX = width;
+    maxY = sy + vh;
+    if (maxY > height)
+        maxY = height;
+
+#define BLOCKING_COLUMN \
+    for (di = sy * width + x, y = sy; y < maxY; di += width, ++y) { \
+        tile = tileset->get(data[di]); \
+        if (tile->opaque) { \
+            if (pos == posEnd) \
+                goto buffer_full; \
+            *pos++ = (float) (x - centerX); \
+            *pos++ = (float) (y - centerY); \
+            *pos++ = (float) tile->opaque; \
+            ++count; \
+        } \
+    }
+
+    // Gather blocking tiles in column left to right order.
+
+    leftEndX = (centerX < width) ? centerX : width;
+    count = 0;
+    for (x = sx; x < leftEndX; ++x) {
+        BLOCKING_COLUMN
+    }
+    bg->left = count;
+
+    count = 0;
+    if (centerX < width) {
+        BLOCKING_COLUMN
+    }
+    bg->center = count;
+
+    count = 0;
+    for (++x; x < maxX; ++x) {
+        BLOCKING_COLUMN
+    }
+    bg->right = count;
+    return;
+
+buffer_full:
+    fprintf(stderr, "Map::queryBlocking pos buffer full!\n" );
 }
 
 /*
@@ -247,38 +322,75 @@ const char* Map::getName() const {
  */
 void Map::queryVisible(const Coords& center, int radius,
                        void (*func)(const Coords*, VisualId, void*),
-                       void* user) const {
+                       void* user, const Object** focusPtr) const {
     int minX, minY, maxX, maxY;
     const Coords* cp;
+    const TileRenderData* rd = tileset->render;
     VisualId vid;
+
+    *focusPtr = NULL;
+
+#define OUTSIDE(C) (C->x < minX || C->x > maxX || C->y < minY || C->y > maxY)
 
     minX = center.x - radius;
     minY = center.y - radius;
     maxX = center.x + radius;
     maxY = center.y + radius;
 
-    // Manufacture VisualIds until they become part of a structure somewhere.
-    const UltimaSaveIds* usaveIds = xu4.config->usaveIds();
-
-    Annotation::List::const_iterator ait;
-    Annotation::List& alist = annotations->annotations;
-    for(ait = alist.begin(); ait != alist.end(); ait++) {
+    AnnotationList::const_iterator ait;
+    for(ait = annotations.begin(); ait != annotations.end(); ait++) {
         const Annotation& ann = *ait;
         cp = &ann.coords;
-        if (cp->x < minX || cp->x > maxX || cp->y < minY || cp->y > maxY)
+        if (OUTSIDE(cp))
             continue;
-        vid = usaveIds->ultimaId(ann.tile);
+        //printf("KR ann %d %d %d,%d\n",
+        //        ann.tile.id, ann.tile.frame, cp->x, cp->y);
+        vid = rd[ann.tile.id].vid;
         func(cp, vid, user);
     }
 
+    const Animator* animator = &xu4.eventHandler->flourishAnim;
     ObjectDeque::const_iterator it;
     for(it = objects.begin(); it != objects.end(); it++) {
-        const Object* obj = *it;
+        Object* obj = *it;
         cp = &obj->coords;
-        if (cp->x < minX || cp->x > maxX || cp->y < minY || cp->y > maxY)
+        if (OUTSIDE(cp))
             continue;
-        vid = usaveIds->ultimaId(obj->tile);
+        if (obj->hasFocus())
+            *focusPtr = obj;
+        //printf("KR obj %d %d %d,%d\n",
+        //        obj->tile.id, obj->tile.frame, cp->x, cp->y);
+        if (obj->animId != ANIM_UNUSED) {
+            obj->tile.frame = anim_valueI(animator, obj->animId);
+        }
+        vid = rd[obj->tile.id].vid + obj->tile.frame;
         func(cp, vid, user);
+    }
+
+    if (flags & SHOW_AVATAR) {
+        cp = &c->location->coords;
+        if (! OUTSIDE(cp)) {
+            MapTile trans = c->party->getTransport();
+            vid = rd[trans.id].vid + trans.frame;
+            func(cp, vid, user);
+        }
+    }
+}
+
+/*
+ * Call a function for each Annotation at a given coordinate.
+ * The callback must return Map::QueryDone or Map::QueryContinue.
+ */
+void Map::queryAnnotations(const Coords& pos,
+                           int (*func)(const Annotation*, void*),
+                           void* user) const {
+    AnnotationList::const_iterator ait;
+	for (ait = annotations.begin(); ait != annotations.end(); ++ait) {
+        const Annotation& ann = *ait;
+        if (ann.coords == pos) {
+            if (func(&ann, user) == Map::QueryDone)
+                break;
+        }
     }
 }
 
@@ -343,12 +455,11 @@ TileId Map::getTileFromData(const Coords &coords) const {
 const Tile* Map::tileTypeAt(const Coords &coords, int withObjects) const {
     /* FIXME: this should return a list of tiles, with the most visible at the front */
     /* FIXME: this only returns the first valid annotation it can find */
-    Annotation::List::const_iterator ait;
-    Annotation::List& alist = annotations->annotations;
-    for(ait = alist.begin(); ait != alist.end(); ait++) {
+    AnnotationList::const_iterator ait;
+    for(ait = annotations.begin(); ait != annotations.end(); ait++) {
         const Annotation& ann = *ait;
-        if (ann.getCoords() == coords && ! ann.isVisualOnly())
-            return tileset->get( ann.getTile().id );
+        if (ann.coords == coords && ! ann.visualOnly)
+            return tileset->get( ann.tile.id );
     }
 
     TileId tid = 0;

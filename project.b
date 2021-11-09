@@ -3,6 +3,7 @@ options [
 	use_gl: false
 	use_boron: true
 	boron_sdk: none		"Path to Boron headers and libraries"
+	gpu_render: true
 	make_util: true
 ]
 
@@ -25,6 +26,7 @@ exe %u4 [
 	include_from [%src %src/lzw %src/support]
 	win32 [
 		include_from %../usr/include
+		include-define "_WIN32"		; Needed to archive glad.*
 	]
 
 	switch os_api [
@@ -81,6 +83,7 @@ exe %u4 [
 	]
 
 	if use_gl [
+		if gpu_render [cflags "-DGPU_RENDER"]
 		cflags "-DUSE_GL"
 		opengl
 	]
@@ -103,6 +106,7 @@ exe %u4 [
 	cflags {-DVERSION=\"KR-1.0\"}
 
 	sources_from %src [
+		%anim.c
 		%annotation.cpp
 		%aura.cpp
 		%camp.cpp

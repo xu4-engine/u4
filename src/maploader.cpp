@@ -22,42 +22,81 @@
 
 #ifdef U5_DAT
 static bool isChunkCompressed(Map *map, int chunk) {
-    CompressedChunkList::iterator i;
-    for (i = map->compressed_chunks.begin(); i != map->compressed_chunks.end(); i++) {
-        if (chunk == *i)
-            return true;
-    }
-    return false;
+    return map->compressed_chunks[ chunk ] == 255;
 }
 #endif
 
 /**
  * Loads raw data from the given file.
  */
-static bool loadMapData(Map *map, U4FILE *uf) {
-    unsigned int x, xch, y, ych;
+bool loadMapData(Map *map, U4FILE *uf, Symbol borderTile) {
+    unsigned int x, xch, y, ych, di;
+    unsigned int chunkCols, chunkRows;
+    size_t chunkLen;
+    uint8_t* chunk;
+    uint8_t* cp;
     const UltimaSaveIds* usaveIds = xu4.config->usaveIds();
+    bool ok = false;
 #ifdef U5_DAT
     Symbol sym_sea = SYM_UNSET;
 #endif
 
-    /* allocate the space we need for the map data */
-    map->data.resize(map->height * map->width, 0);
+    map->boundMaxX = map->width;
+    map->boundMaxY = map->height;
 
     if (map->chunk_height == 0)
         map->chunk_height = map->height;
     if (map->chunk_width == 0)
         map->chunk_width = map->width;
 
-    u4fseek(uf, map->offset, SEEK_CUR);
+    chunkCols = map->width / map->chunk_width;
+    chunkRows = map->height / map->chunk_height;
 
-#ifdef USE_GL
-    size_t chunkLen = map->chunk_width * map->chunk_height;
-    map->chunks = new uint8_t[map->width * map->height];
-    uint8_t* cp = map->chunks;
+    chunkLen = map->chunk_width * map->chunk_height;
+    chunk = new uint8_t[chunkLen];
+
+#ifdef GPU_RENDER
+    bool addBorder = false;
+    if (map->border_behavior == Map::BORDER_EXIT2PARENT && borderTile) {
+        // gpu_drawMap() always wraps the map so adding border chunks to the
+        // bottom & right edges will render these borders on all edges.
+        map->width  += map->chunk_width;
+        map->height += map->chunk_height;
+        addBorder = true;
+    }
+
+    // gpu_drawMap() requires chunk_width & chunk_height to be the same, so
+    // the size is adjusted to be square.
+    // This code assumes the width is never less than height and handles the
+    // intro 19x5 map.
+    int padRows = 0;
+    if (map->chunk_height < map->chunk_width)
+        padRows = map->chunk_width - map->chunk_height;
+
+    /* allocate the space we need for the map data */
+    map->data = new TileId[map->width * (map->height + padRows)];
+
+    if (addBorder) {
+        // Fill the entire map with borderTile.
+        TileId borderId = Tileset::findTileByName(borderTile)->id;
+        TileId* it = map->data;
+        TileId* end = it + map->width * map->height;
+        while (it != end)
+            *it++ = borderId;
+    }
+#else
+    /* allocate the space we need for the map data */
+    map->data = new TileId[map->width * map->height];
 #endif
-    for(ych = 0; ych < (map->height / map->chunk_height); ++ych) {
-        for(xch = 0; xch < (map->width / map->chunk_width); ++xch) {
+
+    if (map->offset)
+        u4fseek(uf, map->offset, SEEK_CUR);
+
+    for(ych = 0; ych < chunkRows; ++ych) {
+        for(xch = 0; xch < chunkCols; ++xch) {
+            di = (xch * map->chunk_width) +
+                 (ych * map->chunk_height * map->width);
+
 #ifdef U5_DAT
             if (isChunkCompressed(map, ych * map->chunk_width + xch)) {
                 if (! sym_sea)
@@ -65,36 +104,43 @@ static bool loadMapData(Map *map, U4FILE *uf) {
                 MapTile water = map->tileset->getByName(sym_sea)->getId();
                 for(y = 0; y < map->chunk_height; ++y) {
                     for(x = 0; x < map->chunk_width; ++x) {
-                        map->data[x + (y * map->width) + (xch * map->chunk_width) + (ych * map->chunk_height * map->width)] = water.id;
+                        map->data[x + (y * map->width) + di] = water.id;
                     }
                 }
             }
             else
 #endif
             {
-#ifdef USE_GL
-                size_t n = u4fread(cp, 1, chunkLen, uf);
+                size_t n = u4fread(chunk, 1, chunkLen, uf);
                 if (n != chunkLen)
-                    return false;
-#endif
+                    goto cleanup;
+
+                cp = chunk;
                 for(y = 0; y < map->chunk_height; ++y) {
                     for(x = 0; x < map->chunk_width; ++x) {
-#ifdef USE_GL
                         int c = *cp++;
-#else
-                        int c = u4fgetc(uf);
-                        if (c == EOF)
-                            return false;
-#endif
                         MapTile mt = usaveIds->moduleId(c);
-                        map->data[x + (y * map->width) + (xch * map->chunk_width) + (ych * map->chunk_height * map->width)] = mt.id;
+                        map->data[x + (y * map->width) + di] = mt.id;
                     }
                 }
             }
         }
     }
+    ok = true;
 
-    return true;
+#ifdef GPU_RENDER
+    if (padRows) {
+        // Force square chunks and clear padded rows.
+        memset(map->data + map->width * map->height, 0,
+               sizeof(TileId) * map->width * padRows);
+        map->height += padRows;
+        map->chunk_height = map->chunk_width;
+    }
+#endif
+
+cleanup:
+    delete[] chunk;
+    return ok;
 }
 
 enum PersonDataOffset {
@@ -135,7 +181,7 @@ static bool loadCityMap(Map *map, U4FILE *ult) {
     ASSERT(city->width == CITY_WIDTH, "map width is %d, should be %d", city->width, CITY_WIDTH);
     ASSERT(city->height == CITY_HEIGHT, "map height is %d, should be %d", city->height, CITY_HEIGHT);
 
-    if (! loadMapData(city, ult))
+    if (! loadMapData(city, ult, Tile::sym.grass))
         return false;
 
     data = new uint8_t[PD_SIZE];
@@ -263,7 +309,7 @@ static bool loadCombatMap(Map *map, U4FILE *uf) {
         u4fseek(uf, 16L, SEEK_CUR);
     }
 
-    return loadMapData(map, uf);
+    return loadMapData(map, uf, SYM_UNSET);
 }
 
 /**
@@ -276,11 +322,15 @@ static void initDungeonRoom(Dungeon *dng, int room) {
     cmap->id = 0;
     cmap->border_behavior = Map::BORDER_FIXED;
     cmap->width = cmap->height = 11;
-    cmap->data = dng->rooms[room].map_data; // Load map data
     cmap->music = MUSIC_COMBAT;
     cmap->type = Map::COMBAT;
     cmap->flags |= NO_LINE_OF_SIGHT;
     cmap->tileset = xu4.config->tileset();
+
+    // Copy map data.
+    size_t tcount = cmap->width * cmap->height;
+    cmap->data = new TileId[tcount];
+    memcpy(cmap->data, &dng->rooms[room].map_data[0], tcount * sizeof(TileId));
 }
 
 /**
@@ -310,10 +360,14 @@ static bool loadDungeonMap(Map *map, U4FILE *uf, FILE *sav) {
     if (i != bytes)
         return false;
 
+    if (! dungeon->data)
+        dungeon->data = new TileId[bytes];
+
+    TileId* dp = dungeon->data;
     for (i = 0; i < bytes; i++) {
         j = *rawMap++;
         MapTile tile(usaveIds->dngMapToModule(j), 0);
-        dungeon->data.push_back(tile.id);
+        *dp++ = tile.id;
         //printf( "KR dng tile %d: %d => %d\n", i, j, tile.id);
     }
 
@@ -440,9 +494,25 @@ static bool loadDungeonMap(Map *map, U4FILE *uf, FILE *sav) {
 }
 
 bool loadMap(Map *map, FILE* sav) {
+    U4FILE* uf;
     bool ok = false;
+
+#ifdef CONF_MODULE
+    if (map->fname) {
+        string fname( xu4.config->confString(map->fname) );
+        uf = u4fopen(fname);
+    } else {
+        const CDIEntry* ent = xu4.config->mapFile(map->id);
+        if (ent) {
+            uf = u4fopen_stdio(xu4.config->modulePath());
+            u4fseek(uf, ent->offset, SEEK_SET);
+        } else
+            uf = NULL;
+    }
+#else
     string fname( xu4.config->confString(map->fname) );
-    U4FILE* uf = u4fopen(fname);
+    uf = u4fopen(fname);
+#endif
     if (uf) {
         switch (map->type) {
             case Map::CITY:
@@ -459,7 +529,7 @@ bool loadMap(Map *map, FILE* sav) {
                 break;
 
             case Map::WORLD:
-                ok = loadMapData(map, uf);
+                ok = loadMapData(map, uf, SYM_UNSET);
                 break;
         }
         u4fclose(uf);

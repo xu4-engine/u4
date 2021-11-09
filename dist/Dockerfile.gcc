@@ -3,6 +3,6 @@
 FROM xu4/fedora33:base
 
 USER root
-RUN dnf -y install gcc-c++ zlib-devel libogg-devel libvorbis-devel libpng-devel freetype-devel openal-soft-devel allegro5-addon-acodec-devel
+RUN dnf -y install gcc-c++ zlib-devel libglvnd-devel libogg-devel libvorbis-devel libpng-devel freetype-devel openal-soft-devel allegro5-addon-acodec-devel
 
 USER build

@@ -248,7 +248,7 @@ void EventHandler::wait_msecs(unsigned int msec) {
                 if (event.user.code == UC_ScreenRefresh) {
                     redraw = true;
                 } else if (event.user.code == UC_TimedEventMgr) {
-                    eh->getTimer()->tick();
+                    eh->timedEvents.tick();
                 }
                 if (getTicks() >= endTime)
                     sleeping = false;
@@ -297,7 +297,7 @@ void EventHandler::run() {
                 if (event.user.code == UC_ScreenRefresh)
                     redraw = true;
                 else
-                    xu4.eventHandler->getTimer()->tick();
+                    timedEvents.tick();
                 break;
 
             case SDL_ACTIVEEVENT:

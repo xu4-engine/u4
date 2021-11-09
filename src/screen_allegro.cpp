@@ -104,12 +104,18 @@ static ALLEGRO_BITMAP* loadBitmapPng(const char* filename) {
 #endif
 
 
-void screenInit_sys(const Settings* settings, int reset) {
+void screenInit_sys(const Settings* settings, int* dim, int reset) {
     ScreenAllegro* sa;
 #ifdef USE_GL
+#ifdef _WIN32
+    // ALLEGRO_OPENGL_3_0 causes al_create_display() to fail on Windows 7 and
+    // with Wine.  We check that version 3.3 calls are available below.
+    int dflags = ALLEGRO_OPENGL;
+#else
     // NOTE: _FORWARD_COMPATIBLE requires al_set_current_opengl_context()
     int dflags = ALLEGRO_OPENGL | ALLEGRO_OPENGL_3_0 |
                  ALLEGRO_OPENGL_FORWARD_COMPATIBLE;
+#endif
 #else
     int dflags = 0;
 #endif
@@ -158,9 +164,33 @@ void screenInit_sys(const Settings* settings, int reset) {
         dflags |= ALLEGRO_FULLSCREEN;
     al_set_new_display_flags(dflags);
 
+#ifdef USE_GL
+    //al_set_new_display_option(ALLEGRO_ALPHA_SIZE, 8, ALLEGRO_REQUIRE);
+#endif
+
     sa->disp = al_create_display(dw, dh);
     if (! sa->disp)
         goto fatal;
+
+#if defined(_WIN32) && defined(USE_GL)
+    {
+    uint32_t ver = al_get_opengl_version();
+    int major = ver>>24;
+    int minor = (ver>>16) & 255;
+    if (major < 3 || (major == 3 && minor < 3))
+        errorFatal("OpenGL 3.3 is required (version %d.%d.%d)",
+                   major, minor, (ver>>8) & 255);
+
+    if (! reset) {
+        al_set_current_opengl_context(sa->disp);
+        if (! gladLoadGL())
+            errorFatal("Unable to get OpenGL function addresses");
+    }
+    }
+#endif
+
+    dim[0] = al_get_display_width(sa->disp);
+    dim[1] = al_get_display_height(sa->disp);
 
     al_set_window_title(sa->disp, "Ultima IV");  // configService->gameName()
 
@@ -358,17 +388,14 @@ static void updateDisplay(int x, int y, int w, int h) {
 
     CPU_END("ut:")
 }
+#else
+extern void screenRender();
 #endif
 
 void screenSwapBuffers() {
 #ifdef USE_GL
     CPU_START()
-#ifndef GPU_RENDER
-    const ScreenAllegro* sa = SA;
-    gpu_viewport(0, 0, al_get_display_width(sa->disp),
-                       al_get_display_height(sa->disp));
-    gpu_background(xu4.gpu, NULL, xu4.screenImage);
-#endif
+    screenRender();
     al_flip_display();
     CPU_END("ut:")
 #else
@@ -378,6 +405,10 @@ void screenSwapBuffers() {
 
 void screenWait(int numberOfAnimationFrames) {
     ScreenAllegro* sa = SA;
+
+#if defined(USE_GL) && ! defined(GPU_RENDER)
+    gpu_blitTexture(gpu_screenTexture(xu4.gpu), 0, 0, xu4.screenImage);
+#endif
 
     // Does this wait need to handle world animation or input (e.g. user
     // quits game)?

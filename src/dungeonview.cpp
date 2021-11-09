@@ -63,12 +63,12 @@ void DungeonView::display(Context * c, TileView *view)
 
                     if ((distant_type == DNGGRAPHIC_DNGTILE) ||
                         (distant_type == DNGGRAPHIC_BASETILE))
-                        drawTile(tileset->get(distant_tiles.front().getId()), 0, y_obj, dir);
+                        drawInDungeon(tileset->get(distant_tiles.front().getId()), 0, y_obj, dir);
                     }
                 }
                 if ((type == DNGGRAPHIC_DNGTILE) ||
                     (type == DNGGRAPHIC_BASETILE))
-                    drawTile(tileset->get(tiles.front().getId()), 0, y, dir);
+                    drawInDungeon(tileset->get(tiles.front().getId()), 0, y, dir);
             }
         }
     }
@@ -81,17 +81,17 @@ void DungeonView::display(Context * c, TileView *view)
 
                 /* Only show blackness if there is no light */
                 if (c->party->getTorchDuration() <= 0)
-                    view->drawTile(black, false, x, y);
+                    view->drawTile(black, x, y);
                 else if (x == VIEWPORT_W/2 && y == VIEWPORT_H/2)
-                    view->drawTile(avatar, false, x, y);
+                    view->drawTile(avatar, x, y);
                 else
-                    view->drawTile(tiles, false, x, y);
+                    view->drawTile(tiles, x, y);
             }
         }
     }
 }
 
-void DungeonView::drawInDungeon(const Tile *tile, int x_offset, int distance, Direction orientation, bool tiledWall) {
+void DungeonView::drawInDungeon(const Tile *tile, int x_offset, int distance, Direction orientation) {
     const static int nscale_vga[] = { 12, 8, 4, 2, 1};
     const static int nscale_ega[] = { 8, 4, 2, 1, 0};
 
@@ -139,6 +139,7 @@ void DungeonView::drawInDungeon(const Tile *tile, int x_offset, int distance, Di
 #endif
 
     /* scale is based on distance; 1 means half size, 2 regular, 4 means scale by 2x, etc. */
+    bool tiledWall = tile->isTiledInDungeon();
     const int *dscale = tiledWall ? lscale : nscale;
     SCALED_VAR
     Image *scaled;
@@ -211,10 +212,6 @@ int DungeonView::graphicIndex(int xoffset, int distance, Direction orientation, 
         index++;
 
     return index;
-}
-
-void DungeonView::drawTile(const Tile *tile, int x_offset, int distance, Direction orientation) {
-    drawInDungeon(tile, x_offset, distance, orientation, tile->isTiledInDungeon());
 }
 
 std::vector<MapTile> DungeonView::getTiles(int fwd, int side) {
@@ -407,29 +404,12 @@ const struct {
  * loading during drawWall().
  */
 void DungeonView::cacheGraphicData() {
-    const ImageInfo* info;
-    const SubImage* subimage;
     Symbol name;
     int i;
 
     for (i = 0; i < GRAPHIC_COUNT; ++i) {
         name = xu4.config->intern(dngGraphicInfo[i].imageName);
-
-        info = xu4.imageMgr->get(name);
-        if (info) {
-            graphic[i].info = info;
-            graphic[i].sub  = NULL;
-        } else {
-            subimage = xu4.imageMgr->getSubImage(name);
-            if (subimage) {
-                info = xu4.imageMgr->get(subimage->srcImageName);
-                graphic[i].info = info;
-                graphic[i].sub  = subimage;
-            } else {
-                graphic[i].info = NULL;
-                graphic[i].sub  = NULL;
-            }
-        }
+        graphic[i].info = xu4.imageMgr->imageInfo(name, &graphic[i].sub);
     }
 }
 

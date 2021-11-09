@@ -5,14 +5,8 @@
 #ifndef TILESET_H
 #define TILESET_H
 
-#include <string>
 #include <map>
-#include <vector>
-#include "types.h"
-
-using std::string;
-
-class Tile;
+#include "tile.h"
 
 /**
  * Tileset class
@@ -26,21 +20,16 @@ public:
     static const Tile* findTileByName(Symbol name);
     static const Tile* findTileById(TileId id);
 
-    Tileset() : totalFrames(0) {}
+    Tileset(int count);
     ~Tileset();
 
     const Tile* get(TileId id) const;
     const Tile* getByName(Symbol name) const;
 
-    string getImageName() const { return imageName; }
-    unsigned int numTiles() const { return tiles.size(); }
-    unsigned int numFrames() const { return totalFrames; }
-
-//private:
-    std::vector<Tile*> tiles;
+    Tile* tiles;
+    TileRenderData* render;
+    uint32_t tileCount;
     TileNameMap nameMap;
-    unsigned int totalFrames;
-    string imageName;
 };
 
 #endif

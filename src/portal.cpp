@@ -4,7 +4,6 @@
 
 #include "portal.h"
 
-#include "annotation.h"
 #include "city.h"
 #include "config.h"
 #include "context.h"

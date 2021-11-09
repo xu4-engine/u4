@@ -19,18 +19,25 @@
 
 using namespace std;
 
-#ifdef IOS
-// Seems that iOS hands-off event loop means we need to fire a bit more slowly.
-int eventTimerGranularity = 300;
-#else
-int eventTimerGranularity = 250;
-#endif
-
 /**
  * Constructs the event handler object.
  */
-EventHandler::EventHandler() : timedEvents(eventTimerGranularity), updateScreen(NULL) {
+EventHandler::EventHandler(int gameCycleDuration) :
+    timerInterval(gameCycleDuration),
+    timedEvents(timerInterval), updateScreen(NULL) {
     controllerDone = ended = false;
+    anim_init(&flourishAnim, 64, NULL, NULL);
+    anim_init(&fxAnim, 32, NULL, NULL);
+}
+
+EventHandler::~EventHandler() {
+    anim_free(&flourishAnim);
+    anim_free(&fxAnim);
+}
+
+void EventHandler::setTimerInterval(int msecs) {
+    timerInterval = msecs;
+    timedEvents.reset(msecs);
 }
 
 void EventHandler::runController(Controller* con) {

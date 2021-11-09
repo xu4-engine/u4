@@ -38,8 +38,7 @@ struct DngRoom {
     unsigned char party_south_start_y[8];
     unsigned char party_west_start_x[8];
     unsigned char party_west_start_y[8];
-    MapData  map_data;  // This is OK to change to MapData since sizeof(DngRoom) or
-                        // anything like it is not being used.
+    std::vector<TileId> map_data;
     unsigned char buffer[7];
 };
 

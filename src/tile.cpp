@@ -9,6 +9,7 @@
 #include "context.h"
 #include "creature.h"
 #include "error.h"
+#include "event.h"
 #include "image.h"
 #include "imagemgr.h"
 #include "location.h"
@@ -77,28 +78,6 @@ void Tile::initSymbols(Config* cfg) {
         "dungeon_floor\n");
 }
 
-Tile::Tile(int tid)
-    : id(tid)
-    , animationRule(0)
-    , w(0)
-    , h(0)
-    , frames(0)
-    , scale(1)
-    , opaque(false)
-    , foreground()
-    , waterForeground()
-    , tiledInDungeon(false)
-    , rule(NULL)
-    , image(NULL)
-    , anim(NULL)
-    , directionCount(0)
-{
-}
-
-Tile::~Tile() {
-    delete image;
-}
-
 void Tile::setDirections(const char* dirs) {
     const unsigned maxDir = sizeof(directions);
     directionCount = strlen(dirs);
@@ -130,19 +109,14 @@ const char* Tile::nameStr() const {
  * Loads the tile image
  */
 void Tile::loadImage() {
+#ifndef GPU_RENDER
     if (!image) {
+        //vid = VID_UNSET;
         scale = SCALED_BASE;
 
-        const SubImage* subimage = NULL;
-
-        ImageInfo *info = xu4.imageMgr->get(imageName);
-        if (!info) {
-            subimage = xu4.imageMgr->getSubImage(imageName);
-            if (subimage)
-                info = xu4.imageMgr->get(subimage->srcImageName);
-        }
-        if (!info) //IF still no info loaded
-        {
+        const SubImage* subimage;
+        ImageInfo* info = xu4.imageMgr->imageInfo(imageName, &subimage);
+        if (! info) {
             errorWarning("Error: couldn't load image for tile '%s'", nameStr());
             return;
         }
@@ -174,33 +148,46 @@ void Tile::loadImage() {
             if (subimage) {
                 Image *tiles = info->image;
                 tiles->drawSubRectOn(image, 0, 0, subimage->x * scale, subimage->y * scale, subimage->width * scale, subimage->height * scale);
+
+                // Set visual to subimage index.
+                //vid = subimage - info->subImages;
             }
             else info->image->drawOn(image, 0, 0);
 
             if (wasBlending)
                 Image::enableBlend(1);
         }
+    }
+#endif
 
-        if (animationRule) {
-            const TileAnimSet* tileanims = screenState()->tileanims;
+    if (animationRule) {
+        const TileAnimSet* tileanims = screenState()->tileanims;
 
+        anim = NULL;
+        if (tileanims)
+            anim = tileanims->getByName(animationRule);
+        if (anim == NULL)
+            errorWarning("animation '%s' not found",
+                         xu4.config->symbolName(animationRule));
+#ifndef GPU_RENDER
+        // Hack to disable scroll_pool if not using GPU.
+        else if (anim->transforms[0]->animType == ATYPE_SCROLL &&
+                 anim->transforms[0]->var.scroll.vid) {
             anim = NULL;
-            if (tileanims)
-                anim = tileanims->getByName(animationRule);
-            if (anim == NULL)
-                errorWarning("animation '%s' not found",
-                             xu4.config->symbolName(animationRule));
         }
+#endif
     }
 }
 
 void Tile::deleteImage()
 {
+#ifndef GPU_RENDER
     if(image) {
         delete image;
         image = NULL;
     }
     scale = SCALED_BASE;
+#endif
 }
 
 /**
@@ -257,6 +244,21 @@ int Tile::frameForDirection(Direction d) const {
     return -1;
 }
 
+/*
+ * Start a new animation if this tile has frame animation.
+ * The caller will own the animation and is responsible for stopping it.
+ *
+ * Return AnimId or ANIM_UNUSED if the tile is has no frame animation.
+ */
+uint16_t Tile::startFrameAnim() const {
+    if (frames && anim && anim->transforms[0]->animType == ATYPE_FRAME) {
+        //printf( "KR anim %d,%d\n", frames, anim->random );
+        return anim_startCycleRandomI(&xu4.eventHandler->flourishAnim,
+                                      0.25, ANIM_FOREVER, 0,
+                                      0, frames, anim->random);
+    }
+    return ANIM_UNUSED;
+}
 
 const Tile *MapTile::getTileType() const {
     return Tileset::findTileById(id);

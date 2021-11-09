@@ -50,6 +50,7 @@ Creature::Creature() : Object(Object::CREATURE) {
 
 Creature::Creature(const Creature* cproto) : Object(Object::CREATURE) {
     *this = *cproto;
+    animId = ANIM_UNUSED;
 }
 
 std::string Creature::getName() const {
@@ -408,26 +409,12 @@ void Creature::act(CombatController *controller) {
         if (hasRandomRanged())
             setRandomRanged();
 
-        Coords m_coords = getCoords(),
-            p_coords = target->getCoords();
+        soundPlay(SOUND_NPC_ATTACK, false);
 
         // figure out which direction to fire the weapon
-        int dir = map_getRelativeDirection(m_coords, p_coords);
+        int dir = map_getRelativeDirection(getCoords(), target->getCoords());
 
-        soundPlay(SOUND_NPC_ATTACK, false);                                    // NPC_ATTACK, ranged
-
-        vector<Coords> path = gameGetDirectionalActionPath(dir, MASK_DIR_ALL, m_coords,
-                                                           1, 11, &Tile::canAttackOverTile, false);
-        bool hit = false;
-        for (vector<Coords>::iterator i = path.begin(); i != path.end(); i++) {
-            if (controller->rangedAttack(*i, this)) {
-                hit = true;
-                break;
-            }
-        }
-        if (!hit && path.size() > 0)
-            controller->rangedMiss(path[path.size() - 1], this);
-
+        controller->creatureRangedAttack(this, dir);
         break;
     }
 

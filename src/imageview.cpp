@@ -34,24 +34,16 @@ void ImageView::draw(const ImageInfo* info, int sub, int ox, int oy) {
  */
 void ImageView::draw(Symbol imageName, int x, int y) {
     SCALED_VAR
-    ImageInfo *info = xu4.imageMgr->get(imageName);
-    if (info) {
+    const SubImage* subimage;
+    ImageInfo *info = xu4.imageMgr->imageInfo(imageName, &subimage);
+    if (! info) {
+        errorLoadImage(imageName);
+    } else if (subimage) {
+        info->image->drawSubRect(SCALED(this->x + x), SCALED(this->y + y),
+                                 SCALED(subimage->x) / info->prescale,
+                                 SCALED(subimage->y) / info->prescale,
+                                 SCALED(subimage->width) / info->prescale,
+                                 SCALED(subimage->height) / info->prescale);
+    } else
         info->image->draw(SCALED(this->x + x), SCALED(this->y + y));
-        return;
-    }
-
-    const SubImage* subimage = xu4.imageMgr->getSubImage(imageName);
-    if (subimage) {
-        info = xu4.imageMgr->get(subimage->srcImageName);
-
-        if (info) {
-            info->image->drawSubRect(SCALED(this->x + x), SCALED(this->y + y),
-                                     SCALED(subimage->x) / info->prescale,
-                                     SCALED(subimage->y) / info->prescale,
-                                     SCALED(subimage->width) / info->prescale,
-                                     SCALED(subimage->height) / info->prescale);
-            return;
-        }
-    }
-    errorLoadImage(imageName);
 }
