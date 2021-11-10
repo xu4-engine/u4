@@ -32,12 +32,12 @@ CampController::CampController() {
     initCreature(NULL);
 }
 
-void CampController::begin() {
+void CampController::beginCombat() {
     // make sure everyone's asleep
     for (int i = 0; i < c->party->size(); i++)
         c->party->member(i)->putToSleep();
 
-    CombatController::begin();
+    CombatController::beginCombat();
 
     musicFadeOut(1000);
 
@@ -85,11 +85,11 @@ void CampController::begin() {
     }
 }
 
-void CampController::end(bool adjustKarma) {
+void CampController::endCombat(bool adjustKarma) {
     // wake everyone up!
     for (int i = 0; i < c->party->size(); i++)
         c->party->member(i)->wakeUp();
-    CombatController::end(adjustKarma);
+    CombatController::endCombat(adjustKarma);
 }
 
 bool CampController::heal() {
@@ -113,7 +113,7 @@ InnController::InnController() {
     forceStandardEncounterSize = true;
 }
 
-void InnController::begin() {
+void InnController::beginCombat() {
     /* first, show the avatar before sleeping */
     gameUpdateScreen();
 
@@ -221,13 +221,13 @@ void InnController::maybeAmbush()
     if (xu4.settings->innAlwaysCombat || (xu4_random(8) == 0)) {
         MapId mapid;
         Creature *creature;
-        bool showMessage = true;
 
         /* Rats seem much more rare than meeting rogues in the streets */
         if (xu4_random(4) == 0) {
             /* Rats! */
             mapid = MAP_BRICK_CON;
             creature = c->location->map->addCreature(xu4.config->creature(RAT_ID), c->location->coords);
+            showMessage = true;
         } else {
             /* While strolling down the street, attacked by rogues! */
             mapid = MAP_INN_CON;
@@ -240,8 +240,7 @@ void InnController::maybeAmbush()
         xu4.game->setMap(map, true, NULL, this);
 
         initCreature(creature);
-        showCombatMessage(showMessage);
-        CombatController::begin();
+        CombatController::beginCombat();
     }
 }
 

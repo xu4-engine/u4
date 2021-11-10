@@ -44,7 +44,7 @@ void CombatController::engage(MapId mid, const Creature* creatures) {
     CombatMap* map = getCombatMap(xu4.config->map(mid));
     CombatController* cc = new CombatController(map);
     cc->initCreature(creatures);
-    cc->begin();
+    cc->beginCombat();
 }
 
 /*
@@ -55,7 +55,7 @@ void CombatController::engageDungeon(Dungeon* dng, int room, Direction from) {
     CombatController* cc = new CombatController(dng->roomMaps[room]);
     cc->initCreature(NULL);
     cc->initDungeonRoom(room, from);
-    cc->begin();
+    cc->beginCombat();
 }
 
 /**
@@ -64,6 +64,7 @@ void CombatController::engageDungeon(Dungeon* dng, int room, Direction from) {
 CombatController::CombatController(CombatMap* cmap) : map(cmap) {
     camping = false;
     forceStandardEncounterSize = false;
+    showMessage = true;
     c->party->addObserver(this);
 
     if (cmap)
@@ -86,7 +87,6 @@ void CombatController::initCreature(const Creature *m) {
     winOrLose = true;
     map->setDungeonRoom(false);
     map->setAltarRoom(VIRT_NONE);
-    showMessage = true;
 
     /* initialize creature info */
     for (i = 0; i < AREA_CREATURES; i++) {
@@ -178,7 +178,7 @@ void CombatController::applyCreatureTileEffects() {
 /**
  * Begin combat
  */
-void CombatController::begin() {
+void CombatController::beginCombat() {
     bool partyIsReadyToFight = false;
 
     /* place party members on the map */
@@ -218,7 +218,7 @@ void CombatController::begin() {
     xu4.eventHandler->pushController(this);
 }
 
-void CombatController::end(bool adjustKarma) {
+void CombatController::endCombat(bool adjustKarma) {
     xu4.eventHandler->popController();
 
     /* The party is dead -- start the death sequence */
@@ -719,7 +719,7 @@ void CombatController::finishTurn() {
     c->stats->setView(STATS_PARTY_OVERVIEW);
 
     if (isWon() && winOrLose) {
-        end(true);
+        endCombat(true);
         return;
     }
 
@@ -785,13 +785,13 @@ void CombatController::finishTurn() {
 
                 /* check to see if combat is over */
                 if (isLost()) {
-                    end(true);
+                    endCombat(true);
                     return;
                 }
 
                 /* end combat immediately if the enemy has fled */
                 else if (isWon() && winOrLose) {
-                    end(true);
+                    endCombat(true);
                     return;
                 }
             }
@@ -874,9 +874,9 @@ bool CombatController::keyPressed(int key) {
 
     case U4_ESC:
         if (settings.debug)
-            end(false);         /* don't adjust karma */
-        else screenMessage("Bad command\n");
-
+            endCombat(false);   /* don't adjust karma */
+        else
+            screenMessage("Bad command\n");
         break;
 
     case ' ':

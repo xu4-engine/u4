@@ -59,8 +59,8 @@ public:
     void setCreature(const Creature* m) { creature = m; }
 
     // Methods
-    virtual void begin();
-    virtual void end(bool adjustKarma);
+    virtual void beginCombat();
+    virtual void endCombat(bool adjustKarma);
 
     bool creatureRangedAttack(Creature* attacker, int dir);
     void movePartyMember(MoveEvent &event);
@@ -73,7 +73,6 @@ protected:
     void fillCreatureTable(const Creature *creature);
     void placeCreatures();
     void attack();
-    void showCombatMessage(bool show = true) { showMessage = show; }
 
     // Properties
     CombatMap *map;

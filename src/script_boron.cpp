@@ -174,7 +174,7 @@ CFUNC(cf_innSleep)
     (void) ut;
     (void) a1;
     CombatController* cc = new InnController();
-    cc->begin();
+    cc->beginCombat();
 
     ur_setId(res, UT_UNSET);
     return UR_OK;

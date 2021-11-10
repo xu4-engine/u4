@@ -1113,7 +1113,7 @@ Script::ReturnCode Script::sleep(xmlNodePtr script, xmlNodePtr current) {
         fprintf(debug, "\nSleep!\n");
 
     CombatController *cc = new InnController();
-    cc->begin();
+    cc->beginCombat();
 
     return RET_OK;
 }

@@ -2019,7 +2019,7 @@ void holeUp() {
     }
 
     CombatController *cc = new CampController();
-    cc->begin();
+    cc->beginCombat();
 }
 
 /**

@@ -13,8 +13,8 @@
 class CampController : public CombatController {
 public:
     CampController();
-    virtual void begin();
-    virtual void end(bool adjustKarma);
+    virtual void beginCombat();
+    virtual void endCombat(bool adjustKarma);
 
 private:
     bool heal();
@@ -23,7 +23,7 @@ private:
 class InnController : public CombatController {
 public:
     InnController();
-    virtual void begin();
+    virtual void beginCombat();
     virtual void awardLoot();
 
 private:
