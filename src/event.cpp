@@ -75,7 +75,9 @@ TimedEventMgr* EventHandler::getTimer() { return &timedEvents; }
 
 Controller *EventHandler::pushController(Controller *c) {
     controllers.push_back(c);
-    timedEvents.add(&Controller::timerCallback, c->getTimerInterval(), c);
+    int interval = c->getTimerInterval();
+    if (interval)
+        timedEvents.add(&Controller::timerCallback, interval, c);
     return c;
 }
 
@@ -83,7 +85,9 @@ Controller *EventHandler::popController() {
     if (controllers.empty())
         return NULL;
 
-    timedEvents.remove(&Controller::timerCallback, controllers.back());
+    Controller* con = controllers.back();
+    if (con->getTimerInterval())
+        timedEvents.remove(&Controller::timerCallback, con);
     controllers.pop_back();
 
     return getController();

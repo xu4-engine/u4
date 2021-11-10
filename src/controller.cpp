@@ -6,6 +6,10 @@
 #include "event.h"
 #include "xu4.h"
 
+/**
+ * \param timerInterval     The timerFired method will be called if this value
+ *                          is non-zero.
+ */
 Controller::Controller(int timerInterval) {
     this->timerInterval = timerInterval;
 }
@@ -24,10 +28,6 @@ bool Controller::notifyKeyPressed(int key) {
         processed = keyPressed(key);
 
     return processed;
-}
-
-int Controller::getTimerInterval() {
-    return timerInterval;
 }
 
 /**
@@ -60,6 +60,9 @@ bool Controller::keyPressed(int key) {
  * will be called every <interval> 1/4 seconds.
  */
 void Controller::timerFired() {
+#ifdef DEBUG
+    printf("Unused Controller::timerFired! %p\n", this);
+#endif
 }
 
 /**

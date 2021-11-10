@@ -139,7 +139,10 @@ int AlphaActionController::get(char lastValidLetter, const string &prompt, Event
     return ctrl.waitFor();
 }
 
-GameController::GameController() : mapArea(BORDER_WIDTH, BORDER_HEIGHT, VIEWPORT_W, VIEWPORT_H), paused(false), pausedTimer(0) {
+GameController::GameController() : Controller(1),
+    mapArea(BORDER_WIDTH, BORDER_HEIGHT, VIEWPORT_W, VIEWPORT_H),
+    paused(false),
+    pausedTimer(0) {
 }
 
 GameController::~GameController() {

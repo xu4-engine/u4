@@ -12,12 +12,12 @@
  */
 class Controller {
 public:
-    Controller(int timerInterval = 1);
+    Controller(int timerInterval = 0);
     virtual ~Controller();
 
     /* methods for interacting with event manager */
     bool notifyKeyPressed(int key);
-    int getTimerInterval();
+    int getTimerInterval() const { return timerInterval; }
     static void timerCallback(void *data);
 
     /* control methods subclasses may want to override */
