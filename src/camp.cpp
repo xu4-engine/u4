@@ -21,27 +21,15 @@
 #define INN_FADE_IN_TIME    5000
 
 
-void campTimer(void *data);
-void campEnd(void);
-int campHeal(HealType heal_type);
-void innTimer(void *data);
-
 CampController::CampController() {
-    MapId id;
-
     /* setup camp (possible, but not for-sure combat situation */
-    if (c->location->context & CTX_DUNGEON)
-        id = MAP_CAMP_DNG;
-    else
-        id = MAP_CAMP_CON;
-
+    MapId id = (c->location->context & CTX_DUNGEON) ? MAP_CAMP_DNG
+                                                    : MAP_CAMP_CON;
     map = getCombatMap(xu4.config->map(id));
     xu4.game->setMap(map, true, NULL, this);
-}
 
-void CampController::init(Creature *m) {
-    CombatController::init(m);
     camping = true;
+    initCreature(NULL);
 }
 
 void CampController::begin() {
@@ -118,7 +106,6 @@ bool CampController::heal() {
 }
 
 InnController::InnController() {
-    map = NULL;
     /*
      * Normally in cities, only one opponent per encounter; inn's
      * override this to get the regular encounter size.
@@ -252,7 +239,7 @@ void InnController::maybeAmbush()
         map = getCombatMap(xu4.config->map(mapid));
         xu4.game->setMap(map, true, NULL, this);
 
-        init(creature);
+        initCreature(creature);
         showCombatMessage(showMessage);
         CombatController::begin();
     }

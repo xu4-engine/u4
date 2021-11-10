@@ -40,48 +40,44 @@ CombatMap *getCombatMap(Map *punknown) {
     else return dynamic_cast<CombatMap*>(m);
 }
 
+void CombatController::engage(MapId mid, const Creature* creatures) {
+    CombatMap* map = getCombatMap(xu4.config->map(mid));
+    CombatController* cc = new CombatController(map);
+    cc->initCreature(creatures);
+    cc->begin();
+}
+
+/*
+ * Engage combat in dungeon room.
+ */
+void CombatController::engageDungeon(Dungeon* dng, int room, Direction from) {
+    dng->currentRoom = room;
+    CombatController* cc = new CombatController(dng->roomMaps[room]);
+    cc->initCreature(NULL);
+    cc->initDungeonRoom(room, from);
+    cc->begin();
+}
+
 /**
  * CombatController class implementation
  */
-CombatController::CombatController() : map(NULL) {
-    c->party->addObserver(this);
-}
-
-CombatController::CombatController(CombatMap *m) : map(m) {
-    xu4.game->setMap(map, true, NULL, this);
-    c->party->addObserver(this);
-}
-
-CombatController::CombatController(MapId id) {
-    map = getCombatMap(xu4.config->map(id));
-    xu4.game->setMap(map, true, NULL, this);
-    c->party->addObserver(this);
+CombatController::CombatController(CombatMap* cmap) : map(cmap) {
+    camping = false;
     forceStandardEncounterSize = false;
+    c->party->addObserver(this);
+
+    if (cmap)
+        xu4.game->setMap(cmap, true, NULL, this);
 }
 
 CombatController::~CombatController() {
     c->party->deleteObserver(this);
 }
 
-// Accessor Methods
-bool CombatController::isCamping() const                    { return camping; }
-bool CombatController::isWinOrLose() const                  { return winOrLose; }
-Direction CombatController::getExitDir() const              { return exitDir; }
-unsigned char CombatController::getFocus() const            { return focus; }
-CombatMap *CombatController::getMap() const                 { return map; }
-Creature *CombatController::getCreature() const               { return creature; }
-PartyMemberVector *CombatController::getParty()             { return &party; }
-PartyMember* CombatController::getCurrentPlayer()           { return party[focus]; }
-
-void CombatController::setExitDir(Direction d)              { exitDir = d; }
-void CombatController::setCreature(Creature *m)               { creature = m; }
-void CombatController::setWinOrLose(bool worl)              { winOrLose = worl; }
-void CombatController::showCombatMessage(bool show)         { showMessage = show; }
-
 /**
  * Initializes the combat controller with combat information
  */
-void CombatController::init(class Creature *m) {
+void CombatController::initCreature(const Creature *m) {
     int i;
 
     creature = m;
@@ -91,7 +87,6 @@ void CombatController::init(class Creature *m) {
     map->setDungeonRoom(false);
     map->setAltarRoom(VIRT_NONE);
     showMessage = true;
-    camping = false;
 
     /* initialize creature info */
     for (i = 0; i < AREA_CREATURES; i++) {
@@ -114,8 +109,6 @@ void CombatController::init(class Creature *m) {
  */
 void CombatController::initDungeonRoom(int room, Direction from) {
     int offset, i;
-    init(NULL);
-
     ASSERT(c->location->prev->context & CTX_DUNGEON, "Error: called initDungeonRoom from non-dungeon context");
     {
         Dungeon *dng = dynamic_cast<Dungeon*>(c->location->prev->map);

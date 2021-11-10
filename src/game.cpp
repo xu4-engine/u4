@@ -1636,9 +1636,8 @@ bool attackAt(const Coords &coords) {
         ((m->getType() == Object::PERSON) && (m->getMovementBehavior() != MOVEMENT_ATTACK_AVATAR)))
         c->party->adjustKarma(KA_ATTACKED_GOOD);
 
-    CombatController *cc = new CombatController(CombatMap::mapForTile(ground, c->party->getTransport().getTileType(), m));
-    cc->init(m);
-    cc->begin();
+    CombatController::engage(CombatMap::mapForTile(ground,
+                                c->party->getTransport().getTileType(), m), m);
     return true;
 }
 
@@ -2020,7 +2019,6 @@ void holeUp() {
     }
 
     CombatController *cc = new CampController();
-    cc->init(NULL);
     cc->begin();
 }
 
@@ -2269,13 +2267,9 @@ void GameController::avatarMovedInDungeon(MoveEvent &event) {
             if (c->location->map->id == MAP_ABYSS)
                 room = (0x10 * (c->location->coords.z/2)) + room;
 
+            /* set the map room and start combat! */
             Dungeon *dng = dynamic_cast<Dungeon*>(c->location->map);
-            dng->currentRoom = room;
-
-            /* set the map and start combat! */
-            CombatController *cc = new CombatController(dng->roomMaps[room]);
-            cc->initDungeonRoom(room, dirReverse(realDir));
-            cc->begin();
+            CombatController::engageDungeon(dng, room, dirReverse(realDir));
         }
     }
 }
@@ -3153,9 +3147,8 @@ void gameCreatureAttack(Creature *m) {
             ground = under->getTile().getTileType();
     }
 
-    CombatController *cc = new CombatController(CombatMap::mapForTile(ground, c->party->getTransport().getTileType(), m));
-    cc->init(m);
-    cc->begin();
+    CombatController::engage(CombatMap::mapForTile(ground,
+                                c->party->getTransport().getTileType(), m), m);
 }
 
 /**
@@ -3383,10 +3376,9 @@ void GameController::checkBridgeTrolls() {
 
     screenMessage("\nBridge Trolls!\n");
 
-    Creature *m = map->addCreature(xu4.config->creature(TROLL_ID), c->location->coords);
-    CombatController *cc = new CombatController(MAP_BRIDGE_CON);
-    cc->init(m);
-    cc->begin();
+    Creature *m = map->addCreature(xu4.config->creature(TROLL_ID),
+                                   c->location->coords);
+    CombatController::engage(MapId(MAP_BRIDGE_CON), m);
 }
 
 /**

@@ -13,6 +13,7 @@
 
 class CombatMap;
 class Creature;
+class Dungeon;
 class MoveEvent;
 class Weapon;
 
@@ -29,68 +30,58 @@ typedef enum {
  * CombatController class
  */
 class CombatController : public Controller, public Observer<Party *, PartyEvent &>, public TurnCompleter {
-protected:
-    CombatController();
 public:
     static bool attackHit(const Creature *attacker, const Creature *defender);
+    static void engage(MapId mid, const Creature* creatures);
+    static void engageDungeon(Dungeon* dng, int room, Direction from);
 
-    CombatController(CombatMap *m);
-    CombatController(MapId id);
+    CombatController(CombatMap* cmap = NULL);
     virtual ~CombatController();
 
-    // Accessor Methods
-    bool          isCombatController() const { return true; }
-    bool          isCamping() const;
-    bool          isWinOrLose() const;
-    Direction     getExitDir() const;
-    unsigned char getFocus() const;
-    CombatMap *   getMap() const;
-    Creature *    getCreature() const;
-    PartyMemberVector* getParty();
-    PartyMember*  getCurrentPlayer();
+    // Controller Methods
+    virtual bool keyPressed(int key);
+    virtual bool isCombatController() const { return true; }
 
-    void setExitDir(Direction d);
-    void setCreature(Creature *);
-    void setWinOrLose(bool worl = true);
-    void showCombatMessage(bool show = true);
+    // TurnCompleter Method
+    virtual void finishTurn();
+
+    // Accessor Methods
+    bool isCamping()         const { return camping; }
+    bool isWinOrLose()       const { return winOrLose; }
+    Direction getExitDir()   const { return exitDir; }
+    unsigned char getFocus() const { return focus; }
+    CombatMap* getMap()      const { return map; }
+    const Creature* getCreature() const { return creature; }
+    PartyMemberVector* getParty()   { return &party; }
+    PartyMember* getCurrentPlayer() { return party[focus]; }
+
+    void setExitDir(Direction d) { exitDir = d; }
+    void setCreature(const Creature* m) { creature = m; }
 
     // Methods
-    virtual void init(Creature *m);
-    void initDungeonRoom(int room, Direction from);
-
-    void applyCreatureTileEffects();
     virtual void begin();
     virtual void end(bool adjustKarma);
-    void fillCreatureTable(const Creature *creature);
-    int  initialNumberOfCreatures(const Creature *creature) const;
-    bool isWon() const;
-    bool isLost() const;
-    void moveCreatures();
-    void placeCreatures();
-    void placePartyMembers();
-    bool setActivePlayer(int player);
-    virtual void awardLoot();
 
-    // attack functions
-    void attack();
     bool creatureRangedAttack(Creature* attacker, int dir);
-
-    // Key handlers
-    virtual bool keyPressed(int key);
-
-    virtual void finishTurn();
     void movePartyMember(MoveEvent &event);
+
+protected:
+    virtual void awardLoot();
     virtual void update(Party *party, PartyEvent &event);
 
-    // Properties
-protected:
-    CombatMap *map;
+    void initCreature(const Creature *m);
+    void fillCreatureTable(const Creature *creature);
+    void placeCreatures();
+    void attack();
+    void showCombatMessage(bool show = true) { showMessage = show; }
 
+    // Properties
+    CombatMap *map;
     PartyMemberVector party;
     unsigned char focus;
 
     const Creature *creatureTable[AREA_CREATURES];
-    Creature *creature;
+    const Creature *creature;
 
     bool camping;
     bool forceStandardEncounterSize;
@@ -104,6 +95,14 @@ private:
     CombatController(const CombatController&);
     const CombatController &operator=(const CombatController&);
 
+    void initDungeonRoom(int room, Direction from);
+    void applyCreatureTileEffects();
+    int  initialNumberOfCreatures(const Creature *creature) const;
+    bool isWon() const;
+    bool isLost() const;
+    void moveCreatures();
+    void placePartyMembers();
+    bool setActivePlayer(int player);
     bool attackAt(const Coords &coords, PartyMember *attacker, int dir, int range, int distance);
     bool returnWeaponToOwner(const Coords &coords, int distance, int dir,
                              const Weapon *weapon);
