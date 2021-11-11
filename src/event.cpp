@@ -88,7 +88,10 @@ Controller *EventHandler::popController() {
     Controller* con = controllers.back();
     if (con->getTimerInterval())
         timedEvents.remove(&Controller::timerCallback, con);
+
     controllers.pop_back();
+    if (con->deleteOnPop())
+        delete con;
 
     return getController();
 }

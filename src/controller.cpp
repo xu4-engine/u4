@@ -10,7 +10,7 @@
  * \param timerInterval     The timerFired method will be called if this value
  *                          is non-zero.
  */
-Controller::Controller(int timerInterval) {
+Controller::Controller(short timerInterval) : autoDelete(false) {
     this->timerInterval = timerInterval;
 }
 

@@ -78,10 +78,9 @@ void CampController::beginCombat() {
         screenMessage(healed ? "Party Healed!\n" : "No effect.\n");
         c->saveGame->lastcamp = (c->saveGame->moves / CAMP_HEAL_INTERVAL) & 0xffff;
 
-        xu4.eventHandler->popController();
+        xu4.eventHandler->popController();  // Auto deleted.
         xu4.game->exitToParentMap();
         musicFadeIn(CAMP_FADE_IN_TIME, true);
-        delete this;
     }
 }
 

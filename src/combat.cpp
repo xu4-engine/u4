@@ -59,9 +59,11 @@ void CombatController::engageDungeon(Dungeon* dng, int room, Direction from) {
 }
 
 /**
- * CombatController class implementation
+ * A CombatController is automatically deleted when popped from the
+ * EventHandler controller stack, so it must be created with new.
  */
 CombatController::CombatController(CombatMap* cmap) : map(cmap) {
+    setDeleteOnPop();
     camping = false;
     forceStandardEncounterSize = false;
     showMessage = true;
@@ -218,7 +220,12 @@ void CombatController::beginCombat() {
     xu4.eventHandler->pushController(this);
 }
 
+/*
+ * Transition back to parent map/controller and delete this controller.
+ */
 void CombatController::endCombat(bool adjustKarma) {
+    // Other code paths use autoDelete, but we manually delete below.
+    setDeleteOnPop(false);
     xu4.eventHandler->popController();
 
     /* The party is dead -- start the death sequence */
@@ -229,9 +236,7 @@ void CombatController::endCombat(bool adjustKarma) {
 
         deathStart(5);
     }
-
     else {
-
         /* need to get this here because when we exit to the parent map, all the monsters are cleared */
         bool won = isWon();
 
