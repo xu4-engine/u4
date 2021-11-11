@@ -305,7 +305,7 @@ void IntroController::enableMap() {
 }
 
 #define MAP_ENABLE  enableMap()
-#define MAP_DISABLE screenDisableMap()
+#define MAP_DISABLE mapArea.clear()
 #else
 #define MAP_ENABLE
 #define MAP_DISABLE
@@ -325,9 +325,6 @@ bool IntroController::init() {
     // sigData is referenced during Titles initialization
     binData = new IntroBinData();
     binData->load();
-#ifdef GPU_RENDER
-    MAP_DISABLE;
-#endif
 
     Symbol sym[2];
     xu4.config->internSymbols(sym, 2, "beast0frame00 beast1frame00");

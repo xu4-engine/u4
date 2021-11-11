@@ -163,6 +163,7 @@ bool GameController::present() {
 }
 
 void GameController::conclude() {
+    mapArea.clear();
     xu4.eventHandler->popMouseAreaSet();
     screenSetMouseCursor(MC_DEFAULT);
 }

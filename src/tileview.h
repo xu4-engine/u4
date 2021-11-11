@@ -53,6 +53,7 @@ public:
     void loadTile(const MapTile &mapTile);
 
 #ifdef GPU_RENDER
+    void clear();
     int showEffect(const Coords &coords, TileId tile,
                    AnimId moveAnim = ANIM_UNUSED);
     VisualEffect* useEffect(int id, TileId tile, float x, float y);

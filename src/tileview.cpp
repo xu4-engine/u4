@@ -197,6 +197,38 @@ void TileView::drawFocus(int x, int y) {
 }
 
 #ifdef GPU_RENDER
+static void stopEffectAnim(VisualEffect* it) {
+    if (it->anim != ANIM_UNUSED) {
+        Animator* asys;
+        if (it->method == VE_SPRITE_FLOURISH)
+            asys = &xu4.eventHandler->flourishAnim;
+        else
+            asys = &xu4.eventHandler->fxAnim;
+        anim_setState(asys, it->anim, ANIM_FREE);
+        it->anim = ANIM_UNUSED;
+    }
+}
+
+/*
+ * Free VisualEffects and disable map rendering.
+ */
+void TileView::clear() {
+    VisualEffect* it = effect;
+    VisualEffect* end = it + effectCount;
+    while (it != end) {
+        if (it->method != VE_FREE) {
+            stopEffectAnim(it);
+            it->method = VE_FREE;
+        }
+        ++it;
+    }
+
+    effectCount = 0;
+
+    // This assumes there is only a single TileView active at any time.
+    screenDisableMap();
+}
+
 /*
  * Find a free effect slot and initialize it.
  *
@@ -258,18 +290,9 @@ VisualEffect* TileView::useEffect(int id, TileId tile, float x, float y) {
 void TileView::removeEffect(int id) {
     if (id >= 0) {
         VisualEffect* it = effect + id;
-
-        if (it->anim != ANIM_UNUSED) {
-            Animator* asys;
-            if (it->method == VE_SPRITE_FLOURISH)
-                asys = &xu4.eventHandler->flourishAnim;
-            else
-                asys = &xu4.eventHandler->fxAnim;
-            anim_setState(asys, it->anim, ANIM_FREE);
-            it->anim = ANIM_UNUSED;
-        }
-
+        stopEffectAnim(it);
         it->method = VE_FREE;
+
         int last = effectCount - 1;
         if (id == last) {
             do {
