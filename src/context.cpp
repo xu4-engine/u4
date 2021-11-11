@@ -26,8 +26,13 @@ Context::Context()
 }
 
 Context::~Context() {
+    if (location) {
+        while (location->prev != NULL)
+            locationFree(&location);
+        delete location;
+    }
+
     delete party;
-    delete location;
     delete stats;
     delete aura;
 }
