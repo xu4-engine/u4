@@ -32,7 +32,6 @@ TileView::TileView(int x, int y, int columns, int rows) : View(x, y, columns * T
     animated = Image::create(SCALED(tileWidth), SCALED(tileHeight));
 
 #ifdef GPU_RENDER
-    map = NULL;
     scissor = NULL;
     aspect = float(columns) / float(rows);
     scale = 2.0f / float(columns);

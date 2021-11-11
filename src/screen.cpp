@@ -535,8 +535,7 @@ void screenDisableMap() {
 /*
  * \param center    Center of view.
  */
-void screenUpdateMap(TileView* view, const Coords& center) {
-    const Map* map = view->map;
+void screenUpdateMap(TileView* view, const Map* map, const Coords& center) {
     Screen* sp = xu4.screen;
 
     sp->renderMapView = view;
@@ -615,7 +614,7 @@ void screenUpdate(TileView *view, bool showmap, bool blackout) {
     }
     else if (showmap) {
 #ifdef GPU_RENDER
-        screenUpdateMap(view, c->location->coords);
+        screenUpdateMap(view, c->location->map, c->location->coords);
 #else
         MapTile black = c->location->map->tileset->getByName(Tile::sym.black)->getId();
         vector<MapTile> viewTiles[VIEWPORT_W][VIEWPORT_H];

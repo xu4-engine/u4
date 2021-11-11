@@ -879,6 +879,10 @@ void gpu_resetMap(void* res, const Map* map)
     OpenGLResources* gr = (OpenGLResources*) res;
 
     gr->blockCount = 0;
+    gr->mapData    = map->data;
+    gr->renderData = map->tileset->render;
+    gr->mapW       = map->width;
+    gr->mapH       = map->height;
 
     // Initialize map chunks.
     assert(map->chunk_height == map->chunk_width);
@@ -907,13 +911,9 @@ struct ChunkLoc {
 
 struct ChunkInfo {
     OpenGLResources* gr;
-    const TileId* mapData;
-    const TileRenderData* renderData;
     const float* uvs;
     uint16_t* mapChunkId;
     ChunkLoc* chunkLoc;
-    int mapW;
-    int mapH;
     int geoUsedMask;
 };
 
@@ -974,7 +974,7 @@ static void _buildChunkGeo(ChunkInfo* ci, int i, const TileId* chunk)
     OpenGLResources* gr = ci->gr;
     float startX;
     int x, y;
-    int stride = ci->mapW;          // Map tile width
+    int stride = gr->mapW;          // Map tile width
     int cdim   = gr->mapChunkDim;   // Chunk tile dimensions
     int fxUsed;
 
@@ -1006,7 +1006,7 @@ static void _buildChunkGeo(ChunkInfo* ci, int i, const TileId* chunk)
         drawRect[0] = startX;
         ip = chunk;
         for (x = 0; x < cdim; ++x) {
-            tr = ci->renderData + *ip++;
+            tr = gr->renderData + *ip++;
             uvCur = uvTable + tr->vid*4;
             if (tr->animType == ATYPE_SCROLL) {
                 uvScroll = uvTable + tr->scroll*4;
@@ -1052,15 +1052,16 @@ static void _buildChunkGeo(ChunkInfo* ci, int i, const TileId* chunk)
  */
 static int _obtainChunkGeo(ChunkInfo* ci, int x, int y, int bumpPass)
 {
+    OpenGLResources* gr = ci->gr;
+    ChunkLoc* loc;
     int i;
     int ccol, crow;
-    int cdim = ci->gr->mapChunkDim;
+    int cdim = gr->mapChunkDim;
     int wx, wy;
     uint16_t chunkId;
-    ChunkLoc* loc;
 
-    WRAP(x, wx, ci->mapW);
-    WRAP(y, wy, ci->mapH);
+    WRAP(x, wx, gr->mapW);
+    WRAP(y, wy, gr->mapH);
     ccol = x / cdim;
     crow = y / cdim;
     chunkId = CHUNK_ID(ccol, crow);
@@ -1097,7 +1098,7 @@ static int _obtainChunkGeo(ChunkInfo* ci, int x, int y, int bumpPass)
 
 build:
     ci->mapChunkId[i] = chunkId;
-    _buildChunkGeo(ci, i, ci->mapData + (crow * ci->mapW + ccol) * cdim);
+    _buildChunkGeo(ci, i, gr->mapData + (crow * gr->mapW + ccol) * cdim);
 used:
     loc = ci->chunkLoc + i;
     loc->x = wx + (ccol * cdim);
@@ -1120,7 +1121,6 @@ void gpu_drawMap(void* res, const TileView* view, const float* tileUVs,
                  int cx, int cy, float scale)
 {
     OpenGLResources* gr = (OpenGLResources*) res;
-    const Map* map = view->map;
     ChunkLoc cloc[4];   // Tile location of chunks on the map.
     int i, usedMask;
 
@@ -1154,14 +1154,10 @@ void gpu_drawMap(void* res, const TileView* view, const float* tileUVs,
     int halfW, halfH;
 
     ci.gr = gr;
-    ci.mapData = map->data;
-    ci.renderData = map->tileset->render;
-    ci.uvs    = tileUVs;
+    ci.uvs = tileUVs;
     ci.mapChunkId = gr->mapChunkId;
     ci.chunkLoc = cloc;
-    ci.mapW   = map->width;
-    ci.mapH   = map->height;
-    ci.geoUsedMask  = 0;
+    ci.geoUsedMask = 0;
 
     // FIXME: Apply scale.
     halfW = view->columns / 2;

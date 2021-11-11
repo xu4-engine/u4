@@ -15,8 +15,6 @@
 class Tileset;
 
 #ifdef GPU_RENDER
-class Map;
-
 enum VisualEffectMethod {
     VE_FREE,
     VE_SPRITE,
@@ -61,7 +59,6 @@ public:
     void removeEffect(int id);
     void updateEffects(float cx, float cy, const float* uvTable);
 
-    Map* map;
     int* scissor;
     float aspect;
     float scale;

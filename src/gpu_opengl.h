@@ -10,6 +10,7 @@
 #endif
 
 #include "anim.h"
+#include "tile.h"
 
 enum GLObject {
     GLOB_DRAW_LIST0,
@@ -88,8 +89,12 @@ struct OpenGLResources {
     float  time;
     DrawList dl[3];
     float* dptr;
+    const TileId* mapData;
+    const TileRenderData* renderData;
     int    blockCount;
     GLsizei mapChunkVertCount;
+    uint16_t mapW;
+    uint16_t mapH;
     uint16_t mapChunkDim;       // Size in tiles (width & height are the same).
     uint16_t mapChunkId[4];     // Chunk X,Y of associated GLOB_MAP_CHUNK.
     uint16_t mapChunkFxUsed[4];

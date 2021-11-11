@@ -125,7 +125,7 @@ void screenTextColor(int color);
 bool screenTileUpdate(TileView *view, const Coords &coords);
 #ifdef GPU_RENDER
 void screenDisableMap();
-void screenUpdateMap(TileView* view, const Coords& center);
+void screenUpdateMap(TileView* view, const Map* map, const Coords& center);
 #endif
 void screenUpdate(TileView *view, bool showmap, bool blackout);
 void screenUpdateCursor(void);

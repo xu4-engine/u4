@@ -301,7 +301,7 @@ void IntroController::conclude() {
 #ifdef GPU_RENDER
 void IntroController::enableMap() {
     Coords center(INTRO_MAP_WIDTH / 2, INTRO_MAP_HEIGHT / 2);
-    screenUpdateMap(&mapArea, center);
+    screenUpdateMap(&mapArea, &binData->introMap, center);
 }
 
 #define MAP_ENABLE  enableMap()
@@ -326,7 +326,6 @@ bool IntroController::init() {
     binData = new IntroBinData();
     binData->load();
 #ifdef GPU_RENDER
-    mapArea.map = &binData->introMap;
     MAP_DISABLE;
 #endif
 
@@ -403,8 +402,6 @@ void IntroController::deleteIntro() {
     Animator* fa = &xu4.eventHandler->flourishAnim;
     if (fa->used)
         anim_clear(fa);
-
-    mapArea.map = NULL;
 #else
     delete [] objectStateTable;
     objectStateTable = NULL;
