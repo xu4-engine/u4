@@ -1086,7 +1086,7 @@ bool CombatController::keyPressed(int key) {
     }
 
     if (valid) {
-        c->lastCommandTime = time(NULL);
+        gameStampCommandTime();
         if (endTurn && (xu4.eventHandler->getController() == this))
             c->location->turnCompleter->finishTurn();
     }

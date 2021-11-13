@@ -237,7 +237,7 @@ bool GameController::initContext() {
     c->aura = new Aura();
     c->horseSpeed = 0;
     c->opacity = 1;
-    c->lastCommandTime = time(NULL);
+    c->lastCommandTime = c->commandTimer = 0;
     c->lastShip = NULL;
 
     TRACE_LOCAL(gameDbg, "Global context initialized.");
@@ -550,8 +550,7 @@ int GameController::exitToParentMap() {
  * moves, etc.
  */
 void GameController::finishTurn() {
-    c->lastCommandTime = time(NULL);
-    Creature *attacker = NULL;
+    gameStampCommandTime();
 
     while (xu4.stage == StagePlay) {
         Map* map = c->location->map;
@@ -577,7 +576,7 @@ void GameController::finishTurn() {
             c->party->applyEffect(map, map->tileTypeAt(c->location->coords, WITH_GROUND_OBJECTS)->getEffect());
 
             // Move creatures and see if something is attacking the avatar
-            attacker = map->moveObjects(c->location->coords);
+            Creature* attacker = map->moveObjects(c->location->coords);
 
             // Something's attacking!  Start combat!
             if (attacker) {
@@ -2894,10 +2893,6 @@ void ztatsFor(int player) {
     ctrl.waitFor();
 }
 
-static time_t gameTimeSinceLastCommand() {
-    return time(NULL) - c->lastCommandTime;
-}
-
 /**
  * This function is called every quarter second.
  */
@@ -2926,6 +2921,8 @@ void GameController::timerFired() {
         updateMoons(true);
         screenCycle();
         gameUpdateScreen();
+
+        c->commandTimer += 1000 / xu4.settings->gameCyclesPerSecond;
 
         /*
          * force pass if no commands within last 20 seconds

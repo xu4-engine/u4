@@ -101,7 +101,7 @@ void deathRevive() {
 
     c->aura->set();
     c->horseSpeed = 0;
-    c->lastCommandTime = time(NULL);
+    gameStampCommandTime();
     musicPlayLocale();
 
     c->party->reviveParty();

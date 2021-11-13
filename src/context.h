@@ -1,11 +1,9 @@
 /*
- * $Id$
+ * context.h
  */
 
 #ifndef CONTEXT_H
 #define CONTEXT_H
-
-#include <vector>
 
 #include "location.h"
 #include "aura.h"
@@ -15,23 +13,20 @@
 #include "savegame.h"
 #include "shrine.h"
 
-class Object;
 class Party;
-class Person;
-class Script;
 class StatsArea;
 
 typedef enum {
     TRANSPORT_FOOT      = 0x1,
     TRANSPORT_HORSE     = 0x2,
     TRANSPORT_SHIP      = 0x4,
-    TRANSPORT_BALLOON       = 0x8,
+    TRANSPORT_BALLOON   = 0x8,
     TRANSPORT_FOOT_OR_HORSE = TRANSPORT_FOOT | TRANSPORT_HORSE,
-    TRANSPORT_ANY           = 0xffff
+    TRANSPORT_ANY       = 0xffff
 } TransportContext;
 
 /**
- * Context class
+ * The Context class holds the world simulation state.
  */
 class Context {
 public:
@@ -40,7 +35,7 @@ public:
 
     Party *party;
     SaveGame *saveGame;
-    class Location *location;
+    Location *location;
     int line, col;
     StatsArea *stats;
     int moonPhase;
@@ -51,8 +46,9 @@ public:
     int horseSpeed;
     int opacity;
     TransportContext transportContext;
-    time_t lastCommandTime;
-    class Object *lastShip;
+    uint32_t lastCommandTime;
+    uint32_t commandTimer;
+    Object *lastShip;
     ShrineState shrineState;
 };
 

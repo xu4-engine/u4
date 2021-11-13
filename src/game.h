@@ -174,4 +174,7 @@ void gameDamageShip(int minDamage, int maxDamage);
 void gameSetActivePlayer(int player);
 vector<Coords> gameGetDirectionalActionPath(int dirmask, int validDirections, const Coords &origin, int minDistance, int maxDistance, bool (*blockedPredicate)(const Tile *tile), bool includeBlocked);
 
+#define gameStampCommandTime()      c->lastCommandTime = c->commandTimer
+#define gameTimeSinceLastCommand()  ((c->commandTimer - c->lastCommandTime)/1000)
+
 #endif
