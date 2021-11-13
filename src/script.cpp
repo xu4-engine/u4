@@ -33,6 +33,15 @@
 using namespace std;
 
 
+/**
+ * Converts an integer value to a string
+ */
+static string xu4_to_string(int val) {
+    char buffer[16];
+    sprintf(buffer, "%d", val);
+    return buffer;
+}
+
 static string translateContext(vector<string>& parts) {
     if (parts.size() == 1) {
         if (parts[0] == "wind")

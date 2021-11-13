@@ -78,15 +78,6 @@ string& uppercase(string &val) {
 }
 
 /**
- * Converts an integer value to a string
- */
-string xu4_to_string(int val) {
-    char buffer[16];
-    sprintf(buffer, "%d", val);
-    return buffer;
-}
-
-/**
  * Splits a string into substrings, divided by the charactars in
  * separators.  Multiple adjacent seperators are treated as one.
  */
