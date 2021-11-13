@@ -153,7 +153,8 @@ void Shrine::meditationCycle() {
 
     screenDisableCursor();
     for (int i = 0; i < MEDITATION_MANTRAS_PER_CYCLE; i++) {
-        EventHandler::wait_msecs(interval);
+        if (EventHandler::wait_msecs(interval))
+            return;
         screenMessage(".");
     }
     askMantra();

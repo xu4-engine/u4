@@ -44,7 +44,8 @@ void CampController::beginCombat() {
     screenMessage("Resting...\n");
     screenDisableCursor();
 
-    EventHandler::wait_msecs(xu4.settings->campTime * 1000);
+    if (EventHandler::wait_msecs(xu4.settings->campTime * 1000))
+        return;
 
     screenEnableCursor();
 
@@ -129,7 +130,8 @@ void InnController::beginCombat() {
 
     screenDisableCursor();
 
-    EventHandler::wait_msecs(xu4.settings->innTime * 1000);
+    if (EventHandler::wait_msecs(xu4.settings->innTime * 1000))
+        return;
 
     screenEnableCursor();
 

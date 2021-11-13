@@ -261,7 +261,7 @@ public:
     ~EventHandler();
 
     /* Static functions */
-    static void wait_msecs(unsigned int msecs);
+    static bool wait_msecs(unsigned int msecs);
     static bool timerQueueEmpty();
     static int setKeyRepeat(int delay, int interval);
 

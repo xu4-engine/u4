@@ -51,8 +51,10 @@ void deathStart(int delaySeconds) {
     timerCount = 0;
     timerMsg = 0;
 
-    if (delaySeconds > 0)
-        EventHandler::wait_msecs(delaySeconds * 1000);
+    if (delaySeconds > 0) {
+        if(EventHandler::wait_msecs(delaySeconds * 1000))
+            return;
+    }
 
     gameSetViewMode(VIEW_DEAD);
     screenDisableCursor();

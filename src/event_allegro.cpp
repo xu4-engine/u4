@@ -158,8 +158,10 @@ static void handleKeyDownEvent(const ALLEGRO_EVENT* event, Controller *controlle
  *
  * This method is not expected to handle msec values of less than the display
  * refresh interval.
+ *
+ * \return true if game should exit.
  */
-void EventHandler::wait_msecs(unsigned int msec) {
+bool EventHandler::wait_msecs(unsigned int msec) {
     Controller waitCon;     // Base controller consumes key events.
     ALLEGRO_EVENT event;
     EventHandler* eh = xu4.eventHandler;
@@ -208,6 +210,7 @@ void EventHandler::wait_msecs(unsigned int msec) {
             screenSwapBuffers();
         }
     }
+    return eh->ended;
 }
 
 void EventHandler::run() {
