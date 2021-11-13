@@ -30,6 +30,7 @@ enum GLObject {
 enum GLTextureUnit {
     GTU_CMAP,
     GTU_MATERIAL,
+    GTU_NOISE,
     GTU_SHADOW,
     GTU_SCALER_LUT
 };
@@ -51,6 +52,7 @@ struct MapFx {
 struct OpenGLResources {
     GLuint screenTex;
     GLuint whiteTex;
+    GLuint noiseTex;
     GLuint shadowTex;
     GLuint shadowFbo;
     GLuint vbo[ GLOB_COUNT ];

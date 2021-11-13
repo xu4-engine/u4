@@ -180,8 +180,11 @@ public:
 
 struct TileRenderData {
     VisualId vid;       /**< The default rendering resource identifier */
-    VisualId scroll;    /**< The scrolling rendering resource identifier */
     int16_t  animType;  /**< TileAnimType */
+    union {
+        VisualId scroll;    /**< Scrolling rendering resource identifier */
+        int8_t   hot[2];    /**< Fire centerX & tileW */
+    } animData;
 };
 
 #endif

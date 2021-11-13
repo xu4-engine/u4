@@ -27,8 +27,8 @@ void Tileset::loadImages() {
         Tile* end  = tile + ts->tileCount;
         TileRenderData* rit = ts->render;
         for (; tile != end; ++rit, ++tile) {
-            rit->scroll = VID_UNSET;
             rit->animType = -1; //ATYPE_NONE;
+            rit->animData.scroll = 0;   // Initialize animData to zero.
 
             j = info->subImageIndex.find(tile->imageName);
             if (j != info->subImageIndex.end()) {
@@ -45,11 +45,14 @@ void Tileset::loadImages() {
                     const TileAnimTransform* trans = tile->anim->transforms[0];
                     if (trans->animType == ATYPE_SCROLL) {
                         if (trans->var.scroll.vid)
-                            rit->scroll = trans->var.scroll.vid;
+                            rit->animData.scroll = trans->var.scroll.vid;
                         else
-                            rit->scroll = rit->vid;
-                    } else if (trans->animType == ATYPE_INVERT) {
-                        rit->scroll = 0;
+                            rit->animData.scroll = rit->vid;
+                    } else if (trans->animType == ATYPE_PIXEL_COLOR) {
+                        // Assuming this a campfire; store center X.
+                        rit->animData.hot[0] = trans->var.pcolor.x +
+                                               (trans->var.pcolor.w+1) / 2;
+                        rit->animData.hot[1] = tile->w;
                     }
                     rit->animType = trans->animType;
                 }

@@ -309,31 +309,6 @@ static GLuint _makeFramebuffer(GLuint texId)
     return fbo;
 }
 
-extern Image* loadImage_png(U4FILE *file);
-uint32_t gpu_makeTexture(const Image32* img);
-
-static U4FILE* openHQXTableImage(int scale)
-{
-#ifdef CONF_MODULE
-    char lutFile[16];
-    strcpy(lutFile, "hq2x.png");
-    lutFile[2] = '0' + scale;
-
-    const CDIEntry* ent = xu4.config->fileEntry(lutFile);
-    if (! ent)
-        return NULL;
-
-    U4FILE* uf = u4fopen_stdio(xu4.config->modulePath());
-    u4fseek(uf, ent->offset, SEEK_SET);
-    return uf;
-#else
-    char lutFile[32];
-    strcpy(lutFile, "graphics/shader/hq2x.png");
-    lutFile[18] = '0' + scale;
-    return u4fopen_stdio(lutFile);
-#endif
-}
-
 /*
  * Define 2D texture storage.
  *
@@ -349,6 +324,50 @@ static void gpu_defineTex(GLuint tex, int w, int h, const void* data,
                  0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 }
 
+extern Image* loadImage_png(U4FILE *file);
+
+/*
+ * \param useTex    Texture to define, or zero to generate a new texture name.
+ *
+ * \return Texture name or zero if loading failed.
+ */
+static GLuint loadTexture(const char* file, GLuint useTex)
+{
+    GLuint texId = 0;
+    const CDIEntry* ent = xu4.config->fileEntry(file);
+    if (ent) {
+        U4FILE* uf = u4fopen_stdio(xu4.config->modulePath());
+        if (uf) {
+            u4fseek(uf, ent->offset, SEEK_SET);
+            Image* img = loadImage_png(uf);
+            u4fclose(uf);
+            if (img) {
+                if (! useTex)
+                    glGenTextures(1, &useTex);
+                gpu_defineTex(useTex, img->w, img->h, img->pixels,
+                              GL_RGBA, GL_NEAREST);
+                texId = useTex;
+                delete img;
+            }
+        }
+    }
+    return texId;
+}
+
+static GLuint loadHQXTableImage(int scale)
+{
+#ifdef CONF_MODULE
+    char lutFile[16];
+    strcpy(lutFile, "hq2x.png");
+    lutFile[2] = '0' + scale;
+#else
+    char lutFile[32];
+    strcpy(lutFile, "graphics/shader/hq2x.png");
+    lutFile[18] = '0' + scale;
+#endif
+    return loadTexture(lutFile, 0);
+}
+
 static void reserveDrawList(const GLuint* vbo, int byteSize)
 {
     int i;
@@ -362,7 +381,7 @@ bool gpu_init(void* res, int w, int h, int scale)
 {
     OpenGLResources* gr = (OpenGLResources*) res;
     GLuint sh;
-    GLint cmap, mmap;
+    GLint cmap, mmap, noise;
 
     assert(sizeof(GLuint) == sizeof(uint32_t));
 
@@ -384,12 +403,15 @@ bool gpu_init(void* res, int w, int h, int scale)
     enableGLDebug();
 #endif
 
-    // Create screen, white & shadow textures.
-    glGenTextures(3, &gr->screenTex);
+    // Create screen, white, noise & shadow textures.
+    glGenTextures(4, &gr->screenTex);
     gpu_defineTex(gr->screenTex, 320, 200, NULL, GL_RGB, GL_NEAREST);
     gpu_defineTex(gr->whiteTex, 2, 2, whitePixels, GL_RGBA, GL_NEAREST);
     gpu_defineTex(gr->shadowTex, SHADOW_DIM, SHADOW_DIM, NULL,
                   GL_RGBA, GL_LINEAR);
+
+    if (! loadTexture("noise_2d.png", gr->noiseTex))
+        return false;
 
     gr->shadowFbo = _makeFramebuffer(gr->shadowTex);
     if (! gr->shadowFbo)
@@ -410,15 +432,7 @@ bool gpu_init(void* res, int w, int h, int scale)
         if (scale > 4)
             scale = 4;
 
-        U4FILE* uf = openHQXTableImage(scale);
-        if (uf) {
-            Image* img = loadImage_png(uf);
-            u4fclose(uf);
-            if (img) {
-                gr->scalerLut = gpu_makeTexture(img);
-                delete img;
-            }
-        }
+        gr->scalerLut = loadHQXTableImage(scale);
         if (! gr->scalerLut)
             return false;
 
@@ -487,6 +501,7 @@ bool gpu_init(void* res, int w, int h, int scale)
     gr->worldTrans     = glGetUniformLocation(sh, "transform");
     cmap               = glGetUniformLocation(sh, "cmap");
     mmap               = glGetUniformLocation(sh, "mmap");
+    noise              = glGetUniformLocation(sh, "noise2D");
     gr->worldShadowMap = glGetUniformLocation(sh, "shadowMap");
     gr->worldScroll    = glGetUniformLocation(sh, "scroll");
 
@@ -494,6 +509,7 @@ bool gpu_init(void* res, int w, int h, int scale)
     glUniformMatrix4fv(gr->worldTrans, 1, GL_FALSE, unitMatrix);
     glUniform1i(cmap, GTU_CMAP);
     glUniform1i(mmap, GTU_MATERIAL);
+    glUniform1i(noise, GTU_NOISE);
     glUniform1i(gr->worldShadowMap, GTU_SHADOW);
 
 
@@ -534,7 +550,7 @@ void gpu_free(void* res)
     glDeleteProgram(gr->shadeWorld);
     glDeleteProgram(gr->shadow);
     glDeleteFramebuffers(1, &gr->shadowFbo);
-    glDeleteTextures(3, &gr->screenTex);
+    glDeleteTextures(4, &gr->screenTex);
 }
 
 void gpu_viewport(int x, int y, int w, int h)
@@ -803,6 +819,46 @@ float* gpu_emitQuadScroll(float* attr, const float* drawRect,
     return attr;
 }
 
+float* gpu_emitQuadFire(float* attr, const float* drawRect,
+                        const float* uvRect, float uOff)
+{
+    float w = drawRect[2];
+    float h = drawRect[3];
+    int i;
+
+#define EMIT_UVF(u,v,uUnit,vUnit) \
+    *attr++ = u; \
+    *attr++ = v; \
+    *attr++ = uUnit; \
+    *attr++ = vUnit
+
+    // NOTE: We only do writes to attr here (avoid memcpy).
+
+    // First vertex, lower-left corner
+    EMIT_POS(drawRect[0], drawRect[1]);
+    EMIT_UVF(uvRect[0], uvRect[3], uOff, 0.0f);
+
+    // Lower-right corner
+    EMIT_POS(drawRect[0] + w, drawRect[1]);
+    EMIT_UVF(uvRect[2], uvRect[3], 1.0f+uOff, 0.0f);
+
+    // Top-right corner
+    for (i = 0; i < 2; ++i) {
+        EMIT_POS(drawRect[0] + w, drawRect[1] + h);
+        EMIT_UVF(uvRect[2], uvRect[1], 1.0f+uOff, 1.0f);
+    }
+
+    // Top-left corner
+    EMIT_POS(drawRect[0], drawRect[1] + h);
+    EMIT_UVF(uvRect[0], uvRect[1], uOff, 1.0f);
+
+    // Repeat first vertex
+    EMIT_POS(drawRect[0], drawRect[1]);
+    EMIT_UVF(uvRect[0], uvRect[3], uOff, 0.0f);
+
+    return attr;
+}
+
 #ifdef GPU_RENDER
 //--------------------------------------
 // Map Rendering
@@ -955,8 +1011,13 @@ static void _buildChunkGeo(ChunkInfo* ci, int i, const TileId* chunk)
             tr = gr->renderData + *ip++;
             uvCur = uvTable + tr->vid*4;
             if (tr->animType == ATYPE_SCROLL) {
-                uvScroll = uvTable + tr->scroll*4;
+                uvScroll = uvTable + tr->animData.scroll*4;
                 attr = gpu_emitQuadScroll(attr, drawRect, uvCur, uvScroll[1]);
+            } else if (tr->animType == ATYPE_PIXEL_COLOR) {
+                float centerX = (float) tr->animData.hot[0];
+                float tileW   = (float) tr->animData.hot[1];
+                float uOff  = (tileW*0.5 - centerX) / tileW;
+                attr = gpu_emitQuadFire(attr, drawRect, uvCur, uOff);
             } else {
                 if (tr->animType == ATYPE_INVERT && fxUsed < CHUNK_FX_LIMIT) {
                     _initFxInvert(gr->mapChunkFx + i*CHUNK_FX_LIMIT + fxUsed,
@@ -1160,6 +1221,8 @@ void gpu_drawMap(void* res, const TileView* view, const float* tileUVs,
     glBindTexture(GL_TEXTURE_2D, gr->tilesTex);
     glActiveTexture(GL_TEXTURE0 + GTU_MATERIAL);
     glBindTexture(GL_TEXTURE_2D, gr->tilesMat);
+    glActiveTexture(GL_TEXTURE0 + GTU_NOISE);
+    glBindTexture(GL_TEXTURE_2D, gr->noiseTex);
 
     glDisable(GL_BLEND);
 
