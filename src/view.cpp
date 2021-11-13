@@ -7,9 +7,18 @@
 #include "view.h"
 #include "xu4.h"
 
-View::View(int x, int y, int width, int height)
-: x(x), y(y), width(width), height(height), highlightX(0), highlightY(0), highlightW(0), highlightH(0), highlighted(false)
+View::View(int x, int y, int width, int height) :
+    x(x), y(y), width(width), height(height),
+    highlightX(0), highlightY(0), highlightW(0), highlightH(0),
+    highlighted(false)
 {
+    reinit();
+}
+
+/**
+ * Hook for reinitializing when graphics reloaded.
+ */
+void View::reinit() {
 #ifdef USE_GL
     int scale = xu4.settings->scale;
     screenRect[0] = x * scale;
@@ -17,12 +26,6 @@ View::View(int x, int y, int width, int height)
     screenRect[2] = width  * scale;
     screenRect[3] = height * scale;
 #endif
-}
-
-/**
- * Hook for reinitializing when graphics reloaded.
- */
-void View::reinit() {
 }
 
 /**
