@@ -79,6 +79,7 @@ exe %u4 [
 			%config.cpp
 			%script.cpp
 			%xml.cpp
+			%support/SymbolTable.cpp
 		]
 	]
 
@@ -172,8 +173,6 @@ exe %u4 [
 		%lzw/lzw.c
 		%lzw/u6decode.cpp
 		%lzw/u4decode.cpp
-
-		%support/SymbolTable.cpp
 	]
 ]
 

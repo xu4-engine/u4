@@ -75,11 +75,10 @@ CXXSRCS=\
         view.cpp \
         lzw/u4decode.cpp \
         lzw/u6decode.cpp \
-        support/SymbolTable.cpp \
         $(NULL)
 
 ifeq ($(CONF),xml)
-	CXXSRCS+=config.cpp script.cpp xml.cpp
+	CXXSRCS+=config.cpp script.cpp xml.cpp support/SymbolTable.cpp
 else
 	CSRCS+=support/cdi.c
 	CXXSRCS+=config_boron.cpp
