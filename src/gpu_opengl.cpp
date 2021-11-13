@@ -66,68 +66,11 @@ const char* cmap_vertShader =
 const char* cmap_fragShader =
     "#version 330\n"
     "uniform sampler2D cmap;\n"
-    "uniform sampler2D mmap;\n"
     "uniform vec4 tint;\n"
-    "uniform vec2 scroll;\n"
     "in vec4 texCoord;\n"
     "out vec4 fragColor;\n"
     "void main() {\n"
-    "  vec4 texel;\n"
-    "  vec4 material = texture(mmap, texCoord.st);\n"
-    "  if (material.b > 0.95) {\n"
-    "    vec2 tc = texCoord.sq; \n"
-    "    float nv = texCoord.p - scroll.t * 0.3;\n"
-    "    tc.t += (nv - floor(nv)) * scroll.s;\n"
-    "    texel = texture(cmap, tc);\n"
-    "/*\n"
-    "    float nv = texCoord.p + scroll.t;\n"
-    "    texel = vec4(vec3(nv - floor(nv)), 1.0);\n"
-    "*/\n"
-    "  } else {\n"
-    "    texel = texture(cmap, texCoord.st);\n"
-    "  }\n"
-    "  fragColor = tint * texel;\n"
-    "}\n";
-
-const char* world_vertShader =
-    "#version 330\n"
-    "uniform mat4 transform;\n"
-    "layout(location = 0) in vec3 position;\n"
-    "layout(location = 1) in vec4 uv;\n"
-    "out vec4 texCoord;\n"
-    "out vec2 shadowCoord;\n"
-    "void main() {\n"
-    "  texCoord = uv;\n"
-    "  gl_Position = transform * vec4(position, 1.0);\n"
-    "  shadowCoord = (gl_Position.xy + 1.0) * 0.5;\n"
-    "}\n";
-
-const char* world_fragShader =
-    "#version 330\n"
-    "uniform sampler2D cmap;\n"
-    "uniform sampler2D mmap;\n"
-    "uniform sampler2D shadowMap;\n"
-    "uniform vec2 scroll;\n"
-    "in vec4 texCoord;\n"
-    "in vec2 shadowCoord;\n"
-    "out vec4 fragColor;\n"
-    "void main() {\n"
-    "  vec4 texel;\n"
-    "  vec4 material = texture(mmap, texCoord.st);\n"
-    "  if (material.b > 0.95) {\n"
-    "    vec2 tc = texCoord.sq; \n"
-    "    float nv = texCoord.p - scroll.t * 0.3;\n"
-    "    tc.t += (nv - floor(nv)) * scroll.s;\n"
-    "    texel = texture(cmap, tc);\n"
-    "/*\n"
-    "    float nv = texCoord.p + scroll.t;\n"
-    "    texel = vec4(vec3(nv - floor(nv)), 1.0);\n"
-    "*/\n"
-    "  } else {\n"
-    "    texel = texture(cmap, texCoord.st);\n"
-    "  }\n"
-    "  vec4 shade = texture(shadowMap, shadowCoord);\n"
-    "  fragColor = vec4(shade.aaa, 1.0) * texel;\n"
+    "  fragColor = tint * texture(cmap, texCoord.st);\n"
     "}\n";
 
 #define MAT_X 12
@@ -149,6 +92,11 @@ static const float quadAttr[] = {
     1.0, 1.0, 0.0,   1.0, 0.0, 0.0, 0.0,
    -1.0, 1.0, 0.0,   0.0, 0.0, 0.0, 0.0,
    -1.0,-1.0, 0.0,   0.0, 1.0, 0.0, 0.0
+};
+
+static const uint8_t whitePixels[] = {
+    0xff,0xff,0xff,0xff, 0xff,0xff,0xff,0xff,
+    0xff,0xff,0xff,0xff, 0xff,0xff,0xff,0xff
 };
 
 #define SHADOW_DIM      512
@@ -436,9 +384,10 @@ bool gpu_init(void* res, int w, int h, int scale)
     enableGLDebug();
 #endif
 
-    // Create screen & shadow textures.
-    glGenTextures(2, &gr->screenTex);
+    // Create screen, white & shadow textures.
+    glGenTextures(3, &gr->screenTex);
     gpu_defineTex(gr->screenTex, 320, 200, NULL, GL_RGB, GL_NEAREST);
+    gpu_defineTex(gr->whiteTex, 2, 2, whitePixels, GL_RGBA, GL_NEAREST);
     gpu_defineTex(gr->shadowTex, SHADOW_DIM, SHADOW_DIM, NULL,
                   GL_RGBA, GL_LINEAR);
 
@@ -522,20 +471,17 @@ bool gpu_init(void* res, int w, int h, int scale)
 
     gr->slocTrans   = glGetUniformLocation(sh, "transform");
     cmap            = glGetUniformLocation(sh, "cmap");
-    mmap            = glGetUniformLocation(sh, "mmap");
     gr->slocTint    = glGetUniformLocation(sh, "tint");
-    gr->slocScroll  = glGetUniformLocation(sh, "scroll");
 
     glUseProgram(sh);
     glUniformMatrix4fv(gr->slocTrans, 1, GL_FALSE, unitMatrix);
     glUniform1i(cmap, GTU_CMAP);
-    glUniform1i(mmap, GTU_MATERIAL);
     glUniform4f(gr->slocTint, 1.0, 1.0, 1.0, 1.0);
 
 
     // Create world shader.
     gr->shadeWorld = sh = glCreateProgram();
-    if (compileShaders(sh, world_vertShader, world_fragShader))
+    if (compileSLFile(sh, "world.glsl", 0))
         return false;
 
     gr->worldTrans     = glGetUniformLocation(sh, "transform");
@@ -588,7 +534,7 @@ void gpu_free(void* res)
     glDeleteProgram(gr->shadeWorld);
     glDeleteProgram(gr->shadow);
     glDeleteFramebuffers(1, &gr->shadowFbo);
-    glDeleteTextures(2, &gr->screenTex);
+    glDeleteTextures(3, &gr->screenTex);
 }
 
 void gpu_viewport(int x, int y, int w, int h)
@@ -753,7 +699,7 @@ void gpu_drawTris(void* res, int list)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glBlendEquation(GL_FUNC_ADD);
 
-    glUniformMatrix4fv(gr->slocTrans, 1, GL_FALSE, unitMatrix);
+    glUniformMatrix4fv(gr->worldTrans, 1, GL_FALSE, unitMatrix);
     glBindVertexArray(gr->vao[ dl->buf ]);
     glDrawArrays(GL_TRIANGLES, 0, dl->count / ATTR_COUNT);
 }
@@ -1202,15 +1148,13 @@ void gpu_drawMap(void* res, const TileView* view, const float* tileUVs,
     matrix[0] = matrix[10] = scale;
     matrix[5] = scaleY;
 
-    if (gr->blockCount) {
-        glUseProgram(gr->shadeWorld);
-        glUniform2f(gr->worldScroll, gr->tilesVDim, gr->time);
-        glActiveTexture(GL_TEXTURE0 + GTU_SHADOW);
+    glUseProgram(gr->shadeWorld);
+    glUniform2f(gr->worldScroll, gr->tilesVDim, gr->time);
+    glActiveTexture(GL_TEXTURE0 + GTU_SHADOW);
+    if (gr->blockCount)
         glBindTexture(GL_TEXTURE_2D, gr->shadowTex);
-    } else {
-        glUseProgram(gr->shadeColor);
-        glUniform2f(gr->slocScroll, gr->tilesVDim, gr->time);
-    }
+    else
+        glBindTexture(GL_TEXTURE_2D, gr->whiteTex);
 
     glActiveTexture(GL_TEXTURE0 + GTU_CMAP);
     glBindTexture(GL_TEXTURE_2D, gr->tilesTex);
@@ -1224,7 +1168,7 @@ void gpu_drawMap(void* res, const TileView* view, const float* tileUVs,
             // Position chunk in viewport.
             matrix[ MAT_X ] = (float) (cloc[i].x - cx) * scale;
             matrix[ MAT_Y ] = (float) (cy - cloc[i].y) * scaleY;
-            glUniformMatrix4fv(gr->slocTrans, 1, GL_FALSE, matrix);
+            glUniformMatrix4fv(gr->worldTrans, 1, GL_FALSE, matrix);
 
             glBindVertexArray(gr->vao[ GLOB_MAP_CHUNK0 + i ]);
             glDrawArrays(GL_TRIANGLES, 0, gr->mapChunkVertCount);

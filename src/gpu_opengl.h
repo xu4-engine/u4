@@ -50,6 +50,7 @@ struct MapFx {
 
 struct OpenGLResources {
     GLuint screenTex;
+    GLuint whiteTex;
     GLuint shadowTex;
     GLuint shadowFbo;
     GLuint vbo[ GLOB_COUNT ];
@@ -76,7 +77,6 @@ struct OpenGLResources {
     GLuint shadeColor;
     GLint  slocTrans;
     GLint  slocTint;
-    GLint  slocScroll;
 
     GLuint shadeWorld;
     GLint  worldTrans;
