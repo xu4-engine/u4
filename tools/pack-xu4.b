@@ -800,6 +800,21 @@ process-cfg [
 
 ; Pull in shader files
 if exists? spath: join root-path %shader/ [
+    sout: make binary! 4096
+    code: complement charset "^//"
+    strip-shader: func [shader] [
+        clear sout
+        emit-span: [(append sout slice span end) span:]
+        parse span: shader [any[
+            end: some code
+          | "//" to '^/'   emit-span
+          | "/*" thru "*/" emit-span
+          | some '^/'      emit-span (append sout '^/')
+          | skip
+        ]]
+        append sout slice span end
+    ]
+
     sl_id: "SL^0^0"
     foreach file read spath [
         switch file-ext file [
@@ -809,7 +824,7 @@ if exists? spath: join root-path %shader/ [
                 poke sl_id 4 and n 255
                 ifn file-id-seen [
                     cdi-chunk 0x0001 sl_id
-                        /*compress*/ read/into join spath file file_buf
+                        strip-shader read/into join spath file file_buf
                 ]
             ]
             %.png [
