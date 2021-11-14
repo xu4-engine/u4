@@ -1142,30 +1142,28 @@ void CombatController::attack() {
         targetCoords = attacker->getCoords();
 
     bool foundTarget = false;
-    int distance = 1;
 #ifdef GPU_RENDER
     Creature* target = NULL;
     MapTile missTile = map->tileset->getByName(weapon->missTile)->id;
     int result = AR_None;
     if (weapon->rangeAbsolute()) {
         if (range == targetDistance) {
-            distance = range;
             result = attackAt2(map, path[range], attacker, weapon, &target);
         }
     } else {
-        for (; distance < targetDistance; ++distance) {
-            result = attackAt2(map, path[distance], attacker, weapon, &target);
+        for (int di = 0; di < targetDistance; ++di) {
+            result = attackAt2(map, path[di], attacker, weapon, &target);
             if (result != AR_NoTarget) {
                 foundTarget = true;
-                targetDistance = distance;
-                targetCoords = path[distance];
+                targetDistance = di + 1;
+                targetCoords = path[di];
                 break;
             }
         }
     }
 
-    if (weapon->showTravel())
-        animateAttack(path, distance - 1, missTile.id);
+    if (weapon->showTravel() && targetDistance > 1)
+        animateAttack(path, targetDistance - 1, missTile.id);
 
     switch (result) {
         case AR_None:
@@ -1189,6 +1187,7 @@ void CombatController::attack() {
             break;
     }
 #else
+    int distance = 1;
     for (vector<Coords>::iterator i = path.begin(); i != path.end(); i++) {
         if (attackAt(*i, attacker, MASK_DIR(dir), range, distance)) {
             foundTarget = true;
