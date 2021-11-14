@@ -203,6 +203,7 @@ void PartyMember::applyEffect(Map* map, TileEffect effect) {
             playerApplyDamage(&(c->saveGame->players[i]), 10 + (xu4_random(25)));*/
         break;
     case EFFECT_SLEEP:
+        soundPlay(SOUND_SLEEP, false);
         putToSleep();
         break;
     case EFFECT_POISONFIELD:
@@ -466,7 +467,6 @@ int PartyMember::loseWeapon() {
  */
 void PartyMember::putToSleep() {
     if (! isDead()) {
-        soundPlay(SOUND_SLEEP, false);
         addStatus(STAT_SLEEPING);
         setTile(Tileset::findTileByName(Tile::sym.corpse)->getId());
     }
