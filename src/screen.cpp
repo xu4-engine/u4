@@ -539,7 +539,6 @@ void screenUpdateMap(TileView* view, const Map* map, const Coords& center) {
     Screen* sp = xu4.screen;
 
     sp->renderMapView = view;
-    sp->blockingUpdate = NULL;
 
     // Reset map rendering data when the location changes.
     if (sp->mapId != map->id) {
@@ -663,7 +662,7 @@ void screenUpdate(TileView *view, bool showmap, bool blackout) {
 
 #ifdef USE_GL
 void screenRender() {
-    const Screen* sp = xu4.screen;
+    Screen* sp = xu4.screen;
     void* gpu = xu4.gpu;
 
     gpu_viewport(0, 0, sp->width, sp->height);
@@ -677,6 +676,8 @@ void screenRender() {
 
         gpu_drawMap(gpu, view, sp->textureInfo->tileTexCoord,
                     sp->blockingUpdate, sp->blockX, sp->blockY, view->scale);
+        sp->blockingUpdate = NULL;
+
         gpu_drawTris(gpu, TRIS_MAP_OBJ);
 
         anim_advance(&xu4.eventHandler->fxAnim, 1.0f / 24.0f);
