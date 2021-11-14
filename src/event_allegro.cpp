@@ -150,6 +150,8 @@ static void handleKeyDownEvent(const ALLEGRO_EVENT* event, Controller *controlle
     }
 }
 
+extern void musicUpdate();
+
 /**
  * Delays program execution for the specified number of milliseconds.
  * This doesn't actually stop events, but it stops the user from interacting
@@ -207,6 +209,7 @@ bool EventHandler::wait_msecs(unsigned int msec) {
 
         if (redraw) {
             redraw = false;
+            musicUpdate();
             screenSwapBuffers();
         }
     }
@@ -266,6 +269,7 @@ void EventHandler::run() {
 
         if (redraw) {
             redraw = false;
+            musicUpdate();
             screenSwapBuffers();
         }
     }

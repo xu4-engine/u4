@@ -15,8 +15,8 @@
 #include "xu4.h"
 
 
-#define CAMP_FADE_OUT_TIME  1000
-#define CAMP_FADE_IN_TIME   0
+#define CAMP_FADE_OUT_TIME  1500
+#define CAMP_FADE_IN_TIME    500
 #define INN_FADE_OUT_TIME   1000
 #define INN_FADE_IN_TIME    5000
 

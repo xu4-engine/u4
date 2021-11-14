@@ -4,7 +4,7 @@
  * See https://liballeg.org/a5docs/trunk/audio.html
  *
  * The pulseaudio process uses 100% CPU with allegro5 5.2.4.
- * This may be fixed in 5.2.7 (See https://liballeg.org/changes-5.2.html).
+ * This is fixed in 5.2.7 (See https://liballeg.org/changes-5.2.html).
  */
 
 #include <allegro5/allegro_audio.h>
@@ -58,7 +58,9 @@ const char* config_musicFile(int id) {
 static bool audioFunctional = false;
 static bool musicEnabled = false;
 static int currentTrack;
-static float musicVolume = 1.0;
+static float musicVolume = 1.0;         // Final level desired by user.
+static float musicGain = 1.0;           // Current fade level.
+static float musicFade = 0.0;           // musicGain delta per frame.
 static ALLEGRO_VOICE* voice = NULL;
 static ALLEGRO_MIXER* finalMix = NULL;
 static ALLEGRO_MIXER* fxMixer = NULL;
@@ -126,39 +128,10 @@ int soundInit(void)
     return 1;
 }
 
-#ifndef UNIT_TEST
-/**
- * Ensures that the music is playing if it is supposed to be, or off
- * if it is supposed to be turned off.
- */
-static void music_callback(void *data) {
-    xu4.eventHandler->getTimer()->remove(&music_callback);
-
-    bool mplaying = al_get_audio_stream_playing(musicStream);
-    if (musicEnabled) {
-        if (!mplaying)
-        {
-            printf( "KR mc play\n" );
-            musicPlayLocale();
-        }
-    } else {
-        if (mplaying)
-        {
-            printf( "KR mc stop\n" );
-            musicStop();
-        }
-    }
-}
-#endif
-
 void soundDelete(void)
 {
     if (! audioFunctional)
         return;
-
-#ifndef UNIT_TEST
-    xu4.eventHandler->getTimer()->remove(&music_callback);
-#endif
 
     if (musicStream) {
         al_destroy_audio_stream(musicStream);
@@ -265,19 +238,31 @@ void soundStop() {
     al_stop_samples();
 }
 
-static bool music_load(int music) {
-    ASSERT(music < MUSIC_MAX, "Attempted to load an invalid piece of music in music_load()");
+/*
+ * Start playing a music track.
+ *
+ * \param newGain   Gain to use if playing from the start.
+ *
+ * Return true if the stream begins playing from the start.  If the stream
+ * is already playing or it cannot be loaded then false is returned.
+ */
+static bool music_load(int music, float newGain) {
+    ASSERT(music < MUSIC_MAX, "Invalid music_load() track id");
 
-    /* music already loaded */
+    // Track already loaded
     if (music == currentTrack) {
         if (! musicStream)
-            return false;       // Handle MUSIC_NONE.
-        /* tell calling function it didn't load correctly (because it's already playing) */
+            return false;       // Handles MUSIC_NONE; nothing to load.
+
         if (al_get_audio_stream_playing(musicStream))
-            return false;
-        /* it loaded correctly */
-        else
-            return true;
+            return false;       // Already playing; nothing to load.
+
+        // Restart streaming.
+        musicGain = newGain;
+        al_set_audio_stream_gain(musicStream, musicVolume * musicGain);
+        al_rewind_audio_stream(musicStream);
+        al_set_audio_stream_playing(musicStream, 1);
+        return true;
     }
 
     if (musicStream) {
@@ -314,6 +299,9 @@ static bool music_load(int music) {
         return false;
     }
 
+    musicGain = newGain;
+    al_set_audio_stream_gain(musicStream, musicVolume * musicGain);
+    al_attach_audio_stream_to_mixer(musicStream, finalMix);
     currentTrack = music;
     return true;
 }
@@ -323,11 +311,8 @@ void musicPlay(int track)
     if (!audioFunctional || !musicEnabled)
         return;
 
-    /* loaded a new piece of music */
-    if (music_load(track)) {
-        al_set_audio_stream_gain(musicStream, musicVolume);
-        al_attach_audio_stream_to_mixer(musicStream, finalMix);
-    }
+    if (music_load(track, 1.0))
+        musicFade = 0.0;
 }
 
 void musicPlayLocale()
@@ -345,11 +330,26 @@ void musicStop()
         al_set_audio_stream_playing(musicStream, 0);
 }
 
-#if 0
-void fader() {
-    al_set_audio_stream_gain(musicStream, 0.0);
+// Private function for Allegro backend to control fading.
+void musicUpdate()
+{
+    if (musicStream && musicFade) {
+        musicGain += musicFade;
+        if (musicGain >= 1.0) {
+            musicGain = 1.0;
+            musicFade = 0.0;
+        } else if (musicGain <= 0.0) {
+            musicGain = 0.0;
+            musicFade = 0.0;
+            al_set_audio_stream_playing(musicStream, 0);
+            return;
+        }
+        al_set_audio_stream_gain(musicStream, musicVolume * musicGain);
+    }
 }
-#endif
+
+extern float screenFrameDuration();
+#define FADE_DELTA(msec)    (1000.0f / msec * screenFrameDuration())
 
 void musicFadeOut(int msec)
 {
@@ -358,12 +358,9 @@ void musicFadeOut(int msec)
         return;
 
     if (musicStream && al_get_audio_stream_playing(musicStream)) {
-        /*
-        if (xu4.settings->volumeFades) {
-            if (Mix_FadeOutMusic(msec) == -1)
-                errorWarning("Mix_FadeOutMusic");
-        } else
-        */
+        if (xu4.settings->volumeFades)
+            musicFade = -FADE_DELTA(msec);
+        else
             musicStop();
     }
 }
@@ -373,23 +370,26 @@ void musicFadeIn(int msec, bool loadFromMap)
     if (!audioFunctional || !musicEnabled)
         return;
 
-    if (! al_get_audio_stream_playing(musicStream)) {
-        /* make sure we've got something loaded to play */
-        if (loadFromMap || !musicStream) {
-#ifdef UNIT_TEST
-            music_load(0);
-#else
-            music_load(c->location->map->music);
-#endif
-        }
+    if (xu4.settings->volumeFades && msec > 0)
+        musicFade = FADE_DELTA(msec);
+    else
+        musicFade = 0.0f;
 
-        /*
-        if (xu4.settings->volumeFades) {
-            if (Mix_FadeInMusic(musicStream, NLOOPS, msec) == -1)
-                errorWarning("Mix_FadeInMusic");
-        } else
-        */
-            musicPlayLocale();
+    if (loadFromMap || ! musicStream) {
+#ifdef UNIT_TEST
+        int track = 1;
+#else
+        int track = c->location->map->music;
+#endif
+        music_load(track, musicFade ? 0.0f : 1.0f);
+    } else {
+        // If fading is disabled use full volume, otherwise we don't touch
+        // the gain on a playing stream.
+        if (! musicFade) {
+            musicGain = 1.0f;
+            al_set_audio_stream_gain(musicStream, musicVolume);
+        }
+        al_set_audio_stream_playing(musicStream, 1);
     }
 }
 
@@ -420,19 +420,12 @@ bool musicToggle()
     if (! audioFunctional)
         return false;
 
-#ifndef UNIT_TEST
-    xu4.eventHandler->getTimer()->remove(&music_callback);
-#endif
-
-    musicEnabled = !musicEnabled;
+    musicEnabled = ! musicEnabled;
     if (musicEnabled)
         musicFadeIn(1000, true);
     else
         musicFadeOut(1000);
 
-#ifndef UNIT_TEST
-    xu4.eventHandler->getTimer()->add(&music_callback, xu4.settings->gameCyclesPerSecond);
-#endif
     return musicEnabled;
 }
 

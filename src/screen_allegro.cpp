@@ -403,6 +403,11 @@ void screenSwapBuffers() {
 #endif
 }
 
+// Private function for Allegro backend.
+float screenFrameDuration() {
+    return SA->refreshRate;
+}
+
 void screenWait(int numberOfAnimationFrames) {
     ScreenAllegro* sa = SA;
 
