@@ -123,9 +123,16 @@ struct ImageSymbols {
     Symbol whitebead;
 };
 
+enum AtlasEditOpcode {
+    AEDIT_NOP,
+    AEDIT_BRUSH,
+    AEDIT_RECT,
+    AEDIT_OP_COUNT
+};
+
 struct AtlasSubImage {
-    Symbol name;
-    int16_t x, y;
+    Symbol name;        // Image name or AtlasEditOpcode.
+    int16_t x, y, w, h;
 };
 
 struct SubImage {

@@ -396,25 +396,42 @@ ImageInfo *ImageMgr::get(Symbol name, bool returnUnscaled) {
 
 #ifdef CONF_MODULE
 static Image* buildAtlas(ImageMgr* mgr, ImageInfo* atlas) {
-    const int maxChild = 8;
-    AtlasSubImage asi[maxChild];
+    const int maxChild = 16;
+    AtlasSubImage asiBuffer[maxChild];
     const ImageInfo* subInfo[maxChild];
     const ImageInfo* info;
+    RGBA brush;
     int i, n;
     int siCount = 0;
-    int count = xu4.config->atlasImages(atlas->filename, asi, maxChild);
+    int count = xu4.config->atlasImages(atlas->filename, asiBuffer, maxChild);
     Image* image = Image::create(atlas->width, atlas->height);
+
+    rgba_set(brush, 255, 0, 255, 255);
 
     // Blit the child images and count the total number of SubImages.
     for (i = 0; i < count; ++i) {
-        subInfo[i] = info = mgr->get(asi[i].name, true);
-        if (info && info->image) {
-            image32_blit(image, asi[i].x, asi[i].y, info->image, 0);
+        const AtlasSubImage* asi = asiBuffer + i;
+        if (asi->name < AEDIT_OP_COUNT) {
+            subInfo[i] = NULL;
+            switch (asi->name) {
+                case AEDIT_BRUSH:
+                    rgba_set(brush, asi->x, asi->y, asi->w, asi->h);
+                    break;
+                case AEDIT_RECT:
+                    image32_fillRect(image, asi->x, asi->y, asi->w, asi->h,
+                                     &brush);
+                    break;
+            }
+        } else {
+            subInfo[i] = info = mgr->get(asi->name, true);
+            if (info && info->image) {
+                image32_blit(image, asi->x, asi->y, info->image, 0);
 
-            n = info->subImageCount;
-            if (! n)
-                n = info->tiles;
-            siCount += n;
+                n = info->subImageCount;
+                if (! n)
+                    n = info->tiles;
+                siCount += n;
+            }
         }
     }
 
@@ -437,8 +454,8 @@ static Image* buildAtlas(ImageMgr* mgr, ImageInfo* atlas) {
                 end = it + info->subImageCount;
                 while (it != end) {
                     *sid = *it++;
-                    sid->x += asi[i].x;
-                    sid->y += asi[i].y;
+                    sid->x += asiBuffer[i].x;
+                    sid->y += asiBuffer[i].y;
 
                     atlas->subImageIndex[sid->name] = sid - atlas->subImages;
                     /*
@@ -452,9 +469,9 @@ static Image* buildAtlas(ImageMgr* mgr, ImageInfo* atlas) {
                 // Create SubImages for unnamed tiles.
                 // NOTE: This code assumes the image is one tile wide.
                 int tileDim = info->width;
-                int tileY = asi[i].y;
+                int tileY = asiBuffer[i].y;
                 for (n = 0; n < info->tiles; ++n) {
-                    sid->x      = asi[i].x;
+                    sid->x      = asiBuffer[i].x;
                     sid->y      = tileY;
                     sid->width  = tileDim;
                     sid->height = tileDim;

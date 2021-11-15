@@ -411,6 +411,19 @@ imageset EGA/VGA [
         hud         17, 0
         tile_guard  17,32
         charset     17,97
+
+        ; Erase animated areas.
+        /brush  0,0,0,0
+        /rect  10, 258,4,2  ; Ship flags
+                7, 274,1,2
+                7, 290,4,2
+                6, 306,2,2
+               10,2050,5,2  ; Pirate ship flags
+                7,2066,1,1
+                7,2082,5,2
+                5,2098,3,2
+        /brush  0,0,0,255
+        /rect   3,1208,7,5  ; Campfire flames
     ]
     image (name: tiles filename: "u4u/shapes.vga" width: 16 height: 4096 depth: 8 filetype: u4raw tiles: 256 fixup: blackTransparencyHack) [
         at 0,0 size 16,16

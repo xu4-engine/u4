@@ -115,6 +115,7 @@ struct ConfigBoron : public Config {
     Symbol sym_imageset;
     Symbol sym_tileanims;
     Symbol sym_Ucel;
+    Symbol sym_rect;
 };
 
 #define CB  static_cast<ConfigData*>(backend)
@@ -860,7 +861,7 @@ ConfigBoron::ConfigBoron(const char* modulePath)
     }
 
     ur_internAtoms(ut, "hit_flash miss_flash random shrine abyss"
-                       " imageset tileanims _cel", &sym_hitFlash);
+                       " imageset tileanims _cel rect", &sym_hitFlash);
 
 
     // Read package table of contents.
@@ -1351,6 +1352,8 @@ const Coords* Config::moongateCoords(int phase) const {
 int Config::atlasImages(StringId spec, AtlasSubImage* images, int max) {
     UCell cell;
     UBlockIt bi;
+    UAtom atomRect = CX->sym_rect;
+    int prevOp = AEDIT_NOP;
     int count = 0;
 
     // Spec is actually a block! not a string!.
@@ -1362,11 +1365,26 @@ int Config::atlasImages(StringId spec, AtlasSubImage* images, int max) {
         if (ur_is(bi.it, UT_WORD) && ur_is(bi.it+1, UT_COORD)) {
             images->name = ur_atom(bi.it);
             ++bi.it;
+next:
             images->x = bi.it->coord.n[0];
             images->y = bi.it->coord.n[1];
             ++images;
             if (++count >= max)
                 break;
+        }
+        else if (ur_is(bi.it, UT_OPTION) && ur_is(bi.it+1, UT_COORD)) {
+            images->name = prevOp =
+                (ur_atom(bi.it) == atomRect) ? AEDIT_RECT : AEDIT_BRUSH;
+            ++bi.it;
+            images->w = bi.it->coord.n[2];
+            images->h = bi.it->coord.n[3];
+            goto next;
+        }
+        else if (ur_is(bi.it, UT_COORD)) {
+            images->name = prevOp;
+            images->w = bi.it->coord.n[2];
+            images->h = bi.it->coord.n[3];
+            goto next;
         }
     }
     return count;
