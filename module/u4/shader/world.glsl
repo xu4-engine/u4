@@ -7,10 +7,12 @@
 uniform mat4 transform;
 layout(location = 0) in vec3 position;
 layout(location = 1) in vec4 uv;
+out vec3 vertex;
 out vec4 texCoord;
 out vec2 shadowCoord;
 
 void main() {
+	vertex = position;
 	texCoord = uv;
 	gl_Position = transform * vec4(position, 1.0);
 	shadowCoord = (gl_Position.xy + 1.0) * 0.5;
@@ -23,9 +25,12 @@ uniform sampler2D mmap;
 uniform sampler2D shadowMap;
 uniform sampler2D noise2D;
 uniform vec2 scroll;
+in vec3 vertex;
 in vec4 texCoord;
 in vec2 shadowCoord;
 out vec4 fragColor;
+
+#define TIME	scroll.t
 
 float noise(vec2 p) {
 	p *= 0.04;
@@ -45,7 +50,7 @@ float fbm(vec2 uv) {
 
 vec4 flame(vec2 uv, float burnRate) {
 	vec2 q = vec2(uv.s - 0.5, uv.t * 2.0 - 0.25);
-	float n = fbm(burnRate * q - vec2(0.0, burnRate * scroll.t));
+	float n = fbm(burnRate * q - vec2(0.0, burnRate * TIME));
 	float baseW = length(q*vec2(1.8+q.y*1.5, 1.0)) - n * max(0.0, q.y + 0.25);
 	float c = 1.0 - 16.0 * pow(max(0.0, baseW), 1.2);
 	float c1 = n * c * (1.2 - pow(2.5 * uv.y, 4.0));
@@ -56,10 +61,51 @@ vec4 flame(vec2 uv, float burnRate) {
 	return vec4(mix(vec3(0.0), col, a), a);
 }
 
+float sdBox(vec2 p, vec2 b) {
+    p = abs(p) - b;
+    return length(max(p, 0.0)) + min(0.0, max(p.x, p.y));
+}
+
+#define fillDraw(dist, scol) color = mix(scol, color, step(0.0, dist))
+
+vec4 flag(vec2 p) {
+	const vec3 flagColor = vec3(1.0, 0.2, 0.2);
+	const vec3 stripeCol = vec3(1.0, 1.0, 0.0);
+	vec3 color = vec3(0.0);
+	float flagW = 0.5;
+
+	p = p * 2.0 - 1.0;		// Unit view -1.0 to 1.0
+
+	flagW -= sin(3.0 * TIME) * 0.03;
+	vec2 flagSize = vec2(flagW, 0.5);
+	vec2 fp = p - vec2(flagW, 0.0);		// Flag position with pole at 0.0 X.
+
+	// Shear with a waving motion.  Use vertex to randomize by position.
+	float wave = sin(4.0 * (p.x - TIME) + vertex.x);
+	float nwave = noise(vec2(p.x*0.5 - TIME * 0.5, p.y + vertex.y));
+	fp.y += 0.1 * p.x * (wave + nwave);
+
+	// Shadow the wave ripples.
+	float shadow = 0.5 * (wave + nwave * 0.3);
+	shadow *= shadow;
+
+	// Flag background & stripes
+	fillDraw(sdBox(fp, flagSize), flagColor - shadow);
+	fillDraw(sdBox(fp + vec2(0.0,0.40), vec2(flagW,0.05)), stripeCol - shadow);
+	fillDraw(sdBox(fp - vec2(0.0,0.40), vec2(flagW,0.05)), stripeCol - shadow);
+	return vec4(color, step(0.01, color.r));
+}
+
 void main() {
 	vec4 texel;
 	vec4 material = texture(mmap, texCoord.st);
-	if (material.b > 0.95) {
+
+	// Check texCoord.p first or else the material.b path gets executed for
+	// some pixels at the bottom of flag quads.
+
+	if (texCoord.p == 2.0) {
+		texel = flag(texCoord.st);
+	} else if (material.b > 0.95) {
 		vec2 tc = texCoord.sq;
 		float nv = texCoord.p - scroll.t * 0.3;
 		tc.t += (nv - floor(nv)) * scroll.s;

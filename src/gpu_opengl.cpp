@@ -21,7 +21,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "event.h"
 #include "tileanim.h"
 #include "tileset.h"
 #include "tileview.h"
@@ -29,9 +28,11 @@
 //#include "gpu_opengl.h"
 
 extern uint32_t getTicks();
-extern "C" int xu4_random(int);
 
+#ifdef EMULATE_U4
+#include "event.h"
 #define MAP_ANIMATOR    &xu4.eventHandler->flourishAnim
+#endif
 
 #define LOC_POS     0
 #define LOC_UV      1
@@ -859,12 +860,46 @@ float* gpu_emitQuadFire(float* attr, const float* drawRect,
     return attr;
 }
 
+float* gpu_emitQuadFlag(float* attr, const float* drawRect)
+{
+    float w = drawRect[2];
+    float h = drawRect[3];
+    int i;
+
+    // NOTE: We only do writes to attr here (avoid memcpy).
+
+    // First vertex, lower-left corner
+    EMIT_POS(drawRect[0], drawRect[1]);
+    EMIT_UVF(0.0f, 0.0f, 2.0f, 0.0f);
+
+    // Lower-right corner
+    EMIT_POS(drawRect[0] + w, drawRect[1]);
+    EMIT_UVF(1.0f, 0.0f, 2.0f, 0.0f);
+
+    // Top-right corner
+    for (i = 0; i < 2; ++i) {
+        EMIT_POS(drawRect[0] + w, drawRect[1] + h);
+        EMIT_UVF(1.0f, 1.0f, 2.0f, 0.0f);
+    }
+
+    // Top-left corner
+    EMIT_POS(drawRect[0], drawRect[1] + h);
+    EMIT_UVF(0.0f, 1.0f, 2.0f, 0.0f);
+
+    // Repeat first vertex
+    EMIT_POS(drawRect[0], drawRect[1]);
+    EMIT_UVF(0.0f, 0.0f, 2.0f, 0.0f);
+
+    return attr;
+}
+
 #ifdef GPU_RENDER
 //--------------------------------------
 // Map Rendering
 
 #define CHUNK_CACHE_SIZE    4
 
+#ifdef MAP_ANIMATOR
 static void stopChunkAnimations(Animator* animator, MapFx* it, int count)
 {
     MapFx* end = it + count;
@@ -875,6 +910,7 @@ static void stopChunkAnimations(Animator* animator, MapFx* it, int count)
         }
     }
 }
+#endif
 
 void gpu_resetMap(void* res, const Map* map)
 {
@@ -896,10 +932,12 @@ void gpu_resetMap(void* res, const Map* map)
         glBufferData(GL_ARRAY_BUFFER, gr->mapChunkVertCount * ATTR_STRIDE,
                      NULL, GL_DYNAMIC_DRAW);
 
+#ifdef MAP_ANIMATOR
         int fxUsed = gr->mapChunkFxUsed[i];
         if (fxUsed)
             stopChunkAnimations(MAP_ANIMATOR,
                                 gr->mapChunkFx + i*CHUNK_FX_LIMIT, fxUsed);
+#endif
     }
 
     // Clear chunk cache.
@@ -956,9 +994,11 @@ static void _initFxInvert(MapFx* fx, TileId tid, float* drawRect,
     fx->v  =   fx->v2 + tileTexCoordH * ph;
 #endif
 
+#ifdef EMULATE_U4
     fx->anim = anim_startCycleRandomI(MAP_ANIMATOR,
                                       0.25, ANIM_FOREVER, 0,
                                       0, 2, tile->anim->random);
+#endif
 }
 
 /*
@@ -981,6 +1021,7 @@ static void _buildChunkGeo(ChunkInfo* ci, int i, const TileId* chunk)
     int fxUsed;
 
 
+#ifdef MAP_ANIMATOR
     // Stop any running animations.
     fxUsed = gr->mapChunkFxUsed[i];
     if (fxUsed) {
@@ -988,6 +1029,9 @@ static void _buildChunkGeo(ChunkInfo* ci, int i, const TileId* chunk)
                             gr->mapChunkFx + i*CHUNK_FX_LIMIT, fxUsed);
         fxUsed = 0;
     }
+#else
+    fxUsed = 0;
+#endif
 
     glBindBuffer(GL_ARRAY_BUFFER, gr->vbo[GLOB_MAP_CHUNK0 + i]);
     attr = (float*) glMapBufferRange(GL_ARRAY_BUFFER, 0,
@@ -1243,7 +1287,6 @@ void gpu_drawMap(void* res, const TileView* view, const float* tileUVs,
 
     if (fxUsed) {
         const int MAPFX_LIST = 2;
-        const Animator* animator = MAP_ANIMATOR;
         float rect[4];
         float xoff, yoff;
         float* fxAttr = gpu_beginTris(gr, MAPFX_LIST);
@@ -1256,7 +1299,8 @@ void gpu_drawMap(void* res, const TileView* view, const float* tileUVs,
                 const MapFx* end = it + gr->mapChunkFxUsed[i];
                 for (; it != end; ++it) {
                     // Assuming only ATYPE_INVERT effects are used for now.
-                    if (anim_valueI(animator, it->anim))
+#ifdef EMULATE_U4
+                    if (anim_valueI(MAP_ANIMATOR, it->anim))
                         continue;
 
                     rect[0] = scale  * (xoff + it->x);
@@ -1266,10 +1310,22 @@ void gpu_drawMap(void* res, const TileView* view, const float* tileUVs,
 
                     //printf("KR fx %f,%f %f,%f\n", it->x, it->y, it->w, it->h);
                     fxAttr = gpu_emitQuad(fxAttr, rect, &it->u);
+#else
+                    // NOTE: Width is doubled to allow flags to change
+                    // direction in the shader.
+                    rect[0] = scale  * (xoff + it->x - it->w);
+                    rect[1] = scaleY * (yoff + it->y);
+                    rect[2] = scale  * it->w * 2.0f;
+                    rect[3] = scaleY * it->h;
+
+                    fxAttr = gpu_emitQuadFlag(fxAttr, rect);
+#endif
                 }
             }
         }
         gpu_endTris(gr, MAPFX_LIST, fxAttr);
+
+        glEnable(GL_BLEND);
         gpu_drawTris(gr, MAPFX_LIST);
     }
     }
