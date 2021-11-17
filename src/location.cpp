@@ -240,6 +240,7 @@ int Location::getCurrentPosition(Coords *coords) {
 
 MoveResult Location::move(Direction dir, bool userEvent) {
     MoveEvent event(dir, userEvent);
+    event.location = this;
     switch (map->type) {
 
     case Map::DUNGEON:
@@ -255,8 +256,6 @@ MoveResult Location::move(Direction dir, bool userEvent) {
         break;
     }
 
-    setChanged();
-    notifyObservers(event);
-
+    gs_emitMessage(SENDER_LOCATION, &event);
     return event.result;
 }

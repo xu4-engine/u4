@@ -33,7 +33,12 @@ StatsArea::StatsArea() :
         reagentsMixMenu.add(count, new IntMenuItem(outputBuffer, 1, 0, -1, (int *)c->party->getReagentPtr((Reagent)count), 0, 99, 1, MENU_OUTPUT_REAGENT));
     }
 
-    reagentsMixMenu.addObserver(this);
+    listenerId = gs_listen(1<<SENDER_PARTY | 1<<SENDER_AURA | 1<<SENDER_MENU,
+                           statsNotice, this);
+}
+
+StatsArea::~StatsArea() {
+    gs_unplug(listenerId);
 }
 
 void StatsArea::setView(StatsView view) {
@@ -119,40 +124,53 @@ void StatsArea::update(bool avatarOnly) {
     else
         summary.textAt(0, 0, "F:%04d   G:%04d", c->saveGame->food / 100, c->saveGame->gold);
 
-    update(c->aura);
+    statsNotice(SENDER_AURA, c->aura, this);
 
     redraw();
 }
 
-void StatsArea::update(Aura *aura) {
-    unsigned char mask = 0xff;
-    for (int i = 0; i < VIRT_MAX; i++) {
-        if (c->saveGame->karma[i] == 0)
-            mask &= ~(1 << i);
-    }
+void StatsArea::statsNotice(int sender, void* eventData, void* user) {
+    StatsArea* sa = (StatsArea*) user;
 
-    switch (aura->getType()) {
-    case Aura::NONE:
-        summary.drawCharMasked(0, STATS_AREA_WIDTH/2, 0, mask);
-        break;
-    case Aura::HORN:
-        summary.drawChar(CHARSET_REDDOT, STATS_AREA_WIDTH/2, 0);
-        break;
-    case Aura::JINX:
-        summary.drawChar('J', STATS_AREA_WIDTH/2, 0);
-        break;
-    case Aura::NEGATE:
-        summary.drawChar('N', STATS_AREA_WIDTH/2, 0);
-        break;
-    case Aura::PROTECTION:
-        summary.drawChar('P', STATS_AREA_WIDTH/2, 0);
-        break;
-    case Aura::QUICKNESS:
-        summary.drawChar('Q', STATS_AREA_WIDTH/2, 0);
-        break;
+    if (sender == SENDER_PARTY) {
+        sa->update();   /* do a full update */
     }
+    else if (sender == SENDER_AURA) {
+        Aura* aura = (Aura*) eventData;
+        unsigned char mask = 0xff;
+        for (int i = 0; i < VIRT_MAX; i++) {
+            if (c->saveGame->karma[i] == 0)
+                mask &= ~(1 << i);
+        }
 
-    summary.update();
+        switch (aura->getType()) {
+        case Aura::NONE:
+            sa->summary.drawCharMasked(0, STATS_AREA_WIDTH/2, 0, mask);
+            break;
+        case Aura::HORN:
+            sa->summary.drawChar(CHARSET_REDDOT, STATS_AREA_WIDTH/2, 0);
+            break;
+        case Aura::JINX:
+            sa->summary.drawChar('J', STATS_AREA_WIDTH/2, 0);
+            break;
+        case Aura::NEGATE:
+            sa->summary.drawChar('N', STATS_AREA_WIDTH/2, 0);
+            break;
+        case Aura::PROTECTION:
+            sa->summary.drawChar('P', STATS_AREA_WIDTH/2, 0);
+            break;
+        case Aura::QUICKNESS:
+            sa->summary.drawChar('Q', STATS_AREA_WIDTH/2, 0);
+            break;
+        }
+
+        sa->summary.update();
+    }
+    else if (sender == SENDER_MENU) {
+        const Menu* menu = ((MenuEvent*) eventData)->menu;
+        if (menu == &sa->reagentsMixMenu)
+            sa->update();   /* do a full update */
+    }
 }
 
 void StatsArea::highlightPlayer(int player) {

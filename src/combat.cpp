@@ -67,14 +67,14 @@ CombatController::CombatController(CombatMap* cmap) : map(cmap) {
     camping = false;
     forceStandardEncounterSize = false;
     showMessage = true;
-    c->party->addObserver(this);
+    listenerId = gs_listen(1<<SENDER_PARTY, combatNotice, this);
 
     if (cmap)
         xu4.game->setMap(cmap, true, NULL, this);
 }
 
 CombatController::~CombatController() {
-    c->party->deleteObserver(this);
+    gs_unplug(listenerId);
 }
 
 /**
@@ -1226,9 +1226,13 @@ void CombatController::attack() {
         returnWeaponToOwner(targetCoords, targetDistance, MASK_DIR(dir), weapon);
 }
 
-void CombatController::update(Party *party, PartyEvent &event) {
-    if (event.type == PartyEvent::PLAYER_KILLED)
-        screenMessage("\n%c%s is Killed!%c\n", FG_RED, event.player->getName().c_str(), FG_WHITE);
+void CombatController::combatNotice(int sender, void* eventData, void* user) {
+    PartyEvent* event = (PartyEvent*) eventData;
+    (void) sender;
+    (void) user;
+    if (event->type == PartyEvent::PLAYER_KILLED)
+        screenMessage("\n%c%s is Killed!%c\n",
+                      FG_RED, event->player->getName().c_str(), FG_WHITE);
 }
 
 /**

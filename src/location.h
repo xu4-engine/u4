@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "movement.h"
-#include "observable.h"
 
 typedef enum {
     CTX_WORLDMAP    = 0x0001,
@@ -27,7 +26,7 @@ typedef enum {
 class Map;
 class TurnCompleter;
 
-class Location : public Observable<Location *, MoveEvent &> {
+class Location {
 public:
     Location(const Coords& coords, Map *map, int viewmode, LocationContext ctx, TurnCompleter *turnCompleter, Location *prev);
 

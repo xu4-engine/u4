@@ -173,6 +173,8 @@ exe %u4 [
 		%lzw/lzw.c
 		%lzw/u6decode.cpp
 		%lzw/u4decode.cpp
+
+		%support/notify.c
 	]
 ]
 

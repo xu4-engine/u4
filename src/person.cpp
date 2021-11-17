@@ -2,6 +2,7 @@
  * $Id$
  */
 
+#include <algorithm>
 #include <cstring>
 #include <vector>
 

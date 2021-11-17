@@ -150,6 +150,9 @@ void servicesInit(XU4GameServices* gs, Options* opt) {
             "\nFor more information visit http://xu4.sourceforge.net/faq.html\n");
     }
 
+    /* Setup the message bus early to make it available to other services. */
+    notify_init(&gs->notifyBus, 8);
+
     /* initialize the settings */
     gs->settings = new Settings;
     gs->settings->init(opt->profile);
@@ -186,6 +189,7 @@ void servicesFree(XU4GameServices* gs) {
     screenDelete();
     configFree(gs->config);
     delete gs->settings;
+    notify_free(&gs->notifyBus);
     u4fcleanup();
 }
 

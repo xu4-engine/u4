@@ -9,7 +9,6 @@
 #include <string>
 #include "event.h"
 #include "menuitem.h"
-#include "observable.h"
 
 using std::string;
 
@@ -32,11 +31,6 @@ public:
         this->item = item;
     }
 
-    const Menu *getMenu() { return menu; }
-    Type getType() { return type; }
-    const MenuItem *getMenuItem() { return item; }
-
-private:
     const Menu *menu;
     Type type;
     const MenuItem *item;
@@ -45,7 +39,7 @@ private:
 /**
  * Menu class definition
  */
-class Menu : public Observable<Menu *, MenuEvent &> {
+class Menu {
 public:
     typedef std::list<MenuItem *> MenuItemList;
 

@@ -10,7 +10,6 @@
 
 #include "controller.h"
 #include "menu.h"
-#include "observer.h"
 #include "savegame.h"
 #include "imageview.h"
 #include "textview.h"
@@ -81,7 +80,7 @@ private:
  *      <li>get rid global intro instance -- should only need to be accessed from u4.cpp</li>
  * </ul>
  */
-class IntroController : public Controller, public Observer<Menu *, MenuEvent &> {
+class IntroController : public Controller {
 public:
     IntroController();
     ~IntroController();
@@ -95,7 +94,6 @@ public:
     void updateScreen();
     void timerFired();
 
-    void update(Menu *menu, MenuEvent &event);
     void updateConfMenu(MenuEvent &event);
     void updateVideoMenu(MenuEvent &event);
     void updateGfxMenu(MenuEvent &event);
@@ -106,6 +104,7 @@ public:
     void updateInterfaceMenu(MenuEvent &event);
 
 private:
+    static void introNotice(int, void*, void*);
     bool init();
     void preloadMap();
     void deleteIntro();
@@ -126,6 +125,7 @@ private:
     bool doQuestion(int answer);
     void initPlayers(SaveGame *saveGame);
     std::string getQuestion(int v1, int v2);
+    void dispatchMenu(const Menu *menu, MenuEvent &event);
 #ifdef IOS
 public:
     void tryTriggerIntroMusic();
@@ -295,6 +295,7 @@ private:
     std::vector<AnimElement> titles;            // list of title elements
     std::vector<AnimElement>::iterator title;   // current title element
 
+    int  listenerId;
     int  introMusic;
     bool bSkipTitles;
 };

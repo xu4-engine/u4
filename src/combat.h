@@ -29,7 +29,7 @@ typedef enum {
 /**
  * CombatController class
  */
-class CombatController : public Controller, public Observer<Party *, PartyEvent &>, public TurnCompleter {
+class CombatController : public Controller, public TurnCompleter {
 public:
     static bool attackHit(const Creature *attacker, const Creature *defender);
     static void engage(MapId mid, const Creature* creatures);
@@ -67,7 +67,6 @@ public:
 
 protected:
     virtual void awardLoot();
-    virtual void update(Party *party, PartyEvent &event);
 
     void initCreature(const Creature *m);
     void fillCreatureTable(const Creature *creature);
@@ -89,8 +88,10 @@ protected:
     bool winOrLose;
     bool showMessage;
     Direction exitDir;
+    int listenerId;
 
 private:
+    static void combatNotice(int, void*, void*);
     CombatController(const CombatController&);
     const CombatController &operator=(const CombatController&);
 

@@ -6,6 +6,9 @@
 
 #include "error.h"
 #include "textview.h"
+#include "xu4.h"
+
+#define NOTIFY(ev)  gs_emitMessage(SENDER_MENU, ev)
 
 Menu::Menu() :
     closed(false),
@@ -72,8 +75,7 @@ void Menu::setCurrent(MenuItemList::iterator i) {
     highlight(*selected);
 
     MenuEvent event(this, MenuEvent::SELECT);
-    setChanged();
-    notifyObservers(event);
+    NOTIFY(&event);
 }
 
 void Menu::setCurrent(int id) {
@@ -228,8 +230,7 @@ void Menu::reset(bool highlightFirst) {
         highlight(*selected);
 
     MenuEvent event(this, MenuEvent::RESET);
-    setChanged();
-    notifyObservers(event);
+    NOTIFY(&event);
 }
 
 /**
@@ -281,8 +282,7 @@ void Menu::activateItem(int id, MenuEvent::Type action) {
 
     MenuEvent event(this, (MenuEvent::Type) action, mi);
     mi->activate(event);
-    setChanged();
-    notifyObservers(event);
+    NOTIFY(&event);
 }
 
 /**

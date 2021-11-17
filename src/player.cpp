@@ -34,10 +34,16 @@ PartyMember::PartyMember(Party *p, SaveGamePlayerRecord *pr) :
     player(pr),
     party(p)
 {
+    // NOTE: Avoid calls which emit notifications during construction!
+
     /* FIXME: we need to rename movement behaviors */
     setMovementBehavior(MOVEMENT_ATTACK_AVATAR);
     this->ranged = xu4.config->weapon(pr->weapon)->range ? 1 : 0;
-    setStatus(pr->status);
+
+    // These lines are the same as setStatus -> PartyMember::addStatus but
+    // without notifyOfChange().
+    Creature::addStatus(pr->status);
+    player->status = pr->status;
 }
 
 PartyMember::~PartyMember() {
@@ -178,10 +184,9 @@ void PartyMember::advanceLevel() {
     if (player->intel > 50) player->intel = 50;
 
     if (party) {
-        party->setChanged();
         PartyEvent event(PartyEvent::ADVANCED_LEVEL, this);
         event.player = this;
-        party->notifyObservers(event);
+        gs_emitMessage(SENDER_PARTY, &event);
     }
 }
 
@@ -377,10 +382,9 @@ bool PartyMember::applyDamage(Map* map, int damage, bool) {
         ann->ttl = party->size() * 2;
 
         if (party) {
-            party->setChanged();
             PartyEvent event(PartyEvent::PLAYER_KILLED, this);
             event.player = this;
-            party->notifyObservers(event);
+            gs_emitMessage(SENDER_PARTY, &event);
         }
 
         /* remove yourself from the map */
@@ -492,16 +496,18 @@ MapTile PartyMember::tileForClass(int klass) {
  * Party class implementation
  */
 Party::Party(SaveGame *s) : saveGame(s), transport(0), torchduration(0), activePlayer(-1) {
+    // NOTE: Avoid calls which emit notifications during construction!
+
     if (MAP_DECEIT <= saveGame->location && saveGame->location <= MAP_ABYSS)
         torchduration = saveGame->torchduration;
-    for (int i = 0; i < saveGame->members; i++) {
-        // add the members to the party
+
+    // add the members to the party
+    for (int i = 0; i < saveGame->members; i++)
         members.push_back(new PartyMember(this, &saveGame->players[i]));
-    }
 
     // set the party's transport (transport value stored in savegame
     // hardcoded to index into base tilemap)
-    setTransport(xu4.config->usaveIds()->moduleId(saveGame->transport));
+    initTransport(xu4.config->usaveIds()->moduleId(saveGame->transport));
 }
 
 Party::~Party() {
@@ -514,9 +520,8 @@ Party::~Party() {
  * Notify the party that something about it has changed
  */
 void Party::notifyOfChange(PartyMember *pm, PartyEvent::Type eventType) {
-    setChanged();
     PartyEvent event(eventType, pm);
-    notifyObservers(event);
+    gs_emitMessage(SENDER_PARTY, &event);
 }
 
 void Party::adjustFood(int food) {
@@ -657,9 +662,8 @@ void Party::adjustKarma(KarmaAction action) {
         if (maxVal[v] == 100) { /* already an avatar */
             if (newKarma[v] < 100) { /* but lost it */
                 saveGame->karma[v] = newKarma[v];
-                setChanged();
                 PartyEvent event(PartyEvent::LOST_EIGHTH, 0);
-                notifyObservers(event);
+                gs_emitMessage(SENDER_PARTY, &event);
             }
             else saveGame->karma[v] = 0; /* return to u4dos compatibility */
         }
@@ -825,9 +829,8 @@ void Party::endTurn() {
 
     /* The party is starving! */
     if ((saveGame->food == 0) && ((loc->context & CTX_NON_COMBAT) == loc->context)) {
-        setChanged();
         PartyEvent event(PartyEvent::STARVING, 0);
-        notifyObservers(event);
+        gs_emitMessage(SENDER_PARTY, &event);
     }
 
     /* heal ship (25% chance it is healed each turn) */
@@ -943,9 +946,8 @@ CannotJoinError Party::join(string name) {
             saveGame->players[i] = tmp;
 
             members.push_back(new PartyMember(this, &saveGame->players[saveGame->members++]));
-            setChanged();
             PartyEvent event(PartyEvent::MEMBER_JOINED, members.back());
-            notifyObservers(event);
+            gs_emitMessage(SENDER_PARTY, &event);
             return JOIN_SUCCEEDED;
         }
     }
@@ -999,20 +1001,19 @@ void Party::reviveParty() {
     saveGame->food = 20099;
     saveGame->gold = 200;
     setTransport(Tileset::findTileByName(Tile::sym.avatar)->getId());
-    setChanged();
+
     PartyEvent event(PartyEvent::PARTY_REVIVED, 0);
-    notifyObservers(event);
+    gs_emitMessage(SENDER_PARTY, &event);
 }
 
 MapTile Party::getTransport() const {
     return transport;
 }
 
-void Party::setTransport(MapTile tile) {
-    // transport value stored in savegame hardcoded to index into base tilemap
-    saveGame->transport = xu4.config->usaveIds()->ultimaId(tile);
-    ASSERT(saveGame->transport != 0, "could not generate valid savegame transport for tile with id %d\n", tile.id);
-
+/*
+ * This is a version of setTransport used during initialization.
+ */
+void Party::initTransport(const MapTile& tile) {
     transport = tile;
 
     if (tile.getTileType()->isHorse())
@@ -1021,8 +1022,15 @@ void Party::setTransport(MapTile tile) {
         c->transportContext = TRANSPORT_SHIP;
     else if (tile.getTileType()->isBalloon())
         c->transportContext = TRANSPORT_BALLOON;
-    else c->transportContext = TRANSPORT_FOOT;
+    else
+        c->transportContext = TRANSPORT_FOOT;
+}
 
+void Party::setTransport(MapTile tile) {
+    // transport value stored in savegame hardcoded to index into base tilemap
+    saveGame->transport = xu4.config->usaveIds()->ultimaId(tile);
+    ASSERT(saveGame->transport != 0, "could not generate valid savegame transport for tile with id %d\n", tile.id);
+    initTransport(tile);
     notifyOfChange();
 }
 
@@ -1063,9 +1071,8 @@ short* Party::getReagentPtr(int reagent) const {
 
 void Party::setActivePlayer(int p) {
     activePlayer = p;
-    setChanged();
     PartyEvent event(PartyEvent::ACTIVE_PLAYER_CHANGED, activePlayer < 0 ? 0 : members[activePlayer] );
-    notifyObservers(event);
+    gs_emitMessage(SENDER_PARTY, &event);
 }
 
 int Party::getActivePlayer() const {

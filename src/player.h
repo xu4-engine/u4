@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "creature.h"
-#include "observable.h"
 #ifdef IOS
 #include "ios_helpers.h"
 #endif
@@ -164,7 +163,7 @@ public:
 
 typedef std::vector<PartyMember *> PartyMemberVector;
 
-class Party : public Observable<Party *, PartyEvent &> {
+class Party {
     friend class PartyMember;
 public:
     Party(SaveGame *saveGame);
@@ -214,6 +213,7 @@ public:
     PartyMember *member(int index) const;
 
 private:
+    void initTransport(const MapTile& tile);
     void syncMembers();
     PartyMemberVector members;
     SaveGame *saveGame;

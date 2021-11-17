@@ -10,7 +10,6 @@
 #include "controller.h"
 #include "event.h"
 #include "map.h"
-#include "observer.h"
 #include "sound.h"
 #include "tileview.h"
 #include "types.h"
@@ -87,8 +86,7 @@ public:
  *      <li>separate the dungeon specific stuff into another class (subclass?)</li>
  *  </ul>
  */
-class GameController : public Controller, public Observer<Party *, PartyEvent &>, public Observer<Location *, MoveEvent &>,
-    public TurnCompleter {
+class GameController : public Controller, public TurnCompleter {
 public:
     GameController();
     ~GameController();
@@ -104,9 +102,6 @@ public:
     int exitToParentMap();
     virtual void finishTurn();
 
-    virtual void update(Party *party, PartyEvent &event);
-    virtual void update(Location *location, MoveEvent &event);
-
     bool initContext();
     void updateMoons(bool showmoongates);
 
@@ -118,6 +113,7 @@ public:
     int pausedTimer;
 
 private:
+    static void gameNotice(int, void*, void*);
     void initScreenWithoutReloadingState();
     void initMoons();
 

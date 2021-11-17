@@ -3,6 +3,7 @@
  */
 
 
+#include <algorithm>
 #include <cstring>
 #include "u4.h"
 
@@ -291,10 +292,12 @@ IntroController::~IntroController() {
 bool IntroController::present() {
     init();
     preloadMap();
+    listenerId = gs_listen(1<<SENDER_MENU, introNotice, this);
     return true;
 }
 
 void IntroController::conclude() {
+    gs_unplug(listenerId);
     deleteIntro();
 }
 
@@ -1065,7 +1068,6 @@ void IntroController::showText(const string &text) {
  * updates are handled by observing the menu.
  */
 void IntroController::runMenu(Menu *menu, TextView *view, bool withBeasties) {
-    menu->addObserver(this);
     menu->reset();
 
     // if the menu has an extended height, fill the menu background, otherwise reset the display
@@ -1079,7 +1081,6 @@ void IntroController::runMenu(Menu *menu, TextView *view, bool withBeasties) {
 
     // enable the cursor here, after the menu has been established
     view->enableCursor();
-    menu->deleteObserver(this);
     view->disableCursor();
 }
 
@@ -1123,7 +1124,12 @@ void IntroController::timerFired() {
  * activated.
  * TODO, reduce duped code.
  */
-void IntroController::update(Menu *menu, MenuEvent &event) {
+void IntroController::introNotice(int sender, void* eventData, void* user) {
+    MenuEvent* event = (MenuEvent*) eventData;
+    ((IntroController*) user)->dispatchMenu(event->menu, *event);
+}
+
+void IntroController::dispatchMenu(const Menu *menu, MenuEvent &event) {
     if (menu == &confMenu)
         updateConfMenu(event);
     else if (menu == &videoMenu)
@@ -1146,9 +1152,9 @@ void IntroController::update(Menu *menu, MenuEvent &event) {
 }
 
 void IntroController::updateConfMenu(MenuEvent &event) {
-    if (event.getType() == MenuEvent::ACTIVATE ||
-        event.getType() == MenuEvent::INCREMENT ||
-        event.getType() == MenuEvent::DECREMENT) {
+    if (event.type == MenuEvent::ACTIVATE ||
+        event.type == MenuEvent::INCREMENT ||
+        event.type == MenuEvent::DECREMENT) {
 
         // show or hide game enhancement options if enhancements are enabled/disabled
         confMenu.getItemById(MI_CONF_GAMEPLAY)->setVisible(settingsChanged.enhancements);
@@ -1158,7 +1164,7 @@ void IntroController::updateConfMenu(MenuEvent &event) {
         xu4.settings->setData(settingsChanged);
         xu4.settings->write();
 
-        switch(event.getMenuItem()->getId()) {
+        switch(event.item->getId()) {
         case MI_CONF_VIDEO:
             runMenu(&videoMenu, &extendedMenuArea, true);
             break;
@@ -1194,11 +1200,11 @@ void IntroController::updateConfMenu(MenuEvent &event) {
 }
 
 void IntroController::updateVideoMenu(MenuEvent &event) {
-    if (event.getType() == MenuEvent::ACTIVATE ||
-        event.getType() == MenuEvent::INCREMENT ||
-        event.getType() == MenuEvent::DECREMENT) {
+    if (event.type == MenuEvent::ACTIVATE ||
+        event.type == MenuEvent::INCREMENT ||
+        event.type == MenuEvent::DECREMENT) {
 
-        switch(event.getMenuItem()->getId()) {
+        switch(event.item->getId()) {
         case USE_SETTINGS:
             /* save settings (if necessary) */
             if (*xu4.settings != settingsChanged) {
@@ -1232,12 +1238,12 @@ void IntroController::updateVideoMenu(MenuEvent &event) {
 
 void IntroController::updateGfxMenu(MenuEvent &event)
 {
-    if (event.getType() == MenuEvent::ACTIVATE ||
-        event.getType() == MenuEvent::INCREMENT ||
-        event.getType() == MenuEvent::DECREMENT) {
+    if (event.type == MenuEvent::ACTIVATE ||
+        event.type == MenuEvent::INCREMENT ||
+        event.type == MenuEvent::DECREMENT) {
 
 
-        switch(event.getMenuItem()->getId()) {
+        switch(event.item->getId()) {
         case MI_GFX_RETURN:
             runMenu(&videoMenu, &extendedMenuArea, true);
             break;
@@ -1251,11 +1257,11 @@ void IntroController::updateGfxMenu(MenuEvent &event)
 }
 
 void IntroController::updateSoundMenu(MenuEvent &event) {
-    if (event.getType() == MenuEvent::ACTIVATE ||
-        event.getType() == MenuEvent::INCREMENT ||
-        event.getType() == MenuEvent::DECREMENT) {
+    if (event.type == MenuEvent::ACTIVATE ||
+        event.type == MenuEvent::INCREMENT ||
+        event.type == MenuEvent::DECREMENT) {
 
-        switch(event.getMenuItem()->getId()) {
+        switch(event.item->getId()) {
             case MI_SOUND_01:
                 musicSetVolume(settingsChanged.musicVol);
                 break;
@@ -1285,11 +1291,11 @@ void IntroController::updateSoundMenu(MenuEvent &event) {
 }
 
 void IntroController::updateInputMenu(MenuEvent &event) {
-    if (event.getType() == MenuEvent::ACTIVATE ||
-        event.getType() == MenuEvent::INCREMENT ||
-        event.getType() == MenuEvent::DECREMENT) {
+    if (event.type == MenuEvent::ACTIVATE ||
+        event.type == MenuEvent::INCREMENT ||
+        event.type == MenuEvent::DECREMENT) {
 
-        switch(event.getMenuItem()->getId()) {
+        switch(event.item->getId()) {
         case USE_SETTINGS:
             // save settings
             xu4.settings->setData(settingsChanged);
@@ -1318,11 +1324,11 @@ void IntroController::updateInputMenu(MenuEvent &event) {
 }
 
 void IntroController::updateSpeedMenu(MenuEvent &event) {
-    if (event.getType() == MenuEvent::ACTIVATE ||
-        event.getType() == MenuEvent::INCREMENT ||
-        event.getType() == MenuEvent::DECREMENT) {
+    if (event.type == MenuEvent::ACTIVATE ||
+        event.type == MenuEvent::INCREMENT ||
+        event.type == MenuEvent::DECREMENT) {
 
-        switch(event.getMenuItem()->getId()) {
+        switch(event.item->getId()) {
         case USE_SETTINGS:
             // save settings
             xu4.settings->setData(settingsChanged);
@@ -1346,11 +1352,11 @@ void IntroController::updateSpeedMenu(MenuEvent &event) {
 }
 
 void IntroController::updateGameplayMenu(MenuEvent &event) {
-    if (event.getType() == MenuEvent::ACTIVATE ||
-        event.getType() == MenuEvent::INCREMENT ||
-        event.getType() == MenuEvent::DECREMENT) {
+    if (event.type == MenuEvent::ACTIVATE ||
+        event.type == MenuEvent::INCREMENT ||
+        event.type == MenuEvent::DECREMENT) {
 
-        switch(event.getMenuItem()->getId()) {
+        switch(event.item->getId()) {
         case USE_SETTINGS:
             // save settings
             xu4.settings->setData(settingsChanged);
@@ -1370,11 +1376,11 @@ void IntroController::updateGameplayMenu(MenuEvent &event) {
 }
 
 void IntroController::updateInterfaceMenu(MenuEvent &event) {
-    if (event.getType() == MenuEvent::ACTIVATE ||
-        event.getType() == MenuEvent::INCREMENT ||
-        event.getType() == MenuEvent::DECREMENT) {
+    if (event.type == MenuEvent::ACTIVATE ||
+        event.type == MenuEvent::INCREMENT ||
+        event.type == MenuEvent::DECREMENT) {
 
-        switch(event.getMenuItem()->getId()) {
+        switch(event.item->getId()) {
             case USE_SETTINGS:
                 // save settings
                 xu4.settings->setData(settingsChanged);

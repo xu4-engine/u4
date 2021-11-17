@@ -6,7 +6,6 @@
 #define SETTINGS_H
 
 #include <string>
-#include "observable.h"
 #include "types.h"
 
 #ifdef USE_GL
@@ -168,7 +167,7 @@ public:
  * The settings class is a singleton that holds all the settings
  * information.
  */
-class Settings : public SettingsData, public Observable<Settings *> {
+class Settings : public SettingsData {
 public:
     static uint8_t settingEnum(const char** names, const char* value);
     static const char** battleDiffStrings();

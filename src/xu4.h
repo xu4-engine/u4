@@ -2,6 +2,17 @@
  * xu4.h
  */
 
+#include "notify.h"
+
+enum NotifySender {
+    // Sender Id           Message
+    SENDER_LOCATION,    // MoveEvent*
+    SENDER_PARTY,       // PartyEvent*
+    SENDER_AURA,        // Aura*
+    SENDER_MENU,        // MenuEvent*
+    SENDER_SETTINGS     // Settings*
+};
+
 class Settings;
 class Config;
 class ImageMgr;
@@ -19,6 +30,7 @@ enum XU4GameStage {
 };
 
 struct XU4GameServices {
+    NotifyBus notifyBus;
     Settings* settings;
     Config* config;
     ImageMgr* imageMgr;
@@ -35,3 +47,7 @@ struct XU4GameServices {
 };
 
 extern XU4GameServices xu4;
+
+#define gs_listen(msk,func,user)    notify_listen(&xu4.notifyBus,msk,func,user)
+#define gs_unplug(id)               notify_unplug(&xu4.notifyBus,id)
+#define gs_emitMessage(sid,data)    notify_emit(&xu4.notifyBus,sid,data);

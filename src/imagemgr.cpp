@@ -30,8 +30,8 @@ ImageMgr::ImageMgr() : vgaColors(NULL), resGroup(0) {
     logger = new Debug("debug/imagemgr.txt", "ImageMgr");
     TRACE(*logger, "creating ImageMgr");
 
-    update(xu4.settings);
-    xu4.settings->addObserver(this);
+    notice(SENDER_SETTINGS, xu4.settings, this);
+    gs_listen(1<<SENDER_SETTINGS, notice, this);
 
     xu4.config->internSymbols(&sym.tiles, 45,
         "tiles charset borders title options_top\n"
@@ -46,8 +46,6 @@ ImageMgr::ImageMgr() : vgaColors(NULL), resGroup(0) {
 }
 
 ImageMgr::~ImageMgr() {
-    xu4.settings->deleteObserver(this);
-
     std::map<Symbol, ImageSet *>::iterator it;
     foreach (it, imageSets)
         delete it->second;
@@ -768,10 +766,13 @@ const RGBA* ImageMgr::vgaPalette() {
 /**
  * Find the new base image set when settings have changed.
  */
-void ImageMgr::update(Settings *newSettings) {
-    string setname = newSettings->videoType;
+void ImageMgr::notice(int sender, void* eventData, void* user) {
+    ImageMgr* mgr = (ImageMgr*) user;
+    (void) sender;
+
+    string setname = ((Settings*) eventData)->videoType;
     TRACE(*logger, string("base image set is '") + setname + string("'"));
-    baseSet = scheme( xu4.config->intern(setname.c_str()) );
+    mgr->baseSet = mgr->scheme( xu4.config->intern(setname.c_str()) );
 }
 
 ImageSet::~ImageSet() {

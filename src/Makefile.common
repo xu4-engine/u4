@@ -7,6 +7,7 @@ CSRCS=\
         anim.c \
         lzw/hash.c \
         lzw/lzw.c \
+        support/notify.c \
         unzip.c \
         $(NULL)
 

@@ -143,6 +143,7 @@ GameController::GameController() : Controller(1),
     mapArea(BORDER_WIDTH, BORDER_HEIGHT, VIEWPORT_W, VIEWPORT_H),
     paused(false),
     pausedTimer(0) {
+    gs_listen(1<<SENDER_LOCATION | 1<<SENDER_PARTY, gameNotice, this);
 }
 
 GameController::~GameController() {
@@ -244,7 +245,6 @@ bool GameController::initContext() {
 
     /* initialize our party */
     c->party = new Party(c->saveGame);
-    c->party->addObserver(this);
 
     /* set the map to the world map by default */
     setMap(xu4.config->map(MAP_WORLD), 0, NULL);
@@ -314,15 +314,6 @@ bool GameController::initContext() {
 
     TRACE_LOCAL(gameDbg, "Settings up reagent menu.");
     c->stats->resetReagentsMenu();
-
-    /* add some observers */
-    c->aura->addObserver(c->stats);
-    c->party->addObserver(c->stats);
-#ifdef IOS
-    c->aura->addObserver(U4IOS::IOSObserver::sharedInstance());
-    c->party->addObserver(U4IOS::IOSObserver::sharedInstance());
-#endif
-
 
     initScreenWithoutReloadingState();
     TRACE(gameDbg, "gameInit() completed successfully.");
@@ -497,7 +488,6 @@ void GameController::setMap(Map *map, bool saveLocation, const Portal *portal, T
         break;
     }
     c->location = new Location(coords, map, viewMode, context, turnCompleter, c->location);
-    c->location->addObserver(this);
     c->party->setActivePlayer(activePlayer);
 #ifdef IOS
     U4IOS::updateGameControllerContext(c->location->context);
@@ -660,50 +650,55 @@ void GameController::flashTile(const Coords &coords, Symbol tilename, int timeFa
     flashTile(coords, MapTile(tile->getId()), timeFactor);
 }
 
+void GameController::gameNotice(int sender, void* eventData, void* user) {
+    if (sender == SENDER_LOCATION)
+    {
+        MoveEvent* ev = (MoveEvent*) eventData;
+        switch (ev->location->map->type) {
+        case Map::DUNGEON:
+            ((GameController*) user)->avatarMovedInDungeon(*ev);
+            break;
 
-/**
- * Provide feedback to user after a party event happens.
- */
-void GameController::update(Party *party, PartyEvent &event) {
-    int i;
+        case Map::COMBAT:
+            // FIXME: let the combat controller handle it
+            dynamic_cast<CombatController *>(xu4.eventHandler->getController())->movePartyMember(*ev);
+            break;
 
-    switch (event.type) {
-    case PartyEvent::LOST_EIGHTH:
-        // inform a player he has lost zero or more eighths of avatarhood.
-        screenMessage("\n %cThou hast lost\n  an eighth!%c\n", FG_YELLOW, FG_WHITE);
-        break;
-    case PartyEvent::ADVANCED_LEVEL:
-        screenMessage("\n%c%s\nThou art now Level %d%c\n", FG_YELLOW, event.player->getName().c_str(), event.player->getRealLevel(), FG_WHITE);
-        gameSpellEffect('r', -1, SOUND_MAGIC); // Same as resurrect spell
-        break;
-    case PartyEvent::STARVING:
-        screenMessage("\n%cStarving!!!%c\n", FG_YELLOW, FG_WHITE);
-        /* FIXME: add sound effect here */
-
-        // 2 damage to each party member for starving!
-        for (i = 0; i < c->saveGame->members; i++)
-            c->party->member(i)->applyDamage(c->location->map, 2);
-        break;
-    default:
-        break;
+        default:
+            ((GameController*) user)->avatarMoved(*ev);
+            break;
+        }
     }
-}
+    else if (sender == SENDER_PARTY)
+    {
+        // Provide feedback to user after a party event happens.
+        PartyEvent* ev = (PartyEvent*) eventData;
+        switch (ev->type) {
+        case PartyEvent::LOST_EIGHTH:
+            // inform a player he has lost zero or more eighths of avatarhood.
+            screenMessage("\n %cThou hast lost\n  an eighth!%c\n",
+                          FG_YELLOW, FG_WHITE);
+            break;
 
-/**
- * Provide feedback to user after a movement event happens.
- */
-void GameController::update(Location *location, MoveEvent &event) {
-    switch (location->map->type) {
-    case Map::DUNGEON:
-        avatarMovedInDungeon(event);
-        break;
-    case Map::COMBAT:
-        // FIXME: let the combat controller handle it
-        dynamic_cast<CombatController *>(xu4.eventHandler->getController())->movePartyMember(event);
-        break;
-    default:
-        avatarMoved(event);
-        break;
+        case PartyEvent::ADVANCED_LEVEL:
+            screenMessage("\n%c%s\nThou art now Level %d%c\n", FG_YELLOW,
+                    ev->player->getName().c_str(),
+                    ev->player->getRealLevel(), FG_WHITE);
+            gameSpellEffect('r', -1, SOUND_MAGIC); // Same as resurrect spell
+            break;
+
+        case PartyEvent::STARVING:
+            screenMessage("\n%cStarving!!!%c\n", FG_YELLOW, FG_WHITE);
+            /* FIXME: add sound effect here */
+
+            // 2 damage to each party member for starving!
+            for (int i = 0; i < c->saveGame->members; i++)
+                c->party->member(i)->applyDamage(c->location->map, 2);
+            break;
+
+        default:
+            break;
+        }
     }
 }
 

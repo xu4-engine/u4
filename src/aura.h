@@ -5,12 +5,10 @@
 #ifndef AURA_H
 #define AURA_H
 
-#include "observable.h"
-
 /**
  * Aura class
  */
-class Aura : public Observable<Aura *> {
+class Aura {
 public:
     enum Type {
         NONE,

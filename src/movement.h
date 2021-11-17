@@ -28,10 +28,13 @@ enum MoveResult {
     MOVE_MUST_USE_SAME_EXIT = 0x0100
 };
 
+class Location;
+
 class MoveEvent {
 public:
     MoveEvent(Direction d, bool user) : dir(d), userEvent(user), result(MOVE_SUCCEEDED) {}
 
+    Location* location;
     Direction dir;              /**< the direction of the move */
     bool userEvent;             /**< whether the user initiated the move */
     MoveResult result;          /**< how the movement was resolved */

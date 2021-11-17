@@ -2,6 +2,7 @@
  * $Id$
  */
 
+#include <algorithm>
 #include "debug.h"
 #include "error.h"
 #include "menu.h"
@@ -97,9 +98,9 @@ string BoolMenuItem::getText() const {
 }
 
 void BoolMenuItem::activate(MenuEvent &event) {
-    if (event.getType() == MenuEvent::DECREMENT ||
-        event.getType() == MenuEvent::INCREMENT ||
-        event.getType() == MenuEvent::ACTIVATE)
+    if (event.type == MenuEvent::DECREMENT ||
+        event.type == MenuEvent::INCREMENT ||
+        event.type == MenuEvent::ACTIVATE)
         *val = !(*val);
 }
 
@@ -128,14 +129,14 @@ void EnumMenuItem::activate(MenuEvent &event) {
     if (current >= count)
         errorFatal("Error: menu enum '%d' not a valid choice", current);
 
-    if (event.getType() == MenuEvent::INCREMENT ||
-        event.getType() == MenuEvent::ACTIVATE) {
+    if (event.type == MenuEvent::INCREMENT ||
+        event.type == MenuEvent::ACTIVATE) {
         /* move to the next valid choice, wrapping if necessary */
         current++;
         if (current == count)
             current = 0;
         *val = current;
-    } else if (event.getType() == MenuEvent::DECREMENT) {
+    } else if (event.type == MenuEvent::DECREMENT) {
         /* move back one, wrapping if necessary */
         if (current == 0)
             current = count;
@@ -173,14 +174,14 @@ void StringMenuItem::activate(MenuEvent &event) {
     if (current == validSettings.end())
         errorFatal("Error: menu string '%s' not a valid choice", val->c_str());
 
-    if (event.getType() == MenuEvent::INCREMENT || event.getType() == MenuEvent::ACTIVATE) {
+    if (event.type == MenuEvent::INCREMENT || event.type == MenuEvent::ACTIVATE) {
         /* move to the next valid choice, wrapping if necessary */
         current++;
         if (current == validSettings.end())
             current = validSettings.begin();
         *val = *current;
 
-    } else if (event.getType() == MenuEvent::DECREMENT) {
+    } else if (event.type == MenuEvent::DECREMENT) {
         /* move back one, wrapping if necessary */
         if (current == validSettings.begin())
             current = validSettings.end();
@@ -225,11 +226,11 @@ string IntMenuItem::getText() const {
  * to handle the min value, caping the minimum interval at 1.
  *
             // make sure that the setting we're trying for is even possible
-            if (event.getType() == MenuEvent::INCREMENT || event.getType() == MenuEvent::ACTIVATE) {
+            if (event.type == MenuEvent::INCREMENT || event.type == MenuEvent::ACTIVATE) {
                 settingsChanged.shrineTime++;
                 if (settingsChanged.shrineTime > MAX_SHRINE_TIME)
                     settingsChanged.shrineTime = MEDITATION_MANTRAS_PER_CYCLE / settingsChanged.gameCyclesPerSecond;
-            } else if (event.getType() == MenuEvent::DECREMENT) {
+            } else if (event.type == MenuEvent::DECREMENT) {
                 settingsChanged.shrineTime--;
                 if (settingsChanged.shrineTime < (MEDITATION_MANTRAS_PER_CYCLE / settingsChanged.gameCyclesPerSecond))
                     settingsChanged.shrineTime = MAX_SHRINE_TIME;
@@ -265,12 +266,12 @@ string IntMenuItem::getText() const {
 }
 
 void IntMenuItem::activate(MenuEvent &event) {
-    if (event.getType() == MenuEvent::INCREMENT || event.getType() == MenuEvent::ACTIVATE) {
+    if (event.type == MenuEvent::INCREMENT || event.type == MenuEvent::ACTIVATE) {
         *val += increment;
         if (*val > max)
             *val = min;
 
-    } else if (event.getType() == MenuEvent::DECREMENT) {
+    } else if (event.type == MenuEvent::DECREMENT) {
         *val -= increment;
         if (*val < min)
             *val = max;
