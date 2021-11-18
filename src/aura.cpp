@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * aura.cpp
  */
 
 #include "aura.h"
@@ -9,19 +9,9 @@
 
 Aura::Aura() : type(NONE), duration(0) {}
 
-void Aura::setDuration(int d) {
-    duration = d;
-    NOTIFY;
-}
-
 void Aura::set(Type t, int d) {
     type = t;
     duration = d;
-    NOTIFY;
-}
-
-void Aura::setType(Type t) {
-    type = t;
     NOTIFY;
 }
 

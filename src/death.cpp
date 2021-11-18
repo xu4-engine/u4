@@ -101,7 +101,7 @@ void deathRevive() {
     c->location->coords.y = REVIVE_CASTLE_Y;
     c->location->coords.z = 0;
 
-    c->aura->set();
+    c->aura.set(Aura::NONE, 0);
     c->horseSpeed = 0;
     gameStampCommandTime();
     musicPlayLocale();

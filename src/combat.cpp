@@ -736,7 +736,7 @@ void CombatController::finishTurn() {
         player->applyEffect(map, map->tileTypeAt(player->getCoords(), WITH_GROUND_OBJECTS)->getEffect());
     }
 
-    quick = (*c->aura == Aura::QUICKNESS) && player && (xu4_random(2) == 0) ? 1 : 0;
+    quick = (c->aura.getType() == Aura::QUICKNESS) && player && (xu4_random(2) == 0) ? 1 : 0;
 
     /* check to see if the player gets to go again (and is still alive) */
     if (!quick || player->isDisabled()){
@@ -774,7 +774,7 @@ void CombatController::finishTurn() {
                 c->party->endTurn();
 
                 /* count down our aura (if we have one) */
-                c->aura->passTurn();
+                c->aura.passTurn();
 
                 /**
                  * ====================

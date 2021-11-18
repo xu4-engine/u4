@@ -305,7 +305,7 @@ void useBBC(int item) {
  */
 void useHorn(int item) {
     screenMessage("\nThe Horn sounds an eerie tone!\n");
-    c->aura->set(Aura::HORN, 10);
+    c->aura.set(Aura::HORN, 10);
 }
 
 /**

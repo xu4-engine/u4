@@ -235,7 +235,6 @@ bool GameController::initContext() {
     c->windDirection = DIR_NORTH;
     c->windCounter = 0;
     c->windLock = false;
-    c->aura = new Aura();
     c->horseSpeed = 0;
     c->opacity = 1;
     c->lastCommandTime = c->commandTimer = 0;
@@ -549,7 +548,7 @@ void GameController::finishTurn() {
         c->party->endTurn();
 
         /* count down the aura, if there is one */
-        c->aura->passTurn();
+        c->aura.passTurn();
 
         gameCheckHullIntegrity();
 
@@ -3014,7 +3013,7 @@ void GameController::checkSpecialCreatures(Direction dir) {
         c->location->coords.x < 234 &&
         c->location->coords.y >= 212 &&
         c->location->coords.y < 217 &&
-        *c->aura != Aura::HORN) {
+        c->aura.getType() != Aura::HORN) {
         for (i = 0; i < 8; i++)
             c->location->map->addCreature(xu4.config->creature(DAEMON_ID), Coords(231, c->location->coords.y + 1, c->location->coords.z));
     }

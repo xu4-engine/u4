@@ -22,7 +22,7 @@
 #include "stats.h"
 
 Context::Context()
-    : party(NULL), saveGame(NULL), location(NULL), stats(NULL), aura(NULL) {
+    : party(NULL), saveGame(NULL), location(NULL), stats(NULL) {
 }
 
 Context::~Context() {
@@ -34,5 +34,4 @@ Context::~Context() {
 
     delete party;
     delete stats;
-    delete aura;
 }

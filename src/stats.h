@@ -9,10 +9,7 @@
 #include "menu.h"
 #include "textview.h"
 
-class Aura;
 class Ingredients;
-class Party;
-class PartyEvent;
 
 using std::string;
 

@@ -124,7 +124,7 @@ void StatsArea::update(bool avatarOnly) {
     else
         summary.textAt(0, 0, "F:%04d   G:%04d", c->saveGame->food / 100, c->saveGame->gold);
 
-    statsNotice(SENDER_AURA, c->aura, this);
+    statsNotice(SENDER_AURA, &c->aura, this);
 
     redraw();
 }
