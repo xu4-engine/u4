@@ -7,7 +7,7 @@
 #include "config.h"
 #include "debug.h"
 #include "event.h"
-#include "player.h"
+#include "party.h"
 #include "portal.h"
 #include "tileset.h"
 #include "xu4.h"

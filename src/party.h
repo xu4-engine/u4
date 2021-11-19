@@ -2,8 +2,8 @@
  * $Id$
  */
 
-#ifndef PLAYER_H
-#define PLAYER_H
+#ifndef PARTY_H
+#define PARTY_H
 
 #include <string>
 #include <vector>

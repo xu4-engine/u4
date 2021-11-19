@@ -12,7 +12,7 @@
 #include "conversation.h"
 #include "debug.h"
 #include "game.h"   // Included for ReadPlayerController
-#include "player.h"
+#include "party.h"
 #include "settings.h"
 #include "u4.h"
 #include "xu4.h"
@@ -21,7 +21,7 @@
 #include "config.h"
 #include <boron/boron.h>
 #else
-#include "script.h"
+#include "script_xml.h"
 #endif
 
 #ifdef IOS

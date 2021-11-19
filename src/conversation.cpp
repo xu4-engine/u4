@@ -6,7 +6,7 @@
 #include "conversation.h"
 #include "debug.h"
 #ifndef USE_BORON
-#include "script.h"
+#include "script_xml.h"
 #endif
 #ifdef IOS
 #include "context.h"

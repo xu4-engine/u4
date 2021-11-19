@@ -6,7 +6,7 @@
 #include "config.h"
 #include "game.h"
 #include "portal.h"
-#include "player.h"
+#include "party.h"
 #include "screen.h"
 #include "stats.h"
 #include "tileset.h"

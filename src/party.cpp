@@ -2,7 +2,7 @@
  * $Id$
  */
 
-#include "player.h"
+#include "party.h"
 
 #include "config.h"
 #include "context.h"

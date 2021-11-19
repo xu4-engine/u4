@@ -8,7 +8,7 @@
 
 #include "config.h"
 #include "debug.h"
-#include "player.h"
+#include "party.h"
 #include "spell.h"
 #include "weapon.h"
 #include "u4.h"

@@ -6,7 +6,7 @@
 #define COMBAT_H
 
 #include "game.h"
-#include "player.h"
+#include "party.h"
 
 #define AREA_CREATURES   16
 #define AREA_PLAYERS    8

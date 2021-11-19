@@ -13,7 +13,7 @@
 #include "error.h"
 #include "imagemgr.h"
 #include "sound.h"
-#include "player.h"
+#include "party.h"
 #include "screen.h"
 #include "settings.h"
 #include "tileset.h"

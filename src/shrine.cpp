@@ -8,7 +8,7 @@
 
 #include "game.h"
 #include "imagemgr.h"
-#include "player.h"
+#include "party.h"
 #include "portal.h"
 #include "screen.h"
 #include "settings.h"

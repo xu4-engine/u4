@@ -77,7 +77,7 @@ exe %xu4 [
 		libxml2
 		sources_from %src [
 			%config.cpp
-			%script.cpp
+			%script_xml.cpp
 			%xml.cpp
 			%support/SymbolTable.cpp
 		]
@@ -146,8 +146,8 @@ exe %xu4 [
 		%movement.cpp
 		%names.cpp
 		%object.cpp
+		%party.cpp
 		%person.cpp
-		%player.cpp
 		%portal.cpp
 		%progress_bar.cpp
 		%rle.cpp
@@ -163,11 +163,11 @@ exe %xu4 [
 		%tile.cpp
 		%tileset.cpp
 		%tileview.cpp
-		%u4.cpp
 		%u4file.cpp
 		%utils.cpp
 		%unzip.c
 		%view.cpp
+		%xu4.cpp
 
 		%lzw/hash.c
 		%lzw/lzw.c

@@ -7,7 +7,7 @@
 #include "config.h"
 #include "context.h"
 #include "conversation.h"
-#include "player.h"
+#include "party.h"
 #include "xu4.h"
 
 

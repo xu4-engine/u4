@@ -1,5 +1,5 @@
 /*
- * u4.cpp
+ * xu4.cpp
  */
 
 /** \mainpage xu4 Main Page

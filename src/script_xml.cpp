@@ -5,7 +5,7 @@
 #include <cctype>
 #include <map>
 #include <string>
-#include "script.h"
+#include "script_xml.h"
 
 #include "camp.h"
 #include "config.h"
@@ -16,7 +16,7 @@
 #include "event.h"
 #include "filesystem.h"
 #include "game.h"
-#include "player.h"
+#include "party.h"
 #include "savegame.h"
 #include "screen.h"
 #include "settings.h"

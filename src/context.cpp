@@ -18,7 +18,7 @@
  */
 
 #include "context.h"
-#include "player.h"
+#include "party.h"
 #include "stats.h"
 
 Context::Context()
