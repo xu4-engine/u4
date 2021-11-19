@@ -12,10 +12,14 @@ all: src/xu4
 src/xu4:
 	make -C src -f $(MFILE_OS)
 
+u4.mod: module/u4/*.b module/u4/shader/*.glsl
+	boron -s tools/pack-xu4.b -o $@
+
 .PHONY: clean download
 
 clean:
 	make -C src -f $(MFILE_OS) clean
+	rm -f u4.mod
 
 download: ultima4.zip u4upgrad.zip
 
