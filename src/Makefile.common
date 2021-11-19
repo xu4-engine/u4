@@ -1,5 +1,5 @@
 NULL=
-MAIN=u4$(EXEEXT)
+MAIN=xu4$(EXEEXT)
 
 VERSION=1.1svn
 

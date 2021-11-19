@@ -72,7 +72,7 @@ To see the configure options run:
     ./configure -h
 
 If the required libraries & headers are present, make will create an
-executable called `u4` in the src directory.
+executable called `xu4` in the src directory.
 
 The Allegro 5 build requires the allegro, allegro_audio, & allegro_acodec
 libraries & headers.

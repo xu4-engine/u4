@@ -43,14 +43,14 @@ windows)
 	podman cp project.tar.gz $ID:$CDIR
 	podman cp $HDIR/${SCRIPT} $ID:$CDIR/${SCRIPT}
 	podman exec -it -u build $ID /bin/bash $CDIR/${SCRIPT}
-	podman cp $ID:/home/build/u4/u4.exe /tmp/u4.exe-$TIME || exit
+	podman cp $ID:/home/build/u4/xu4.exe /tmp/xu4.exe-$TIME || exit
 
 	# Build zip archive.
 	if [ "$2" != "-b" ]; then
 		clean_dir ${ARC_DIR}
 		FN=`readlink -f ${SDK_DIR}/allegro-dll.tar.bz2`
 		tar xf $FN -C ${ARC_DIR}
-		cp /tmp/u4.exe-$TIME ${ARC_DIR}/u4.exe
+		cp /tmp/xu4.exe-$TIME ${ARC_DIR}/xu4.exe
 		cp u4.mod ${ARC_DIR}
 		cd ${ARC_DIR%/*}; zip -r xu4-win32.zip ${ARC_DIR##*/}
 	fi
@@ -70,12 +70,12 @@ linux)
 	podman cp project.tar.gz $ID:$CDIR
 	podman cp $HDIR/${SCRIPT} $ID:$CDIR/${SCRIPT}
 	podman exec -it $ID /bin/bash $CDIR/${SCRIPT}
-	podman cp $ID:/home/build/u4/u4 /tmp/u4-$TIME || exit
+	podman cp $ID:/home/build/u4/xu4 /tmp/xu4-$TIME || exit
 
 	# Build archive.
 	if [ "$2" != "-b" ]; then
 		clean_dir ${ARC_DIR}
-		cp /tmp/u4-$TIME ${ARC_DIR}/u4
+		cp /tmp/xu4-$TIME ${ARC_DIR}/xu4
 		cp u4.mod ${ARC_DIR}
 		cp dist/README.linux-dr ${ARC_DIR}/README
 		tar czf /tmp/xu4-linux.tar.gz -C ${ARC_DIR%/*} ${ARC_DIR##*/}

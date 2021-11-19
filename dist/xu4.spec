@@ -43,10 +43,9 @@ rm -rf %{buildroot}
 %files
 %defattr(-,root,root)
 %doc README AUTHORS COPYING doc/FileFormats.txt doc/tools.txt
-%{_bindir}/u4
-%{_datadir}/pixmaps/u4.bmp
-%{_datadir}/pixmaps/u4.png
-%{_datadir}/applications/u4.desktop
+%{_bindir}/xu4
+%{_datadir}/pixmaps/xu4.png
+%{_datadir}/applications/xu4.desktop
 %{_libdir}/u4/music/*.mid
 %{_libdir}/u4/sound/*.wav
 %{_libdir}/u4/sound/*.ogg

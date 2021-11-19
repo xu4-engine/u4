@@ -2,7 +2,7 @@
 Encoding=UTF-8
 Name=Ultima 4
 Comment=Ultima 4 (xu4)
-Exec=u4
+Exec=xu4
 Icon=xu4.png
 Terminal=0
 Type=Application

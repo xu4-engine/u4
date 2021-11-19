@@ -22,7 +22,7 @@ libxml2: does [
 	]
 ]
 
-exe %u4 [
+exe %xu4 [
 	include_from [%src %src/lzw %src/support]
 	win32 [
 		include_from %../usr/include

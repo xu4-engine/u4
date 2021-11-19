@@ -7,9 +7,9 @@ else
 MFILE_OS=Makefile
 endif
 
-all: src/u4
+all: src/xu4
 
-src/u4:
+src/xu4:
 	make -C src -f $(MFILE_OS)
 
 .PHONY: clean download
