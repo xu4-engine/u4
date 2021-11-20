@@ -139,7 +139,7 @@ int AlphaActionController::get(char lastValidLetter, const string &prompt, Event
     return ctrl.waitFor();
 }
 
-GameController::GameController() : Controller(1),
+GameController::GameController() : TurnController(1),
     mapArea(BORDER_WIDTH, BORDER_HEIGHT, VIEWPORT_W, VIEWPORT_H),
     paused(false),
     pausedTimer(0) {
@@ -440,7 +440,7 @@ void gameUpdateScreen() {
     }
 }
 
-void GameController::setMap(Map *map, bool saveLocation, const Portal *portal, TurnCompleter *turnCompleter) {
+void GameController::setMap(Map *map, bool saveLocation, const Portal *portal, TurnController *turnCompleter) {
     int viewMode;
     LocationContext context;
     int activePlayer = c->party->getActivePlayer();

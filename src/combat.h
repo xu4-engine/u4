@@ -29,7 +29,7 @@ typedef enum {
 /**
  * CombatController class
  */
-class CombatController : public Controller, public TurnCompleter {
+class CombatController : public TurnController {
 public:
     static bool attackHit(const Creature *attacker, const Creature *defender);
     static void engage(MapId mid, const Creature* creatures);
@@ -42,7 +42,7 @@ public:
     virtual bool keyPressed(int key);
     virtual bool isCombatController() const { return true; }
 
-    // TurnCompleter Method
+    // TurnController Method
     virtual void finishTurn();
 
     // Accessor Methods

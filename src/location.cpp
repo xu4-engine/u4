@@ -20,7 +20,7 @@
  * start a new stack if 'prev' is NULL
  */
 Location::Location(const Coords& coords, Map *map, int viewmode,
-        LocationContext ctx, TurnCompleter *turnCompleter, Location *prev) {
+        LocationContext ctx, TurnController *turnCompleter, Location *prev) {
 
     this->coords = coords;
     this->map = map;

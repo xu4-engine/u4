@@ -62,13 +62,14 @@ void CombatController::engageDungeon(Dungeon* dng, int room, Direction from) {
  * A CombatController is automatically deleted when popped from the
  * EventHandler controller stack, so it must be created with new.
  */
-CombatController::CombatController(CombatMap* cmap) : map(cmap) {
+CombatController::CombatController(CombatMap* cmap) : TurnController(0) {
     setDeleteOnPop();
     camping = false;
     forceStandardEncounterSize = false;
     showMessage = true;
     listenerId = gs_listen(1<<SENDER_PARTY, combatNotice, this);
 
+    map = cmap;
     if (cmap)
         xu4.game->setMap(cmap, true, NULL, this);
 }

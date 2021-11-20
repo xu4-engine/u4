@@ -24,11 +24,11 @@ typedef enum {
 #define CTX_CAN_SAVE_GAME   (LocationContext)(CTX_WORLDMAP | CTX_DUNGEON)
 
 class Map;
-class TurnCompleter;
+class TurnController;
 
 class Location {
 public:
-    Location(const Coords& coords, Map *map, int viewmode, LocationContext ctx, TurnCompleter *turnCompleter, Location *prev);
+    Location(const Coords& coords, Map *map, int viewmode, LocationContext ctx, TurnController *turnCompleter, Location *prev);
 
     std::vector<MapTile> tilesAt(const Coords& coords, bool &focus);
     TileId getReplacementTile(const Coords& atCoords, Tile const * forTile);
@@ -39,7 +39,7 @@ public:
     Map *map;
     int viewMode;
     LocationContext context;
-    TurnCompleter *turnCompleter;
+    TurnController *turnCompleter;
     Location *prev;
 };
 

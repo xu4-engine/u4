@@ -72,9 +72,9 @@ public:
     bool keyPressed(int key);
 };
 
-class TurnCompleter {
+class TurnController : public Controller {
 public:
-    virtual ~TurnCompleter() {}
+    TurnController(short timerInterval) : Controller(timerInterval) {}
     virtual void finishTurn() = 0;
 };
 
@@ -86,7 +86,7 @@ public:
  *      <li>separate the dungeon specific stuff into another class (subclass?)</li>
  *  </ul>
  */
-class GameController : public Controller, public TurnCompleter {
+class GameController : public TurnController {
 public:
     GameController();
     ~GameController();
@@ -98,7 +98,7 @@ public:
     virtual void timerFired();
 
     /* main game functions */
-    void setMap(Map *map, bool saveLocation, const Portal *portal, TurnCompleter *turnCompleter = NULL);
+    void setMap(Map *map, bool saveLocation, const Portal *portal, TurnController *turnCompleter = NULL);
     int exitToParentMap();
     virtual void finishTurn();
 
