@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * game.h
  */
 
 #ifndef GAME_H
@@ -16,14 +16,9 @@
 
 using std::vector;
 
-class Map;
 struct Portal;
 class Creature;
-class Location;
 class MoveEvent;
-class Party;
-class PartyEvent;
-class PartyMember;
 
 typedef enum {
     VIEW_NORMAL,

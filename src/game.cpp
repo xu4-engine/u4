@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * game.cpp
  */
 
 #include "game.h"
@@ -502,32 +502,31 @@ void GameController::setMap(Map *map, bool saveLocation, const Portal *portal, T
  * Exits the current map and location and returns to its parent location
  * This restores all relevant information from the previous location,
  * such as the map, map position, etc. (such as exiting a city)
- **/
-
+ */
 int GameController::exitToParentMap() {
-    if (!c->location)
-        return 0;
+    Location* loc = c->location;
+    if (loc && loc->prev) {
+        Map* currentMap = loc->map;
+        Map* prevMap = loc->prev->map;
 
-    if (c->location->prev != NULL) {
         // Create the balloon for Hythloth
-        if (c->location->map->id == MAP_HYTHLOTH)
-            createBalloon(c->location->prev->map);
+        if (currentMap->id == MAP_HYTHLOTH)
+            createBalloon(prevMap);
 
         // free map info only if previous location was on a different map
-        if (c->location->prev->map != c->location->map) {
-            c->location->map->annotations.clear();
-            c->location->map->clearObjects();
+        if (prevMap != currentMap) {
+            currentMap->annotations.clear();
+            currentMap->clearObjects();
 
             /* quench the torch of we're on the world map */
-            if (c->location->prev->map->isWorldMap())
+            if (prevMap->isWorldMap())
                 c->party->quenchTorch();
         }
-        locationFree(&c->location);
 
+        locationFree(&c->location);
 #ifdef IOS
         U4IOS::updateGameControllerContext(c->location->context);
 #endif
-
         return 1;
     }
     return 0;
@@ -2020,18 +2019,15 @@ void holeUp() {
  */
 void GameController::initMoons()
 {
-    int trammelphase = c->saveGame->trammelphase,
-        feluccaphase = c->saveGame->feluccaphase;
+    SaveGame* saveGame = c->saveGame;
+    int trammelphase = saveGame->trammelphase,
+        feluccaphase = saveGame->feluccaphase;
 
-    ASSERT(c != NULL, "Game context doesn't exist!");
-    ASSERT(c->saveGame != NULL, "Savegame doesn't exist!");
-    //ASSERT(mapIsWorldMap(c->location->map) && c->location->viewMode == VIEW_NORMAL, "Can only call gameInitMoons() from the world map!");
-
-    c->saveGame->trammelphase = c->saveGame->feluccaphase = 0;
+    saveGame->trammelphase = saveGame->feluccaphase = 0;
     c->moonPhase = 0;
 
-    while ((c->saveGame->trammelphase != trammelphase) ||
-           (c->saveGame->feluccaphase != feluccaphase))
+    while ((saveGame->trammelphase != trammelphase) ||
+           (saveGame->feluccaphase != feluccaphase))
         updateMoons(false);
 }
 
@@ -2937,9 +2933,8 @@ void GameController::timerFired() {
  * the ship sinking, if necessary
  */
 void gameCheckHullIntegrity() {
-    int i;
-
     bool killAll = false;
+
     /* see if the ship has sunk */
     if ((c->transportContext == TRANSPORT_SHIP) && c->saveGame->shiphull <= 0)
     {
@@ -2947,11 +2942,11 @@ void gameCheckHullIntegrity() {
         killAll = true;
     }
 
-
-    if (!collisionOverride && c->transportContext == TRANSPORT_FOOT &&
-        c->location->map->tileTypeAt(c->location->coords, WITHOUT_OBJECTS)->isSailable() &&
-        !c->location->map->tileTypeAt(c->location->coords, WITH_GROUND_OBJECTS)->isShip() &&
-        !c->location->map->getValidMoves(c->location->coords, c->party->getTransport()))
+    Location* loc = c->location;
+    if (! collisionOverride && c->transportContext == TRANSPORT_FOOT &&
+        loc->map->tileTypeAt(loc->coords, WITHOUT_OBJECTS)->isSailable() &&
+        ! loc->map->tileTypeAt(loc->coords, WITH_GROUND_OBJECTS)->isShip() &&
+        ! loc->map->getValidMoves(loc->coords, c->party->getTransport()))
     {
         screenMessage("\nTrapped at sea without thy ship, thou dost drown!\n\n");
         killAll = true;
@@ -2959,7 +2954,7 @@ void gameCheckHullIntegrity() {
 
     if (killAll)
     {
-        for (i = 0; i < c->party->size(); i++)
+        for (int i = 0; i < c->party->size(); i++)
         {
             c->party->member(i)->setHp(0);
             c->party->member(i)->setStatus(STAT_DEAD);
@@ -2976,7 +2971,6 @@ void gameCheckHullIntegrity() {
  */
 void GameController::checkSpecialCreatures(Direction dir) {
     int i;
-    Object *obj;
     static const struct {
         int x, y;
         Direction dir;
@@ -2990,14 +2984,16 @@ void GameController::checkSpecialCreatures(Direction dir) {
         { 229, 223, DIR_NORTH }, /* N'P" O'F" */
         { 228, 222, DIR_NORTH } /* N'O" O'E" */
     };
+    const Coords& coords = c->location->coords;
 
     /*
      * if heading east into pirates cove (O'A" N'N"), generate pirate
      * ships
      */
     if (dir == DIR_EAST &&
-        c->location->coords.x == 0xdd &&
-        c->location->coords.y == 0xe0) {
+        coords.x == 0xdd &&
+        coords.y == 0xe0) {
+        Object *obj;
         for (i = 0; i < 8; i++) {
             obj = c->location->map->addCreature(xu4.config->creature(PIRATE_ID), Coords(pirateInfo[i].x, pirateInfo[i].y));
             obj->setDirection(pirateInfo[i].dir);
@@ -3009,13 +3005,12 @@ void GameController::checkSpecialCreatures(Direction dir) {
      * daemons unless horn has been blown
      */
     if (dir == DIR_SOUTH &&
-        c->location->coords.x >= 229 &&
-        c->location->coords.x < 234 &&
-        c->location->coords.y >= 212 &&
-        c->location->coords.y < 217 &&
+        coords.x >= 229 && coords.x < 234 &&
+        coords.y >= 212 && coords.y < 217 &&
         c->aura.getType() != Aura::HORN) {
         for (i = 0; i < 8; i++)
-            c->location->map->addCreature(xu4.config->creature(DAEMON_ID), Coords(231, c->location->coords.y + 1, c->location->coords.z));
+            c->location->map->addCreature(xu4.config->creature(DAEMON_ID),
+                                          Coords(231, coords.y + 1, coords.z));
     }
 }
 
@@ -3191,7 +3186,9 @@ bool creatureRangeAttack(const Coords &coords, Creature *m) {
  * fails.  If a tile is blocked, that tile is included in the path
  * only if includeBlocked is true.
  */
-vector<Coords> gameGetDirectionalActionPath(int dirmask, int validDirections, const Coords &origin, int minDistance, int maxDistance, bool (*blockedPredicate)(const Tile *tile), bool includeBlocked) {
+vector<Coords> gameGetDirectionalActionPath(int dirmask, int validDirections,
+        const Coords &origin, int minDistance, int maxDistance,
+        bool (*blockedPredicate)(const Tile *tile), bool includeBlocked) {
     vector<Coords> path;
     Direction dirx = DIR_NONE,
               diry = DIR_NONE;
@@ -3211,19 +3208,20 @@ vector<Coords> gameGetDirectionalActionPath(int dirmask, int validDirections, co
      * Stop when the the range is exceeded, or the action is blocked.
      */
 
+    Map* map = c->location->map;
     Coords t_c(origin);
     if ((dirx <= 0 || DIR_IN_MASK(dirx, validDirections)) &&
         (diry <= 0 || DIR_IN_MASK(diry, validDirections))) {
         for (int distance = 0; distance <= maxDistance;
-             distance++, map_move(t_c, dirx, c->location->map),
-                 map_move(t_c, diry, c->location->map)) {
+             distance++, map_move(t_c, dirx, map),
+                 map_move(t_c, diry, map)) {
 
             if (distance >= minDistance) {
                 /* make sure our action isn't taking us off the map */
-                if (MAP_IS_OOB(c->location->map, t_c))
+                if (MAP_IS_OOB(map, t_c))
                     break;
 
-                const Tile *tile = c->location->map->tileTypeAt(t_c, WITH_GROUND_OBJECTS);
+                const Tile *tile = map->tileTypeAt(t_c, WITH_GROUND_OBJECTS);
 
                 /* should we see if the action is blocked before trying it? */
                 if (!includeBlocked && blockedPredicate &&
@@ -3296,16 +3294,19 @@ void gameDamageShip(int minDamage, int maxDamage) {
  * Sets (or unsets) the active player
  */
 void gameSetActivePlayer(int player) {
+    Party* party = c->party;
+
     if (player == -1) {
-        c->party->setActivePlayer(-1);
+        party->setActivePlayer(-1);
         screenMessage("Set Active Player: None!\n");
     }
-    else if (player < c->party->size()) {
-        screenMessage("Set Active Player: %s!\n", c->party->member(player)->getName().c_str());
-        if (c->party->member(player)->isDisabled())
+    else if (player < party->size()) {
+        screenMessage("Set Active Player: %s!\n",
+                      party->member(player)->getName().c_str());
+        if (party->member(player)->isDisabled())
             screenMessage("Disabled!\n");
         else
-            c->party->setActivePlayer(player);
+            party->setActivePlayer(player);
     }
 }
 
@@ -3320,8 +3321,9 @@ void GameController::creatureCleanup() {
         Object *obj = *i;
         const Coords& o_coords = obj->getCoords();
 
-        if ((obj->getType() == Object::CREATURE) && (o_coords.z == c->location->coords.z) &&
-             map_distance(o_coords, c->location->coords, c->location->map) > MAX_CREATURE_DISTANCE) {
+        if ((obj->getType() == Object::CREATURE) &&
+            (o_coords.z == c->location->coords.z) &&
+            map_distance(o_coords, c->location->coords, c->location->map) > MAX_CREATURE_DISTANCE) {
 
             /* delete the object and remove it from the map */
             i = map->removeObject(i);
@@ -3334,17 +3336,18 @@ void GameController::creatureCleanup() {
  * Checks creature conditions and spawns new creatures if necessary
  */
 void GameController::checkRandomCreatures() {
-    int canSpawnHere = c->location->map->isWorldMap() || c->location->context & CTX_DUNGEON;
+    const Location* loc = c->location;
+    int canSpawnHere = loc->map->isWorldMap() || loc->context & CTX_DUNGEON;
 #ifdef IOS
-    int spawnDivisor = c->location->context & CTX_DUNGEON ? (53 - (c->location->coords.z << 2)) : 53;
+    int spawnDivisor = loc->context & CTX_DUNGEON ? (53 - (loc->coords.z << 2)) : 53;
 #else
-    int spawnDivisor = c->location->context & CTX_DUNGEON ? (32 - (c->location->coords.z << 2)) : 32;
+    int spawnDivisor = loc->context & CTX_DUNGEON ? (32 - (loc->coords.z << 2)) : 32;
 #endif
 
     /* If there are too many creatures already,
        or we're not on the world map, don't worry about it! */
     if (!canSpawnHere ||
-        c->location->map->getNumberOfCreatures() >= MAX_CREATURES_ON_MAP ||
+        loc->map->getNumberOfCreatures() >= MAX_CREATURES_ON_MAP ||
         xu4_random(spawnDivisor) != 0)
         return;
 
