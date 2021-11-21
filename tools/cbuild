@@ -30,7 +30,7 @@ windows)
 	echo '
   unzip /tmp/allegro-x86_64-w64-mingw32-gcc-10.2.0-posix-seh-static-5.2.7.0.zip
   mv allegro usr
-  unzip /tmp/boron-x86_64-w64-mingw32-static-2.0.6.zip
+  unzip /tmp/boron-x86_64-w64-mingw32-static-2.0.7.zip
   mkdir u4
   cd u4
   tar xf /tmp/project.tar.gz
@@ -39,7 +39,7 @@ windows)
 
 	podman run -d -it --name=$ID xu4/f33-mingw:1.0 /bin/bash || exit
 	podman cp ${SDK_DIR}/allegro-x86_64-w64-mingw32-gcc-10.2.0-posix-seh-static-5.2.7.0.zip $ID:$CDIR
-	podman cp ${SDK_DIR}/boron-x86_64-w64-mingw32-static-2.0.6.zip $ID:$CDIR
+	podman cp ${SDK_DIR}/boron-x86_64-w64-mingw32-static-2.0.7.zip $ID:$CDIR
 	podman cp project.tar.gz $ID:$CDIR
 	podman cp $HDIR/${SCRIPT} $ID:$CDIR/${SCRIPT}
 	podman exec -it -u build $ID /bin/bash $CDIR/${SCRIPT}
@@ -58,7 +58,7 @@ windows)
 
 linux)
 	echo '
-  tar xjf /tmp/boron-x86_64-static-2.0.6.tar.bz2
+  tar xjf /tmp/boron-x86_64-static-2.0.7.tar.bz2
   mkdir u4
   cd u4
   tar xf /tmp/project.tar.gz
@@ -66,7 +66,7 @@ linux)
 ' >$HDIR/${SCRIPT}
 
 	podman run -d -it --name=$ID xu4/f33-gcc:1.0 /bin/bash || exit
-	podman cp ${SDK_DIR}/boron-x86_64-static-2.0.6.tar.bz2 $ID:$CDIR
+	podman cp ${SDK_DIR}/boron-x86_64-static-2.0.7.tar.bz2 $ID:$CDIR
 	podman cp project.tar.gz $ID:$CDIR
 	podman cp $HDIR/${SCRIPT} $ID:$CDIR/${SCRIPT}
 	podman exec -it $ID /bin/bash $CDIR/${SCRIPT}
