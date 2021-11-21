@@ -5,8 +5,10 @@
 #ifdef _WIN32
 #include <sys/types.h>
 #include <sys/timeb.h>
+#include <windows.h>
 #else
 #include <sys/time.h>
+#include <time.h>
 #endif
 
 static uint32_t getTicks_start = 0;
@@ -31,4 +33,16 @@ uint32_t getTicks()
         return now - getTicks_start;
     getTicks_start = now;
     return 0;
+}
+
+void msecSleep(uint32_t ms)
+{
+#ifdef _WIN32
+    Sleep(ms);
+#else
+   struct timespec stime;
+   stime.tv_sec  = ms / 1000;
+   stime.tv_nsec = (ms - stime.tv_sec*1000) * 1000000;
+   nanosleep(&stime, 0);
+#endif
 }

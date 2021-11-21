@@ -2,6 +2,7 @@
  * event.cpp
  */
 
+#include <assert.h>
 #include <cctype>
 #include <cstring>
 #include <list>
@@ -17,27 +18,34 @@
 #include "textview.h"
 #include "xu4.h"
 
-using namespace std;
-
 /**
  * Constructs the event handler object.
  */
-EventHandler::EventHandler(int gameCycleDuration) :
+EventHandler::EventHandler(int gameCycleDuration, int frameDuration) :
     timerInterval(gameCycleDuration),
-    timedEvents(timerInterval), updateScreen(NULL) {
+    frameInterval(frameDuration),
+    runRecursion(0),
+    updateScreen(NULL)
+{
     controllerDone = ended = false;
     anim_init(&flourishAnim, 64, NULL, NULL);
     anim_init(&fxAnim, 32, NULL, NULL);
+#ifdef DEBUG
+    recordFP = -1;
+    recordMode = 0;
+#endif
 }
 
 EventHandler::~EventHandler() {
+#ifdef DEBUG
+    endRecording();
+#endif
     anim_free(&flourishAnim);
     anim_free(&fxAnim);
 }
 
 void EventHandler::setTimerInterval(int msecs) {
     timerInterval = msecs;
-    timedEvents.reset(msecs);
 }
 
 void EventHandler::runController(Controller* con) {
@@ -172,6 +180,262 @@ MouseArea* EventHandler::mouseAreaForPoint(int x, int y) {
     return NULL;
 }
 
+void EventHandler::setScreenUpdate(void (*updateFunc)(void)) {
+    updateScreen = updateFunc;
+}
+
+#include "support/getTicks.c"
+
+/**
+ * Delays program execution for the specified number of milliseconds.
+ * This doesn't actually stop events, but it stops the user from interacting
+ * while some important event happens (e.g., getting hit by a cannon ball or
+ * a spell effect).
+ *
+ * This method is not expected to handle msec values of less than the display
+ * refresh interval.
+ *
+ * \return true if game should exit.
+ */
+bool EventHandler::wait_msecs(unsigned int msec) {
+    Controller waitCon;     // Base controller consumes key events.
+    EventHandler* eh = xu4.eventHandler;
+    uint32_t waitTime = getTicks() + msec;
+    uint32_t now, elapsed;
+
+    assert(eh->runRecursion);
+
+    while (! eh->ended) {
+        eh->handleInputEvents(&waitCon, NULL);
+#ifdef DEBUG
+        int key;
+        while ((key = eh->recordedKey()))
+            waitCon.notifyKeyPressed(key);
+        eh->recordTick();
+#endif
+        if (eh->runTime >= eh->timerInterval) {
+            eh->runTime -= eh->timerInterval;
+            eh->timedEvents.tick();
+        }
+        eh->runTime += eh->frameInterval;
+
+        screenSwapBuffers();
+
+        now = getTicks();
+        elapsed = now - eh->realTime;
+        eh->realTime = now;
+        if (now >= waitTime)    // Break only after realTime is updated.
+            break;
+        if (elapsed+2 < eh->frameInterval)
+            msecSleep(eh->frameInterval - elapsed);
+    }
+
+    return eh->ended;
+}
+
+/*
+ * Execute the game with a deterministic loop until the current controller
+ * is done or the game exits.
+ *
+ * \return true if game should exit.
+ */
+bool EventHandler::run() {
+    uint32_t now, elapsed;
+
+    if (updateScreen)
+        (*updateScreen)();
+
+    if (! runRecursion) {
+        runTime = 0;
+        realTime = getTicks();
+    }
+    ++runRecursion;
+
+    while (! ended && ! controllerDone) {
+        handleInputEvents(getController(), updateScreen);
+#ifdef DEBUG
+        int key;
+        while ((key = recordedKey())) {
+            if (getController()->notifyKeyPressed(key) && updateScreen)
+                (*updateScreen)();
+        }
+        recordTick();
+#endif
+        if (runTime >= timerInterval) {
+            runTime -= timerInterval;
+            timedEvents.tick();
+        }
+        runTime += frameInterval;
+
+        screenSwapBuffers();
+
+        now = getTicks();
+        elapsed = now - realTime;
+        realTime = now;
+        if (elapsed+2 < frameInterval)
+            msecSleep(frameInterval - elapsed);
+    }
+
+    --runRecursion;
+    return ended;
+}
+
+#ifdef DEBUG
+#include <fcntl.h>
+
+#ifdef _WIN32
+#include <io.h>
+#define close   _close
+#define read    _read
+#define write   _write
+#else
+#include <unistd.h>
+#endif
+
+#ifndef CDI32
+#include "cdi.h"
+#endif
+
+#define RECORD_CDI  CDI32(0xDA,0x7A,0x4F,0xC0)
+#define HDR_SIZE    8
+
+enum RecordMode {
+    MODE_DISABLED,
+    MODE_RECORD,
+    MODE_REPLAY,
+};
+
+enum RecordCommand {
+    RECORD_NOP,
+    RECORD_KEY,
+    RECORD_KEY1,
+    RECORD_END = 0xff
+};
+
+struct RecordKey {
+    uint8_t op, key;
+    uint16_t delay;
+};
+
+bool EventHandler::beginRecording(const char* file, uint32_t seed) {
+    uint32_t head[2];
+
+    recordClock = recordLast = 0;
+    recordMode = MODE_DISABLED;
+
+    if (recordFP >= 0)
+        close(recordFP);
+#ifdef _WIN32
+    recordFP = _open(file, _O_WRONLY | _O_CREAT, _S_IWRITE);
+#else
+    recordFP = open(file, O_WRONLY | O_CREAT,
+                    S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+#endif
+    if (recordFP < 0)
+        return false;
+
+    head[0] = RECORD_CDI;
+    head[1] = seed;
+    if (write(recordFP, head, HDR_SIZE) != HDR_SIZE)
+        return false;
+    recordMode = MODE_RECORD;
+    return true;
+}
+
+/**
+ * Stop either recording or playback.
+ */
+void EventHandler::endRecording() {
+    if (recordFP >= 0) {
+        if (recordMode == MODE_RECORD) {
+            char op = RECORD_END;
+            write(recordFP, &op, 1);
+        }
+        close(recordFP);
+        recordFP = -1;
+        recordMode = MODE_DISABLED;
+    }
+}
+
+//void EventHandler::recordMouse(int x, int y, int button) {}
+
+void EventHandler::recordKey(int key) {
+    if (recordMode == MODE_RECORD) {
+        RecordKey rec;
+        rec.op    = (key > 0xff) ? RECORD_KEY1 : RECORD_KEY;
+        rec.key   = key & 0xff;
+        rec.delay = recordClock - recordLast;
+
+        recordLast = recordClock;
+        write(recordFP, &rec, 4);
+    }
+}
+
+/**
+ * Update for both recording and playback modes.
+ *
+ * \return XU4 key code or zero if no key was pressed. When recording, a zero
+ *         is always returned.
+ */
+int EventHandler::recordedKey() {
+    int key = 0;
+    if (recordMode == MODE_REPLAY) {
+        if (replayKey) {
+            if (recordClock >= recordLast) {
+                key = replayKey;
+                replayKey = 0;
+            }
+        } else {
+            RecordKey rec;
+            if (read(recordFP, &rec, 4) == 4 &&
+                (rec.op == RECORD_KEY || rec.op == RECORD_KEY1)) {
+                int fullKey = rec.key;
+                if (rec.op == RECORD_KEY1)
+                    fullKey |= 0x100;
+
+                if (rec.delay)
+                    replayKey = fullKey;
+                else
+                    key = fullKey;
+                recordLast = recordClock + rec.delay;
+            } else {
+                endRecording();
+            }
+        }
+    }
+
+    return key;
+}
+
+/**
+ * Begin playback from recorded input file.
+ *
+ * \return Random seed or zero if the recording file could not be opened.
+ */
+uint32_t EventHandler::replay(const char* file) {
+    uint32_t head[2];
+
+    recordClock = recordLast = 0;
+    recordMode = MODE_DISABLED;
+    replayKey = 0;
+
+    if (recordFP >= 0)
+        close(recordFP);
+#ifdef _WIN32
+    recordFP = _open(file, _O_RDONLY);
+#else
+    recordFP = open(file, O_RDONLY);
+#endif
+    if (recordFP < 0)
+        return 0;
+    if (read(recordFP, head, HDR_SIZE) != HDR_SIZE || head[0] != RECORD_CDI)
+        return 0;
+
+    recordMode = MODE_REPLAY;
+    return head[1];
+}
+#endif
+
 
 //----------------------------------------------------------------------------
 
@@ -199,13 +463,9 @@ void TimedEvent::tick() {
 }
 
 /**
- * Returns true if the event queue is locked
+ * Destructs a timed event manager object.
  */
-bool TimedEventMgr::isLocked() const {
-    return locked;
-}
-
-void TimedEventMgr::cleanupLists() {
+TimedEventMgr::~TimedEventMgr() {
     while(! events.empty()) {
         delete events.front(), events.pop_front();
     }
@@ -260,20 +520,19 @@ void TimedEventMgr::remove(TimedEvent::Callback callback, void *data) {
  */
 void TimedEventMgr::tick() {
     List::iterator i;
-    lock();
+
+    // Lock the event list so it cannot be modified during iteration.
+    locked = true;
 
     for (i = events.begin(); i != events.end(); i++)
         (*i)->tick();
 
-    unlock();
+    locked = false;
 
     // Remove events that have been deferred for removal
     for (i = deferredRemovals.begin(); i != deferredRemovals.end(); i++)
         events.remove(*i);
 }
-
-void TimedEventMgr::lock()      { locked = true; }
-void TimedEventMgr::unlock()    { locked = false; }
 
 void EventHandler::pushMouseAreaSet(MouseArea *mouseAreas) {
     mouseAreaSets.push_front(mouseAreas);

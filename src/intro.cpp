@@ -32,6 +32,8 @@ extern bool loadMapData(Map *map, U4FILE *uf, Symbol borderTile);
 #include "ios_helpers.h"
 #endif
 
+extern uint32_t getTicks();
+
 using namespace std;
 
 #define INTRO_MAP_HEIGHT 5
@@ -1809,9 +1811,6 @@ void IntroController::getTitleSourceData()
     info->image = scaled;
 #endif
 }
-
-
-#include "support/getTicks.c"
 
 
 //

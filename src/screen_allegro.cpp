@@ -125,12 +125,6 @@ void screenInit_sys(const Settings* settings, int* dim, int reset) {
     if (reset) {
         sa = SA;
 
-        // On reset sa->queue is not touched as the TimedEventMgr has a timer
-        // registered and that needs to keep running.
-
-        // Halt refresh timer as display re-creation may take a moment.
-        al_stop_timer(sa->refreshTimer);
-
         al_unregister_event_source(sa->queue, al_get_display_event_source(sa->disp));
 
 #ifdef USE_GL
@@ -268,17 +262,11 @@ void screenInit_sys(const Settings* settings, int* dim, int reset) {
 #endif
 
     sa->refreshRate = 1.0 / settings->screenAnimationFramesPerSecond;
-    if (reset) {
-        al_set_timer_speed(sa->refreshTimer, sa->refreshRate);
-    } else {
-        sa->refreshTimer = al_create_timer(sa->refreshRate);
-
-        al_register_event_source(sa->queue, al_get_timer_event_source(sa->refreshTimer));
+    if (! reset) {
         al_register_event_source(sa->queue, al_get_keyboard_event_source());
     }
 
     al_register_event_source(sa->queue, al_get_display_event_source(sa->disp));
-    al_start_timer(sa->refreshTimer);
     return;
 
 fatal:
@@ -287,9 +275,6 @@ fatal:
 
 void screenDelete_sys() {
     ScreenAllegro* sa = SA;
-
-    al_destroy_timer(sa->refreshTimer);
-    sa->refreshTimer = NULL;
 
 #ifdef USE_GL
     gpu_free(&sa->gpu);
@@ -392,7 +377,11 @@ static void updateDisplay(int x, int y, int w, int h) {
 extern void screenRender();
 #endif
 
+extern void musicUpdate();
+
 void screenSwapBuffers() {
+    musicUpdate();
+
 #ifdef USE_GL
     CPU_START()
     screenRender();
@@ -409,8 +398,6 @@ float screenFrameDuration() {
 }
 
 void screenWait(int numberOfAnimationFrames) {
-    ScreenAllegro* sa = SA;
-
 #if defined(USE_GL) && ! defined(GPU_RENDER)
     gpu_blitTexture(gpu_screenTexture(xu4.gpu), 0, 0, xu4.screenImage);
 #endif
@@ -420,11 +407,8 @@ void screenWait(int numberOfAnimationFrames) {
 
     assert(numberOfAnimationFrames >= 0);
 
-    // Stop refresh timer to prevent events from accumulating in queue.
-    al_stop_timer(sa->refreshTimer);
     screenSwapBuffers();
-    al_rest(sa->refreshRate * numberOfAnimationFrames);
-    al_start_timer(sa->refreshTimer);
+    al_rest(SA->refreshRate * numberOfAnimationFrames);
 }
 
 void screenSetMouseCursor(MouseCursor cursor) {

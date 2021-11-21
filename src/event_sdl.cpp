@@ -8,108 +8,11 @@
 #include "event.h"
 
 #include "context.h"
-#include "debug.h"
-#include "error.h"
 #include "screen.h"
 #include "settings.h"
 #include "xu4.h"
 
 extern bool verbose;
-
-extern uint32_t getTicks();
-extern int u4_SDL_InitSubSystem(Uint32 flags);
-extern void u4_SDL_QuitSubSystem(Uint32 flags);
-
-enum UserEventCode {
-    UC_ScreenRefresh,
-    UC_TimedEventMgr
-};
-
-unsigned int refresh_callback(unsigned int interval, void *param) {
-    SDL_Event event;
-
-    event.type = SDL_USEREVENT;
-    event.user.code = UC_ScreenRefresh;
-    event.user.data1 = param;
-    event.user.data2 = NULL;
-    SDL_PushEvent(&event);
-
-    return interval;
-}
-
-/**
- * Adds an SDL timer event to the message queue.
- */
-static unsigned int tem_callback(unsigned int interval, void *param) {
-    SDL_Event event;
-
-    event.type = SDL_USEREVENT;
-    event.user.code = UC_TimedEventMgr;
-    event.user.data1 = param;
-    event.user.data2 = NULL;
-    SDL_PushEvent(&event);
-
-    return interval;
-}
-
-static unsigned int tem_instances = 0;
-
-/**
- * Constructs a timed event manager object.
- * Adds a timer callback to the SDL subsystem, which
- * will drive all of the timed events that this object
- * controls.
- */
-TimedEventMgr::TimedEventMgr(int i) : baseInterval(i) {
-    /* start the SDL timer */
-    if (tem_instances == 0) {
-        if (u4_SDL_InitSubSystem(SDL_INIT_TIMER) < 0)
-            errorFatal("unable to init SDL: %s", SDL_GetError());
-    }
-
-    id = static_cast<void*>(SDL_AddTimer(i, &tem_callback, this));
-    tem_instances++;
-}
-
-/**
- * Destructs a timed event manager object.
- * It removes the callback timer and un-initializes the
- * SDL subsystem if there are no other active TimedEventMgr
- * objects.
- */
-TimedEventMgr::~TimedEventMgr() {
-    SDL_RemoveTimer(static_cast<SDL_TimerID>(id));
-    id = NULL;
-
-    if (tem_instances == 1)
-        u4_SDL_QuitSubSystem(SDL_INIT_TIMER);
-
-    if (tem_instances > 0)
-        tem_instances--;
-
-    cleanupLists();
-}
-
-/**
- * Re-initializes the timer manager to a new timer granularity
- */
-void TimedEventMgr::reset(unsigned int interval) {
-    baseInterval = interval;
-    stop();
-    start();
-}
-
-void TimedEventMgr::stop() {
-    if (id) {
-        SDL_RemoveTimer(static_cast<SDL_TimerID>(id));
-        id = NULL;
-    }
-}
-
-void TimedEventMgr::start() {
-    if (!id)
-        id = static_cast<void*>(SDL_AddTimer(baseInterval, &tem_callback, this));
-}
 
 static void handleMouseMotionEvent(const SDL_Event &event) {
     if (! xu4.settings->mouseOptions.enabled)
@@ -154,7 +57,6 @@ static void handleMouseButtonDownEvent(const SDL_Event &event, Controller *contr
 }
 
 static void handleKeyDownEvent(const SDL_Event &event, Controller *controller, updateScreenCallback updateScreen) {
-    int processed;
     int key;
 
     if (event.key.keysym.unicode != 0)
@@ -189,6 +91,10 @@ static void handleKeyDownEvent(const SDL_Event &event, Controller *controller, u
         key = U4_FKEY + (event.key.keysym.sym - SDLK_F1);
 #endif
 
+#ifdef DEBUG
+    xu4.eventHandler->recordKey(key);
+#endif
+
     if (verbose)
         printf("key event: unicode = %d, sym = %d, mod = %d; translated = %d\n",
                event.key.keysym.unicode,
@@ -197,131 +103,41 @@ static void handleKeyDownEvent(const SDL_Event &event, Controller *controller, u
                key);
 
     /* handle the keypress */
-    processed = controller->notifyKeyPressed(key);
-
-    if (processed) {
+    if (controller->notifyKeyPressed(key)) {
         if (updateScreen)
             (*updateScreen)();
     }
-
 }
 
-/**
- * Delays program execution for the specified number of milliseconds.
- * This doesn't actually stop events, but it stops the user from interacting
- * while some important event happens (e.g., getting hit by a cannon ball or
- * a spell effect).
- *
- * This method is not expected to handle msec values of less than the display
- * refresh interval.
- *
- * \return true if game should exit.
- */
-bool EventHandler::wait_msecs(unsigned int msec) {
-    Controller waitCon;     // Base controller consumes key events.
+void EventHandler::handleInputEvents(Controller* controller,
+                                     updateScreenCallback update) {
     SDL_Event event;
-    EventHandler* eh = xu4.eventHandler;
-    uint32_t endTime = getTicks() + msec;
-    bool sleeping = true;
-    bool redraw = false;
 
-    while (sleeping && ! eh->ended) {
-        do {
-            SDL_WaitEvent(&event);
-            switch (event.type) {
-            default:
-                break;
-            // Discard all key & button events but globals (e.g. Alt+x).
-            case SDL_KEYDOWN:
-                handleKeyDownEvent(event, &waitCon, NULL);
-                break;
-            case SDL_KEYUP:
-            case SDL_MOUSEBUTTONDOWN:
-            case SDL_MOUSEBUTTONUP:
-                // Discard the event.
-                break;
-            case SDL_MOUSEMOTION:
-                handleMouseMotionEvent(event);
-                break;
-            case SDL_ACTIVEEVENT:
-                handleActiveEvent(event, eh->updateScreen);
-                break;
-            case SDL_USEREVENT:
-                if (event.user.code == UC_ScreenRefresh) {
-                    redraw = true;
-                } else if (event.user.code == UC_TimedEventMgr) {
-                    eh->timedEvents.tick();
-                }
-                if (getTicks() >= endTime)
-                    sleeping = false;
-                break;
-            case SDL_QUIT:
-                eh->quitGame();
-                sleeping = false;
-                break;
-            }
-        } while (SDL_PollEvent(NULL));
+    while (SDL_PollEvent(&event)) {
+        switch (event.type) {
+        default:
+            break;
+        case SDL_KEYDOWN:
+            handleKeyDownEvent(event, controller, update);
+            break;
 
-        if (redraw) {
-            redraw = false;
-            screenSwapBuffers();
+        case SDL_MOUSEBUTTONDOWN:
+            handleMouseButtonDownEvent(event, controller, update);
+            break;
+
+        case SDL_MOUSEMOTION:
+            handleMouseMotionEvent(event);
+            break;
+
+        case SDL_ACTIVEEVENT:
+            handleActiveEvent(event, updateScreen);
+            break;
+
+        case SDL_QUIT:
+            quitGame();
+            break;
         }
     }
-    return eh->ended;
-}
-
-void EventHandler::run() {
-    SDL_Event event;
-    bool redraw = false;
-
-    if (updateScreen)
-        (*updateScreen)();
-    screenSwapBuffers();
-
-    while (!ended && !controllerDone) {
-        do {
-            SDL_WaitEvent(&event);
-            switch (event.type) {
-            default:
-                break;
-            case SDL_KEYDOWN:
-                handleKeyDownEvent(event, getController(), updateScreen);
-                break;
-
-            case SDL_MOUSEBUTTONDOWN:
-                handleMouseButtonDownEvent(event, getController(), updateScreen);
-                break;
-
-            case SDL_MOUSEMOTION:
-                handleMouseMotionEvent(event);
-                break;
-
-            case SDL_USEREVENT:
-                if (event.user.code == UC_ScreenRefresh)
-                    redraw = true;
-                else
-                    timedEvents.tick();
-                break;
-
-            case SDL_ACTIVEEVENT:
-                handleActiveEvent(event, updateScreen);
-                break;
-
-            case SDL_QUIT:
-                quitGame();
-                break;
-            }
-        } while (SDL_PollEvent(NULL));
-
-        if (redraw) {
-            redraw = false;
-            screenSwapBuffers();
-        }
-    }
-}
-
-void EventHandler::setScreenUpdate(void (*updateScreen)(void)) {
-    this->updateScreen = updateScreen;
 }
 
 /**

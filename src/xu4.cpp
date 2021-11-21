@@ -10,6 +10,7 @@
  */
 
 #include <cstring>
+#include <ctime>
 #include "xu4.h"
 #include "config.h"
 #include "debug.h"
@@ -38,7 +39,9 @@ enum OptionsFlag {
     OPT_NO_INTRO   = 2,
     OPT_NO_AUDIO   = 4,
     OPT_VERBOSE    = 8,
-    OPT_TEST_SAVE  = 0x10
+    OPT_RECORD     = 0x10,
+    OPT_REPLAY     = 0x20,
+    OPT_TEST_SAVE  = 0x80
 };
 
 struct Options {
@@ -47,6 +50,7 @@ struct Options {
     uint32_t scale;
     uint8_t  filter;
     const char* profile;
+    const char* recordFile;
 };
 
 #define strEqual(A,B)       (strcmp(A,B) == 0)
@@ -106,19 +110,38 @@ int parseOptions(Options* opt, int argc, char** argv) {
             "  -f, --fullscreen        Run in fullscreen mode.\n"
             "  -h, --help              Print this message and quit.\n"
             "  -i, --skip-intro        Skip the intro. and load the last saved game.\n"
-            "  -p <string>,\n"
-            "      --profile <string>  Use another set of settings and save files.\n"
+            "  -p, --profile <string>  Use another set of settings and save files.\n"
             "  -q, --quiet             Disable audio.\n"
-            "  -s <int>,\n"
-            "      --scale <int>       Specify scaling factor (1-5).\n"
+            "  -s, --scale <int>       Specify scaling factor (1-5).\n"
             "  -v, --verbose           Enable verbose console output.\n"
-
+#ifdef DEBUG
+            "\nDEBUG Options:\n"
+            "  -c, --capture <file>    Record user input.\n"
+            "  -r, --replay <file>     Play using recorded input.\n"
+            "      --test-save         Save to /tmp/xu4/ and quit.\n"
+#endif
             "\nFilters: point, 2xBi, 2xSaI, Scale2x\n"
             "\nHomepage: http://xu4.sourceforge.com\n");
 
             return 0;
         }
 #ifdef DEBUG
+        else if (strEqualAlt(argv[i], "-c", "--capture"))
+        {
+            if (++i >= argc)
+                goto missing_value;
+            opt->recordFile = argv[i];
+            opt->flags |= OPT_RECORD;
+            opt->used  |= OPT_RECORD;
+        }
+        else if (strEqualAlt(argv[i], "-r", "--replay"))
+        {
+            if (++i >= argc)
+                goto missing_value;
+            opt->recordFile = argv[i];
+            opt->flags |= OPT_REPLAY;
+            opt->used  |= OPT_REPLAY;
+        }
         else if (strEqual(argv[i], "--test-save"))
         {
             opt->flags |= OPT_TEST_SAVE;
@@ -137,6 +160,10 @@ missing_value:
     return 0;
 }
 
+
+#ifdef DEBUG
+void servicesFree(XU4GameServices*);
+#endif
 
 void servicesInit(XU4GameServices* gs, Options* opt) {
     if (opt->flags & OPT_VERBOSE)
@@ -167,7 +194,6 @@ void servicesInit(XU4GameServices* gs, Options* opt) {
 
     Debug::initGlobal("debug/global.txt");
 
-    xu4_srandom();
     gs->config = configInit();
     screenInit();
     Tile::initSymbols(gs->config);
@@ -175,7 +201,27 @@ void servicesInit(XU4GameServices* gs, Options* opt) {
     if (! (opt->flags & OPT_NO_AUDIO))
         soundInit();
 
-    gs->eventHandler = new EventHandler(1000/gs->settings->gameCyclesPerSecond);
+    gs->eventHandler = new EventHandler(1000/gs->settings->gameCyclesPerSecond,
+                            1000/gs->settings->screenAnimationFramesPerSecond);
+
+#ifdef DEBUG
+    if (opt->flags & OPT_REPLAY) {
+        uint32_t seed = gs->eventHandler->replay(opt->recordFile);
+        if (! seed) {
+            servicesFree(gs);
+            errorFatal("Cannot open recorded input from %s", opt->recordFile);
+        }
+        xu4_srandom(seed);
+    } else if (opt->flags & OPT_RECORD) {
+        uint32_t seed = time(NULL);
+        if (! gs->eventHandler->beginRecording(opt->recordFile, seed)) {
+            servicesFree(gs);
+            errorFatal("Cannot open recording file %s", opt->recordFile);
+        }
+        xu4_srandom(seed);
+    } else
+#endif
+        xu4_srandom(time(NULL));
 
     gs->stage = (opt->flags & OPT_NO_INTRO) ? StagePlay : StageIntro;
 }

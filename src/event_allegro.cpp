@@ -8,52 +8,8 @@
 #include "settings.h"
 #include "xu4.h"
 
-extern uint32_t getTicks();
-
 extern bool verbose;
 
-
-#define CTIMER(id)  ((ALLEGRO_TIMER*) id)
-
-/**
- * Constructs a timed event manager object, which will drive all of the
- * timed events that this object controls.
- */
-TimedEventMgr::TimedEventMgr(int msec) : baseInterval(msec) {
-    ALLEGRO_TIMER* timer = al_create_timer(double(msec) * 0.001);
-    id = timer;
-    al_register_event_source(SA->queue, al_get_timer_event_source(timer));
-    al_start_timer(timer);
-}
-
-/**
- * Destructs a timed event manager object.
- */
-TimedEventMgr::~TimedEventMgr() {
-    al_destroy_timer(CTIMER(id));   // Automatically unregisters.
-    id = NULL;
-    cleanupLists();
-}
-
-/**
- * Re-initializes the timer manager to a new timer granularity
- */
-void TimedEventMgr::reset(unsigned int interval) {
-    baseInterval = interval;
-
-    ALLEGRO_TIMER* at = CTIMER(id);
-    al_stop_timer(at);
-    al_set_timer_speed(at, double(interval) * 0.001);
-    al_start_timer(at);
-}
-
-void TimedEventMgr::stop() {
-    al_stop_timer(CTIMER(id));
-}
-
-void TimedEventMgr::start() {
-    al_start_timer(CTIMER(id));
-}
 
 static void handleMouseMotionEvent(int x, int y) {
     if (! xu4.settings->mouseOptions.enabled)
@@ -97,8 +53,9 @@ static void handleMouseButtonDownEvent(EventHandler* handler, const ALLEGRO_EVEN
     }
 }
 
-static void handleKeyDownEvent(const ALLEGRO_EVENT* event, Controller *controller, updateScreenCallback updateScreen) {
-    int processed;
+static void handleKeyDownEvent(const ALLEGRO_EVENT* event,
+                               Controller *controller,
+                               updateScreenCallback updateScreen) {
     int key;
     int keycode = event->keyboard.keycode;
 
@@ -134,6 +91,10 @@ static void handleKeyDownEvent(const ALLEGRO_EVENT* event, Controller *controlle
             break;
     }
 
+#ifdef DEBUG
+    xu4.eventHandler->recordKey(key);
+#endif
+
     if (verbose) {
         printf("key event: unicode = %d, sym = %d, mod = %d; translated = %d\n",
                event->keyboard.unichar,
@@ -143,144 +104,45 @@ static void handleKeyDownEvent(const ALLEGRO_EVENT* event, Controller *controlle
     }
 
     /* handle the keypress */
-    processed = controller->notifyKeyPressed(key);
-    if (processed) {
+    if (controller->notifyKeyPressed(key)) {
         if (updateScreen)
             (*updateScreen)();
     }
 }
 
-extern void musicUpdate();
-
-/**
- * Delays program execution for the specified number of milliseconds.
- * This doesn't actually stop events, but it stops the user from interacting
- * while some important event happens (e.g., getting hit by a cannon ball or
- * a spell effect).
- *
- * This method is not expected to handle msec values of less than the display
- * refresh interval.
- *
- * \return true if game should exit.
- */
-bool EventHandler::wait_msecs(unsigned int msec) {
-    Controller waitCon;     // Base controller consumes key events.
+void EventHandler::handleInputEvents(Controller* controller,
+                                     updateScreenCallback update) {
     ALLEGRO_EVENT event;
-    EventHandler* eh = xu4.eventHandler;
-    ScreenAllegro* sa = SA;
-    uint32_t endTime = getTicks() + msec;
-    bool sleeping = true;
-    bool redraw = false;
 
-    // Using getTicks() rather than an ALLEGRO_TIMER to avoid the overhead
-    // to create/destroy & register/unregister it.
-
-    while (sleeping && ! eh->ended) {
-        do {
-            al_wait_for_event(sa->queue, &event);
-            switch (event.type) {
-            // Discard all key & button events but globals (e.g. Alt+x).
-            case ALLEGRO_EVENT_KEY_CHAR:
-                handleKeyDownEvent(&event, &waitCon, NULL);
-                break;
-            case ALLEGRO_EVENT_MOUSE_AXES:
-                handleMouseMotionEvent(event.mouse.x, event.mouse.y);
-                break;
-            /*
-            case SDL_ACTIVEEVENT:
-                handleActiveEvent(event, updateScreen);
-                break;
-            */
-            case ALLEGRO_EVENT_TIMER:
-                if (event.timer.source == sa->refreshTimer) {
-                    redraw = true;
-                } else {
-                    eh->timedEvents.tick();
-                }
-                if (getTicks() >= endTime)
-                    sleeping = false;
-                break;
-            case ALLEGRO_EVENT_DISPLAY_CLOSE:
-                eh->quitGame();
-                sleeping = false;
-                break;
-            }
-        } while (! al_is_event_queue_empty(sa->queue));
-
-        if (redraw) {
-            redraw = false;
-            musicUpdate();
-            screenSwapBuffers();
-        }
-    }
-    return eh->ended;
-}
-
-void EventHandler::run() {
-    ALLEGRO_EVENT event;
-    ScreenAllegro* sa = SA;
-    bool redraw = false;
-
-    if (updateScreen)
-        (*updateScreen)();
-    screenSwapBuffers();
-
-    if (! sa->runRecursion)
-        al_start_timer(sa->refreshTimer);
-    ++sa->runRecursion;
-
-    while (!ended && !controllerDone) {
-        do {
-            al_wait_for_event(sa->queue, &event);
-            switch (event.type) {
-            default:
-                break;
-            //case ALLEGRO_EVENT_KEY_DOWN:
-            case ALLEGRO_EVENT_KEY_CHAR:
-                handleKeyDownEvent(&event, getController(), updateScreen);
-                break;
-            case ALLEGRO_EVENT_MOUSE_BUTTON_DOWN:
-                handleMouseButtonDownEvent(this, &event, getController(), updateScreen);
-                break;
-            case ALLEGRO_EVENT_MOUSE_AXES:
-                handleMouseMotionEvent(event.mouse.x, event.mouse.y);
-                break;
-            case ALLEGRO_EVENT_TIMER:
-                if (event.timer.source == sa->refreshTimer)
-                    redraw = true;
-                else
-                    timedEvents.tick();
-                break;
-            /*
-            case SDL_ACTIVEEVENT:
-                handleActiveEvent(event, updateScreen);
-                break;
-            */
-            case ALLEGRO_EVENT_DISPLAY_CLOSE:
-                quitGame();
-                break;
+    while (al_get_next_event(SA->queue, &event)) {
+        switch (event.type) {
+        //case ALLEGRO_EVENT_KEY_DOWN:
+        case ALLEGRO_EVENT_KEY_CHAR:
+            handleKeyDownEvent(&event, controller, update);
+            break;
+        case ALLEGRO_EVENT_MOUSE_BUTTON_DOWN:
+            handleMouseButtonDownEvent(this, &event, controller, update);
+            break;
+        case ALLEGRO_EVENT_MOUSE_AXES:
+            handleMouseMotionEvent(event.mouse.x, event.mouse.y);
+            break;
+        /*
+        case SDL_ACTIVEEVENT:
+            handleActiveEvent(event, updateScreen);
+            break;
+        */
+        case ALLEGRO_EVENT_DISPLAY_CLOSE:
+            quitGame();
+            break;
 #if 0
-            // For mobile devices...
-            case ALLEGRO_EVENT_DISPLAY_HALT_DRAWING:
-            case ALLEGRO_EVENT_DISPLAY_RESUME_DRAWING:
+        // For mobile devices...
+        case ALLEGRO_EVENT_DISPLAY_HALT_DRAWING:
+        case ALLEGRO_EVENT_DISPLAY_RESUME_DRAWING:
 #endif
-            }
-        } while (! al_is_event_queue_empty(sa->queue));
-
-        if (redraw) {
-            redraw = false;
-            musicUpdate();
-            screenSwapBuffers();
+        default:
+            break;
         }
     }
-
-    --sa->runRecursion;
-    if (! sa->runRecursion)
-        al_stop_timer(sa->refreshTimer);
-}
-
-void EventHandler::setScreenUpdate(void (*updateFunc)(void)) {
-    updateScreen = updateFunc;
 }
 
 /**

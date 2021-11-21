@@ -24,7 +24,6 @@ extern unsigned int refresh_callback(unsigned int, void*);
 
 struct ScreenSDL {
     SDL_Cursor *cursors[5];
-    SDL_TimerID refreshTimer;
     int frameDuration;
     int currentCursor;
 };
@@ -37,7 +36,7 @@ SDL_Cursor *screenInitCursor(const char * const xpm[]);
 int u4_SDL_InitSubSystem(Uint32 flags) {
     int f = SDL_WasInit(SDL_INIT_EVERYTHING);
     if (f == 0) {
-        SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_AUDIO);
+        SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
     }
     if (!SDL_WasInit(flags))
         return SDL_InitSubSystem(flags);
@@ -55,13 +54,9 @@ void u4_SDL_QuitSubSystem(Uint32 flags) {
 void screenInit_sys(const Settings* settings, int* dim, int reset) {
     ScreenSDL* sd;
 
-    if (reset) {
-        sd = SD;
-        SDL_RemoveTimer(sd->refreshTimer);
-        sd->refreshTimer = NULL;
-    } else {
+    if (! reset) {
         /* start SDL */
-        if (u4_SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_TIMER) < 0)
+        if (u4_SDL_InitSubSystem(SDL_INIT_VIDEO) < 0)
             errorFatal("unable to init SDL: %s", SDL_GetError());
         SDL_EnableUNICODE(1);
         atexit(SDL_Quit);
@@ -125,21 +120,17 @@ void screenInit_sys(const Settings* settings, int* dim, int reset) {
     }
 
     sd->frameDuration = 1000 / settings->screenAnimationFramesPerSecond;
-    sd->refreshTimer = SDL_AddTimer(sd->frameDuration, &refresh_callback, NULL);
 }
 
 void screenDelete_sys() {
     ScreenSDL* sd = SD;
-
-    SDL_RemoveTimer(sd->refreshTimer);
-    sd->refreshTimer = NULL;
 
     SDL_FreeCursor(sd->cursors[1]);
     SDL_FreeCursor(sd->cursors[2]);
     SDL_FreeCursor(sd->cursors[3]);
     SDL_FreeCursor(sd->cursors[4]);
 
-    u4_SDL_QuitSubSystem(SDL_INIT_VIDEO | SDL_INIT_TIMER);
+    u4_SDL_QuitSubSystem(SDL_INIT_VIDEO);
 
     delete sd;
     xu4.screenSys = NULL;

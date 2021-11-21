@@ -204,43 +204,21 @@ typedef void *UIEvent;
  */
 class TimedEventMgr {
 public:
-    /* Typedefs */
     typedef std::list<TimedEvent*> List;
 
-    /* Constructors */
-    TimedEventMgr(int baseInterval);
     ~TimedEventMgr();
 
-    /* Member functions */
-    bool isLocked() const;      /**< Returns true if the event list is locked (in use) */
+    /** Returns true if the event list is locked (in use) */
+    bool isLocked() const { return locked; }
 
     void add(TimedEvent::Callback callback, int interval, void *data = NULL);
     List::iterator remove(List::iterator i);
     void remove(TimedEvent* event);
     void remove(TimedEvent::Callback callback, void *data = NULL);
     void tick();
-    void stop();
-    void start();
-
-    void reset(unsigned int interval);     /**< Re-initializes the event manager to a new base interval */
-#if defined(IOS)
-    bool hasActiveTimer() const;
-#endif
 
 private:
-    void lock();                /**< Locks the event list */
-    void unlock();              /**< Unlocks the event list */
-
     /* Properties */
-protected:
-    void cleanupLists();
-
-#if defined(IOS)
-    TimedManagerHelper *m_helper;
-#else
-    void *id;
-#endif
-    int baseInterval;
     bool locked;
     List events;
     List deferredRemovals;
@@ -257,7 +235,7 @@ public:
     typedef std::list<_MouseArea*> MouseAreaList;
 
     /* Constructors */
-    EventHandler(int gameCycleDuration);
+    EventHandler(int gameCycleDuration, int frameDuration);
     ~EventHandler();
 
     /* Static functions */
@@ -270,7 +248,7 @@ public:
     TimedEventMgr* getTimer();
 
     /* Event functions */
-    void run();
+    bool run();
     void setScreenUpdate(void (*updateScreen)(void));
 #if defined(IOS)
     void handleEvent(UIEvent *);
@@ -300,6 +278,15 @@ public:
     _MouseArea* getMouseAreaSet() const;
     _MouseArea* mouseAreaForPoint(int x, int y);
 
+#ifdef DEBUG
+    bool beginRecording(const char* file, uint32_t seed);
+    void endRecording();
+    void recordKey(int key);
+    int  recordedKey();
+    void recordTick() { ++recordClock; }
+    uint32_t replay(const char* file);
+#endif
+
     void advanceFlourishAnim() {
         anim_advance(&flourishAnim, float(timerInterval) * 0.001f);
     }
@@ -308,7 +295,20 @@ public:
     Animator fxAnim;
 
 protected:
-    int timerInterval;          // Milliseconds between timedEvents ticks.
+    void handleInputEvents(Controller*, updateScreenCallback);
+
+    uint32_t timerInterval;     // Milliseconds between timedEvents ticks.
+    uint32_t frameInterval;     // Milliseconds between display updates.
+    uint32_t realTime;
+    uint32_t runTime;
+    int runRecursion;
+#ifdef DEBUG
+    int recordFP;
+    int recordMode;
+    int replayKey;
+    uint32_t recordClock;
+    uint32_t recordLast;
+#endif
     bool controllerDone;
     bool ended;
     TimedEventMgr timedEvents;

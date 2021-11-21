@@ -9,18 +9,29 @@
 #include "utils.h"
 #include <cctype>
 #include <cstdlib>
-#include <ctime>
+
+#ifdef USE_BORON
+#include <boron/boron.h>
+#include "config.h"
+#include "xu4.h"
+#endif
 
 /**
  * Seed the random number generator.
  */
-void xu4_srandom() {
-#if (defined(BSD) && (BSD >= 199103)) || (defined (MACOSX) || defined (IOS))
-    srandom(time(NULL));
+void xu4_srandom(uint32_t seed) {
+#ifdef USE_BORON
+    boron_randomSeed(xu4.config->boronThread(), seed);
+#elif (defined(BSD) && (BSD >= 199103)) || (defined (MACOSX) || defined (IOS))
+    srandom(seed);
 #else
-    srand((unsigned int)time(NULL));
+    srand(seed);
 #endif
 }
+
+#ifdef REPORT_RNG
+char rpos = '-';
+#endif
 
 /**
  * Generate a random number between 0 and (upperRange - 1).  This
@@ -29,12 +40,23 @@ void xu4_srandom() {
  * lower bits (e.g. MacOS X).
  */
 extern "C" int xu4_random(int upperRange) {
+#ifdef USE_BORON
+#ifdef REPORT_RNG
+    uint32_t r = boron_random(xu4.config->boronThread());
+    uint32_t n = r % upperRange;
+    printf( "KR rn %d %d %c\n", r, n, rpos);
+    return n;
+#else
+    return boron_random(xu4.config->boronThread()) % upperRange;
+#endif
+#else
 #if (defined(BSD) && (BSD >= 199103)) || (defined (MACOSX) || defined (IOS))
     int r = random();
 #else
     int r = rand();
 #endif
     return (int) ((((double)upperRange) * r) / (RAND_MAX+1.0));
+#endif
 }
 
 /**
