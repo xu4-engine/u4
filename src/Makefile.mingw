@@ -28,8 +28,8 @@ OBJS= xu4ico.o
 
 include Makefile.common
 
-xu4ico.o: xu4.ico win32/xu4.rc
-	windres win32/xu4.rc xu4ico.o
+xu4ico.o: win32/xu4.ico win32/xu4.rc
+	windres -I win32 win32/xu4.rc xu4ico.o
 
 install: u4.exe
 	mkdir -p $(U4PATH)

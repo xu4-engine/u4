@@ -103,6 +103,8 @@ exe %xu4 [
 			lflags "-static-libstdc++"
 			libs [%png %z]
 		]
+		include_from %src/win32
+		sources/flags [%src/win32/xu4.rc] "-I src/win32"
 	]
 	cflags {-DVERSION=\"KR-1.0\"}
 
