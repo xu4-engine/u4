@@ -498,7 +498,7 @@ bool IntroController::keyPressed(int key) {
  * Draws the small map on the intro screen.
  */
 void IntroController::drawMap() {
-    if (0 && sleepCycles > 0) {
+    if (sleepCycles > 0) {
         drawMapStatic();
         drawMapAnimated();
         sleepCycles--;
