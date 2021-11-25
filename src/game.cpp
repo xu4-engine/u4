@@ -854,8 +854,10 @@ bool GameController::keyPressed(int key) {
                 if (retval & (MOVE_SUCCEEDED | MOVE_SLOWED) &&
                     (c->transportContext == TRANSPORT_HORSE) && c->horseSpeed) {
                     gameUpdateScreen(); /* to give it a smooth look of movement */
-                    if (previous_map == c->location->map->fname)
+                    if (previous_map == c->location->map->fname) {
+                        EventHandler::wait_msecs(166);
                         c->location->move(keyToDirection(key), false);
+                    }
                 }
 
                 endTurn = (retval & MOVE_END_TURN); /* let the movement handler decide to end the turn */
@@ -2153,6 +2155,7 @@ void GameController::avatarMoved(MoveEvent &event) {
             }
         }
 
+horse_moved:
         /* movement was blocked */
         if (event.result & MOVE_BLOCKED) {
 
@@ -2182,7 +2185,8 @@ void GameController::avatarMoved(MoveEvent &event) {
                 screenMessage("%cBlocked!%c\n", FG_GREY, FG_WHITE);
             }
         }
-        else if (c->transportContext == TRANSPORT_FOOT || c->transportContext == TRANSPORT_HORSE) {
+        else if (c->transportContext == TRANSPORT_FOOT ||
+                 c->transportContext == TRANSPORT_HORSE) {
             /* movement was slowed */
             if (event.result & MOVE_SLOWED) {
                 soundPlay(SOUND_WALK_SLOWED);
@@ -2192,6 +2196,15 @@ void GameController::avatarMoved(MoveEvent &event) {
                 soundPlay(SOUND_WALK_NORMAL);
             }
         }
+    } else {
+        /* Emit the sound & result message for the horse second gallop move,
+         * which is not a userEvent.  It probably should be to avoid this
+         * extra check.  That would require another flag to suppress the move
+         * message or the move message needs to be done prior to calling
+         * avatarMoved.
+         */
+        if (c->transportContext == TRANSPORT_HORSE)
+            goto horse_moved;
     }
 
     /* exited map */
