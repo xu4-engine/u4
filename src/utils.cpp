@@ -41,6 +41,8 @@ char rpos = '-';
  */
 extern "C" int xu4_random(int upperRange) {
 #ifdef USE_BORON
+    if (upperRange < 2)
+        return 0;
 #ifdef REPORT_RNG
     uint32_t r = boron_random(xu4.config->boronThread());
     uint32_t n = r % upperRange;

@@ -110,17 +110,25 @@ static void handleKeyDownEvent(const ALLEGRO_EVENT* event,
     }
 }
 
-void EventHandler::handleInputEvents(Controller* controller,
+/*
+ * \param waitCon  Input events are passed to this controller if not NULL.
+ *                 Otherwise EventHandler::getController() (the currently
+ *                 active one) will be used.
+ */
+void EventHandler::handleInputEvents(Controller* waitCon,
                                      updateScreenCallback update) {
     ALLEGRO_EVENT event;
+    Controller* controller = waitCon;
 
     while (al_get_next_event(SA->queue, &event)) {
         switch (event.type) {
         //case ALLEGRO_EVENT_KEY_DOWN:
         case ALLEGRO_EVENT_KEY_CHAR:
+            if (! waitCon) controller = getController();
             handleKeyDownEvent(&event, controller, update);
             break;
         case ALLEGRO_EVENT_MOUSE_BUTTON_DOWN:
+            if (! waitCon) controller = getController();
             handleMouseButtonDownEvent(this, &event, controller, update);
             break;
         case ALLEGRO_EVENT_MOUSE_AXES:

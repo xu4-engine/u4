@@ -2,7 +2,6 @@
  * event.cpp
  */
 
-#include <assert.h>
 #include <cctype>
 #include <cstring>
 #include <list>
@@ -203,8 +202,6 @@ bool EventHandler::wait_msecs(unsigned int msec) {
     uint32_t waitTime = getTicks() + msec;
     uint32_t now, elapsed;
 
-    assert(eh->runRecursion);
-
     while (! eh->ended) {
         eh->handleInputEvents(&waitCon, NULL);
 #ifdef DEBUG
@@ -252,7 +249,7 @@ bool EventHandler::run() {
     ++runRecursion;
 
     while (! ended && ! controllerDone) {
-        handleInputEvents(getController(), updateScreen);
+        handleInputEvents(NULL, updateScreen);
 #ifdef DEBUG
         int key;
         while ((key = recordedKey())) {

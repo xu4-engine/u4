@@ -109,19 +109,27 @@ static void handleKeyDownEvent(const SDL_Event &event, Controller *controller, u
     }
 }
 
-void EventHandler::handleInputEvents(Controller* controller,
+/*
+ * \param waitCon  Input events are passed to this controller if not NULL.
+ *                 Otherwise EventHandler::getController() (the currently
+ *                 active one) will be used.
+ */
+void EventHandler::handleInputEvents(Controller* waitCon,
                                      updateScreenCallback update) {
     SDL_Event event;
+    Controller* controller = waitCon;
 
     while (SDL_PollEvent(&event)) {
         switch (event.type) {
         default:
             break;
         case SDL_KEYDOWN:
+            if (! waitCon) controller = getController();
             handleKeyDownEvent(event, controller, update);
             break;
 
         case SDL_MOUSEBUTTONDOWN:
+            if (! waitCon) controller = getController();
             handleMouseButtonDownEvent(event, controller, update);
             break;
 
