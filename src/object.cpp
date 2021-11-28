@@ -2,9 +2,8 @@
  * object.cpp
  */
 
-#include <algorithm>
-
 #include "object.h"
+#include "context.h"
 #include "game.h"
 #include "map.h"
 #include "screen.h"
@@ -14,6 +13,18 @@
 #include "event.h"
 #include "tileset.h"
 #endif
+
+Object::Object(Type type) :
+  tile(0),
+  prevTile(0),
+  movement_behavior(MOVEMENT_FIXED),
+  objType(type),
+  animId(ANIM_UNUSED),
+  focused(false),
+  visible(true),
+  animated(true),
+  onMaps(0)
+{}
 
 Object::~Object() {
 #ifdef GPU_RENDER
@@ -31,8 +42,8 @@ bool Object::setDirection(Direction d) {
  * NOTE: This does not set prevCoords.
  */
 void Object::placeOnMap(Map* map, const Coords& coords) {
-    if (find(maps.begin(), maps.end(), map) == maps.end())
-        maps.push_back(map);
+    if (! onMaps || ! map->objectPresent(this))
+        ++onMaps;
 
     setCoords(coords);
 
@@ -52,10 +63,11 @@ void Object::placeOnMap(Map* map, const Coords& coords) {
  * If the object is not a PartyMember then it is also deleted.
  */
 void Object::removeFromMaps() {
-    size_t size = maps.size();
-    for (size_t i = 0; i < size; i++) {
-        bool lastMap = (i == size - 1);
-        maps[i]->removeObject(this, lastMap);
+    Location* loc = c->location;
+    while (onMaps && loc) {
+        if (loc->map->removeObject(this, onMaps == 1))
+            --onMaps;
+        loc = loc->prev;
     }
 }
 

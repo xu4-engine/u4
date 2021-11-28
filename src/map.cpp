@@ -2,6 +2,7 @@
  * map.cpp
  */
 
+#include <algorithm>
 #include "map.h"
 
 #include "config.h"
@@ -580,23 +581,26 @@ Object *Map::addObject(MapTile tile, MapTile prevtile, const Coords& coords) {
 
 /**
  * Removes an object from the map
+ *
+ * Return false if object was not present on the map.
  */
 
 // This function should only be used when not iterating through an
 // ObjectDeque, as the iterator will be invalidated and the
 // results will be unpredictable.  Instead, use the function
 // below.
-void Map::removeObject(const Object *rem, bool deleteObject) {
+bool Map::removeObject(const Object *rem, bool deleteObject) {
     ObjectDeque::iterator i;
     for (i = objects.begin(); i != objects.end(); i++) {
         if (*i == rem) {
             /* Party members persist through different maps, so don't delete them! */
-            if (!isPartyMember(*i) && deleteObject)
+            if (deleteObject && ! isPartyMember(*i))
                 delete (*i);
             objects.erase(i);
-            return;
+            return true;
         }
     }
+    return false;
 }
 
 ObjectDeque::iterator Map::removeObject(ObjectDeque::iterator rem, bool deleteObject) {
@@ -604,6 +608,13 @@ ObjectDeque::iterator Map::removeObject(ObjectDeque::iterator rem, bool deleteOb
     if (!isPartyMember(*rem) && deleteObject)
         delete (*rem);
     return objects.erase(rem);
+}
+
+/**
+ * Return true if the given object is on the map.
+ */
+bool Map::objectPresent(const Object* obj) const {
+    return find(objects.begin(), objects.end(), obj) != objects.end();
 }
 
 /**

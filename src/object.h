@@ -5,7 +5,6 @@
 #ifndef OBJECT_H
 #define OBJECT_H
 
-#include <deque>
 #include "anim.h"
 #include "coords.h"
 #include "tile.h"
@@ -27,17 +26,7 @@ public:
         PERSON
     };
 
-    Object(Type type = UNKNOWN) :
-      tile(0),
-      prevTile(0),
-      movement_behavior(MOVEMENT_FIXED),
-      objType(type),
-      animId(ANIM_UNUSED),
-      focused(false),
-      visible(true),
-      animated(true)
-    {}
-
+    Object(Type type = UNKNOWN);
     virtual ~Object();
 
     // Methods
@@ -77,16 +66,13 @@ protected:
     ObjectMovementBehavior movement_behavior;
     Type objType;
     AnimId animId;
-    std::deque<class Map *> maps;           /**< A list of maps this object is a part of */
 
     bool focused;
     bool visible;
     bool animated;
+    uint8_t onMaps;
 
     friend class Map;
 };
-
-typedef std::deque<Object *> ObjectDeque;
-typedef std::deque<const Object *> CObjectDeque;
 
 #endif

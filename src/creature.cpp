@@ -43,6 +43,7 @@ Creature::Creature() : Object(Object::CREATURE) {
 
 Creature::Creature(const Creature* cproto) : Object(Object::CREATURE) {
     *this = *cproto;
+    onMaps = 0;
     animId = ANIM_UNUSED;
 }
 

@@ -5,6 +5,7 @@
 #ifndef MAP_H
 #define MAP_H
 
+#include <deque>
 #include <map>
 #include <vector>
 
@@ -20,6 +21,8 @@ class Tileset;
 struct Portal;
 
 typedef std::vector<Portal *> PortalList;
+typedef std::deque<Object *> ObjectDeque;
+typedef std::deque<const Object *> CObjectDeque;
 
 /* flags */
 #define SHOW_AVATAR (1 << 0)
@@ -87,9 +90,10 @@ public:
     class Creature *addCreature(const class Creature *m, const Coords& coords);
     class Object *addObject(MapTile tile, MapTile prevTile, const Coords& coords);
     class Object *addObject(Object *obj, Coords coords);
-    void removeObject(const class Object *rem, bool deleteObject = true);
+    bool removeObject(const class Object *rem, bool deleteObject = true);
     ObjectDeque::iterator removeObject(ObjectDeque::iterator rem, bool deleteObject = true);
     void clearObjects();
+    bool objectPresent(const Object* obj) const;
     class Creature *moveObjects(const Coords& avatar);
     int getNumberOfCreatures();
     int getValidMoves(const Coords& from, MapTile transport);

@@ -26,12 +26,13 @@ Context::Context()
 }
 
 Context::~Context() {
+    delete party;   // Delete before locations so that removeFromMaps() works.
+
     if (location) {
         while (location->prev != NULL)
             locationFree(&location);
         delete location;
     }
 
-    delete party;
     delete stats;
 }
