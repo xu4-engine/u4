@@ -32,7 +32,7 @@ public:
 
     std::vector<MapTile> tilesAt(const Coords& coords, bool &focus);
     TileId getReplacementTile(const Coords& atCoords, Tile const * forTile);
-    int getCurrentPosition(Coords *coords);
+    int getCurrentPosition(Coords * pos);
     MoveResult move(Direction dir, bool userEvent);
 
     Coords coords;

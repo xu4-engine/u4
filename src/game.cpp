@@ -764,7 +764,6 @@ bool GameController::keyPressed(int key) {
     Settings& settings = *xu4.settings;
     bool valid = true;
     int endTurn = 1;
-    Object *obj;
 
     /* Translate context-sensitive action key into a useful command */
     if (key == U4_ENTER && settings.enhancements && settings.enhancementsOptions.smartEnterKey) {
@@ -773,11 +772,15 @@ bool GameController::keyPressed(int key) {
 
         /* Do they want to board something? */
         if (c->transportContext == TRANSPORT_FOOT) {
-            obj = c->location->map->objectAt(c->location->coords);
-            if (obj && (obj->getTile().getTileType()->isShip() ||
-                        obj->getTile().getTileType()->isHorse() ||
-                        obj->getTile().getTileType()->isBalloon()))
+            const Object* obj =
+                        c->location->map->objectAt(c->location->coords);
+            if (obj) {
+                const Tile* tile = obj->tile.getTileType();
+                if (tile->isShip() ||
+                    tile->isHorse() ||
+                    tile->isBalloon())
                 key = 'b';
+            }
         }
         /* Klimb/Descend Balloon */
         else if (c->transportContext == TRANSPORT_BALLOON) {
@@ -1557,8 +1560,8 @@ bool destroyAt(const Coords &coords) {
             screenMessage("%s Destroyed!\n", c->getName().c_str());
         }
         else {
-            const Tile *t = c->location->map->tileset->get(obj->getTile().id);
-            screenMessage("%s Destroyed!\n", t->nameStr());
+            const Tile* tile = obj->tile.getTileType();
+            screenMessage("%s Destroyed!\n", tile->nameStr());
         }
 
         c->location->map->removeObject(obj);
@@ -1593,43 +1596,55 @@ void attack() {
     screenMessage("%cNothing to Attack!%c\n", FG_GREY, FG_WHITE);
 }
 
+static const Tile* battleGround(const Map* map, const Coords& coord) {
+    const Tile* ground = map->tileTypeAt(coord, WITH_GROUND_OBJECTS);
+
+    // TODO: CHEST: Make a user option to not make chests change
+    //       battlefield map.
+
+    if (! ground->isChest()) {
+        ground = map->tileTypeAt(coord, WITHOUT_OBJECTS);
+        const Object* under = map->objectAt(coord);
+        if (under) {
+            const Tile* tile = under->tile.getTileType();
+            if (tile->isShip())
+                ground = tile;
+        }
+    }
+    return ground;
+}
+
 /**
  * Attempts to attack a creature at map coordinates x,y.  If no
  * creature is present at that point, zero is returned.
  */
 bool attackAt(const Coords &coords) {
-    Object *under;
     const Tile *ground;
     Creature *m;
+    Map* map = c->location->map;
 
-    m = dynamic_cast<Creature*>(c->location->map->objectAt(coords));
+    m = dynamic_cast<Creature*>(map->objectAt(coords));
     /* nothing attackable: move on to next tile */
     if (m == NULL || !m->isAttackable())
         return false;
 
     /* attack successful */
-    /// TODO: CHEST: Make a user option to not make chests change battlefield
-    /// map (1 of 2)
-    ground = c->location->map->tileTypeAt(c->location->coords, WITH_GROUND_OBJECTS);
-    if (!ground->isChest()) {
-        ground = c->location->map->tileTypeAt(c->location->coords, WITHOUT_OBJECTS);
-        if ((under = c->location->map->objectAt(c->location->coords)) &&
-            under->getTile().getTileType()->isShip())
-            ground = under->getTile().getTileType();
-    }
+    ground = battleGround(map, c->location->coords);
 
     /* You're attacking a townsperson!  Alert the guards! */
-    if ((m->getType() == Object::PERSON) && (m->getMovementBehavior() != MOVEMENT_ATTACK_AVATAR))
-        c->location->map->alertGuards();
+    if ((m->objType == Object::PERSON) &&
+        (m->movement != MOVEMENT_ATTACK_AVATAR))
+        map->alertGuards();
 
     /* not good karma to be killing the innocent.  Bad avatar! */
     if (m->isGood() || /* attacking a good creature */
         /* attacking a docile (although possibly evil) person in town */
-        ((m->getType() == Object::PERSON) && (m->getMovementBehavior() != MOVEMENT_ATTACK_AVATAR)))
+        ((m->objType == Object::PERSON) &&
+         (m->movement != MOVEMENT_ATTACK_AVATAR)))
         c->party->adjustKarma(KA_ATTACKED_GOOD);
 
     CombatController::engage(CombatMap::mapForTile(ground,
-                                c->party->getTransport().getTileType(), m), m);
+                        c->party->getTransport().getTileType(), m), m);
     return true;
 }
 
@@ -1645,7 +1660,7 @@ void board() {
         return;
     }
 
-    const Tile *tile = obj->getTile().getTileType();
+    const Tile *tile = obj->tile.getTileType();
     if (tile->isShip()) {
         screenMessage("Board Frigate!\n");
         if (c->lastShip != obj)
@@ -1660,7 +1675,7 @@ void board() {
         return;
     }
 
-    c->party->setTransport(obj->getTile());
+    c->party->setTransport(obj->tile);
     c->location->map->removeObject(obj);
 }
 
@@ -1834,12 +1849,11 @@ bool fireAt(const Coords &coords, bool originAvatar) {
     obj = c->location->map->objectAt(coords);
     Creature *m = dynamic_cast<Creature*>(obj);
 
-    if (obj && obj->getType() == Object::CREATURE && m->isAttackable())
+    if (obj && obj->objType == Object::CREATURE && m->isAttackable())
         validObject = true;
     /* See if it's an object to be destroyed (the avatar cannot destroy the balloon) */
-    else if (obj &&
-             (obj->getType() == Object::UNKNOWN) &&
-             !(obj->getTile().getTileType()->isBalloon() && originAvatar))
+    else if (obj && (obj->objType == Object::UNKNOWN) &&
+             ! (obj->tile.getTileType()->isBalloon() && originAvatar))
         validObject = true;
 
     /* Does the cannon hit the avatar? */
@@ -1860,7 +1874,7 @@ bool fireAt(const Coords &coords, bool originAvatar) {
             else gameDamageParty(10, 25); /* party gets hurt between 10-25 damage */
         }
         /* inanimate objects get destroyed instantly, while creatures get a chance */
-        else if (obj->getType() == Object::UNKNOWN) {
+        else if (obj->objType == Object::UNKNOWN) {
             GameController::flashTile(coords, Tile::sym.hitFlash, 4);
             c->location->map->removeObject(obj);
         }
@@ -1900,7 +1914,7 @@ void getChest(int player)
 
     /* get the object for the chest, if it is indeed an object */
     Object *obj = loc->map->objectAt(coords);
-    if (obj && !obj->getTile().getTileType()->isChest())
+    if (obj && ! obj->tile.getTileType()->isChest())
         obj = NULL;
 
     if (tile->isChest() || obj)
@@ -2699,7 +2713,7 @@ bool talkAt(const Coords &coords) {
 
     /* No response from alerted guards... does any monster both
        attack and talk besides Nate the Snake? */
-    if  (talker->getMovementBehavior() == MOVEMENT_ATTACK_AVATAR &&
+    if  (talker->movement == MOVEMENT_ATTACK_AVATAR &&
          talker->getId() != PYTHON_ID)
         return false;
 
@@ -2750,7 +2764,7 @@ void talkRunConversation(Conversation &conv, Person *talker, bool showPrompt) {
         /* they're attacking you! */
         if (conv.state == Conversation::ATTACK) {
             conv.state = Conversation::DONE;
-            talker->setMovementBehavior(MOVEMENT_ATTACK_AVATAR);
+            talker->movement = MOVEMENT_ATTACK_AVATAR;
         }
 
         if (conv.state == Conversation::DONE)
@@ -3079,6 +3093,7 @@ bool GameController::checkMoongates() {
 void gameFixupObjects(Map *map, const SaveGameMonsterRecord* table) {
     int i;
     const SaveGameMonsterRecord *it;
+    Object* obj;
     MapTile tile, oldTile;
     const UltimaSaveIds* usaveIds = xu4.config->usaveIds();
     int creatureLimit = (map->type == Map::DUNGEON) ? MONSTERTABLE_SIZE
@@ -3105,22 +3120,25 @@ void gameFixupObjects(Map *map, const SaveGameMonsterRecord* table) {
                 const Creature *creature = Creature::getByTile(tile);
                 /* make sure we really have a creature */
                 if (creature) {
-                    Object* obj = map->addCreature(creature, coords);
+                    obj = map->addCreature(creature, coords);
 
                     // Preserve animation & previous state to keep round-trip
                     // load > save > load identical.
 
-                    obj->setTile(tile);
-                    obj->setPrevTile(oldTile);
-                    Coords pc(it->prevx, it->prevy);
-                    obj->setPrevCoords(pc);
+                    obj->tile = tile;
+                    obj->prevTile = oldTile;
+                    obj->prevCoords.x = it->prevx;
+                    obj->prevCoords.y = it->prevy;
                 } else {
                     fprintf(stderr, "Error: A non-creature object was found in the creature section of the monster table. (Tile: %s)\n", tile.getTileType()->nameStr());
-                    map->addObject(tile, oldTile, coords);
+                    obj = map->addObject(tile, oldTile, coords);
                 }
+            } else {
+                obj = map->addObject(tile, oldTile, coords);
             }
-            else
-                map->addObject(tile, oldTile, coords);
+
+            obj->prevCoords.x = it->prevx;
+            obj->prevCoords.y = it->prevy;
         }
     }
 }
@@ -3129,23 +3147,14 @@ void gameFixupObjects(Map *map, const SaveGameMonsterRecord* table) {
  * Handles what happens when a creature attacks you
  */
 void gameCreatureAttack(Creature *m) {
-    const Object *under;
     const Tile *ground;
 
     screenMessage("\nAttacked by %s\n", m->getName().c_str());
 
-    /// TODO: CHEST: Make a user option to not make chests change battlefield
-    /// map (2 of 2)
-    ground = c->location->map->tileTypeAt(c->location->coords, WITH_GROUND_OBJECTS);
-    if (!ground->isChest()) {
-        ground = c->location->map->tileTypeAt(c->location->coords, WITHOUT_OBJECTS);
-        if ((under = c->location->map->objectAt(c->location->coords)) &&
-            under->getTile().getTileType()->isShip())
-            ground = under->getTile().getTileType();
-    }
+    ground = battleGround(c->location->map, c->location->coords);
 
     CombatController::engage(CombatMap::mapForTile(ground,
-                                c->party->getTransport().getTileType(), m), m);
+                        c->party->getTransport().getTileType(), m), m);
 }
 
 /**
@@ -3180,8 +3189,8 @@ bool creatureRangeAttack(const Coords &coords, Creature *m) {
     }
     // Destroy objects that were hit
     else if (obj) {
-        if ((obj->getType() == Object::CREATURE && m->isAttackable()) ||
-            obj->getType() == Object::UNKNOWN) {
+        if ((obj->objType == Object::CREATURE && m->isAttackable()) ||
+            obj->objType == Object::UNKNOWN) {
 
             GameController::flashTile(coords, tile, 3);
             c->location->map->removeObject(obj);
@@ -3331,10 +3340,10 @@ void GameController::creatureCleanup() {
     Map *map = c->location->map;
 
     for (i = map->objects.begin(); i != map->objects.end();) {
-        Object *obj = *i;
-        const Coords& o_coords = obj->getCoords();
+        const Object *obj = *i;
+        const Coords& o_coords = obj->coords;
 
-        if ((obj->getType() == Object::CREATURE) &&
+        if ((obj->objType == Object::CREATURE) &&
             (o_coords.z == c->location->coords.z) &&
             map_distance(o_coords, c->location->coords, c->location->map) > MAX_CREATURE_DISTANCE) {
 
@@ -3548,8 +3557,8 @@ bool GameController::createBalloon(Map *map) {
 
     /* see if the balloon has already been created (and not destroyed) */
     for (i = map->objects.begin(); i != map->objects.end(); i++) {
-        Object *obj = *i;
-        if (obj->getTile().getTileType()->isBalloon())
+        const Object *obj = *i;
+        if (obj->tile.getTileType()->isBalloon())
             return false;
     }
 

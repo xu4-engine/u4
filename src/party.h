@@ -225,6 +225,6 @@ private:
 #endif
 };
 
-bool isPartyMember(Object *punknown);
+bool isPartyMember(const Object *punknown);
 
 #endif

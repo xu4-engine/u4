@@ -125,7 +125,7 @@ void Shrine::enhancedSequence() {
 
     Object *obj = addCreature(xu4.config->creature(BEGGAR_ID),
                               Coords(5, 10, c->location->coords.z));
-    obj->setTile(tileset->getByName(Tile::sym.avatar)->getId());
+    obj->tile = tileset->getByName(Tile::sym.avatar)->getId();
 
     for (int i = 0; i < 4; ++i) {
         gameUpdateScreen();
@@ -135,7 +135,7 @@ void Shrine::enhancedSequence() {
 
     gameUpdateScreen();
     EventHandler::wait_msecs(800);
-    obj->setTile(xu4.config->creature(BEGGAR_ID)->getTile());
+    obj->tile = xu4.config->creature(BEGGAR_ID)->tile;
     gameUpdateScreen();
 
     screenMessage("\n...and kneel before the altar.\n");

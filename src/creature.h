@@ -209,7 +209,7 @@ public:
     bool isDisabled() const;
     bool isDead() const;
     bool hideOrShow(Map*);
-    Creature *nearestOpponent(Map*, int *dist, bool ranged);
+    Creature *nearestOpponent(Map*, int *dist, bool ranged) const;
     virtual void putToSleep();
     virtual void removeStatus(StatusType status);
     virtual void setStatus(StatusType status);

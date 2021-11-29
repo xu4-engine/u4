@@ -345,7 +345,7 @@ void Map::queryVisible(const Coords& center, int radius,
         cp = &obj->coords;
         if (OUTSIDE(cp))
             continue;
-        if (obj->hasFocus())
+        if (obj->focused)
             *focusPtr = obj;
         //printf("KR obj %d %d %d,%d\n",
         //        obj->tile.id, obj->tile.frame, cp->x, cp->y);
@@ -395,12 +395,13 @@ const Object *Map::objectAt(const Coords &coords) const {
     for(i = objects.begin(); i != objects.end(); i++) {
         const Object *obj = *i;
 
-        if (obj->getCoords() == coords) {
+        if (coords == obj->coords) {
             /* get the most visible object */
-            if (objAt && (objAt->getType() == Object::UNKNOWN) && (obj->getType() != Object::UNKNOWN))
+            if (objAt && (objAt->objType == Object::UNKNOWN) &&
+                (obj->objType != Object::UNKNOWN))
                 objAt = obj;
             /* give priority to objects that have the focus */
-            else if (objAt && (!objAt->hasFocus()) && (obj->hasFocus()))
+            else if (objAt && (! objAt->focused) && (obj->focused))
                 objAt = obj;
             else if (!objAt)
                 objAt = obj;
@@ -456,10 +457,10 @@ const Tile* Map::tileTypeAt(const Coords &coords, int withObjects) const {
         const Object* obj = objectAt(coords);
         if (obj) {
             if (withObjects == WITH_OBJECTS)
-                tid = obj->getTile().id;
+                tid = obj->tile.id;
             else if (withObjects == WITH_GROUND_OBJECTS &&
-                obj->getTile().getTileType()->isWalkable())
-                tid = obj->getTile().id;
+                obj->tile.getTileType()->isWalkable())
+                tid = obj->tile.id;
         }
     }
     if (! tid)
@@ -544,14 +545,15 @@ Creature *Map::addCreature(const Creature *creature, const Coords& coords) {
 
     /* initialize the creature before placing it */
     if (m->wanders())
-        m->setMovementBehavior(MOVEMENT_WANDER);
+        m->movement = MOVEMENT_WANDER;
     else if (m->isStationary())
-        m->setMovementBehavior(MOVEMENT_FIXED);
-    else m->setMovementBehavior(MOVEMENT_ATTACK_AVATAR);
+        m->movement = MOVEMENT_FIXED;
+    else
+        m->movement = MOVEMENT_ATTACK_AVATAR;
 
     /* hide camouflaged creatures from view during combat */
     if (m->camouflages() && (type == COMBAT))
-        m->setVisible(false);
+        m->visible = false;
 
     /* place the creature on the map */
     objects.push_back(m);
@@ -569,9 +571,8 @@ Object *Map::addObject(Object *obj, Coords coords) {
 Object *Map::addObject(MapTile tile, MapTile prevtile, const Coords& coords) {
     Object *obj = new Object;
 
-    obj->setTile(tile);
-    obj->setPrevTile(prevtile);
-    obj->setPrevCoords(coords);
+    obj->tile = tile;
+    obj->prevTile = prevtile;
     obj->placeOnMap(this, coords);
 
     objects.push_back(obj);
@@ -631,9 +632,10 @@ Creature *Map::moveObjects(const Coords& avatar) {
         if (m) {
             /* check if the object is an attacking creature and not
                just a normal, docile person in town or an inanimate object */
-            if ((m->getType() == Object::PERSON && m->getMovementBehavior() == MOVEMENT_ATTACK_AVATAR) ||
-                (m->getType() == Object::CREATURE && m->willAttack())) {
-                Coords o_coords = m->getCoords();
+            if ((m->objType == Object::PERSON &&
+                 m->movement == MOVEMENT_ATTACK_AVATAR) ||
+                (m->objType == Object::CREATURE && m->willAttack())) {
+                Coords o_coords = m->coords;
 
                 /* don't move objects that aren't on the same level as us */
                 if (o_coords.z != avatar.z)
@@ -686,7 +688,7 @@ int Map::getNumberOfCreatures() {
     for (i = objects.begin(); i != objects.end(); i++) {
         Object *obj = *i;
 
-        if (obj->getType() == Object::CREATURE)
+        if (obj->objType == Object::CREATURE)
             n++;
     }
 
@@ -737,14 +739,14 @@ int Map::getValidMoves(const Coords& from, MapTile transport) {
             ontoAvatar = 1;
 
         // see if it's trying to move onto a person or creature
-        else if (obj && (obj->getType() != Object::UNKNOWN))
+        else if (obj && (obj->objType != Object::UNKNOWN))
             ontoCreature = 1;
 
         // get the destination tile
         if (ontoAvatar)
             tile = c->party->getTransport().getTileType();
         else if (ontoCreature)
-            tile = obj->getTile().getTileType();
+            tile = obj->tile.getTileType();
         else
             tile = tileTypeAt(testCoord, WITH_OBJECTS);
 
@@ -845,10 +847,10 @@ int Map::getValidMoves(const Coords& from, MapTile transport) {
 }
 
 bool Map::move(Object *obj, Direction d) {
-    Coords new_coords = obj->getCoords();
+    Coords new_coords = obj->coords;
     map_move(new_coords, d);
-    if (new_coords != obj->getCoords()) {
-        obj->setCoords(new_coords);
+    if (new_coords != obj->coords) {
+        obj->updateCoords(new_coords);
         return true;
     }
     return false;
@@ -863,9 +865,9 @@ void Map::alertGuards() {
 
     /* switch all the guards to attack mode */
     for (i = objects.begin(); i != objects.end(); i++) {
-        m = Creature::getByTile((*i)->getTile());
+        m = Creature::getByTile((*i)->tile);
         if (m && (m->getId() == GUARD_ID || m->getId() == LORDBRITISH_ID))
-            (*i)->setMovementBehavior(MOVEMENT_ATTACK_AVATAR);
+            (*i)->movement = MOVEMENT_ATTACK_AVATAR;
     }
 }
 
@@ -922,8 +924,8 @@ void Map::fillMonsterTable(SaveGameMonsterRecord* table) const {
         obj = *current;
 
         /* moving objects first */
-        if ((obj->getType() == Object::CREATURE) &&
-            (obj->getMovementBehavior() != MOVEMENT_FIXED)) {
+        if ((obj->objType == Object::CREATURE) &&
+            (obj->movement != MOVEMENT_FIXED)) {
             const Creature *c = dynamic_cast<const Creature*>(obj);
             /* whirlpools and storms are separated from other moving objects */
             if (c->getId() == WHIRLPOOL_ID || c->getId() == STORM_ID)
@@ -969,17 +971,17 @@ void Map::fillMonsterTable(SaveGameMonsterRecord* table) const {
     const UltimaSaveIds* saveIds = xu4.config->usaveIds();
     for (i = 0; i < MONSTERTABLE_SIZE; i++) {
         obj = monsters[i];
-        Coords c = obj->getCoords(),
-           prevc = obj->getPrevCoords();
+        Coords c = obj->coords,
+           prevc = obj->prevCoords;
 
         // Reset animation to a value that is savegame compatible with u4dos.
-        if (obj->getType() == Object::CREATURE) {
-            prevTile = obj->getTile();
+        if (obj->objType == Object::CREATURE) {
+            prevTile = obj->tile;
             prevTile.frame = 0;
         } else
-            prevTile = obj->getPrevTile();
+            prevTile = obj->prevTile;
 
-        table->tile = saveIds->ultimaId(obj->getTile());
+        table->tile = saveIds->ultimaId(obj->tile);
         table->x = c.x;
         table->y = c.y;
         table->prevTile = saveIds->ultimaId(prevTile);
@@ -1000,12 +1002,12 @@ void Map::fillMonsterTableDungeon(SaveGameMonsterRecord* table) const {
 
     for (it = objects.begin(); it != objects.end(); ++it) {
         obj = *it;
-        if (obj->getType() == Object::CREATURE) {
-            const Coords& c = obj->getCoords();
-            const Coords& prevc = obj->getPrevCoords();
+        if (obj->objType == Object::CREATURE) {
+            const Coords& c = obj->coords;
+            const Coords& prevc = obj->prevCoords;
 
             // Reset animation to a value that is savegame compatible with u4dos.
-            prevTile = obj->getTile();
+            prevTile = obj->tile;
             prevTile.frame = 0;
 
             table->tile = 0;

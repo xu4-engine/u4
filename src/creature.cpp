@@ -55,7 +55,7 @@ bool Creature::isAttackable() const  {
     if (mattr & MATTR_NONATTACKABLE)
         return false;
     /* can't attack horse transport */
-    if (tile.getTileType()->isHorse() && getMovementBehavior() == MOVEMENT_FIXED)
+    if (tile.getTileType()->isHorse() && movement == MOVEMENT_FIXED)
         return false;
     return true;
 }
@@ -208,8 +208,7 @@ bool Creature::specialEffect() {
                  i != c->location->map->objects.end();) {
 
                 obj = *i;
-                if (this != obj &&
-                    obj->getCoords() == coords) {
+                if (this != obj && obj->coords == coords) {
                     /* Converged with an object, destroy the object! */
                     i = c->location->map->removeObject(i);
                     retval = true;
@@ -235,7 +234,7 @@ bool Creature::specialEffect() {
                     c->location->coords = *dest;
 
                 /* Teleport the whirlpool that sent you there far away from lockelake */
-                this->setCoords(Coords(0,0,0));
+                this->updateCoords(Coords(0,0,0));
                 retval = true;
                 break;
             }
@@ -246,8 +245,7 @@ bool Creature::specialEffect() {
 
                 obj = *i;
 
-                if (this != obj &&
-                    obj->getCoords() == coords) {
+                if (this != obj && obj->coords == coords) {
 
                     Creature *m = dynamic_cast<Creature*>(obj);
 
@@ -330,7 +328,7 @@ void Creature::act(CombatController *controller) {
 
         if (controller->attackHit(this, target)) {
             soundPlay(SOUND_PC_STRUCK, false);                                 // PC_STRUCK, melee and ranged
-            GameController::flashTile(target->getCoords(), Tile::sym.hitFlash, 4);
+            GameController::flashTile(target->coords, Tile::sym.hitFlash, 4);
 
 
             if (!dealDamage(map, target, getDamage()))
@@ -350,7 +348,7 @@ void Creature::act(CombatController *controller) {
                 }
             }
         } else {
-            GameController::flashTile(target->getCoords(), Tile::sym.missFlash, 1);
+            GameController::flashTile(target->coords, Tile::sym.missFlash, 1);
         }
         break;
 
@@ -393,7 +391,7 @@ void Creature::act(CombatController *controller) {
         }
 
         /* Teleport! */
-        setCoords(new_c);
+        updateCoords(new_c);
         break;
     }
 
@@ -406,7 +404,7 @@ void Creature::act(CombatController *controller) {
         soundPlay(SOUND_NPC_ATTACK, false);
 
         // figure out which direction to fire the weapon
-        int dir = map_getRelativeDirection(getCoords(), target->getCoords());
+        int dir = map_getRelativeDirection(coords, target->coords);
 
         controller->creatureRangedAttack(this, dir);
         break;
@@ -414,9 +412,7 @@ void Creature::act(CombatController *controller) {
 
     case CA_FLEE:
     case CA_ADVANCE: {
-        if (moveCombatObject(action, map, this, target->getCoords())) {
-            Coords coords = getCoords();
-
+        if (moveCombatObject(action, map, this, target->coords)) {
             if (MAP_IS_OOB(map, coords)) {
                 screenMessage("\n%c%s Flees!%c\n", FG_YELLOW, CSTR(name), FG_WHITE);
 
@@ -474,7 +470,7 @@ int Creature::getDefense() const {
 }
 
 bool Creature::divide(Map* map) {
-    int dirmask = map->getValidMoves(getCoords(), getTile());
+    int dirmask = map->getValidMoves(coords, tile);
     Direction d = dirRandomDir(dirmask);
 
     /* this is a game enhancement, make sure it's turned on! */
@@ -522,16 +518,16 @@ bool Creature::hideOrShow(Map* map) {
 
     /* ok, now we've got the nearest party member.  Now, see if they're close enough */
     if (nearestOpponent(map, &dist, false) != NULL) {
-        if ((dist < 5) && !isVisible())
-            setVisible(); /* show yourself */
+        if ((dist < 5) && ! visible)
+            visible = true;     /* show yourself */
         else if (dist >= 5)
-            setVisible(false); /* hide and take no action! */
+            visible = false;    /* hide and take no action! */
     }
 
-    return isVisible();
+    return visible;
 }
 
-Creature *Creature::nearestOpponent(Map* map, int *dist, bool ranged) {
+Creature *Creature::nearestOpponent(Map* map, int *dist, bool ranged) const {
     Creature *opponent = NULL;
     int d, leastDist = 0xFFFF;
     ObjectDeque::iterator i;
@@ -548,13 +544,13 @@ Creature *Creature::nearestOpponent(Map* map, int *dist, bool ranged) {
         /* if jinxed is false, find anything that isn't self */
         if ((amPlayer != fightingPlayer) ||
             (jinx && !amPlayer && *i != this)) {
-            Coords objCoords = (*i)->getCoords();
+            Coords objCoords = (*i)->coords;
 
             /* if ranged, get the distance using diagonals, otherwise get movement distance */
             if (ranged)
-                d = map_distance(objCoords, getCoords());
+                d = map_distance(objCoords, coords);
             else
-                d = map_movementDistance(objCoords, getCoords());
+                d = map_movementDistance(objCoords, coords);
 
             /* skip target 50% of time if same distance */
             if (d < leastDist || (d == leastDist && xu4_random(2) == 0)) {
@@ -573,7 +569,7 @@ Creature *Creature::nearestOpponent(Map* map, int *dist, bool ranged) {
 void Creature::putToSleep() {
     if (getStatus() != STAT_DEAD) {
         addStatus(STAT_SLEEPING);
-        setAnimated(false); /* freeze creature */
+        animated = false;   /* freeze creature */
     }
 }
 
@@ -644,7 +640,7 @@ bool Creature::isDisabled() const {
 
 void Creature::wakeUp() {
     status &= ~StatSleeping;
-    setAnimated(); /* reanimate creature */
+    animated = true;    /* reanimate creature */
 }
 
 /**
@@ -730,7 +726,7 @@ const Creature* Creature::getByTile(const MapTile& tile) {
 
     for (i = 0; i < count; ++i) {
         cp = creatures[i];
-        if (cp->getTile() == tile)
+        if (cp->tile == tile)
             return cp;
     }
 
@@ -768,12 +764,12 @@ const Creature* Creature::randomForTile(const Tile *tile) {
     TileId randTile;
 
     if (tile->isSailable()) {
-        randTile = xu4.config->creature(PIRATE_ID)->getTile().getId();
+        randTile = xu4.config->creature(PIRATE_ID)->tile.getId();
         randTile += xu4_random(7);
         return getByTile(randTile);
     }
     else if (tile->isSwimable()) {
-        randTile = xu4.config->creature(NIXIE_ID)->getTile().getId();
+        randTile = xu4.config->creature(NIXIE_ID)->tile.getId();
         randTile += xu4_random(5);
         return getByTile(randTile);
     }
@@ -789,7 +785,7 @@ const Creature* Creature::randomForTile(const Tile *tile) {
     else
         era = 0x03;
 
-    randTile = xu4.config->creature(ORC_ID)->getTile().getId();
+    randTile = xu4.config->creature(ORC_ID)->tile.getId();
     randTile += era & xu4_random(0x10) & xu4_random(0x10);
     return getByTile(randTile);
 }

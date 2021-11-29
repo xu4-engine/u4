@@ -333,7 +333,7 @@ void spellMagicAttack(Symbol tilename, Direction dir, int minDamage, int maxDama
         xu4_random((maxDamage + 1) - minDamage) + minDamage :
         maxDamage;
 
-    vector<Coords> path = gameGetDirectionalActionPath(MASK_DIR(dir), MASK_DIR_ALL, (*party)[controller->getFocus()]->getCoords(),
+    vector<Coords> path = gameGetDirectionalActionPath(MASK_DIR(dir), MASK_DIR_ALL, (*party)[controller->getFocus()]->coords,
                                                        1, 11, Tile::canAttackOverTile, false);
     for (vector<Coords>::iterator i = path.begin(); i != path.end(); i++) {
         if (spellMagicAttackAt(*i, tile, attackDamage))
@@ -432,7 +432,7 @@ static int spellBlink(int dir) {
 static int spellCure(int player) {
     ASSERT(player < 8, "player out of range: %d", player);
 
-    GameController::flashTile(c->party->member(player)->getCoords(), Tile::sym.wisp, 1);
+    GameController::flashTile(c->party->member(player)->coords, Tile::sym.wisp, 1);
     return c->party->member(player)->heal(HT_CURE);
 }
 
@@ -561,7 +561,7 @@ static int spellGate(int phase) {
 static int spellHeal(int player) {
     ASSERT(player < 8, "player out of range: %d", player);
 
-    GameController::flashTile(c->party->member(player)->getCoords(), Tile::sym.wisp, 1);
+    GameController::flashTile(c->party->member(player)->coords, Tile::sym.wisp, 1);
     c->party->member(player)->heal(HT_HEAL);
     return 1;
 }
@@ -626,7 +626,7 @@ static int spellSleep(int unused) {
 
     for (i = creatures.begin(); i != creatures.end(); i++) {
         Creature *m = *i;
-        Coords coords = m->getCoords();
+        const Coords& coords = m->coords;
         GameController::flashTile(coords, Tile::sym.wisp, 1);
         if ((m->getResists() != EFFECT_SLEEP) &&
             xu4_random(0xFF) >= m->getHp())
@@ -652,7 +652,7 @@ static int spellTremor(int unused) {
         Creature *m = *i;
 
 
-        Coords coords = m->getCoords();
+        const Coords& coords = m->coords;
         //GameController::flashTile(coords, "rocks", 1);
 
         /* creatures with over 192 hp are unaffected */

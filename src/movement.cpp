@@ -163,12 +163,12 @@ void moveAvatarInDungeon(MoveEvent &event) {
 int moveObject(Map *map, Creature *obj, const Coords& avatar) {
     int dirmask = DIR_NONE;
     Direction dir;
-    Coords new_coords = obj->getCoords();
+    Coords new_coords = obj->coords;
     int slowed = 0;
 
     /* determine a direction depending on the object's movement behavior */
     dir = DIR_NONE;
-    switch (obj->getMovementBehavior()) {
+    switch (obj->movement) {
     case MOVEMENT_FIXED:
         break;
 
@@ -176,18 +176,20 @@ int moveObject(Map *map, Creature *obj, const Coords& avatar) {
         /* World map wandering creatures always move, whereas
            town creatures that wander sometimes stay put */
         if (map->isWorldMap() || xu4_random(2) == 0)
-            dir = dirRandomDir(map->getValidMoves(new_coords, obj->getTile()));
+            dir = dirRandomDir(map->getValidMoves(new_coords, obj->tile));
         break;
 
     case MOVEMENT_FOLLOW_AVATAR:
     case MOVEMENT_ATTACK_AVATAR:
-        dirmask = map->getValidMoves(new_coords, obj->getTile());
+        dirmask = map->getValidMoves(new_coords, obj->tile);
 
         /* If the pirate ship turned last move instead of moving, this time it must
            try to move, not turn again */
-        if (obj->getTile().getTileType()->isPirateShip() && DIR_IN_MASK(obj->getTile().getDirection(), dirmask) &&
-            (obj->getTile() != obj->getPrevTile()) && (obj->getPrevCoords() == obj->getCoords())) {
-            dir = obj->getTile().getDirection();
+        if (obj->tile.getTileType()->isPirateShip() &&
+            DIR_IN_MASK(obj->tile.getDirection(), dirmask) &&
+            (obj->tile != obj->prevTile) &&
+            (obj->prevCoords == obj->coords)) {
+            dir = obj->tile.getDirection();
             break;
         }
 
@@ -203,7 +205,7 @@ int moveObject(Map *map, Creature *obj, const Coords& avatar) {
 
     /* figure out what method to use to tell if the object is getting slowed */
     SlowedType slowedType = SLOWED_BY_TILE;
-    if (obj->getType() == Object::CREATURE)
+    if (obj->objType == Object::CREATURE)
         slowedType = obj->getSlowedType();
 
     /* is the object slowed by terrain or by wind direction? */
@@ -212,14 +214,14 @@ int moveObject(Map *map, Creature *obj, const Coords& avatar) {
         slowed = slowedByTile(map->tileTypeAt(new_coords, WITHOUT_OBJECTS));
         break;
     case SLOWED_BY_WIND:
-        slowed = slowedByWind(obj->getTile().getDirection());
+        slowed = slowedByWind(obj->tile.getDirection());
         break;
     case SLOWED_BY_NOTHING:
     default:
         break;
     }
 
-    obj->setPrevCoords(obj->getCoords());
+    obj->prevCoords = obj->coords;
 
     /* see if the object needed to turn instead of move */
     if (obj->setDirection(dir))
@@ -232,10 +234,10 @@ int moveObject(Map *map, Creature *obj, const Coords& avatar) {
     /**
      * Set the new coordinates
      */
-    if (!(new_coords == obj->getCoords()) &&
-        !MAP_IS_OOB(map, new_coords))
+    if (! (new_coords == obj->coords) &&
+        ! MAP_IS_OOB(map, new_coords))
     {
-        obj->setCoords(new_coords);
+        obj->coords = new_coords;
     }
     return 1;
 }
@@ -244,15 +246,15 @@ int moveObject(Map *map, Creature *obj, const Coords& avatar) {
  * Moves an object in combat according to its chosen combat action
  */
 int moveCombatObject(int act, Map *map, Creature *obj, const Coords& target) {
-    Coords new_coords = obj->getCoords();
-    int valid_dirs = map->getValidMoves(new_coords, obj->getTile());
+    Coords new_coords = obj->coords;
+    int valid_dirs = map->getValidMoves(new_coords, obj->tile);
     Direction dir;
     CombatAction action = (CombatAction)act;
     SlowedType slowedType = SLOWED_BY_TILE;
     int slowed = 0;
 
     /* fixed objects cannot move */
-    if (obj->getMovementBehavior() == MOVEMENT_FIXED)
+    if (obj->movement == MOVEMENT_FIXED)
         return 0;
 
     if (action == CA_FLEE) {
@@ -280,7 +282,7 @@ int moveCombatObject(int act, Map *map, Creature *obj, const Coords& target) {
         return 0;
 
     /* figure out what method to use to tell if the object is getting slowed */
-    if (obj->getType() == Object::CREATURE)
+    if (obj->objType == Object::CREATURE)
         slowedType = obj->getSlowedType();
 
     /* is the object slowed by terrain or by wind direction? */
@@ -289,7 +291,7 @@ int moveCombatObject(int act, Map *map, Creature *obj, const Coords& target) {
         slowed = slowedByTile(map->tileTypeAt(new_coords, WITHOUT_OBJECTS));
         break;
     case SLOWED_BY_WIND:
-        slowed = slowedByWind(obj->getTile().getDirection());
+        slowed = slowedByWind(obj->tile.getDirection());
         break;
     case SLOWED_BY_NOTHING:
     default:
@@ -299,7 +301,7 @@ int moveCombatObject(int act, Map *map, Creature *obj, const Coords& target) {
     /* if the object wan't slowed... */
     if (!slowed) {
         // Set the new coordinates
-        obj->setCoords(new_coords);
+        obj->updateCoords(new_coords);
         return 1;
     }
 
@@ -319,7 +321,7 @@ void movePartyMember(MoveEvent &event) {
     event.result = MOVE_SUCCEEDED;
 
     /* find our new location */
-    newCoords = (*party)[member]->getCoords();
+    newCoords = (*party)[member]->coords;
     map_move(newCoords, event.dir, c->location->map);
 
     if (MAP_IS_OOB(c->location->map, newCoords)) {
@@ -345,7 +347,7 @@ void movePartyMember(MoveEvent &event) {
         }
     }
 
-    int movementMask = c->location->map->getValidMoves((*party)[member]->getCoords(), (*party)[member]->getTile());
+    int movementMask = c->location->map->getValidMoves((*party)[member]->coords, (*party)[member]->tile);
     if (!DIR_IN_MASK(event.dir, movementMask)) {
         event.result = (MoveResult)(MOVE_BLOCKED | MOVE_END_TURN);
         return;
@@ -355,7 +357,7 @@ void movePartyMember(MoveEvent &event) {
     if (!slowedByTile(c->location->map->tileTypeAt(newCoords, WITHOUT_OBJECTS)))
     {
         /* move succeeded */
-        (*party)[member]->setCoords(newCoords);
+        (*party)[member]->updateCoords(newCoords);
 
         /* handle dungeon room triggers */
         if (cm->isDungeonRoom()) {

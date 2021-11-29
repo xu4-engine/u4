@@ -196,20 +196,20 @@ void InnController::maybeMeetIsaac()
                  i++) {
                 Person *p = dynamic_cast<Person*>(*i);
                 if (p && p->getName() == "Isaac") {
-                    p->setCoords(coords);
+                    p->updateCoords(coords);
                     return;
                 }
             }
 
             // Otherwise, we need to create Isaac
             Person *Isaac;
-            Isaac = new Person(xu4.config->creature(GHOST_ID)->getTile());
+            Isaac = new Person(xu4.config->creature(GHOST_ID)->tile);
 
-            Isaac->setMovementBehavior(MOVEMENT_WANDER);
+            Isaac->movement = MOVEMENT_WANDER;
 
             Isaac->setDialogue(city->extraDialogues[0]);
             Isaac->getStart() = coords;
-            Isaac->setPrevTile(Isaac->getTile());
+            Isaac->prevTile = Isaac->tile;
 
             // Add Isaac near the Avatar
             city->addPerson(Isaac);

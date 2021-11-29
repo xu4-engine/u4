@@ -48,8 +48,8 @@ void locationFree(Location **stack) {
  */
 std::vector<MapTile> Location::tilesAt(const Coords& coords, bool &focus) {
     std::vector<MapTile> tiles;
-    Object *obj = map->objectAt(coords);
-    Creature *m = dynamic_cast<Creature *>(obj);
+    const Object *obj = map->objectAt(coords);
+    const Creature *m = dynamic_cast<const Creature *>(obj);
     focus = false;
 
     bool avatar = this->coords == coords;
@@ -93,15 +93,15 @@ std::vector<MapTile> Location::tilesAt(const Coords& coords, bool &focus) {
         tiles.push_back(c->party->getTransport());
 
     /* then camouflaged creatures that have a disguise */
-    if (obj && (obj->getType() == Object::CREATURE) &&
-        ! obj->isVisible() && m->getCamouflageTile()) {
-        focus = focus || obj->hasFocus();
+    if (obj && (obj->objType == Object::CREATURE) &&
+        ! obj->visible && m->getCamouflageTile()) {
+        focus = focus || obj->focused;
         tiles.push_back(map->tileset->getByName(m->getCamouflageTile())->getId());
     }
     /* then visible creatures and objects */
-    else if (obj && obj->isVisible()) {
-        focus = focus || obj->hasFocus();
-        MapTile visibleCreatureAndObjectTile = obj->getTile();
+    else if (obj && obj->visible) {
+        focus = focus || obj->focused;
+        MapTile visibleCreatureAndObjectTile = obj->tile;
         //Sleeping creatures and persons have their animation frozen
         if (m && m->isAsleep())
             visibleCreatureAndObjectTile.freezeAnimation = true;
@@ -226,14 +226,14 @@ TileId Location::getReplacementTile(const Coords& atCoords, const Tile * forTile
  *     If in combat - returns the coordinates of party member with focus
  *     If elsewhere - returns the coordinates of the avatar
  */
-int Location::getCurrentPosition(Coords *coords) {
+int Location::getCurrentPosition(Coords* pos) {
     if (context & CTX_COMBAT) {
         CombatController *cc = dynamic_cast<CombatController *>(xu4.eventHandler->getController());
         PartyMemberVector *party = cc->getParty();
-        *coords = (*party)[cc->getFocus()]->getCoords();
+        *pos = (*party)[cc->getFocus()]->coords;
     }
     else
-        *coords = this->coords;
+        *pos = coords;
 
     return 1;
 }

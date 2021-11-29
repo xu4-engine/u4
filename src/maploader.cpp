@@ -196,7 +196,7 @@ static bool loadCityMap(Map *map, U4FILE *ult) {
     for (i = 0; i < CITY_MAX_PERSONS; i++) {
         if (pd[PD_TILE]) {
             per = new Person(usaveIds->moduleId( pd[PD_TILE] ));
-            per->setPrevTile(usaveIds->moduleId( pd[PD_PREV_TILE] ));
+            per->prevTile = usaveIds->moduleId( pd[PD_PREV_TILE] );
 
             Coords& pos = per->getStart();
             pos.x = pd[PD_X];
@@ -205,7 +205,7 @@ static bool loadCityMap(Map *map, U4FILE *ult) {
 
             if ((j = moveBehavior( pd[PD_MOVE] )) < 0)
                 goto cleanup;
-            per->setMovementBehavior((ObjectMovementBehavior) j);
+            per->movement = (ObjectMovement) j;
 
             city->persons.push_back(per);
             people[i] = per;

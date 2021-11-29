@@ -579,7 +579,7 @@ void screenUpdateMap(TileView* view, const Map* map, const Coords& center) {
 
     if (focusObj) {
         if ((screenState()->currentCycle * 4 / SCR_CYCLE_PER_SECOND) % 2) {
-            const Coords& floc = focusObj->getCoords();
+            const Coords& floc = focusObj->coords;
             emitSprite(&floc, sp->focusReticle, &rd);
         }
     }

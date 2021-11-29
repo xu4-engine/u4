@@ -173,7 +173,7 @@ void CombatController::applyCreatureTileEffects() {
 
     for (i = creatures.begin(); i != creatures.end(); i++) {
         Creature *m = *i;
-        TileEffect effect = map->tileTypeAt(m->getCoords(), WITH_GROUND_OBJECTS)->getEffect();
+        TileEffect effect = map->tileTypeAt(m->coords, WITH_GROUND_OBJECTS)->getEffect();
         m->applyTileEffect(map, effect);
     }
 }
@@ -440,7 +440,7 @@ void CombatController::placePartyMembers() {
 
     for (i = 0; i < c->party->size(); i++) {
         PartyMember *p = c->party->member(i);
-        p->setFocus(false); // take the focus off of everyone
+        p->focused = false; // take the focus off of everyone
 
         /* don't place dead party members */
         if (p->getStatus() != STAT_DEAD) {
@@ -460,9 +460,9 @@ bool CombatController::setActivePlayer(int player) {
 
     if (p && !p->isDisabled()) {
         if (party[focus])
-            party[focus]->setFocus(false);
+            party[focus]->focused = false;
 
-        p->setFocus();
+        p->focused = true;
         focus = player;
 
         screenMessage("\n%s with %s\n\020", p->getName().c_str(), p->getWeapon()->getName());
@@ -474,7 +474,7 @@ bool CombatController::setActivePlayer(int player) {
 }
 
 void CombatController::awardLoot() {
-    Coords coords = creature->getCoords();
+    const Coords& coords = creature->coords;
     Location* loc = c->location;
     const Tile *ground = loc->map->tileTypeAt(coords, WITHOUT_OBJECTS);
 
@@ -486,9 +486,9 @@ void CombatController::awardLoot() {
         loc->map->addObject(chest, chest, coords);
     }
     /* add a ship if you just defeated a pirate ship */
-    else if (creature->getTile().getTileType()->isPirateShip()) {
+    else if (creature->tile.getTileType()->isPirateShip()) {
         MapTile ship = loc->map->tileset->getByName(Tile::sym.ship)->getId();
-        ship.setDirection(creature->getTile().getDirection());
+        ship.setDirection(creature->tile.getDirection());
         loc->map->addObject(ship, ship, coords);
     }
 }
@@ -681,7 +681,7 @@ bool CombatController::creatureRangedAttack(Creature* attacker, int dir) {
     MapTile hit  = map->tileset->getByName(attacker->getHitTile())->getId();
     MapTile miss = map->tileset->getByName(attacker->getMissTile())->getId();
     vector<Coords> path = gameGetDirectionalActionPath(dir, MASK_DIR_ALL,
-                                attacker->getCoords(), 1, 11,
+                                attacker->coords, 1, 11,
                                 &Tile::canAttackOverTile, false);
     vector<Coords>::iterator it;
     for (it = path.begin(); it != path.end(); it++) {
@@ -734,7 +734,7 @@ void CombatController::finishTurn() {
     /* make sure the player with the focus is still in battle (hasn't fled or died) */
     if (player) {
         /* apply effects from tile player is standing on */
-        player->applyEffect(map, map->tileTypeAt(player->getCoords(), WITH_GROUND_OBJECTS)->getEffect());
+        player->applyEffect(map, map->tileTypeAt(player->coords, WITH_GROUND_OBJECTS)->getEffect());
     }
 
     quick = (c->aura.getType() == Aura::QUICKNESS) && player && (xu4_random(2) == 0) ? 1 : 0;
@@ -752,7 +752,7 @@ void CombatController::finishTurn() {
                     player->wakeUp();
 
                 /* remove focus from the current party member */
-                player->setFocus(false);
+                player->focused = false;
 
                 /* eat some food */
                 c->party->adjustFood(-1);
@@ -971,7 +971,7 @@ bool CombatController::keyPressed(int key) {
 
     case 'l':
         if (settings.debug) {
-            Coords coords = getCurrentPlayer()->getCoords();
+            const Coords& coords = getCurrentPlayer()->coords;
             screenMessage("\nLocation:\nx:%d\ny:%d\nz:%d\n", coords.x, coords.y, coords.z);
             screenPrompt();
             valid = false;
@@ -1130,7 +1130,7 @@ void CombatController::attack() {
 
     vector<Coords> path =
         gameGetDirectionalActionPath(MASK_DIR(dir), MASK_DIR_ALL,
-                                attacker->getCoords(), 1, range,
+                                attacker->coords, 1, range,
                                 weapon->canAttackThroughObjects() ? NULL
                                                     : &Tile::canAttackOverTile,
                                 false);
@@ -1140,7 +1140,7 @@ void CombatController::attack() {
     if (targetDistance > 0)
         targetCoords = path.back();
     else
-        targetCoords = attacker->getCoords();
+        targetCoords = attacker->coords;
 
     bool foundTarget = false;
 #ifdef GPU_RENDER
@@ -1276,7 +1276,7 @@ PartyMember *CombatMap::partyMemberAt(Coords coords) {
     PartyMemberVector::iterator i;
 
     for (i = party.begin(); i != party.end(); i++) {
-        if ((*i)->getCoords() == coords)
+        if ((*i)->coords == coords)
             return *i;
     }
     return NULL;
@@ -1291,7 +1291,7 @@ Creature *CombatMap::creatureAt(Coords coords) {
     CreatureVector::iterator i;
 
     for (i = creatures.begin(); i != creatures.end(); i++) {
-        if ((*i)->getCoords() == coords)
+        if ((*i)->coords == coords)
             return *i;
     }
     return NULL;
@@ -1341,7 +1341,7 @@ MapId CombatMap::mapForTile(const Tile *groundTile, const Tile *transport, Objec
     static std::map<const Tile *, MapId> dungeontileMap;
     bool fromShip, toShip;
     Location* loc = c->location;
-    Object *objUnder = loc->map->objectAt(loc->coords);
+    const Object *objUnder = loc->map->objectAt(loc->coords);
 
     if (loc->context & CTX_DUNGEON) {
         if (dungeontileMap.empty()) {
@@ -1365,17 +1365,17 @@ MapId CombatMap::mapForTile(const Tile *groundTile, const Tile *transport, Objec
     }
 
     fromShip = toShip = false;
-    if (transport->isShip() || (objUnder && objUnder->getTile().getTileType()->isShip()))
+    if (transport->isShip() || (objUnder && objUnder->tile.getTileType()->isShip()))
         fromShip = true;
-    if (obj->getTile().getTileType()->isPirateShip())
+    if (obj->tile.getTileType()->isPirateShip())
         toShip = true;
 
     if (fromShip && toShip)
         return MAP_SHIPSHIP_CON;
 
     /* We can fight creatures and townsfolk */
-    if (obj->getType() != Object::UNKNOWN) {
-        const Tile *tileUnderneath = loc->map->tileTypeAt(obj->getCoords(), WITHOUT_OBJECTS);
+    if (obj->objType != Object::UNKNOWN) {
+        const Tile *tileUnderneath = loc->map->tileTypeAt(obj->coords, WITHOUT_OBJECTS);
 
         if (toShip)
             return MAP_SHORSHIP_CON;

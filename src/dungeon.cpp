@@ -359,7 +359,7 @@ uint8_t* Dungeon::fillRawMap() {
 
                 // Add the creature to the tile
                 const Object *obj = objectAt(Coords(x, y, z));
-                if (obj && obj->getType() == Object::CREATURE) {
+                if (obj && obj->objType == Object::CREATURE) {
                     const Creature *m = static_cast<const Creature*>(obj);
                     uid = u4DngMonster(m->getId());
                     if (uid)

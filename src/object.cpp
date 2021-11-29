@@ -17,7 +17,7 @@
 Object::Object(Type type) :
   tile(0),
   prevTile(0),
-  movement_behavior(MOVEMENT_FIXED),
+  movement(MOVEMENT_FIXED),
   objType(type),
   animId(ANIM_UNUSED),
   focused(false),
@@ -39,13 +39,13 @@ bool Object::setDirection(Direction d) {
 }
 
 /*
- * NOTE: This does not set prevCoords.
+ * Sets Object coords & prevCoords to the specified position.
  */
-void Object::placeOnMap(Map* map, const Coords& coords) {
+void Object::placeOnMap(Map* map, const Coords& pos) {
     if (! onMaps || ! map->objectPresent(this))
         ++onMaps;
 
-    setCoords(coords);
+    coords = prevCoords = pos;
 
 #ifdef GPU_RENDER
     /* Start frame animation */

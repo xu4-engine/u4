@@ -18,9 +18,9 @@
 #include "ios_helpers.h"
 #endif
 
-bool isPartyMember(Object *punknown) {
-    PartyMember *pm;
-    if ((pm = dynamic_cast<PartyMember*>(punknown)) != NULL)
+bool isPartyMember(const Object *punknown) {
+    const PartyMember *pm;
+    if ((pm = dynamic_cast<const PartyMember*>(punknown)) != NULL)
         return true;
     else
         return false;
@@ -37,7 +37,7 @@ PartyMember::PartyMember(Party *p, SaveGamePlayerRecord *pr) :
     // NOTE: Avoid calls which emit notifications during construction!
 
     /* FIXME: we need to rename movement behaviors */
-    setMovementBehavior(MOVEMENT_ATTACK_AVATAR);
+    movement = MOVEMENT_ATTACK_AVATAR;
     this->ranged = xu4.config->weapon(pr->weapon)->range ? 1 : 0;
 
     // These lines are the same as setStatus -> PartyMember::addStatus but
@@ -472,7 +472,7 @@ int PartyMember::loseWeapon() {
 void PartyMember::putToSleep() {
     if (! isDead()) {
         addStatus(STAT_SLEEPING);
-        setTile(Tileset::findTileByName(Tile::sym.corpse)->getId());
+        tile = Tileset::findTileByName(Tile::sym.corpse)->getId();
     }
 }
 
@@ -481,7 +481,7 @@ void PartyMember::putToSleep() {
  */
 void PartyMember::wakeUp() {
     removeStatus(STAT_SLEEPING);
-    setTile(tileForClass(getClass()));
+    tile = tileForClass(getClass());
 }
 
 MapTile PartyMember::tileForClass(int klass) {

@@ -93,7 +93,7 @@ Person::Person(const MapTile& tile) :
     Creature(Creature::getByTile(tile)),
     start(0, 0)
 {
-    setType(Object::PERSON);
+    objType = Object::PERSON;
     dialogue = NULL;
     npcType = NPC_EMPTY;
 }
