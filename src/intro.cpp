@@ -725,6 +725,8 @@ void IntroController::updateScreen() {
             xu4.errorMessage = NULL;
 
             drawBeasties();
+            screenUploadToGPU();
+
             // wait for a couple seconds
             EventHandler::wait_msecs(3000);
             // clear the screen again
@@ -1116,9 +1118,7 @@ void IntroController::timerFired() {
     if (xu4_random(2) && ++beastie2Cycle >= IntroBinData::BEASTIE2_FRAMES)
         beastie2Cycle = 0;
 
-#ifdef USE_GL
-    gpu_blitTexture(gpu_screenTexture(xu4.gpu), 0, 0, xu4.screenImage);
-#endif
+    screenUploadToGPU();
 }
 
 /**

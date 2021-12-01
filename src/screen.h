@@ -99,6 +99,11 @@ void screenDelete(void);
 void screenReInit(void);
 void screenSwapBuffers();
 void screenWait(int numberOfAnimationFrames);
+#ifdef USE_GL
+void screenUploadToGPU();
+#else
+#define screenUploadToGPU()
+#endif
 
 void screenIconify(void);
 

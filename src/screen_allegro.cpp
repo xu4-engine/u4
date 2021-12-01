@@ -399,7 +399,7 @@ float screenFrameDuration() {
 
 void screenWait(int numberOfAnimationFrames) {
 #if defined(USE_GL) && ! defined(GPU_RENDER)
-    gpu_blitTexture(gpu_screenTexture(xu4.gpu), 0, 0, xu4.screenImage);
+    screenUploadToGPU();
 #endif
 
     // Does this wait need to handle world animation or input (e.g. user

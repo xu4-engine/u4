@@ -655,12 +655,18 @@ void screenUpdate(TileView *view, bool showmap, bool blackout) {
     screenUpdateCursor();
     screenUpdateMoons();
     screenUpdateWind();
-#ifdef USE_GL
-    gpu_blitTexture(gpu_screenTexture(xu4.gpu), 0, 0, xu4.screenImage);
-#endif
+    screenUploadToGPU();
 }
 
 #ifdef USE_GL
+/**
+ * Transfer the contents of the screenImage to the GPU.
+ * This function will be removed after GPU rendering is fully implemented.
+ */
+void screenUploadToGPU() {
+    gpu_blitTexture(gpu_screenTexture(xu4.gpu), 0, 0, xu4.screenImage);
+}
+
 void screenRender() {
     Screen* sp = xu4.screen;
     void* gpu = xu4.gpu;
@@ -1506,9 +1512,7 @@ void screenGemUpdate() {
     screenUpdateCursor();
     screenUpdateMoons();
     screenUpdateWind();
-#ifdef USE_GL
-    gpu_blitTexture(gpu_screenTexture(xu4.gpu), 0, 0, xu4.screenImage);
-#endif
+    screenUploadToGPU();
 }
 
 /**
