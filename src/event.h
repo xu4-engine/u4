@@ -206,6 +206,7 @@ class TimedEventMgr {
 public:
     typedef std::list<TimedEvent*> List;
 
+    TimedEventMgr() : locked(false) {}
     ~TimedEventMgr();
 
     /** Returns true if the event list is locked (in use) */

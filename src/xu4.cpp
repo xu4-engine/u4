@@ -261,11 +261,18 @@ int main(int argc, char *argv[]) {
 
 #ifdef DEBUG
     if (opt.flags & OPT_TEST_SAVE) {
+        int status;
         xu4.game = new GameController();
-        xu4.game->initContext();
-        gameSave("/tmp/xu4/");
+        if (xu4.game->initContext()) {
+            gameSave("/tmp/xu4/");
+            status = 0;
+        } else {
+            printf("initContext failed!\n");
+            status = 1;
+        }
+        xu4.stage = StageExitGame;
         servicesFree(&xu4);
-        return 0;
+        return status;
     }
 #endif
     }
