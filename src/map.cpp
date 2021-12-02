@@ -561,7 +561,7 @@ Creature *Map::addCreature(const Creature *creature, const Coords& coords) {
  * Adds an object to the given map
  */
 Object *Map::addObject(Object *obj, Coords coords) {
-    objects.push_front(obj);
+    objects.push_back(obj);
     return obj;
 }
 
@@ -573,7 +573,7 @@ Object *Map::addObject(MapTile tile, MapTile prevtile, const Coords& coords) {
     obj->setPrevCoords(coords);
     obj->placeOnMap(this, coords);
 
-    objects.push_front(obj);
+    objects.push_back(obj);
 
     return obj;
 }
