@@ -119,7 +119,7 @@ void image32_fillRect(Image32* img, int x, int y, int rw, int rh,
     }
 }
 
-inline uint8_t MIX(int A, int B, int alpha)
+static inline uint8_t MIX(int A, int B, int alpha)
 {
     return (int8_t) (A + ((B - A) * alpha / 255));
 }
@@ -143,7 +143,7 @@ void image32_blit(Image32* dest, int dx, int dy, const Image32* src, int blend)
         blitW += dx;     // Subtracts from blitW.
         dx = 0;
     }
-    else if ((blitW + dx) > int(dest->w)) {
+    else if ((blitW + dx) > (int) dest->w) {
         blitW = dest->w - dx;
     }
     if (blitW < 1)
@@ -155,7 +155,7 @@ void image32_blit(Image32* dest, int dx, int dy, const Image32* src, int blend)
         blitH += dy;     // Subtracts from blitH.
         dy = 0;
     }
-    else if ((blitH + dy) > int(dest->h)) {
+    else if ((blitH + dy) > (int) dest->h) {
         blitH = dest->h - dy;
     }
     if (blitH < 1)
@@ -214,9 +214,9 @@ void image32_blit(Image32* dest, int dx, int dy, const Image32* src, int blend)
         rw += x; \
         x = 0; \
     } \
-    if ((rw + x) > int(DD)) \
+    if ((rw + x) > (int) DD) \
         rw = DD - x; \
-    if ((rw + rx) > int(SD)) \
+    if ((rw + rx) > (int) SD) \
         rw = SD - rx; \
     if (rw < 1) \
         return;
@@ -281,6 +281,45 @@ void image32_blitRect(Image32* dest, int dx, int dy,
         }
     }
 }
+
+#if 0
+/**
+ * Load an image from a PPM file.
+ *
+ * This function initializes all struct members so if pixels have been
+ * previously allocated then image32_freePixels() should be called by the
+ * user.
+ */
+void image32_loadPPM(Image32* img, const char *filename)
+{
+    unsigned int w, h;
+    FILE* fp;
+
+    image32_init(img);
+
+    fp = fopen(filename, "r");
+    if (! fp) {
+        fprintf(stderr, "image32_load cannot open file %s\n", filename);
+        return;
+    }
+
+    if (fscanf(fp, "P6 %u %u 255", &w, &h) == 2) {
+        if (image32_allocPixels(img, w, h)) {
+            RGBA* color = (RGBA*) img->pixels;
+            unsigned int x, y;
+            fread(color, 1, 1, fp);     // Skip newline.
+            for(y = 0; y < h; ++y) {
+                for(x = 0; x < w; ++x) {
+                    fread(color, 1, 3, fp);
+                    color->a = 255;
+                    ++color;
+                }
+            }
+        }
+    }
+    fclose(fp);
+}
+#endif
 
 /**
  * Dump the image to a file in PPM format. This is mainly used for debugging.

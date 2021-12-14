@@ -37,6 +37,7 @@ void     image32_blit(Image32* dest, int dx, int dy,
 void     image32_blitRect(Image32* dest, int dx, int dy,
                           const Image32* src, int sx, int sy, int sw, int sh,
                           int blend);
+//void     image32_loadPPM(Image32*, const char *filename);
 void     image32_savePPM(const Image32*, const char *filename);
 
 #ifdef __cplusplus
