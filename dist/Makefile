@@ -30,7 +30,7 @@ clean-sdks:
 
 boron:
 	git clone git://git.code.sf.net/p/urlan/boron/code boron
-	cd boron && git checkout 7188feef && ./configure --no-execute --no-socket --static --thread
+	cd boron && git checkout d84cb774 && ./configure --no-execute --no-socket --static --thread
 
 sdk/$(BORON_SDK_LINUX): sdk boron
 	rm -rf /tmp/boron
