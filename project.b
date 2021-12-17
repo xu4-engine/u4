@@ -76,7 +76,7 @@ exe %xu4 [
 	][
 		libxml2
 		sources_from %src [
-			%config.cpp
+			%config_xml.cpp
 			%script_xml.cpp
 			%xml.cpp
 			%support/SymbolTable.cpp

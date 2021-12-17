@@ -79,7 +79,7 @@ CXXSRCS=\
         $(NULL)
 
 ifeq ($(CONF),xml)
-	CXXSRCS+=config.cpp script_xml.cpp xml.cpp support/SymbolTable.cpp
+	CXXSRCS+=config_xml.cpp script_xml.cpp xml.cpp support/SymbolTable.cpp
 else
 	CSRCS+=support/cdi.c
 	CXXSRCS+=config_boron.cpp
