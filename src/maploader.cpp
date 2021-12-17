@@ -323,6 +323,7 @@ static void initDungeonRoom(Dungeon *dng, int room) {
     cmap->id = 0;
     cmap->border_behavior = Map::BORDER_FIXED;
     cmap->width = cmap->height = 11;
+    cmap->boundMaxX = cmap->boundMaxY = 11;
     cmap->music = MUSIC_COMBAT;
     cmap->type = Map::COMBAT;
     cmap->flags |= NO_LINE_OF_SIGHT;
@@ -347,6 +348,9 @@ static bool loadDungeonMap(Map *map, U4FILE *uf, FILE *sav) {
     /* the map must be 11x11 to be read from an .CON file */
     ASSERT(dungeon->width == DNG_WIDTH, "map width is %d, should be %d", dungeon->width, DNG_WIDTH);
     ASSERT(dungeon->height == DNG_HEIGHT, "map height is %d, should be %d", dungeon->height, DNG_HEIGHT);
+
+    map->boundMaxX = map->width;
+    map->boundMaxY = map->height;
 
     /* load the dungeon map */
     bytes = DNG_HEIGHT * DNG_WIDTH * dungeon->levels;
