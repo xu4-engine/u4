@@ -81,7 +81,7 @@ Image* loadImage_png(U4FILE *file) {
     }
 
     RGBA *palette = NULL;
-    if (bpp == 4 || bpp == 8) {
+    if (bpp == 4 || bpp == 8 || bpp == 1) {
         int num_pngpalette;
         png_colorp pngpalette;
         png_get_PLTE(png_ptr, info_ptr, &pngpalette, &num_pngpalette);

@@ -48,11 +48,13 @@ void DungeonView::display(Context * c, TileView *view)
                 Direction dir = (Direction) c->saveGame->orientation;
 
                 // Draw walls player can see.
+                Image::enableBlend(1);
                 for (x = 0; x < 3; ++x) {
                     tiles = getTiles(y, wallSides[x]);
                     type = tilesToGraphic(tiles);
                     drawWall(wallSides[x], y, dir, type);
                 }
+                Image::enableBlend(0);
 
                 //This only checks that the tile at y==3 is opaque
                 if (y == 3 && !tiles.front().getTileType()->isOpaque())
@@ -118,12 +120,6 @@ void DungeonView::drawInDungeon(const Tile *tile, int x_offset, int distance, Di
         offset_multiplier = 4;
     }
 
-#if 0
-    //Clear scratchpad and set a background color
-    RGBA darkGray(14, 15, 16, 0);
-    animated->fill(darkGray);
-#endif
-
     //Put tile on animated scratchpad
     if (tile->getAnim()) {
         MapTile mt = tile->getId();
@@ -133,11 +129,6 @@ void DungeonView::drawInDungeon(const Tile *tile, int x_offset, int distance, Di
     {
         tile->getImage()->drawOn(animated, 0, 0);
     }
-
-#if 0
-    animated->makeColorTransparent(darkGray);
-    //This process involving the background color is only required for drawing in the dungeon.
-#endif
 
     /* scale is based on distance; 1 means half size, 2 regular, 4 means scale by 2x, etc. */
     bool tiledWall = tile->isTiledInDungeon();

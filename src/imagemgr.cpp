@@ -240,15 +240,22 @@ void ImageMgr::fixupAbacus(Image *im, int prescale) {
  * south.
  */
 void ImageMgr::fixupDungNS(Image *im) {
-    for (int y = 0; y < im->height(); y++) {
-        for (int x = 0; x < im->width(); x++) {
-            unsigned int index;
-            im->getPixelIndex(x, y, index);
-            if (index == 1)
-                im->putPixelIndex(x, y, 2);
-            else if (index == 2)
-                im->putPixelIndex(x, y, 1);
-        }
+    RGBA color;
+    uint32_t* it  = im->pixels;
+    uint32_t* end = it + (im->w * im->h);
+    uint32_t blue, green;
+
+    rgba_set(color, 0, 0, 0x80, 0xff);
+    blue = *((uint32_t*) &color);
+    rgba_set(color, 0, 0x80, 0, 0xff);
+    green = *((uint32_t*) &color);
+
+    while (it != end) {
+        if (*it == blue)
+            *it = green;
+        else if (*it == green)
+            *it = blue;
+        ++it;
     }
 }
 

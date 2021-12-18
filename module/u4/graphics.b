@@ -311,96 +311,96 @@ imageset EGA [
         dung3_mid_ns  0,80, 176, 16
         dung3_xxx_ns  0, 0,  80, 16
     ]
-    image (name: dung0_mid_ew_door filename: "ega/dung0ma_door.png" transparentIndex: 0)
-    image (name: dung0_mid_ns_door filename: "ega/dung0ma_door.png" transparentIndex: 0 fixup: dungns)
-    image (name: dung1_mid_ew_door_image filename: "ega/dung1ma_door.png" transparentIndex: 0) [
+    image (name: dung0_mid_ew_door filename: "ega/dung0ma_door.png")
+    image (name: dung0_mid_ns_door filename: "ega/dung0ma_door.png" fixup: dungns)
+    image (name: dung1_mid_ew_door_image filename: "ega/dung1ma_door.png") [
         dung1_mid_ew_door  0,32, 176,112
     ]
-    image (name: dung1_mid_ns_door_image filename: "ega/dung1ma_door.png" transparentIndex: 0 fixup: dungns) [
+    image (name: dung1_mid_ns_door_image filename: "ega/dung1ma_door.png" fixup: dungns) [
         dung1_mid_ns_door  0,32, 176,112
     ]
-    image (name: dung2_mid_ew_door_image filename: "ega/dung2ma_door.png" transparentIndex: 0) [
+    image (name: dung2_mid_ew_door_image filename: "ega/dung2ma_door.png") [
         dung2_mid_ew_door  0,64, 176,48
     ]
-    image (name: dung2_mid_ns_door_image filename: "ega/dung2ma_door.png" transparentIndex: 0 fixup: dungns) [
+    image (name: dung2_mid_ns_door_image filename: "ega/dung2ma_door.png" fixup: dungns) [
         dung2_mid_ns_door  0,64, 176,48
     ]
-    image (name: dung3_mid_ew_door_image filename: "ega/dung3ma_door.png" transparentIndex: 0) [
+    image (name: dung3_mid_ew_door_image filename: "ega/dung3ma_door.png") [
         dung3_mid_ew_door  0,80, 176,16
     ]
-    image (name: dung3_mid_ns_door_image filename: "ega/dung3ma_door.png" transparentIndex: 0 fixup: dungns) [
+    image (name: dung3_mid_ns_door_image filename: "ega/dung3ma_door.png" fixup: dungns) [
         dung3_mid_ns_door  0,80, 176,16
     ]
-    image (name: dung0_ladderup_image filename: "ega/ladderup0.png" transparentIndex: 0) [
+    image (name: dung0_ladderup_image filename: "ega/ladderup0.png") [
         dung0_ladderup  45,0, 88,87
     ]
-    image (name: dung0_ladderup_side_image filename: "ega/ladderup0_side.png" transparentIndex: 0) [
+    image (name: dung0_ladderup_side_image filename: "ega/ladderup0_side.png") [
         dung0_ladderup_side  45,0, 88,87
     ]
-    image (name: dung1_ladderup_image filename: "ega/ladderup1.png" transparentIndex: 0) [
+    image (name: dung1_ladderup_image filename: "ega/ladderup1.png") [
         dung1_ladderup  64,40, 50,48
     ]
-    image (name: dung1_ladderup_side_image filename: "ega/ladderup1_side.png" transparentIndex: 0) [
+    image (name: dung1_ladderup_side_image filename: "ega/ladderup1_side.png") [
         dung1_ladderup_side  64,40, 50,48
     ]
-    image (name: dung2_ladderup_image filename: "ega/ladderup2.png" transparentIndex: 0) [
+    image (name: dung2_ladderup_image filename: "ega/ladderup2.png") [
         dung2_ladderup  77,68, 22,19
     ]
-    image (name: dung2_ladderup_side_image filename: "ega/ladderup2_side.png" transparentIndex: 0) [
+    image (name: dung2_ladderup_side_image filename: "ega/ladderup2_side.png") [
         dung2_ladderup_side  77,68, 22,19
     ]
-    image (name: dung3_ladderup_image filename: "ega/ladderup3.png" transparentIndex: 0) [
+    image (name: dung3_ladderup_image filename: "ega/ladderup3.png") [
         dung3_ladderup  84,82, 8,6
     ]
-    image (name: dung3_ladderup_side_image filename: "ega/ladderup3_side.png" transparentIndex: 0) [
+    image (name: dung3_ladderup_side_image filename: "ega/ladderup3_side.png") [
         dung3_ladderup_side  84,82, 8,6
     ]
-    image (name: dung0_ladderdown_image filename: "ega/ladderdown0.png" transparentIndex: 0) [
+    image (name: dung0_ladderdown_image filename: "ega/ladderdown0.png") [
         dung0_ladderdown  45,87, 88,89
     ]
-    image (name: dung0_ladderdown_side_image filename: "ega/ladderdown0_side.png" transparentIndex: 0) [
+    image (name: dung0_ladderdown_side_image filename: "ega/ladderdown0_side.png") [
         dung0_ladderdown_side  45,87, 88,89
     ]
-    image (name: dung1_ladderdown_image filename: "ega/ladderdown1.png" transparentIndex: 0) [
+    image (name: dung1_ladderdown_image filename: "ega/ladderdown1.png") [
         dung1_ladderdown  64,86, 50,50
     ]
-    image (name: dung1_ladderdown_side_image filename: "ega/ladderdown1_side.png" transparentIndex: 0) [
+    image (name: dung1_ladderdown_side_image filename: "ega/ladderdown1_side.png") [
         dung1_ladderdown_side  64,86, 50,50
     ]
-    image (name: dung2_ladderdown_image filename: "ega/ladderdown2.png" transparentIndex: 0) [
+    image (name: dung2_ladderdown_image filename: "ega/ladderdown2.png") [
         dung2_ladderdown  77,86, 22,22
     ]
-    image (name: dung2_ladderdown_side_image filename: "ega/ladderdown2_side.png" transparentIndex: 0) [
+    image (name: dung2_ladderdown_side_image filename: "ega/ladderdown2_side.png") [
         dung2_ladderdown_side  77,86, 22,22
     ]
-    image (name: dung3_ladderdown_image filename: "ega/ladderdown3.png" transparentIndex: 0) [
+    image (name: dung3_ladderdown_image filename: "ega/ladderdown3.png") [
         dung3_ladderdown  84,88, 8,8
     ]
-    image (name: dung3_ladderdown_side_image filename: "ega/ladderdown3_side.png" transparentIndex: 0) [
+    image (name: dung3_ladderdown_side_image filename: "ega/ladderdown3_side.png") [
         dung3_ladderdown_side  84,88, 8,8
     ]
-    image (name: dung0_ladderupdown_image filename: "ega/ladderupdown0.png" transparentIndex: 0) [
+    image (name: dung0_ladderupdown_image filename: "ega/ladderupdown0.png") [
         dung0_ladderupdown  45,0, 88,176
     ]
-    image (name: dung0_ladderupdown_side_image filename: "ega/ladderupdown0_side.png" transparentIndex: 0) [
+    image (name: dung0_ladderupdown_side_image filename: "ega/ladderupdown0_side.png") [
         dung0_ladderupdown_side  45,0, 88,176
     ]
-    image (name: dung1_ladderupdown_image filename: "ega/ladderupdown1.png" transparentIndex: 0) [
+    image (name: dung1_ladderupdown_image filename: "ega/ladderupdown1.png") [
         dung1_ladderupdown  64,40, 50,96
     ]
-    image (name: dung1_ladderupdown_side_image filename: "ega/ladderupdown1_side.png" transparentIndex: 0) [
+    image (name: dung1_ladderupdown_side_image filename: "ega/ladderupdown1_side.png") [
         dung1_ladderupdown_side  64,40, 50,96
     ]
-    image (name: dung2_ladderupdown_image filename: "ega/ladderupdown2.png" transparentIndex: 0) [
+    image (name: dung2_ladderupdown_image filename: "ega/ladderupdown2.png") [
         dung2_ladderupdown  77,68, 22,40
     ]
-    image (name: dung2_ladderupdown_side_image filename: "ega/ladderupdown2_side.png" transparentIndex: 0) [
+    image (name: dung2_ladderupdown_side_image filename: "ega/ladderupdown2_side.png") [
         dung2_ladderupdown_side  77,68, 22,40
     ]
-    image (name: dung3_ladderupdown_image filename: "ega/ladderupdown3.png" transparentIndex: 0) [
+    image (name: dung3_ladderupdown_image filename: "ega/ladderupdown3.png") [
         dung3_ladderupdown  84,82, 8,12
     ]
-    image (name: dung3_ladderupdown_side_image filename: "ega/ladderupdown3_side.png" transparentIndex: 0) [
+    image (name: dung3_ladderupdown_side_image filename: "ega/ladderupdown3_side.png") [
         dung3_ladderupdown_side  84,82, 8,12
     ]
 ]
@@ -654,8 +654,8 @@ imageset EGA/VGA [
         dung3_mid_ns  56,72, 48,32
         dung3_xxx_ns  48,72, 24,32
     ]
-    image (name: dung0_mid_ew_door filename: "vga/dungeonback0_door.png" transparentIndex: 9)
-    image (name: dung0_mid_ns_door filename: "vga/dungeonback0_door.png" transparentIndex: 9 fixup: dungns)
+    image (name: dung0_mid_ew_door filename: "vga/dungeonback0_door.png")
+    image (name: dung0_mid_ns_door filename: "vga/dungeonback0_door.png")
     image (name: dung1_mid_door_image filename: "vga/dungeonback1_door.png") [
         dung1_mid_ew_door  0,16, 176,160
         dung1_mid_ns_door  0,16, 176,160
@@ -668,76 +668,76 @@ imageset EGA/VGA [
         dung3_mid_ew_door 48,72, 80,32
         dung3_mid_ns_door 48,72, 80,32
     ]
-    image (name: dung0_ladderup_image filename: "vga/ladderup0.png" transparentIndex: 0) [
+    image (name: dung0_ladderup_image filename: "vga/ladderup0.png") [
         dung0_ladderup 45,0, 88,87
     ]
-    image (name: dung0_ladderup_side_image filename: "vga/ladderup0_side.png" transparentIndex: 0) [
+    image (name: dung0_ladderup_side_image filename: "vga/ladderup0_side.png") [
         dung0_ladderup_side 45,0, 88,87
     ]
-    image (name: dung1_ladderup_image filename: "vga/ladderup1.png" transparentIndex: 0) [
+    image (name: dung1_ladderup_image filename: "vga/ladderup1.png") [
         dung1_ladderup 64,40, 50,48
     ]
-    image (name: dung1_ladderup_side_image filename: "vga/ladderup1_side.png" transparentIndex: 0) [
+    image (name: dung1_ladderup_side_image filename: "vga/ladderup1_side.png") [
         dung1_ladderup_side 64,40, 50,48
     ]
-    image (name: dung2_ladderup_image filename: "vga/ladderup2.png" transparentIndex: 0) [
+    image (name: dung2_ladderup_image filename: "vga/ladderup2.png") [
         dung2_ladderup 77,68, 22,19
     ]
-    image (name: dung2_ladderup_side_image filename: "vga/ladderup2_side.png" transparentIndex: 0) [
+    image (name: dung2_ladderup_side_image filename: "vga/ladderup2_side.png") [
         dung2_ladderup_side 77,68, 22,19
     ]
-    image (name: dung3_ladderup_image filename: "vga/ladderup3.png" transparentIndex: 0) [
+    image (name: dung3_ladderup_image filename: "vga/ladderup3.png") [
         dung3_ladderup  84,82, 8,6
     ]
-    image (name: dung3_ladderup_side_image filename: "vga/ladderup3_side.png" transparentIndex: 0) [
+    image (name: dung3_ladderup_side_image filename: "vga/ladderup3_side.png") [
         dung3_ladderup_side  84,82, 8,6
     ]
-    image (name: dung0_ladderdown_image filename: "vga/ladderdown0.png" transparentIndex: 0) [
+    image (name: dung0_ladderdown_image filename: "vga/ladderdown0.png") [
         dung0_ladderdown  45,87, 88,89
     ]
-    image (name: dung0_ladderdown_side_image filename: "vga/ladderdown0_side.png" transparentIndex: 0) [
+    image (name: dung0_ladderdown_side_image filename: "vga/ladderdown0_side.png") [
         dung0_ladderdown_side  45,87, 88,89
     ]
-    image (name: dung1_ladderdown_image filename: "vga/ladderdown1.png" transparentIndex: 0) [
+    image (name: dung1_ladderdown_image filename: "vga/ladderdown1.png") [
         dung1_ladderdown  64,86, 50,50
     ]
-    image (name: dung1_ladderdown_side_image filename: "vga/ladderdown1_side.png" transparentIndex: 0) [
+    image (name: dung1_ladderdown_side_image filename: "vga/ladderdown1_side.png") [
         dung1_ladderdown_side  64,86, 50,50
     ]
-    image (name: dung2_ladderdown_image filename: "vga/ladderdown2.png" transparentIndex: 0) [
+    image (name: dung2_ladderdown_image filename: "vga/ladderdown2.png") [
         dung2_ladderdown  77,86, 22,22
     ]
-    image (name: dung2_ladderdown_side_image filename: "vga/ladderdown2_side.png" transparentIndex: 0) [
+    image (name: dung2_ladderdown_side_image filename: "vga/ladderdown2_side.png") [
         dung2_ladderdown_side  77,86, 22,22
     ]
-    image (name: dung3_ladderdown_image filename: "vga/ladderdown3.png" transparentIndex: 0) [
+    image (name: dung3_ladderdown_image filename: "vga/ladderdown3.png") [
         dung3_ladderdown  84,88, 8,8
     ]
-    image (name: dung3_ladderdown_side_image filename: "vga/ladderdown3_side.png" transparentIndex: 0) [
+    image (name: dung3_ladderdown_side_image filename: "vga/ladderdown3_side.png") [
         dung3_ladderdown_side  84,88, 8,8
     ]
-    image (name: dung0_ladderupdown_image filename: "vga/ladderupdown0.png" transparentIndex: 0) [
+    image (name: dung0_ladderupdown_image filename: "vga/ladderupdown0.png") [
         dung0_ladderupdown  45,0, 88,176
     ]
-    image (name: dung0_ladderupdown_side_image filename: "vga/ladderupdown0_side.png" transparentIndex: 0) [
+    image (name: dung0_ladderupdown_side_image filename: "vga/ladderupdown0_side.png") [
         dung0_ladderupdown_side  45,0, 88,176
     ]
-    image (name: dung1_ladderupdown_image filename: "vga/ladderupdown1.png" transparentIndex: 0) [
+    image (name: dung1_ladderupdown_image filename: "vga/ladderupdown1.png") [
         dung1_ladderupdown  64,40, 50,96
     ]
-    image (name: dung1_ladderupdown_side_image filename: "vga/ladderupdown1_side.png" transparentIndex: 0) [
+    image (name: dung1_ladderupdown_side_image filename: "vga/ladderupdown1_side.png") [
         dung1_ladderupdown_side  64,40, 50,96
     ]
-    image (name: dung2_ladderupdown_image filename: "vga/ladderupdown2.png" transparentIndex: 0) [
+    image (name: dung2_ladderupdown_image filename: "vga/ladderupdown2.png") [
         dung2_ladderupdown  77,68, 22,40
     ]
-    image (name: dung2_ladderupdown_side_image filename: "vga/ladderupdown2_side.png" transparentIndex: 0) [
+    image (name: dung2_ladderupdown_side_image filename: "vga/ladderupdown2_side.png") [
         dung2_ladderupdown_side  77,68, 22,40
     ]
-    image (name: dung3_ladderupdown_image filename: "vga/ladderupdown3.png" transparentIndex: 0) [
+    image (name: dung3_ladderupdown_image filename: "vga/ladderupdown3.png") [
         dung3_ladderupdown  84,82, 8,12
     ]
-    image (name: dung3_ladderupdown_side_image filename: "vga/ladderupdown3_side.png" transparentIndex: 0) [
+    image (name: dung3_ladderupdown_side_image filename: "vga/ladderupdown3_side.png") [
         dung3_ladderupdown_side  84,82, 8,12
     ]
 ]

@@ -315,96 +315,96 @@
             <subimage name="dung3_mid_ns" x="0"   y="80" width="176" height="16"/>
             <subimage name="dung3_xxx_ns" x="0"   y="0"  width="80"  height="16"/>
         </image>
-        <image name="dung0_mid_ew_door" filename="ega/dung0ma_door.png" transparentIndex="0"/>
-        <image name="dung0_mid_ns_door" filename="ega/dung0ma_door.png" transparentIndex="0" fixup="dungns"/>
-        <image name="dung1_mid_ew_door_image" filename="ega/dung1ma_door.png" transparentIndex="0">
+        <image name="dung0_mid_ew_door" filename="ega/dung0ma_door.png"/>
+        <image name="dung0_mid_ns_door" filename="ega/dung0ma_door.png" fixup="dungns"/>
+        <image name="dung1_mid_ew_door_image" filename="ega/dung1ma_door.png">
             <subimage name="dung1_mid_ew_door" x="0"   y="32" width="176"  height="112"/>
         </image>
-        <image name="dung1_mid_ns_door_image" filename="ega/dung1ma_door.png" transparentIndex="0" fixup="dungns">
+        <image name="dung1_mid_ns_door_image" filename="ega/dung1ma_door.png" fixup="dungns">
             <subimage name="dung1_mid_ns_door" x="0"   y="32" width="176"  height="112"/>
         </image>
-        <image name="dung2_mid_ew_door_image" filename="ega/dung2ma_door.png" transparentIndex="0">
+        <image name="dung2_mid_ew_door_image" filename="ega/dung2ma_door.png">
             <subimage name="dung2_mid_ew_door" x="0"   y="64" width="176"  height="48"/>
         </image>
-        <image name="dung2_mid_ns_door_image" filename="ega/dung2ma_door.png" transparentIndex="0" fixup="dungns">
+        <image name="dung2_mid_ns_door_image" filename="ega/dung2ma_door.png" fixup="dungns">
             <subimage name="dung2_mid_ns_door" x="0"   y="64" width="176"  height="48"/>
         </image>
-        <image name="dung3_mid_ew_door_image" filename="ega/dung3ma_door.png" transparentIndex="0">
+        <image name="dung3_mid_ew_door_image" filename="ega/dung3ma_door.png">
             <subimage name="dung3_mid_ew_door" x="0"   y="80" width="176"  height="16"/>
         </image>
-        <image name="dung3_mid_ns_door_image" filename="ega/dung3ma_door.png" transparentIndex="0" fixup="dungns">
+        <image name="dung3_mid_ns_door_image" filename="ega/dung3ma_door.png" fixup="dungns">
             <subimage name="dung3_mid_ns_door" x="0"   y="80" width="176"  height="16"/>
         </image>
-        <image name="dung0_ladderup_image" filename="ega/ladderup0.png" transparentIndex="0">
+        <image name="dung0_ladderup_image" filename="ega/ladderup0.png">
             <subimage name="dung0_ladderup" x="45" y="0" width="88" height="87"/>
         </image>
-        <image name="dung0_ladderup_side_image" filename="ega/ladderup0_side.png" transparentIndex="0">
+        <image name="dung0_ladderup_side_image" filename="ega/ladderup0_side.png">
             <subimage name="dung0_ladderup_side" x="45" y="0" width="88" height="87"/>
         </image>
-        <image name="dung1_ladderup_image" filename="ega/ladderup1.png" transparentIndex="0">
+        <image name="dung1_ladderup_image" filename="ega/ladderup1.png">
             <subimage name="dung1_ladderup" x="64" y="40" width="50" height="48"/>
         </image>
-        <image name="dung1_ladderup_side_image" filename="ega/ladderup1_side.png" transparentIndex="0">
+        <image name="dung1_ladderup_side_image" filename="ega/ladderup1_side.png">
             <subimage name="dung1_ladderup_side" x="64" y="40" width="50" height="48"/>
         </image>
-        <image name="dung2_ladderup_image" filename="ega/ladderup2.png" transparentIndex="0">
+        <image name="dung2_ladderup_image" filename="ega/ladderup2.png">
             <subimage name="dung2_ladderup" x="77" y="68" width="22" height="19"/>
         </image>
-        <image name="dung2_ladderup_side_image" filename="ega/ladderup2_side.png" transparentIndex="0">
+        <image name="dung2_ladderup_side_image" filename="ega/ladderup2_side.png">
             <subimage name="dung2_ladderup_side" x="77" y="68" width="22" height="19"/>
         </image>
-        <image name="dung3_ladderup_image" filename="ega/ladderup3.png" transparentIndex="0">
+        <image name="dung3_ladderup_image" filename="ega/ladderup3.png">
             <subimage name="dung3_ladderup" x="84" y="82" width="8" height="6"/>
         </image>
-        <image name="dung3_ladderup_side_image" filename="ega/ladderup3_side.png" transparentIndex="0">
+        <image name="dung3_ladderup_side_image" filename="ega/ladderup3_side.png">
             <subimage name="dung3_ladderup_side" x="84" y="82" width="8" height="6"/>
         </image>
-        <image name="dung0_ladderdown_image" filename="ega/ladderdown0.png" transparentIndex="0">
+        <image name="dung0_ladderdown_image" filename="ega/ladderdown0.png">
             <subimage name="dung0_ladderdown" x="45" y="87" width="88" height="89"/>
         </image>
-        <image name="dung0_ladderdown_side_image" filename="ega/ladderdown0_side.png" transparentIndex="0">
+        <image name="dung0_ladderdown_side_image" filename="ega/ladderdown0_side.png">
             <subimage name="dung0_ladderdown_side" x="45" y="87" width="88" height="89"/>
         </image>
-        <image name="dung1_ladderdown_image" filename="ega/ladderdown1.png" transparentIndex="0">
+        <image name="dung1_ladderdown_image" filename="ega/ladderdown1.png">
             <subimage name="dung1_ladderdown" x="64" y="86" width="50" height="50"/>
         </image>
-        <image name="dung1_ladderdown_side_image" filename="ega/ladderdown1_side.png" transparentIndex="0">
+        <image name="dung1_ladderdown_side_image" filename="ega/ladderdown1_side.png">
             <subimage name="dung1_ladderdown_side" x="64" y="86" width="50" height="50"/>
         </image>
-        <image name="dung2_ladderdown_image" filename="ega/ladderdown2.png" transparentIndex="0">
+        <image name="dung2_ladderdown_image" filename="ega/ladderdown2.png">
             <subimage name="dung2_ladderdown" x="77" y="86" width="22" height="22"/>
         </image>
-        <image name="dung2_ladderdown_side_image" filename="ega/ladderdown2_side.png" transparentIndex="0">
+        <image name="dung2_ladderdown_side_image" filename="ega/ladderdown2_side.png">
             <subimage name="dung2_ladderdown_side" x="77" y="86" width="22" height="22"/>
         </image>
-        <image name="dung3_ladderdown_image" filename="ega/ladderdown3.png" transparentIndex="0">
+        <image name="dung3_ladderdown_image" filename="ega/ladderdown3.png">
             <subimage name="dung3_ladderdown" x="84" y="88" width="8" height="8"/>
         </image>
-        <image name="dung3_ladderdown_side_image" filename="ega/ladderdown3_side.png" transparentIndex="0">
+        <image name="dung3_ladderdown_side_image" filename="ega/ladderdown3_side.png">
             <subimage name="dung3_ladderdown_side" x="84" y="88" width="8" height="8"/>
         </image>
-        <image name="dung0_ladderupdown_image" filename="ega/ladderupdown0.png" transparentIndex="0">
+        <image name="dung0_ladderupdown_image" filename="ega/ladderupdown0.png">
             <subimage name="dung0_ladderupdown" x="45" y="0" width="88" height="176"/>
         </image>
-        <image name="dung0_ladderupdown_side_image" filename="ega/ladderupdown0_side.png" transparentIndex="0">
+        <image name="dung0_ladderupdown_side_image" filename="ega/ladderupdown0_side.png">
             <subimage name="dung0_ladderupdown_side" x="45" y="0" width="88" height="176"/>
         </image>
-        <image name="dung1_ladderupdown_image" filename="ega/ladderupdown1.png" transparentIndex="0">
+        <image name="dung1_ladderupdown_image" filename="ega/ladderupdown1.png">
             <subimage name="dung1_ladderupdown" x="64" y="40" width="50" height="96"/>
         </image>
-        <image name="dung1_ladderupdown_side_image" filename="ega/ladderupdown1_side.png" transparentIndex="0">
+        <image name="dung1_ladderupdown_side_image" filename="ega/ladderupdown1_side.png">
             <subimage name="dung1_ladderupdown_side" x="64" y="40" width="50" height="96"/>
         </image>
-        <image name="dung2_ladderupdown_image" filename="ega/ladderupdown2.png" transparentIndex="0">
+        <image name="dung2_ladderupdown_image" filename="ega/ladderupdown2.png">
             <subimage name="dung2_ladderupdown" x="77" y="68" width="22" height="40"/>
         </image>
-        <image name="dung2_ladderupdown_side_image" filename="ega/ladderupdown2_side.png" transparentIndex="0">
+        <image name="dung2_ladderupdown_side_image" filename="ega/ladderupdown2_side.png">
             <subimage name="dung2_ladderupdown_side" x="77" y="68" width="22" height="40"/>
         </image>
-        <image name="dung3_ladderupdown_image" filename="ega/ladderupdown3.png" transparentIndex="0">
+        <image name="dung3_ladderupdown_image" filename="ega/ladderupdown3.png">
             <subimage name="dung3_ladderupdown" x="84" y="82" width="8" height="12"/>
         </image>
-        <image name="dung3_ladderupdown_side_image" filename="ega/ladderupdown3_side.png" transparentIndex="0">
+        <image name="dung3_ladderupdown_side_image" filename="ega/ladderupdown3_side.png">
             <subimage name="dung3_ladderupdown_side" x="84" y="82" width="8" height="12"/>
         </image>
     </imageset>
@@ -658,8 +658,8 @@
             <subimage name="dung3_xxx_ns" x="48"  y="72" width="24" height="32"/>
         </image>
 
-        <image name="dung0_mid_ew_door" filename="vga/dungeonback0_door.png" transparentIndex="9"/>
-        <image name="dung0_mid_ns_door" filename="vga/dungeonback0_door.png" transparentIndex="9" fixup="dungns"/>
+        <image name="dung0_mid_ew_door" filename="vga/dungeonback0_door.png"/>
+        <image name="dung0_mid_ns_door" filename="vga/dungeonback0_door.png"/>
         <image name="dung1_mid_door_image" filename="vga/dungeonback1_door.png">
             <subimage name="dung1_mid_ew_door" x="0"   y="16" width="176"  height="160"/>
             <subimage name="dung1_mid_ns_door" x="0"   y="16" width="176"  height="160"/>
@@ -673,76 +673,76 @@
             <subimage name="dung3_mid_ns_door" x="48"  y="72" width="80"  height="32"/>
         </image>
 
-        <image name="dung0_ladderup_image" filename="vga/ladderup0.png" transparentIndex="0">
+        <image name="dung0_ladderup_image" filename="vga/ladderup0.png">
             <subimage name="dung0_ladderup" x="45" y="0" width="88" height="87"/>
         </image>
-        <image name="dung0_ladderup_side_image" filename="vga/ladderup0_side.png" transparentIndex="0">
+        <image name="dung0_ladderup_side_image" filename="vga/ladderup0_side.png">
             <subimage name="dung0_ladderup_side" x="45" y="0" width="88" height="87"/>
         </image>
-        <image name="dung1_ladderup_image" filename="vga/ladderup1.png" transparentIndex="0">
+        <image name="dung1_ladderup_image" filename="vga/ladderup1.png">
             <subimage name="dung1_ladderup" x="64" y="40" width="50" height="48"/>
         </image>
-        <image name="dung1_ladderup_side_image" filename="vga/ladderup1_side.png" transparentIndex="0">
+        <image name="dung1_ladderup_side_image" filename="vga/ladderup1_side.png">
             <subimage name="dung1_ladderup_side" x="64" y="40" width="50" height="48"/>
         </image>
-        <image name="dung2_ladderup_image" filename="vga/ladderup2.png" transparentIndex="0">
+        <image name="dung2_ladderup_image" filename="vga/ladderup2.png">
             <subimage name="dung2_ladderup" x="77" y="68" width="22" height="19"/>
         </image>
-        <image name="dung2_ladderup_side_image" filename="vga/ladderup2_side.png" transparentIndex="0">
+        <image name="dung2_ladderup_side_image" filename="vga/ladderup2_side.png">
             <subimage name="dung2_ladderup_side" x="77" y="68" width="22" height="19"/>
         </image>
-        <image name="dung3_ladderup_image" filename="vga/ladderup3.png" transparentIndex="0">
+        <image name="dung3_ladderup_image" filename="vga/ladderup3.png">
             <subimage name="dung3_ladderup" x="84" y="82" width="8" height="6"/>
         </image>
-        <image name="dung3_ladderup_side_image" filename="vga/ladderup3_side.png" transparentIndex="0">
+        <image name="dung3_ladderup_side_image" filename="vga/ladderup3_side.png">
             <subimage name="dung3_ladderup_side" x="84" y="82" width="8" height="6"/>
         </image>
-        <image name="dung0_ladderdown_image" filename="vga/ladderdown0.png" transparentIndex="0">
+        <image name="dung0_ladderdown_image" filename="vga/ladderdown0.png">
             <subimage name="dung0_ladderdown" x="45" y="87" width="88" height="89"/>
         </image>
-        <image name="dung0_ladderdown_side_image" filename="vga/ladderdown0_side.png" transparentIndex="0">
+        <image name="dung0_ladderdown_side_image" filename="vga/ladderdown0_side.png">
             <subimage name="dung0_ladderdown_side" x="45" y="87" width="88" height="89"/>
         </image>
-        <image name="dung1_ladderdown_image" filename="vga/ladderdown1.png" transparentIndex="0">
+        <image name="dung1_ladderdown_image" filename="vga/ladderdown1.png">
             <subimage name="dung1_ladderdown" x="64" y="86" width="50" height="50"/>
         </image>
-        <image name="dung1_ladderdown_side_image" filename="vga/ladderdown1_side.png" transparentIndex="0">
+        <image name="dung1_ladderdown_side_image" filename="vga/ladderdown1_side.png">
             <subimage name="dung1_ladderdown_side" x="64" y="86" width="50" height="50"/>
         </image>
-        <image name="dung2_ladderdown_image" filename="vga/ladderdown2.png" transparentIndex="0">
+        <image name="dung2_ladderdown_image" filename="vga/ladderdown2.png">
             <subimage name="dung2_ladderdown" x="77" y="86" width="22" height="22"/>
         </image>
-        <image name="dung2_ladderdown_side_image" filename="vga/ladderdown2_side.png" transparentIndex="0">
+        <image name="dung2_ladderdown_side_image" filename="vga/ladderdown2_side.png">
             <subimage name="dung2_ladderdown_side" x="77" y="86" width="22" height="22"/>
         </image>
-        <image name="dung3_ladderdown_image" filename="vga/ladderdown3.png" transparentIndex="0">
+        <image name="dung3_ladderdown_image" filename="vga/ladderdown3.png">
             <subimage name="dung3_ladderdown" x="84" y="88" width="8" height="8"/>
         </image>
-        <image name="dung3_ladderdown_side_image" filename="vga/ladderdown3_side.png" transparentIndex="0">
+        <image name="dung3_ladderdown_side_image" filename="vga/ladderdown3_side.png">
             <subimage name="dung3_ladderdown_side" x="84" y="88" width="8" height="8"/>
         </image>
-        <image name="dung0_ladderupdown_image" filename="vga/ladderupdown0.png" transparentIndex="0">
+        <image name="dung0_ladderupdown_image" filename="vga/ladderupdown0.png">
             <subimage name="dung0_ladderupdown" x="45" y="0" width="88" height="176"/>
         </image>
-        <image name="dung0_ladderupdown_side_image" filename="vga/ladderupdown0_side.png" transparentIndex="0">
+        <image name="dung0_ladderupdown_side_image" filename="vga/ladderupdown0_side.png">
             <subimage name="dung0_ladderupdown_side" x="45" y="0" width="88" height="176"/>
         </image>
-        <image name="dung1_ladderupdown_image" filename="vga/ladderupdown1.png" transparentIndex="0">
+        <image name="dung1_ladderupdown_image" filename="vga/ladderupdown1.png">
             <subimage name="dung1_ladderupdown" x="64" y="40" width="50" height="96"/>
         </image>
-        <image name="dung1_ladderupdown_side_image" filename="vga/ladderupdown1_side.png" transparentIndex="0">
+        <image name="dung1_ladderupdown_side_image" filename="vga/ladderupdown1_side.png">
             <subimage name="dung1_ladderupdown_side" x="64" y="40" width="50" height="96"/>
         </image>
-        <image name="dung2_ladderupdown_image" filename="vga/ladderupdown2.png" transparentIndex="0">
+        <image name="dung2_ladderupdown_image" filename="vga/ladderupdown2.png">
             <subimage name="dung2_ladderupdown" x="77" y="68" width="22" height="40"/>
         </image>
-        <image name="dung2_ladderupdown_side_image" filename="vga/ladderupdown2_side.png" transparentIndex="0">
+        <image name="dung2_ladderupdown_side_image" filename="vga/ladderupdown2_side.png">
             <subimage name="dung2_ladderupdown_side" x="77" y="68" width="22" height="40"/>
         </image>
-        <image name="dung3_ladderupdown_image" filename="vga/ladderupdown3.png" transparentIndex="0">
+        <image name="dung3_ladderupdown_image" filename="vga/ladderupdown3.png">
             <subimage name="dung3_ladderupdown" x="84" y="82" width="8" height="12"/>
         </image>
-        <image name="dung3_ladderupdown_side_image" filename="vga/ladderupdown3_side.png" transparentIndex="0">
+        <image name="dung3_ladderupdown_side_image" filename="vga/ladderupdown3_side.png">
             <subimage name="dung3_ladderupdown_side" x="84" y="82" width="8" height="12"/>
         </image>
     </imageset>
@@ -1610,8 +1610,8 @@
             <subimage name="dung3_xxx_ns" x="48"  y="72" width="24" height="32"/>
         </image>
 
-        <image name="dung0_mid_ew_door" filename="vga/dungeonback0_door.png" transparentIndex="9"/>
-        <image name="dung0_mid_ns_door" filename="vga/dungeonback0_door.png" transparentIndex="9" fixup="dungns"/>
+        <image name="dung0_mid_ew_door" filename="vga/dungeonback0_door.png"/>
+        <image name="dung0_mid_ns_door" filename="vga/dungeonback0_door.png"/>
         <image name="dung1_mid_door_image" filename="vga/dungeonback1_door.png">
             <subimage name="dung1_mid_ew_door" x="0"   y="16" width="176"  height="160"/>
             <subimage name="dung1_mid_ns_door" x="0"   y="16" width="176"  height="160"/>
@@ -1625,76 +1625,76 @@
             <subimage name="dung3_mid_ns_door" x="48"  y="72" width="80"  height="32"/>
         </image>
 
-        <image name="dung0_ladderup_image" filename="vga/ladderup0.png" transparentIndex="0">
+        <image name="dung0_ladderup_image" filename="vga/ladderup0.png">
             <subimage name="dung0_ladderup" x="45" y="0" width="88" height="87"/>
         </image>
-        <image name="dung0_ladderup_side_image" filename="vga/ladderup0_side.png" transparentIndex="0">
+        <image name="dung0_ladderup_side_image" filename="vga/ladderup0_side.png">
             <subimage name="dung0_ladderup_side" x="45" y="0" width="88" height="87"/>
         </image>
-        <image name="dung1_ladderup_image" filename="vga/ladderup1.png" transparentIndex="0">
+        <image name="dung1_ladderup_image" filename="vga/ladderup1.png">
             <subimage name="dung1_ladderup" x="64" y="40" width="50" height="48"/>
         </image>
-        <image name="dung1_ladderup_side_image" filename="vga/ladderup1_side.png" transparentIndex="0">
+        <image name="dung1_ladderup_side_image" filename="vga/ladderup1_side.png">
             <subimage name="dung1_ladderup_side" x="64" y="40" width="50" height="48"/>
         </image>
-        <image name="dung2_ladderup_image" filename="vga/ladderup2.png" transparentIndex="0">
+        <image name="dung2_ladderup_image" filename="vga/ladderup2.png">
             <subimage name="dung2_ladderup" x="77" y="68" width="22" height="19"/>
         </image>
-        <image name="dung2_ladderup_side_image" filename="vga/ladderup2_side.png" transparentIndex="0">
+        <image name="dung2_ladderup_side_image" filename="vga/ladderup2_side.png">
             <subimage name="dung2_ladderup_side" x="77" y="68" width="22" height="19"/>
         </image>
-        <image name="dung3_ladderup_image" filename="vga/ladderup3.png" transparentIndex="0">
+        <image name="dung3_ladderup_image" filename="vga/ladderup3.png">
             <subimage name="dung3_ladderup" x="84" y="82" width="8" height="6"/>
         </image>
-        <image name="dung3_ladderup_side_image" filename="vga/ladderup3_side.png" transparentIndex="0">
+        <image name="dung3_ladderup_side_image" filename="vga/ladderup3_side.png">
             <subimage name="dung3_ladderup_side" x="84" y="82" width="8" height="6"/>
         </image>
-        <image name="dung0_ladderdown_image" filename="vga/ladderdown0.png" transparentIndex="0">
+        <image name="dung0_ladderdown_image" filename="vga/ladderdown0.png">
             <subimage name="dung0_ladderdown" x="45" y="87" width="88" height="89"/>
         </image>
-        <image name="dung0_ladderdown_side_image" filename="vga/ladderdown0_side.png" transparentIndex="0">
+        <image name="dung0_ladderdown_side_image" filename="vga/ladderdown0_side.png">
             <subimage name="dung0_ladderdown_side" x="45" y="87" width="88" height="89"/>
         </image>
-        <image name="dung1_ladderdown_image" filename="vga/ladderdown1.png" transparentIndex="0">
+        <image name="dung1_ladderdown_image" filename="vga/ladderdown1.png">
             <subimage name="dung1_ladderdown" x="64" y="86" width="50" height="50"/>
         </image>
-        <image name="dung1_ladderdown_side_image" filename="vga/ladderdown1_side.png" transparentIndex="0">
+        <image name="dung1_ladderdown_side_image" filename="vga/ladderdown1_side.png">
             <subimage name="dung1_ladderdown_side" x="64" y="86" width="50" height="50"/>
         </image>
-        <image name="dung2_ladderdown_image" filename="vga/ladderdown2.png" transparentIndex="0">
+        <image name="dung2_ladderdown_image" filename="vga/ladderdown2.png">
             <subimage name="dung2_ladderdown" x="77" y="86" width="22" height="22"/>
         </image>
-        <image name="dung2_ladderdown_side_image" filename="vga/ladderdown2_side.png" transparentIndex="0">
+        <image name="dung2_ladderdown_side_image" filename="vga/ladderdown2_side.png">
             <subimage name="dung2_ladderdown_side" x="77" y="86" width="22" height="22"/>
         </image>
-        <image name="dung3_ladderdown_image" filename="vga/ladderdown3.png" transparentIndex="0">
+        <image name="dung3_ladderdown_image" filename="vga/ladderdown3.png">
             <subimage name="dung3_ladderdown" x="84" y="88" width="8" height="8"/>
         </image>
-        <image name="dung3_ladderdown_side_image" filename="vga/ladderdown3_side.png" transparentIndex="0">
+        <image name="dung3_ladderdown_side_image" filename="vga/ladderdown3_side.png">
             <subimage name="dung3_ladderdown_side" x="84" y="88" width="8" height="8"/>
         </image>
-        <image name="dung0_ladderupdown_image" filename="vga/ladderupdown0.png" transparentIndex="0">
+        <image name="dung0_ladderupdown_image" filename="vga/ladderupdown0.png">
             <subimage name="dung0_ladderupdown" x="45" y="0" width="88" height="176"/>
         </image>
-        <image name="dung0_ladderupdown_side_image" filename="vga/ladderupdown0_side.png" transparentIndex="0">
+        <image name="dung0_ladderupdown_side_image" filename="vga/ladderupdown0_side.png">
             <subimage name="dung0_ladderupdown_side" x="45" y="0" width="88" height="176"/>
         </image>
-        <image name="dung1_ladderupdown_image" filename="vga/ladderupdown1.png" transparentIndex="0">
+        <image name="dung1_ladderupdown_image" filename="vga/ladderupdown1.png">
             <subimage name="dung1_ladderupdown" x="64" y="40" width="50" height="96"/>
         </image>
-        <image name="dung1_ladderupdown_side_image" filename="vga/ladderupdown1_side.png" transparentIndex="0">
+        <image name="dung1_ladderupdown_side_image" filename="vga/ladderupdown1_side.png">
             <subimage name="dung1_ladderupdown_side" x="64" y="40" width="50" height="96"/>
         </image>
-        <image name="dung2_ladderupdown_image" filename="vga/ladderupdown2.png" transparentIndex="0">
+        <image name="dung2_ladderupdown_image" filename="vga/ladderupdown2.png">
             <subimage name="dung2_ladderupdown" x="77" y="68" width="22" height="40"/>
         </image>
-        <image name="dung2_ladderupdown_side_image" filename="vga/ladderupdown2_side.png" transparentIndex="0">
+        <image name="dung2_ladderupdown_side_image" filename="vga/ladderupdown2_side.png">
             <subimage name="dung2_ladderupdown_side" x="77" y="68" width="22" height="40"/>
         </image>
-        <image name="dung3_ladderupdown_image" filename="vga/ladderupdown3.png" transparentIndex="0">
+        <image name="dung3_ladderupdown_image" filename="vga/ladderupdown3.png">
             <subimage name="dung3_ladderupdown" x="84" y="82" width="8" height="12"/>
         </image>
-        <image name="dung3_ladderupdown_side_image" filename="vga/ladderupdown3_side.png" transparentIndex="0">
+        <image name="dung3_ladderupdown_side_image" filename="vga/ladderupdown3_side.png">
             <subimage name="dung3_ladderupdown_side" x="84" y="82" width="8" height="12"/>
         </image>
         <image name="borders" filename="vga2/start.png" prescale="2"/>
