@@ -659,11 +659,49 @@ void IntroController::drawBeastie(int beast, int vertoffset, int frame) {
  * over the image.  If frame is "items", the second overlay is
  * painted: the circle without the moongate, but with a small white
  * dot representing the anhk and history book.
- *
- * TODO: Animate the moongate opening & closing to match the actual game.
  */
 void IntroController::animateTree(Symbol frame) {
-    backgroundArea.draw(frame, 72, 68);
+    SCALED_VAR
+    int fi, fcount;
+    int gateH, deltaH;
+    int x, y;
+    const SubImage* subimage;
+    ImageInfo *info = xu4.imageMgr->imageInfo(IMG_MOONGATE, &subimage);
+    if (! subimage)
+        return;
+
+    x = 72;
+    y = 68 + subimage->height;
+    fcount = subimage->height;
+
+    if (frame == IMG_MOONGATE) {
+        soundPlay(SOUND_GATE_OPEN);
+        gateH = 1;
+        deltaH = 1;
+    } else {
+        gateH = subimage->height - 1;
+        deltaH = -1;
+    }
+
+    for (fi = 0; fi < fcount; ++fi) {
+        if (deltaH < 0)
+            backgroundArea.draw(frame, x, 68);
+
+        info->image->drawSubRect(SCALED(x), SCALED(y - gateH),
+                                 SCALED(subimage->x) / info->prescale,
+                                 SCALED(subimage->y) / info->prescale,
+                                 SCALED(subimage->width) / info->prescale,
+                                 SCALED(gateH) / info->prescale);
+        gateH += deltaH;
+        if (gateH < 0)
+            gateH = 0;
+        else if (gateH > subimage->height)
+            gateH = subimage->height;
+
+        screenUploadToGPU();
+        if (EventHandler::wait_msecs(42))
+            break;
+    }
 }
 
 /**

@@ -495,6 +495,7 @@ sound: [
     %spell_flash_25.ogg
     %fire_field_walking.ogg
     %fire_field_walking.ogg
+    %gate_open.ogg
 ]
 
 layouts: [
