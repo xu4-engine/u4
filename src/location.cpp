@@ -101,11 +101,14 @@ std::vector<MapTile> Location::tilesAt(const Coords& coords, bool &focus) {
     /* then visible creatures and objects */
     else if (obj && obj->visible) {
         focus = focus || obj->focused;
-        MapTile visibleCreatureAndObjectTile = obj->tile;
+        MapTile visibleTile = obj->tile;
         //Sleeping creatures and persons have their animation frozen
         if (m && m->isAsleep())
-            visibleCreatureAndObjectTile.freezeAnimation = true;
-        tiles.push_back(visibleCreatureAndObjectTile);
+            visibleTile.freezeAnimation = true;
+        else if (obj->animId != ANIM_UNUSED)
+            visibleTile.frame = anim_valueI(&xu4.eventHandler->flourishAnim,
+                                            obj->animId);
+        tiles.push_back(visibleTile);
     }
 
     /* then the party's ship (because twisters and whirlpools get displayed on top of ships) */

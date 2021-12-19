@@ -9,6 +9,7 @@
 #include "u4.h"
 #include "utils.h"
 #include "tile.h"
+#include "xu4.h"
 
 
 void TileAnimTransform::draw(Image* dest, const Tile* tile,
@@ -52,12 +53,24 @@ void TileAnimTransform::draw(Image* dest, const Tile* tile,
         break;
 
     case ATYPE_FRAME:
-        // Advance the frame by one and draw it!
-        if (++var.frame.current >= tile->getFrames())
-            var.frame.current = 0;
+    {
+        int frame;
+        if (xu4.stage == StagePlay) {
+            // flourishAnim drives Object frame animation.
+            frame = mapTile.frame;
+        } else {
+            // The Intro map uses this older code which shares a single
+            // frame counter for all tiles.
+
+            // Advance the frame by one and draw it!
+            if (++var.frame.current >= tile->getFrames())
+                var.frame.current = 0;
+            frame = var.frame.current;
+        }
         tile->getImage()->drawSubRectOn(dest, 0, 0,
-                0, var.frame.current * tile->getHeight(),
+                0, frame * tile->getHeight(),
                 tile->getWidth(), tile->getHeight());
+    }
         break;
 #if 0
     case ATYPE_PIXEL:
