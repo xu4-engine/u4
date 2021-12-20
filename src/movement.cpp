@@ -169,6 +169,7 @@ int moveObject(Map *map, Creature *obj, const Coords& avatar) {
     /* determine a direction depending on the object's movement behavior */
     switch (obj->movement) {
     case MOVEMENT_FIXED:
+    case MOVEMENT_FOLLOW_PAUSE:
         break;
 
     case MOVEMENT_WANDER:

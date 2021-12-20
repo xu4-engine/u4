@@ -167,7 +167,13 @@ bool Creature::specialAction() {
 
         break;
 
-    default: break;
+    default:
+        // Handle pausing after speaking with player.
+        if (movement == MOVEMENT_FOLLOW_PAUSE) {
+            movement = MOVEMENT_FOLLOW_AVATAR;
+            retval = true;
+        }
+        break;
     }
 
     return retval;

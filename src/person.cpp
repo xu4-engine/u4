@@ -136,6 +136,11 @@ void Person::setNpcType(PersonNpcType t) {
     ASSERT(!isVendor() || dialogue == NULL, "vendor has dialogue");
 }
 
+static void pauseFollow(Object* obj) {
+    if (obj->movement == MOVEMENT_FOLLOW_AVATAR)
+        obj->movement = MOVEMENT_FOLLOW_PAUSE;
+}
+
 list<string> Person::getConversationText(Conversation *cnv, const char *inquiry) {
     string text;
 
@@ -156,10 +161,12 @@ list<string> Person::getConversationText(Conversation *cnv, const char *inquiry)
             xu4.config->scriptEvalArg("talk-to %s '%s",
                 vendorId[npcType - NPC_VENDOR_WEAPONS], text.c_str());
             text.clear();
+            pauseFollow(this);
         }
 #else
         static const string ids[] = {
-            "Weapons", "Armor", "Food", "Tavern", "Reagents", "Healer", "Inn", "Guild", "Stable"
+            "Weapons", "Armor", "Food", "Tavern", "Reagents",
+            "Healer", "Inn", "Guild", "Stable"
         };
         Script *script = cnv->script;
 
@@ -168,6 +175,7 @@ list<string> Person::getConversationText(Conversation *cnv, const char *inquiry)
          */
         if (cnv->state == Conversation::INTRO) {
             script->talkToVendor(ids[npcType - NPC_VENDOR_WEAPONS]);
+            pauseFollow(this);
         }
 
         // Unload the script

@@ -13,7 +13,8 @@ typedef enum {
     MOVEMENT_FIXED,
     MOVEMENT_WANDER,
     MOVEMENT_FOLLOW_AVATAR,
-    MOVEMENT_ATTACK_AVATAR
+    MOVEMENT_ATTACK_AVATAR,
+    MOVEMENT_FOLLOW_PAUSE   // Pause a turn then resume MOVEMENT_FOLLOW_AVATAR
 } ObjectMovement;
 
 class Map;
