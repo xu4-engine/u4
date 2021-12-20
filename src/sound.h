@@ -34,6 +34,8 @@ enum Sound {
     SOUND_WHIRLPOOL,
     SOUND_STORM,
     SOUND_GATE_OPEN,        // Intro moongate opening
+    SOUND_STONE_FALLING,
+    SOUND_WIND_GUST,
 
     //    SOUND_MISSED,
     //    SOUND_CREATUREATTACK,

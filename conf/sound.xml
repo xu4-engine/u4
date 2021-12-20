@@ -28,6 +28,8 @@
     <track file="fire_field_walking.ogg"/>      <!--     WHIRLPOOL      -->
     <track file="fire_field_walking.ogg"/>      <!--     STORM          -->
     <track file="gate_open.ogg"/>       <!-- Intro moongate opening -->
+    <track file="stone_falling.ogg"/>
+    <track file="wind_gust.ogg"/>
     <track file="badcommand.ogg"/>      <!--     MISSED  THERE IS NO MISSED SOUND!!!       -->
     <track file="attack2.ogg"/>         <!--     CREATUREATTACK -->
     <track file="hit2.ogg"/>            <!--     PLAYERHIT      -->

@@ -499,6 +499,8 @@ sound: [
     %fire_field_walking.ogg
     %fire_field_walking.ogg
     %gate_open.ogg
+    %stone_falling.ogg
+    %wind_gust.ogg
 ]
 
 layouts: [

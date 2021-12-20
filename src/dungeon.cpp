@@ -249,17 +249,20 @@ bool dungeonHandleTrap(TrapType trap) {
     switch((TrapType)dungeon->currentSubToken()) {
     case TRAP_WINDS:
         screenMessage("\nWinds!\n");
+        soundPlay(SOUND_WIND_GUST);
         c->party->quenchTorch();
         break;
     case TRAP_FALLING_ROCK:
         // Treat falling rocks and pits like bomb traps
         // XXX: That's a little harsh.
         screenMessage("\nFalling Rocks!\n");
-        c->party->applyEffect(dungeon, EFFECT_LAVA);
-        break;
+        goto pit_damage;
     case TRAP_PIT:
         screenMessage("\nPit!\n");
+pit_damage:
+        soundPlay(SOUND_STONE_FALLING);
         c->party->applyEffect(dungeon, EFFECT_LAVA);
+        screenShake(3);     // NOTE: In the DOS version only the view shakes.
         break;
     default: break;
     }
