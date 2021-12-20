@@ -668,10 +668,16 @@ void screenUploadToGPU() {
 }
 
 void screenRender() {
+    static const float colorBlack[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
     Screen* sp = xu4.screen;
     void* gpu = xu4.gpu;
+    int offset = sp->state.vertOffset;
 
-    gpu_viewport(0, 0, sp->width, sp->height);
+    if (offset) {
+        offset *= -xu4.settings->scale;
+        gpu_clear(gpu, colorBlack);     // Clear the top rows of pixels.
+    }
+    gpu_viewport(0, offset, sp->width, sp->height);
     gpu_drawTextureScaled(gpu, gpu_screenTexture(gpu));
 
 #ifdef GPU_RENDER

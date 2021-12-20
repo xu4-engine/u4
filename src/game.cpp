@@ -886,12 +886,16 @@ bool GameController::keyPressed(int key) {
             break;
 
         case U4_FKEY+8:
+#if 1
             if (settings.debug && (c->location->context & CTX_WORLDMAP)) {
                 setMap(xu4.config->map(MAP_DECEIT), 1, NULL);
                 c->location->coords = Coords(1, 0, 7);
                 c->saveGame->orientation = DIR_SOUTH;
             }
             else valid = false;
+#else
+            screenShake(8);
+#endif
             break;
 
         case U4_FKEY+9:
