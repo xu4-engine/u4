@@ -155,7 +155,7 @@ void screenInit_sys(const Settings* settings, int* dim, int reset) {
     }
 
     if (settings->fullscreen)
-        dflags |= ALLEGRO_FULLSCREEN;
+        dflags |= ALLEGRO_FULLSCREEN_WINDOW;
     al_set_new_display_flags(dflags);
 
 #ifdef USE_GL
@@ -164,6 +164,7 @@ void screenInit_sys(const Settings* settings, int* dim, int reset) {
 
     sa->disp = al_create_display(dw, dh);
     if (! sa->disp) {
+#if 0
         if (dflags & ALLEGRO_FULLSCREEN) {
             // Fullscreen mode is picky about resolutions, so fallback to
             // using a window if it fails.
@@ -173,6 +174,7 @@ void screenInit_sys(const Settings* settings, int* dim, int reset) {
                 goto fatal;
             xu4.errorMessage = "Fullscreen failed! Try another scale.";
         } else
+#endif
             goto fatal;
     }
 
@@ -195,6 +197,8 @@ void screenInit_sys(const Settings* settings, int* dim, int reset) {
 
     dim[0] = al_get_display_width(sa->disp);
     dim[1] = al_get_display_height(sa->disp);
+    dim[2] = dw;
+    dim[3] = dh;
 
     al_set_window_title(sa->disp, "Ultima IV");  // configService->gameName()
 

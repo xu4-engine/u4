@@ -44,8 +44,10 @@ struct Screen {
     ImageInfo* gemTilesInfo;
     ScreenState state;
     Scaler filterScaler;
-    int width;
-    int height;
+    int dispWidth;      // Full display pixel dimensions.
+    int dispHeight;
+    int aspectW;        // Aspect-correct pixel dimensions.
+    int aspectH;
     int cursorX;
     int cursorY;
     int cursorStatus;
@@ -75,7 +77,8 @@ struct Screen {
         state.currentCycle = 0;
         state.vertOffset = 0;
         state.formatIsABGR = true;
-        width = height = 0;
+        dispWidth = dispHeight = 0;
+        aspectW = aspectH = 0;
         cursorX = cursorY = 0;
         cursorStatus = 0;
         cursorEnabled = 1;
@@ -231,7 +234,7 @@ enum ScreenSystemStage {
  */
 void screenInit() {
     xu4.screen = new Screen;
-    screenInit_sys(xu4.settings, &xu4.screen->width, SYS_CLEAN);
+    screenInit_sys(xu4.settings, &xu4.screen->dispWidth, SYS_CLEAN);
     screenInit_data(xu4.screen, *xu4.settings);
 }
 
@@ -249,7 +252,7 @@ void screenDelete() {
  */
 void screenReInit() {
     screenDelete_data(xu4.screen);
-    screenInit_sys(xu4.settings, &xu4.screen->width, SYS_RESET);
+    screenInit_sys(xu4.settings, &xu4.screen->dispWidth, SYS_RESET);
     screenInit_data(xu4.screen, *xu4.settings); // Load new backgrounds, etc.
 }
 
@@ -671,13 +674,14 @@ void screenRender() {
     static const float colorBlack[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
     Screen* sp = xu4.screen;
     void* gpu = xu4.gpu;
-    int offset = sp->state.vertOffset;
+    int offsetX = (sp->dispWidth  - sp->aspectW) / 2;
+    int offsetY = (sp->dispHeight - sp->aspectH) / 2;
 
-    if (offset) {
-        offset *= -xu4.settings->scale;
+    if (sp->state.vertOffset) {
+        offsetY -= sp->state.vertOffset * xu4.settings->scale;
         gpu_clear(gpu, colorBlack);     // Clear the top rows of pixels.
     }
-    gpu_viewport(0, offset, sp->width, sp->height);
+    gpu_viewport(offsetX, offsetY, sp->aspectW, sp->aspectH);
     gpu_drawTextureScaled(gpu, gpu_screenTexture(gpu));
 
 #ifdef GPU_RENDER

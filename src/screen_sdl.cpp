@@ -71,7 +71,10 @@ void screenInit_sys(const Settings* settings, int* dim, int reset) {
 
     SDL_SetGamma(settings->gamma / 100.0f, settings->gamma / 100.0f, settings->gamma / 100.0f);
 
-    if (!SDL_SetVideoMode(320 * settings->scale, 200 * settings->scale, 32, SDL_HWSURFACE | (settings->fullscreen ? SDL_FULLSCREEN : 0)))
+    dim[2] = 320 * settings->scale;
+    dim[3] = 200 * settings->scale;
+
+    if (!SDL_SetVideoMode(dim[2], dim[3], 32, SDL_HWSURFACE | (settings->fullscreen ? SDL_FULLSCREEN : 0)))
         errorFatal("unable to set video: %s", SDL_GetError());
 
     if (verbose) {
