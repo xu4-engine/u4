@@ -759,7 +759,8 @@ void IntroController::updateScreen() {
         // if there is an error message to display, show it
         if (xu4.errorMessage)
         {
-            menuArea.textAt(6, 5, xu4.errorMessage);
+            int len = strlen(xu4.errorMessage);
+            menuArea.textAt(19 - len / 2, 5, xu4.errorMessage);
             xu4.errorMessage = NULL;
 
             drawBeasties();

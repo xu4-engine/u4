@@ -163,8 +163,18 @@ void screenInit_sys(const Settings* settings, int* dim, int reset) {
 #endif
 
     sa->disp = al_create_display(dw, dh);
-    if (! sa->disp)
-        goto fatal;
+    if (! sa->disp) {
+        if (dflags & ALLEGRO_FULLSCREEN) {
+            // Fullscreen mode is picky about resolutions, so fallback to
+            // using a window if it fails.
+            al_set_new_display_flags(dflags & ~ALLEGRO_FULLSCREEN);
+            sa->disp = al_create_display(dw, dh);
+            if (! sa->disp)
+                goto fatal;
+            xu4.errorMessage = "Fullscreen failed! Try another scale.";
+        } else
+            goto fatal;
+    }
 
 #if defined(_WIN32) && defined(USE_GL)
     {
