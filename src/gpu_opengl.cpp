@@ -378,7 +378,7 @@ static void reserveDrawList(const GLuint* vbo, int byteSize)
     }
 }
 
-bool gpu_init(void* res, int w, int h, int scale)
+bool gpu_init(void* res, int w, int h, int scale, int filter)
 {
     OpenGLResources* gr = (OpenGLResources*) res;
     GLuint sh;
@@ -429,7 +429,7 @@ bool gpu_init(void* res, int w, int h, int scale)
 
 
     // Create scaler shader.
-    if (scale > 1) {
+    if (filter && scale > 1) {
         if (scale > 4)
             scale = 4;
 

@@ -271,7 +271,7 @@ void screenInit_sys(const Settings* settings, int* dim, int reset) {
     // as the context is lost when mucking with bitmaps.
     al_set_current_opengl_context(sa->disp);
 
-    if (! gpu_init(&sa->gpu, dw, dh, settings->scale))
+    if (! gpu_init(&sa->gpu, dw, dh, settings->scale, settings->filter))
         errorFatal("Unable to initialize OpenGL resources");
 #endif
 

@@ -120,7 +120,11 @@ int parseOptions(Options* opt, int argc, char** argv) {
             "  -r, --replay <file>     Play using recorded input.\n"
             "      --test-save         Save to /tmp/xu4/ and quit.\n"
 #endif
+#ifdef USE_GL
+            "\nFilters: point, HQX\n"
+#else
             "\nFilters: point, 2xBi, 2xSaI, Scale2x\n"
+#endif
             "\nHomepage: http://xu4.sourceforge.com\n");
 
             return 0;

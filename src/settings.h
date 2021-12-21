@@ -34,8 +34,12 @@
 #define DEFAULT_SCALE                   2
 #define DEFAULT_FULLSCREEN              0
 
+#ifdef USE_GL
+#define DEFAULT_FILTER                  1
+#else
 // 3 = Scale2x
 #define DEFAULT_FILTER                  3
+#endif
 // 0 = DOS
 #define DEFAULT_LINEOFSIGHT             0
 
