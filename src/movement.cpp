@@ -161,13 +161,12 @@ void moveAvatarInDungeon(MoveEvent &event) {
  * (fixed objects, nowhere to go, etc.)
  */
 int moveObject(Map *map, Creature *obj, const Coords& avatar) {
-    int dirmask = DIR_NONE;
-    Direction dir;
+    int dirmask;
+    Direction dir = DIR_NONE;
     Coords new_coords = obj->coords;
     int slowed = 0;
 
     /* determine a direction depending on the object's movement behavior */
-    dir = DIR_NONE;
     switch (obj->movement) {
     case MOVEMENT_FIXED:
         break;
@@ -180,6 +179,10 @@ int moveObject(Map *map, Creature *obj, const Coords& avatar) {
         break;
 
     case MOVEMENT_FOLLOW_AVATAR:
+        if (! map->isWorldMap() && xu4_random(2))
+            return 0;
+        // Fall through...
+
     case MOVEMENT_ATTACK_AVATAR:
         dirmask = map->getValidMoves(new_coords, obj->tile);
 
