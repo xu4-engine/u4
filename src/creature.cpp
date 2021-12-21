@@ -110,73 +110,74 @@ CreatureStatus Creature::getState() const {
  */
 bool Creature::specialAction() {
     const Location* loc = c->location;
-    bool retval = false;
+    bool useAction = false;
 
-    int dx = abs(loc->coords.x - coords.x);
-    int dy = abs(loc->coords.y - coords.y);
-    int mapdist = map_distance(loc->coords, coords, loc->map);
-
-    /* find out which direction the avatar is in relation to the creature */
-    int dir = map_getRelativeDirection(coords, loc->coords, loc->map);
-
-    //Init outside of switch
-    int broadsidesDirs = 0;
-
-    switch(id) {
-
+    switch(id)
+    {
     case LAVA_LIZARD_ID:
     case SEA_SERPENT_ID:
     case HYDRA_ID:
     case DRAGON_ID:
+    {
+        int mapdist = map_distance(loc->coords, coords, loc->map);
 
         /* A 50/50 chance they try to range attack when you're close enough
            and not in a city
            Note: Monsters in settlements in U3 do fire on party
         */
         if (mapdist <= 3 && xu4_random(2) == 0 && (loc->context & CTX_CITY) == 0) {
-            vector<Coords> path = gameGetDirectionalActionPath(dir, MASK_DIR_ALL, coords,
-                                                               1, 3, NULL, false);
-            for (vector<Coords>::iterator i = path.begin(); i != path.end(); i++) {
+            /* find direction of the avatar in relation to the creature */
+            int dir = map_getRelativeDirection(coords, loc->coords, loc->map);
+            vector<Coords> path =
+                gameGetDirectionalActionPath(dir, MASK_DIR_ALL, coords,
+                                             1, 3, NULL, false);
+            vector<Coords>::iterator i;
+            for (i = path.begin(); i != path.end(); i++) {
                 if (creatureRangeAttack(*i, this))
                     break;
             }
         }
-
+    }
         break;
 
     case PIRATE_ID:
+    {
+        /* Fire cannon: Pirates only fire broadsides and only when they can
+           hit you :) */
 
-        /* Fire cannon: Pirates only fire broadsides and only when they can hit you :) */
-        retval = true;
-        broadsidesDirs = dirGetBroadsidesDirs(tile.getDirection());
-
-        if ((((dx == 0) && (dy <= 3)) ||          /* avatar is close enough and on the same column, OR */
-             ((dy == 0) && (dx <= 3))) &&         /* avatar is close enough and on the same row, AND */
-            ((broadsidesDirs & dir) > 0)) { /* pirate ship is firing broadsides */
-
-            // nothing (not even mountains!) can block cannonballs
-            vector<Coords> path = gameGetDirectionalActionPath(dir, broadsidesDirs, coords,
-                                                               1, 3, NULL, false);
-            for (vector<Coords>::iterator i = path.begin(); i != path.end(); i++) {
-                if (fireAt(*i, false))
-                    break;
+        // First check if avatar is close enough and on the same row/column.
+        int dx = abs(loc->coords.x - coords.x);
+        int dy = abs(loc->coords.y - coords.y);
+        if ( ((dx == 0) && (dy <= 3)) || ((dy == 0) && (dx <= 3)) ) {
+            // Next check if pirate ship can fire broadsides
+            int broadsidesDirs = dirGetBroadsidesDirs(tile.getDirection());
+            int dir = map_getRelativeDirection(coords, loc->coords, loc->map);
+            if ((broadsidesDirs & dir) > 0) {
+                // Nothing (not even mountains!) can block cannonballs
+                vector<Coords> path =
+                    gameGetDirectionalActionPath(dir, broadsidesDirs, coords,
+                                                 1, 3, NULL, false);
+                vector<Coords>::iterator i;
+                for (i = path.begin(); i != path.end(); i++) {
+                    if (fireAt(*i, false))
+                        break;
+                }
+                useAction = true;
             }
         }
-        else
-            retval = false;
-
+    }
         break;
 
     default:
         // Handle pausing after speaking with player.
         if (movement == MOVEMENT_FOLLOW_PAUSE) {
             movement = MOVEMENT_FOLLOW_AVATAR;
-            retval = true;
+            useAction = true;
         }
         break;
     }
 
-    return retval;
+    return useAction;
 }
 
 /**
