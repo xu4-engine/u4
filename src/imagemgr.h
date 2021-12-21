@@ -230,6 +230,7 @@ private:
     ImageSet *baseSet;
     RGBA* vgaColors;
     Debug *logger;
+    int listenerId;
     uint16_t resGroup;
 };
 

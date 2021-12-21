@@ -21,17 +21,19 @@ using std::string;
 
 Image *screenScale(Image *src, int scale, int n, int filter);
 
-//#define dprint  printf
-
 
 ImageSymbols ImageMgr::sym;
 
 ImageMgr::ImageMgr() : vgaColors(NULL), resGroup(0) {
+#ifdef TRACE_ON
     logger = new Debug("debug/imagemgr.txt", "ImageMgr");
     TRACE(*logger, "creating ImageMgr");
+#else
+    logger = NULL;
+#endif
 
     notice(SENDER_SETTINGS, xu4.settings, this);
-    gs_listen(1<<SENDER_SETTINGS, notice, this);
+    listenerId = gs_listen(1<<SENDER_SETTINGS, notice, this);
 
     xu4.config->internSymbols(&sym.tiles, 45,
         "tiles charset borders title options_top\n"
@@ -46,6 +48,8 @@ ImageMgr::ImageMgr() : vgaColors(NULL), resGroup(0) {
 }
 
 ImageMgr::~ImageMgr() {
+    gs_unplug(listenerId);
+
     std::map<Symbol, ImageSet *>::iterator it;
     foreach (it, imageSets)
         delete it->second;
@@ -537,7 +541,7 @@ ImageInfo* ImageMgr::load(ImageInfo* info, bool returnUnscaled) {
     Image *unscaled = NULL;
     if (file) {
         TRACE(*logger, string("loading image from file '") + info->filename + string("'"));
-        //dprint( "ImageMgr load %d:%s\n", resGroup, info->filename.c_str() );
+        //printf( "ImageMgr load %d:%s\n", resGroup, info->filename.c_str() );
 
         unscaled = loadImage(file, info->filetype, info->width, info->height,
                              info->depth);
@@ -734,7 +738,7 @@ void ImageMgr::freeResourceGroup(uint16_t group) {
         foreach (j, si->second->info) {
             ImageInfo *info = j->second;
             if (info->image && (info->resGroup == group)) {
-                //dprint("ImageMgr::freeRes %s\n", info->filename.c_str());
+                //printf("ImageMgr::freeRes %s\n", info->filename.c_str());
 #ifdef USE_GL
                 if (info->tex) {
                     gpu_freeTexture(info->tex);
