@@ -15,7 +15,7 @@ src/xu4:
 u4.mod: module/u4/*.b module/u4/shader/*.glsl
 	boron -s tools/pack-xu4.b -o $@
 
-.PHONY: clean download
+.PHONY: clean download snapshot
 
 clean:
 	make -C src -f $(MFILE_OS) clean
@@ -28,3 +28,10 @@ ultima4.zip:
 
 u4upgrad.zip:
 	curl -sSL -o $@ http://sourceforge.net/projects/xu4/files/Ultima%204%20VGA%20Upgrade/1.3/u4upgrad.zip
+
+snapshot: u4.mod
+	@rm -f project.tar.gz
+	copr -c
+	tools/cbuild windows
+	tools/cbuild linux
+	scp /tmp/xu4-linux.tar.gz /tmp/xu4-win32.zip $(SF_USER),xu4@web.sourceforge.net:/home/project-web/xu4/web/download

@@ -1,9 +1,9 @@
 options [
 	os_api: 'allegro	"Platform API ('allegro 'sdl)"
-	use_gl: false
+	use_gl: true
 	use_boron: true
 	boron_sdk: none		"Path to Boron headers and libraries"
-	gpu_render: true
+	gpu_render: false
 	make_util: true
 ]
 
