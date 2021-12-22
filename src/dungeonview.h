@@ -45,7 +45,6 @@ private:
         const SubImage* sub;
     };
 
-    std::vector<MapTile> getTiles(int fwd, int side);
     MapTile black;
     MapTile avatar;
     TileId corridor;

@@ -30,7 +30,8 @@ class Location {
 public:
     Location(const Coords& coords, Map *map, int viewmode, LocationContext ctx, TurnController *turnCompleter, Location *prev);
 
-    std::vector<MapTile> tilesAt(const Coords& coords, bool &focus);
+    void getTilesAt(std::vector<MapTile>& tiles, const Coords& coords,
+                    bool& focus);
     TileId getReplacementTile(const Coords& atCoords, Tile const * forTile);
     int getCurrentPosition(Coords * pos);
     MoveResult move(Direction dir, bool userEvent);

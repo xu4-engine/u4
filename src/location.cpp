@@ -44,10 +44,10 @@ void locationFree(Location **stack) {
 }
 
 /**
- * Return the entire stack of objects at the given location.
+ * Append the entire stack of objects at the given location to a vector.
  */
-std::vector<MapTile> Location::tilesAt(const Coords& coords, bool &focus) {
-    std::vector<MapTile> tiles;
+void Location::getTilesAt(std::vector<MapTile>& tiles,
+                          const Coords& coords, bool& focus) {
     const Object *obj = map->objectAt(coords);
     const Creature *m = dynamic_cast<const Creature *>(obj);
     focus = false;
@@ -62,8 +62,6 @@ std::vector<MapTile> Location::tilesAt(const Coords& coords, bool &focus) {
             tiles.push_back(c->party->getTransport());
         else
             tiles.push_back(MapTile(map->getTileFromData(coords)));
-
-        return tiles;
     }
 
     /* Add the avatar to gem view */
@@ -83,7 +81,7 @@ std::vector<MapTile> Location::tilesAt(const Coords& coords, bool &focus) {
              * so stop here
              */
             if ((*i)->coverUp)
-                return tiles;
+                return;
         }
     }
 
@@ -125,7 +123,7 @@ std::vector<MapTile> Location::tilesAt(const Coords& coords, bool &focus) {
              * so stop here
              */
             if ((*i)->coverUp)
-                return tiles;
+                return;
         }
     }
 
@@ -140,8 +138,6 @@ std::vector<MapTile> Location::tilesAt(const Coords& coords, bool &focus) {
         tileType->isLivingObject()) {
         tiles.push_back(getReplacementTile(coords, tileType));
     }
-
-    return tiles;
 }
 
 

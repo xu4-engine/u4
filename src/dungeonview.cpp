@@ -30,6 +30,44 @@ DungeonView::DungeonView(int x, int y, int columns, int rows) : TileView(x, y, r
     cacheGraphicData();
 }
 
+static void dungGetTiles(std::vector<MapTile>& tiles, int fwd, int side) {
+    Coords coords = c->location->coords;
+    bool focus;
+
+    switch (c->saveGame->orientation) {
+    case DIR_WEST:
+        coords.x -= fwd;
+        coords.y -= side;
+        break;
+
+    case DIR_NORTH:
+        coords.x += side;
+        coords.y -= fwd;
+        break;
+
+    case DIR_EAST:
+        coords.x += fwd;
+        coords.y += side;
+        break;
+
+    case DIR_SOUTH:
+        coords.x -= side;
+        coords.y += fwd;
+        break;
+
+    case DIR_ADVANCE:
+    case DIR_RETREAT:
+    default:
+        ASSERT(0, "Invalid dungeon orientation");
+    }
+
+    // Wrap the coordinates if necessary
+    map_wrap(coords, c->location->map);
+
+    tiles.clear();
+    c->location->getTilesAt(tiles, coords, focus);
+}
+
 void DungeonView::display(Context * c, TileView *view)
 {
     static const int8_t wallSides[3] = { -1, 1, 0 };
@@ -43,6 +81,8 @@ void DungeonView::display(Context * c, TileView *view)
 
         screenEraseMapArea();
         if (c->party->getTorchDuration() > 0) {
+            vector<MapTile> distant_tiles;
+
             for (y = 3; y >= 0; y--) {
                 DungeonGraphicType type;
                 Direction dir = (Direction) c->saveGame->orientation;
@@ -50,7 +90,7 @@ void DungeonView::display(Context * c, TileView *view)
                 // Draw walls player can see.
                 Image::enableBlend(1);
                 for (x = 0; x < 3; ++x) {
-                    tiles = getTiles(y, wallSides[x]);
+                    dungGetTiles(tiles, y, wallSides[x]);
                     type = tilesToGraphic(tiles);
                     drawWall(wallSides[x], y, dir, type);
                 }
@@ -61,7 +101,7 @@ void DungeonView::display(Context * c, TileView *view)
                 {
                     for (int y_obj = farthest_non_wall_tile_visibility; y_obj > y; y_obj--)
                     {
-                    vector<MapTile> distant_tiles = getTiles(y_obj, 0);
+                    dungGetTiles(distant_tiles, y_obj, 0);
                     DungeonGraphicType distant_type = tilesToGraphic(distant_tiles);
 
                     if ((distant_type == DNGGRAPHIC_DNGTILE) ||
@@ -80,7 +120,7 @@ void DungeonView::display(Context * c, TileView *view)
     else {
         for (y = 0; y < VIEWPORT_H; y++) {
             for (x = 0; x < VIEWPORT_W; x++) {
-                tiles = getTiles((VIEWPORT_H / 2) - y, x - (VIEWPORT_W / 2));
+                dungGetTiles(tiles, (VIEWPORT_H / 2) - y, x - (VIEWPORT_W / 2));
 
                 /* Only show blackness if there is no light */
                 if (c->party->getTorchDuration() <= 0)
@@ -204,43 +244,6 @@ int DungeonView::graphicIndex(int xoffset, int distance, Direction orientation, 
         index++;
 
     return index;
-}
-
-std::vector<MapTile> DungeonView::getTiles(int fwd, int side) {
-    Coords coords = c->location->coords;
-
-    switch (c->saveGame->orientation) {
-    case DIR_WEST:
-        coords.x -= fwd;
-        coords.y -= side;
-        break;
-
-    case DIR_NORTH:
-        coords.x += side;
-        coords.y -= fwd;
-        break;
-
-    case DIR_EAST:
-        coords.x += fwd;
-        coords.y += side;
-        break;
-
-    case DIR_SOUTH:
-        coords.x -= side;
-        coords.y += fwd;
-        break;
-
-    case DIR_ADVANCE:
-    case DIR_RETREAT:
-    default:
-        ASSERT(0, "Invalid dungeon orientation");
-    }
-
-    // Wrap the coordinates if necessary
-    map_wrap(coords, c->location->map);
-
-    bool focus;
-    return c->location->tilesAt(coords, focus);
 }
 
 DungeonGraphicType DungeonView::tilesToGraphic(const std::vector<MapTile> &tiles) {

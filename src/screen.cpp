@@ -459,7 +459,9 @@ vector<MapTile> screenViewportTile(unsigned int width, unsigned int height, int 
         return result;
     }
 
-    return c->location->tilesAt(tc, focus);
+    vector<MapTile> tiles;
+    c->location->getTilesAt(tiles, tc, focus);
+    return tiles;
 }
 
 /*
@@ -494,7 +496,8 @@ bool screenTileUpdate(TileView *view, const Coords &coords)
         bool focus;
         Coords mc(coords);
         map_wrap(mc, loc->map);
-        vector<MapTile> tiles = loc->tilesAt(mc, focus);
+        vector<MapTile> tiles;
+        loc->getTilesAt(tiles, mc, focus);
 
         view->drawTile(tiles, x, y);
         if (focus)
