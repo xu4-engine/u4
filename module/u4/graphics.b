@@ -404,6 +404,14 @@ imageset EGA [
     image (name: dung3_ladderupdown_side_image filename: "ega/ladderupdown3_side.png") [
         dung3_ladderupdown_side  84,82, 8,12
     ]
+    image (name: dung_traps filename: "ega/traps.png") [
+        dung0_hole  45,  0, 87,17
+        dung1_hole  63, 40, 49,17
+        dung2_hole  77, 68, 22, 9
+        dung0_pit   45,159, 87,17
+        dung1_pit   63,119, 49,17
+        dung2_pit   77, 99, 22, 9
+    ]
 ]
 
 imageset EGA/VGA [
@@ -741,6 +749,14 @@ imageset EGA/VGA [
     ]
     image (name: dung3_ladderupdown_side_image filename: "vga/ladderupdown3_side.png") [
         dung3_ladderupdown_side  84,82, 8,12
+    ]
+    image (name: dung_traps filename: "vga/traps.png") [
+        dung0_hole  38,  0,100,10
+        dung1_hole  54, 26, 68,13
+        dung2_hole  71, 57, 34, 7
+        dung0_pit   38,166,100,10
+        dung1_pit   54,137, 68,13
+        dung2_pit   71,112, 34, 7
     ]
 ]
 

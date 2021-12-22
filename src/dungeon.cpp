@@ -74,6 +74,11 @@ uint8_t Dungeon::currentSubToken() {
     return rawMap[index] & 15;
 }
 
+uint8_t Dungeon::subTokenAt(const Coords& co) const {
+    int index = co.x + (co.y * width) + (width * height * co.z);
+    return rawMap[index] & 15;
+}
+
 /**
  * Returns the dungeon token for the given coordinates
  */

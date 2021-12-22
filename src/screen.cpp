@@ -887,6 +887,10 @@ void screenMakeDungeonView() {
                                               VIEWPORT_W, VIEWPORT_H);
 }
 
+void screenDetectDungeonTraps() {
+    xu4.screen->dungeonView->detectTraps();
+}
+
 #ifndef GPU_RENDER
 #define BLOCKING(x,y)   blocking[(y) * VIEWPORT_W + (x)]
 #define LOS(x,y)        lineOfSight[(y) * VIEWPORT_W + (x)]

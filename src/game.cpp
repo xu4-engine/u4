@@ -2248,17 +2248,20 @@ horse_moved:
  */
 void GameController::avatarMovedInDungeon(MoveEvent &event) {
     Dungeon *dungeon = dynamic_cast<Dungeon *>(c->location->map);
-    Direction realDir = dirNormalize((Direction)c->saveGame->orientation, event.dir);
+    Direction orientation = (Direction) c->saveGame->orientation;
+    Direction realDir = dirNormalize(orientation, event.dir);
 
     if (!xu4.settings->filterMoveMessages) {
         if (event.userEvent) {
+            const char* msg;
             if (event.result & MOVE_TURNED) {
-                if (dirRotateCCW((Direction)c->saveGame->orientation) == realDir)
-                    screenMessage("Turn Left\n");
-                else screenMessage("Turn Right\n");
+                msg = (dirRotateCCW(orientation) == realDir) ? "Turn Left\n"
+                                                             : "Turn Right\n";
+            } else {
+                /* show 'Advance' or 'Retreat' in dungeons */
+                msg = (realDir == orientation) ? "Advance\n" : "Retreat\n";
             }
-            /* show 'Advance' or 'Retreat' in dungeons */
-            else screenMessage("%s\n", realDir == c->saveGame->orientation ? "Advance" : "Retreat");
+            screenMessage(msg);
         }
 
         if (event.result & MOVE_BLOCKED)
@@ -2270,10 +2273,14 @@ void GameController::avatarMovedInDungeon(MoveEvent &event) {
         screenMessage("%cLeaving...%c\n", FG_GREY, FG_WHITE);
         exitToParentMap();
         musicPlayLocale();
+        return;
     }
 
-    /* check to see if we're entering a dungeon room */
+    if (event.result & (MOVE_SUCCEEDED | MOVE_TURNED))
+        screenDetectDungeonTraps();
+
     if (event.result & MOVE_SUCCEEDED) {
+        /* check to see if we're entering a dungeon room */
         if (dungeon->currentToken() == DUNGEON_ROOM) {
             int room = (int)dungeon->currentSubToken(); /* get room number */
 

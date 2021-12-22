@@ -410,6 +410,14 @@
         <image name="dung3_ladderupdown_side_image" filename="ega/ladderupdown3_side.png">
             <subimage name="dung3_ladderupdown_side" x="84" y="82" width="8" height="12"/>
         </image>
+        <image name="dung_traps" filename="ega/traps.png">
+            <subimage name="dung0_hole" x="45" y="0" width="87" height="17"/>
+            <subimage name="dung1_hole" x="63" y="40" width="49" height="17"/>
+            <subimage name="dung2_hole" x="77" y="68" width="22" height="9"/>
+            <subimage name="dung0_pit" x="45" y="159" width="87" height="17"/>
+            <subimage name="dung1_pit" x="63" y="119" width="49" height="17"/>
+            <subimage name="dung2_pit" x="77" y="99" width="22" height="9"/>
+        </image>
     </imageset>
 
     <imageset name="VGA" extends="EGA">
@@ -750,6 +758,14 @@
         </image>
         <image name="dung3_ladderupdown_side_image" filename="vga/ladderupdown3_side.png">
             <subimage name="dung3_ladderupdown_side" x="84" y="82" width="8" height="12"/>
+        </image>
+        <image name="dung_traps" filename="vga/traps.png">
+            <subimage name="dung0_hole" x="38" y="0" width="100" height="10"/>
+            <subimage name="dung1_hole" x="54" y="26" width="68" height="13"/>
+            <subimage name="dung2_hole" x="71" y="57" width="34" height="7"/>
+            <subimage name="dung0_pit" x="38" y="166" width="100" height="10"/>
+            <subimage name="dung1_pit" x="54" y="137" width="68" height="13"/>
+            <subimage name="dung2_pit" x="71" y="112" width="34" height="7"/>
         </image>
     </imageset>
 

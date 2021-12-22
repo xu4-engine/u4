@@ -73,6 +73,7 @@ public:
     DungeonToken tokenForTile(TileId tid) const;
     DungeonToken currentToken();
     uint8_t currentSubToken();
+    uint8_t subTokenAt(const Coords& coords) const;
     DungeonToken tokenAt(const Coords& coords) const;
 
     bool ladderUpAt(const Coords& coords) const;
