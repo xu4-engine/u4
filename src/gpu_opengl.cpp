@@ -292,6 +292,7 @@ static void _defineAttributeLayout(GLuint vao, GLuint vbo)
                           (const GLvoid*) 12);
 }
 
+#ifdef GPU_RENDER
 static GLuint _makeFramebuffer(GLuint texId)
 {
     GLuint fbo;
@@ -309,6 +310,7 @@ static GLuint _makeFramebuffer(GLuint texId)
     }
     return fbo;
 }
+#endif
 
 /*
  * Define 2D texture storage.
@@ -369,6 +371,7 @@ static GLuint loadHQXTableImage(int scale)
     return loadTexture(lutFile, 0);
 }
 
+#ifdef GPU_RENDER
 static void reserveDrawList(const GLuint* vbo, int byteSize)
 {
     int i;
@@ -377,12 +380,16 @@ static void reserveDrawList(const GLuint* vbo, int byteSize)
         glBufferData(GL_ARRAY_BUFFER, byteSize, NULL, GL_DYNAMIC_DRAW);
     }
 }
+#endif
 
 bool gpu_init(void* res, int w, int h, int scale, int filter)
 {
     OpenGLResources* gr = (OpenGLResources*) res;
     GLuint sh;
-    GLint cmap, mmap, noise;
+    GLint cmap;
+#ifdef GPU_RENDER
+    GLint mmap, noise;
+#endif
 
     assert(sizeof(GLuint) == sizeof(uint32_t));
 
@@ -393,12 +400,14 @@ bool gpu_init(void* res, int w, int h, int scale, int filter)
     gr->blockCount = 0;
     gr->tilesTex = 0;
     */
+#ifdef GPU_RENDER
     gr->dl[0].buf = GLOB_DRAW_LIST0;
     gr->dl[0].byteSize = ATTR_STRIDE * 6 * 400;
     gr->dl[1].buf = GLOB_FX_LIST0;
     gr->dl[1].byteSize = ATTR_STRIDE * 6 * 20;
     gr->dl[2].buf = GLOB_MAPFX_LIST0;
     gr->dl[2].byteSize = ATTR_STRIDE * 6 * 8;
+#endif
 
 #ifdef DEBUG_GL
     enableGLDebug();
@@ -411,6 +420,7 @@ bool gpu_init(void* res, int w, int h, int scale, int filter)
     gpu_defineTex(gr->shadowTex, SHADOW_DIM, SHADOW_DIM, NULL,
                   GL_RGBA, GL_LINEAR);
 
+#ifdef GPU_RENDER
     if (! loadTexture("noise_2d.png", gr->noiseTex))
         return false;
 
@@ -418,6 +428,7 @@ bool gpu_init(void* res, int w, int h, int scale, int filter)
     if (! gr->shadowFbo)
         return false;
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+#endif
 
 
     // Set default state.
@@ -454,31 +465,6 @@ bool gpu_init(void* res, int w, int h, int scale, int filter)
     }
 
 
-    // Create shadowcast shader.
-    gr->shadow = sh = glCreateProgram();
-    if (compileSLFile(sh, "shadowcast.glsl", 0))
-        return false;
-
-    gr->shadowTrans  = glGetUniformLocation(sh, "transform");
-    gr->shadowVport  = glGetUniformLocation(sh, "vport");
-    gr->shadowViewer = glGetUniformLocation(sh, "viewer");
-    gr->shadowCounts = glGetUniformLocation(sh, "shape_count");
-    gr->shadowShapes = glGetUniformLocation(sh, "shapes");
-
-
-    // Create solid shader.
-    gr->shadeSolid = sh = glCreateProgram();
-    if (compileShaders(sh, solid_vertShader, solid_fragShader))
-        return false;
-
-    gr->solidTrans  = glGetUniformLocation(sh, "transform");
-    gr->solidColor  = glGetUniformLocation(sh, "color");
-
-    glUseProgram(sh);
-    glUniformMatrix4fv(gr->solidTrans, 1, GL_FALSE, unitMatrix);
-    glUniform4f(gr->solidColor, 1.0, 1.0, 1.0, 1.0);
-
-
     // Create colormap shader.
     gr->shadeColor = sh = glCreateProgram();
     if (compileShaders(sh, cmap_vertShader, cmap_fragShader))
@@ -492,6 +478,32 @@ bool gpu_init(void* res, int w, int h, int scale, int filter)
     glUniformMatrix4fv(gr->slocTrans, 1, GL_FALSE, unitMatrix);
     glUniform1i(cmap, GTU_CMAP);
     glUniform4f(gr->slocTint, 1.0, 1.0, 1.0, 1.0);
+
+
+#ifdef GPU_RENDER
+    // Create solid shader.
+    gr->shadeSolid = sh = glCreateProgram();
+    if (compileShaders(sh, solid_vertShader, solid_fragShader))
+        return false;
+
+    gr->solidTrans  = glGetUniformLocation(sh, "transform");
+    gr->solidColor  = glGetUniformLocation(sh, "color");
+
+    glUseProgram(sh);
+    glUniformMatrix4fv(gr->solidTrans, 1, GL_FALSE, unitMatrix);
+    glUniform4f(gr->solidColor, 1.0, 1.0, 1.0, 1.0);
+
+
+    // Create shadowcast shader.
+    gr->shadow = sh = glCreateProgram();
+    if (compileSLFile(sh, "shadowcast.glsl", 0))
+        return false;
+
+    gr->shadowTrans  = glGetUniformLocation(sh, "transform");
+    gr->shadowVport  = glGetUniformLocation(sh, "vport");
+    gr->shadowViewer = glGetUniformLocation(sh, "viewer");
+    gr->shadowCounts = glGetUniformLocation(sh, "shape_count");
+    gr->shadowShapes = glGetUniformLocation(sh, "shapes");
 
 
     // Create world shader.
@@ -512,15 +524,18 @@ bool gpu_init(void* res, int w, int h, int scale, int filter)
     glUniform1i(mmap, GTU_MATERIAL);
     glUniform1i(noise, GTU_NOISE);
     glUniform1i(gr->worldShadowMap, GTU_SHADOW);
+#endif
 
 
     // Create our vertex buffers.
     glGenBuffers(GLOB_COUNT, gr->vbo);
 
+#ifdef GPU_RENDER
     // Reserve space in the double-buffered draw lists.
     reserveDrawList(gr->vbo + GLOB_DRAW_LIST0, gr->dl[0].byteSize);
     reserveDrawList(gr->vbo + GLOB_FX_LIST0,   gr->dl[1].byteSize);
     reserveDrawList(gr->vbo + GLOB_MAPFX_LIST0,gr->dl[2].byteSize);
+#endif
 
     // Create quad geometry.
     glBindBuffer(GL_ARRAY_BUFFER, gr->vbo[GLOB_QUAD]);
@@ -546,11 +561,13 @@ void gpu_free(void* res)
 
     glDeleteVertexArrays(GLOB_COUNT, gr->vao);
     glDeleteBuffers(GLOB_COUNT, gr->vbo);
-    glDeleteProgram(gr->shadeSolid);
     glDeleteProgram(gr->shadeColor);
+#ifdef GPU_RENDER
+    glDeleteProgram(gr->shadeSolid);
     glDeleteProgram(gr->shadeWorld);
     glDeleteProgram(gr->shadow);
     glDeleteFramebuffers(1, &gr->shadowFbo);
+#endif
     glDeleteTextures(4, &gr->screenTex);
 }
 
@@ -588,6 +605,7 @@ uint32_t gpu_screenTexture(void* res)
     return gr->screenTex;
 }
 
+#ifdef GPU_RENDER
 void gpu_setTilesTexture(void* res, uint32_t tex, uint32_t mat, float vDim)
 {
     OpenGLResources* gr = (OpenGLResources*) res;
@@ -595,6 +613,7 @@ void gpu_setTilesTexture(void* res, uint32_t tex, uint32_t mat, float vDim)
     gr->tilesMat = mat;
     gr->tilesVDim = vDim;
 }
+#endif
 
 /*
  * Render a background image using the scale defined with gpu_init().
@@ -629,6 +648,7 @@ void gpu_clear(void* res, const float* color)
     glClear(GL_COLOR_BUFFER_BIT);
 }
 
+#ifdef GPU_RENDER
 /*
  * Invert the colors of all pixels in the current viewport.
  */
@@ -893,7 +913,6 @@ float* gpu_emitQuadFlag(float* attr, const float* drawRect)
     return attr;
 }
 
-#ifdef GPU_RENDER
 //--------------------------------------
 // Map Rendering
 

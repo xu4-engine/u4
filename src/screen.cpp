@@ -162,7 +162,6 @@ static void screenInit_data(Screen* scr, Settings& settings) {
     if (! scr->charsetInfo)
         errorLoadImage(BKGD_CHARSET);
 
-#ifdef USE_GL
 #ifdef GPU_RENDER
     {
     ImageInfo* tinfo;
@@ -184,10 +183,6 @@ static void screenInit_data(Screen* scr, Settings& settings) {
         scr->focusReticle = tinfo->subImageIndex.find(symbol[2])->second;
     }
     }
-#else
-    ImageInfo* shapes = xu4.imageMgr->get(BKGD_SHAPES);
-    gpu_setTilesTexture(xu4.gpu, shapes->tex, 0, 0.0f);
-#endif
 #endif
 
     assert(scr->state.tileanims == NULL);
