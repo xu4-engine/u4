@@ -42,66 +42,22 @@ class EventHandler;
 class TextView;
 
 /**
- * A class for handling keystrokes.
+ * A controller that invokes a key handler function.
  */
-class KeyHandler {
+class KeyHandler : public Controller {
 public:
-    virtual ~KeyHandler() {}
-
-    /* Typedefs */
     typedef bool (*Callback)(int, void*);
-
-    /** Additional information to be passed as data param for read buffer key handler */
-    typedef struct ReadBuffer {
-        int (*handleBuffer)(string*);
-        string *buffer;
-        int bufferLen;
-        int screenX, screenY;
-    } ReadBuffer;
-
-    /** Additional information to be passed as data param for get choice key handler */
-    typedef struct GetChoice {
-        string choices;
-        int (*handleChoice)(int);
-    } GetChoice;
-
-    /* Constructors */
-    KeyHandler(Callback func, void *data = NULL, bool asyncronous = true);
-
-    /* Static functions */
-    static bool globalHandler(int key);
 
     /* Static default key handler functions */
     static bool defaultHandler(int key, void *data);
     static bool ignoreKeys(int key, void *data);
 
-    /* Operators */
-    bool operator==(Callback cb) const;
-
-    /* Member functions */
-    bool handle(int key);
-    virtual bool isKeyIgnored(int key);
-
-protected:
-    Callback handler;
-    bool async;
-    void *data;
-};
-
-/**
- * A controller that wraps a keyhander function.  Keyhandlers are
- * deprecated -- please use a controller instead.
- */
-class KeyHandlerController : public Controller {
-public:
-    KeyHandlerController(KeyHandler *handler);
-    ~KeyHandlerController();
-
+    KeyHandler(KeyHandler::Callback func, void* userData = NULL);
     virtual bool keyPressed(int key);
-    KeyHandler *getKeyHandler();
 
 private:
-    KeyHandler *handler;
+    Callback handler;
+    void* data;
 };
 
 /**
@@ -243,6 +199,7 @@ public:
     static bool wait_msecs(unsigned int msecs);
     static bool timerQueueEmpty();
     static int setKeyRepeat(int delay, int interval);
+    static bool globalKeyHandler(int key);
 
     /* Member functions */
     void setTimerInterval(int msecs);
@@ -268,10 +225,8 @@ public:
     void quitGame();
 
     /* Key handler functions */
-    void pushKeyHandler(KeyHandler kh);
+    void pushKeyHandler(KeyHandler::Callback func, void* data = NULL);
     void popKeyHandler();
-    KeyHandler *getKeyHandler() const;
-    void setKeyHandler(KeyHandler kh);
 
     /* Mouse area functions */
     void pushMouseAreaSet(_MouseArea *mouseAreas);

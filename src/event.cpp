@@ -116,12 +116,11 @@ void EventHandler::setController(Controller *c) {
 }
 
 /**
- * Adds a key handler to the stack.
+ * Adds a key handler controller to the stack.
  */
-void EventHandler::pushKeyHandler(KeyHandler kh) {
-    KeyHandler *new_kh = new KeyHandler(kh);
-    KeyHandlerController *khc = new KeyHandlerController(new_kh);
-    pushController(khc);
+void EventHandler::pushKeyHandler(KeyHandler::Callback func, void* data) {
+    KeyHandler* kh = new KeyHandler(func, data);
+    pushController(kh);
 }
 
 /**
@@ -134,34 +133,6 @@ void EventHandler::popKeyHandler() {
         return;
 
     popController();
-}
-
-/**
- * Returns a pointer to the current key handler.
- * Returns NULL if there is no key handler.
- */
-KeyHandler *EventHandler::getKeyHandler() const {
-    if (controllers.empty())
-        return NULL;
-
-    KeyHandlerController *khc = dynamic_cast<KeyHandlerController *>(controllers.back());
-    ASSERT(khc != NULL, "EventHandler::getKeyHandler called when controller wasn't a keyhandler");
-    if (khc == NULL)
-        return NULL;
-
-    return khc->getKeyHandler();
-}
-
-/**
- * Eliminates all key handlers and begins stack with new handler.
- * This pops all key handlers off the stack and adds
- * the key handler provided to the stack, making it the
- * only key handler left. Use this function only if you
- * are sure the key handlers in the stack are disposable.
- */
-void EventHandler::setKeyHandler(KeyHandler kh) {
-    while (popController() != NULL) {}
-    pushKeyHandler(kh);
 }
 
 MouseArea* EventHandler::mouseAreaForPoint(int x, int y) {
@@ -734,18 +705,18 @@ bool ReadDirController::keyPressed(int key) {
 //----------------------------------------------------------------------------
 
 
-KeyHandler::KeyHandler(Callback func, void *d, bool asyncronous) :
-    handler(func),
-    async(asyncronous),
-    data(d)
-{}
+KeyHandler::KeyHandler(KeyHandler::Callback func, void* userData) :
+    handler(func), data(userData)
+{
+    setDeleteOnPop(true);
+}
 
 /**
  * Handles any and all keystrokes.
  * Generally used to exit the application, switch applications,
  * minimize, maximize, etc.
  */
-bool KeyHandler::globalHandler(int key) {
+bool EventHandler::globalKeyHandler(int key) {
     switch(key) {
 #if defined(MACOSX)
     case U4_META + 'q': /* Cmd+q */
@@ -796,61 +767,9 @@ bool KeyHandler::ignoreKeys(int key, void *data) {
     return true;
 }
 
-/**
- * Handles a keypress.
- * First it makes sure the key combination is not ignored
- * by the current key handler. Then, it passes the keypress
- * through the global key handler. If the global handler
- * does not process the keystroke, then the key handler
- * handles it itself by calling its handler callback function.
- */
-bool KeyHandler::handle(int key) {
-    bool processed = false;
-    if (!isKeyIgnored(key)) {
-        processed = globalHandler(key);
-        if (!processed)
-            processed = handler(key, data);
-    }
-
+bool KeyHandler::keyPressed(int key) {
+    bool processed = EventHandler::globalKeyHandler(key);
+    if (! processed)
+        processed = handler(key, data);
     return processed;
-}
-
-/**
- * Returns true if the key or key combination is always ignored by xu4
- */
-bool KeyHandler::isKeyIgnored(int key) {
-    switch(key) {
-    case U4_RIGHT_SHIFT:
-    case U4_LEFT_SHIFT:
-    case U4_RIGHT_CTRL:
-    case U4_LEFT_CTRL:
-    case U4_RIGHT_ALT:
-    case U4_LEFT_ALT:
-    case U4_RIGHT_META:
-    case U4_LEFT_META:
-    case U4_TAB:
-        return true;
-    default: return false;
-    }
-}
-
-bool KeyHandler::operator==(Callback cb) const {
-    return (handler == cb) ? true : false;
-}
-
-KeyHandlerController::KeyHandlerController(KeyHandler *handler) {
-    this->handler = handler;
-}
-
-KeyHandlerController::~KeyHandlerController() {
-    delete handler;
-}
-
-bool KeyHandlerController::keyPressed(int key) {
-    ASSERT(handler != NULL, "key handler must be initialized");
-    return handler->handle(key);
-}
-
-KeyHandler *KeyHandlerController::getKeyHandler() {
-    return handler;
 }

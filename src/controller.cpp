@@ -23,10 +23,9 @@ Controller::~Controller() {
  * to the virtual keyPressed method.
  */
 bool Controller::notifyKeyPressed(int key) {
-    bool processed = KeyHandler::globalHandler(key);
+    bool processed = EventHandler::globalKeyHandler(key);
     if (!processed)
         processed = keyPressed(key);
-
     return processed;
 }
 
