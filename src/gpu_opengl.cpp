@@ -382,7 +382,7 @@ static void reserveDrawList(const GLuint* vbo, int byteSize)
 }
 #endif
 
-bool gpu_init(void* res, int w, int h, int scale, int filter)
+const char* gpu_init(void* res, int w, int h, int scale, int filter)
 {
     OpenGLResources* gr = (OpenGLResources*) res;
     GLuint sh;
@@ -422,11 +422,11 @@ bool gpu_init(void* res, int w, int h, int scale, int filter)
 
 #ifdef GPU_RENDER
     if (! loadTexture("noise_2d.png", gr->noiseTex))
-        return false;
+        return "noise_2d.png";
 
     gr->shadowFbo = _makeFramebuffer(gr->shadowTex);
     if (! gr->shadowFbo)
-        return false;
+        return "shadow FBO";
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 #endif
 
@@ -446,11 +446,11 @@ bool gpu_init(void* res, int w, int h, int scale, int filter)
 
         gr->scalerLut = loadHQXTableImage(scale);
         if (! gr->scalerLut)
-            return false;
+            return "hq2x.png";
 
         gr->scaler = sh = glCreateProgram();
         if (compileSLFile(sh, "hq2x.glsl", scale))
-            return false;
+            return "hq2x.glsl";
 
         gr->slocScMat = glGetUniformLocation(sh, "MVPMatrix");
         gr->slocScDim = glGetUniformLocation(sh, "TextureSize");
@@ -468,7 +468,7 @@ bool gpu_init(void* res, int w, int h, int scale, int filter)
     // Create colormap shader.
     gr->shadeColor = sh = glCreateProgram();
     if (compileShaders(sh, cmap_vertShader, cmap_fragShader))
-        return false;
+        return "colormap shader";
 
     gr->slocTrans   = glGetUniformLocation(sh, "transform");
     cmap            = glGetUniformLocation(sh, "cmap");
@@ -484,7 +484,7 @@ bool gpu_init(void* res, int w, int h, int scale, int filter)
     // Create solid shader.
     gr->shadeSolid = sh = glCreateProgram();
     if (compileShaders(sh, solid_vertShader, solid_fragShader))
-        return false;
+        return "solid shader";
 
     gr->solidTrans  = glGetUniformLocation(sh, "transform");
     gr->solidColor  = glGetUniformLocation(sh, "color");
@@ -497,7 +497,7 @@ bool gpu_init(void* res, int w, int h, int scale, int filter)
     // Create shadowcast shader.
     gr->shadow = sh = glCreateProgram();
     if (compileSLFile(sh, "shadowcast.glsl", 0))
-        return false;
+        return "shadowcast.glsl";
 
     gr->shadowTrans  = glGetUniformLocation(sh, "transform");
     gr->shadowVport  = glGetUniformLocation(sh, "vport");
@@ -509,7 +509,7 @@ bool gpu_init(void* res, int w, int h, int scale, int filter)
     // Create world shader.
     gr->shadeWorld = sh = glCreateProgram();
     if (compileSLFile(sh, "world.glsl", 0))
-        return false;
+        return "world.glsl";
 
     gr->worldTrans     = glGetUniformLocation(sh, "transform");
     cmap               = glGetUniformLocation(sh, "cmap");
@@ -547,7 +547,7 @@ bool gpu_init(void* res, int w, int h, int scale, int filter)
         _defineAttributeLayout(gr->vao[i], gr->vbo[i]);
     glBindVertexArray(0);
 
-    return true;
+    return NULL;
 }
 
 void gpu_free(void* res)

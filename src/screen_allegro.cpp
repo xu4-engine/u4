@@ -107,6 +107,7 @@ static ALLEGRO_BITMAP* loadBitmapPng(const char* filename) {
 void screenInit_sys(const Settings* settings, int* dim, int reset) {
     ScreenAllegro* sa;
 #ifdef USE_GL
+    const char* gpuError;
 #ifdef _WIN32
     // ALLEGRO_OPENGL_3_0 causes al_create_display() to fail on Windows 7 and
     // with Wine.  We check that version 3.3 calls are available below.
@@ -271,8 +272,9 @@ void screenInit_sys(const Settings* settings, int* dim, int reset) {
     // as the context is lost when mucking with bitmaps.
     al_set_current_opengl_context(sa->disp);
 
-    if (! gpu_init(&sa->gpu, dw, dh, settings->scale, settings->filter))
-        errorFatal("Unable to initialize OpenGL resources");
+    gpuError = gpu_init(&sa->gpu, dw, dh, settings->scale, settings->filter);
+    if (gpuError)
+        errorFatal("Unable to obtain OpenGL resource (%s)", gpuError);
 #endif
 
     sa->refreshRate = 1.0 / settings->screenAnimationFramesPerSecond;

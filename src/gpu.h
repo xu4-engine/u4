@@ -4,7 +4,7 @@ struct BlockingGroups;
 class Map;
 class TileView;
 
-bool     gpu_init(void* res, int w, int h, int scale, int filter);
+const char* gpu_init(void* res, int w, int h, int scale, int filter);
 void     gpu_free(void* res);
 void     gpu_viewport(int x, int y, int w, int h);
 uint32_t gpu_makeTexture(const Image32* img);
