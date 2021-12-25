@@ -1864,8 +1864,8 @@ static Weapon* conf_weapon(ConfigXML* cfg, int type, const ConfigElement& conf) 
 //--------------------------------------
 // Config Service API
 
-// Create configService.
-Config* configInit() {
+// Create Config service.
+Config* configInit(const char*) {
     // Here's where we can compile the program with alternate back-ends
     // (e.g. SQL, JSON, ... or something better.)
 

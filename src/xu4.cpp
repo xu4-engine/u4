@@ -49,6 +49,7 @@ struct Options {
     uint16_t used;
     uint32_t scale;
     uint8_t  filter;
+    const char* module;
     const char* profile;
     const char* recordFile;
 };
@@ -74,6 +75,14 @@ int parseOptions(Options* opt, int argc, char** argv) {
                 goto missing_value;
             opt->scale = strtoul(argv[i], NULL, 0);
         }
+#ifdef CONF_MODULE
+        else if (strEqualAlt(argv[i], "-m", "--module"))
+        {
+            if (++i >= argc)
+                goto missing_value;
+            opt->module = argv[i];
+        }
+#endif
         else if (strEqualAlt(argv[i], "-p", "--profile"))
         {
             if (++i >= argc)
@@ -110,6 +119,9 @@ int parseOptions(Options* opt, int argc, char** argv) {
             "  -f, --fullscreen        Run in fullscreen mode.\n"
             "  -h, --help              Print this message and quit.\n"
             "  -i, --skip-intro        Skip the intro. and load the last saved game.\n"
+#ifdef CONF_MODULE
+            "  -m, --module <file>     Specify game module (default is u4.mod).\n"
+#endif
             "  -p, --profile <string>  Use another set of settings and save files.\n"
             "  -q, --quiet             Disable audio.\n"
             "  -s, --scale <int>       Specify scaling factor (1-5).\n"
@@ -198,7 +210,7 @@ void servicesInit(XU4GameServices* gs, Options* opt) {
 
     Debug::initGlobal("debug/global.txt");
 
-    gs->config = configInit();
+    gs->config = configInit(opt->module ? opt->module : "u4.mod");
     screenInit();
     Tile::initSymbols(gs->config);
 

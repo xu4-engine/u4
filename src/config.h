@@ -88,7 +88,7 @@ protected:
     void* backend;
 };
 
-extern Config* configInit();
+extern Config* configInit(const char* module);
 extern void    configFree(Config*);
 
 #define foreach(it, col)    for(it = col.begin(); it != col.end(); ++it)

@@ -1077,11 +1077,20 @@ ConfigBoron::~ConfigBoron()
 //--------------------------------------
 // Config Service API
 
-// Create configService.
-Config* configInit() {
-    string path = u4find_path("u4.mod");
+// Create Config service.
+Config* configInit(const char* module) {
+    string path;
+    int len = strlen(module) - 4;
+
+    if (len > 0 && strcmp(module + len, ".mod") == 0) {
+        path = u4find_path(module);
+    } else {
+        string mfile(module);
+        mfile += ".mod";
+        path = u4find_path(mfile.c_str());
+    }
     if (path.empty())
-        errorFatal("Cannot find module u4.mod");
+        errorFatal("Cannot find module %s", module);
     return new ConfigBoron(path.c_str());
 }
 
