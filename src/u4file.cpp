@@ -139,14 +139,22 @@ void U4PATH::initDefaultPaths() {
 
     /*Try to cover all root possibilities. These can be added to by separate modules*/
     rootResourcePaths.push_back(".");
-    rootResourcePaths.push_back("./ultima4");
 #ifdef _WIN32
     rootResourcePaths.push_back("C:");
     rootResourcePaths.push_back("C:/DOS");
     rootResourcePaths.push_back("C:/GAMES");
 #else
-    rootResourcePaths.push_back("/usr/lib/u4");
-    rootResourcePaths.push_back("/usr/local/lib/u4");
+#ifdef __linux__
+    {
+    char *home = getenv("HOME");
+    if (home && home[0]) {
+        string str(home);
+        rootResourcePaths.push_back(str + "/.local/share/xu4");
+    }
+    }
+#endif
+    rootResourcePaths.push_back("/usr/share/xu4");
+    rootResourcePaths.push_back("/usr/local/share/xu4");
 #endif
 
     //The second (specific) part of the path searched will be these various subdirectories
