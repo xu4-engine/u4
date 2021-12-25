@@ -67,10 +67,12 @@ public:
     std::list<std::string> rootResourcePaths;
     std::list<std::string> u4ForDOSPaths;
     std::list<std::string> u4ZipPaths;
+#ifndef CONF_MODULE
     std::list<std::string> musicPaths;
     std::list<std::string> soundPaths;
     std::list<std::string> configPaths;
     std::list<std::string> graphicsPaths;
+#endif
 
 private:
     bool defaultsHaveBeenInitd;

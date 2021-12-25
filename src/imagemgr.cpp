@@ -362,7 +362,9 @@ U4FILE * ImageMgr::getImageFile(ImageInfo *info)
             u4fseek(file, ent->offset, SEEK_SET);
         } else
             file = NULL;
-#endif
+    } else
+        file = NULL;
+#else
     } else {
         string filename(fn);
         string pathname(u4find_graphics(filename));
@@ -371,6 +373,7 @@ U4FILE * ImageMgr::getImageFile(ImageInfo *info)
         else
             file = u4fopen_stdio(pathname.c_str());
     }
+#endif
     return file;
 }
 

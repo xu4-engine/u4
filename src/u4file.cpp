@@ -160,6 +160,7 @@ void U4PATH::initDefaultPaths() {
     u4ZipPaths.push_back(".");
     u4ZipPaths.push_back("u4");
 
+#ifndef CONF_MODULE
     /* the possible paths where the u4 music files can be installed */
     musicPaths.push_back(".");
     musicPaths.push_back("mid");
@@ -181,6 +182,7 @@ void U4PATH::initDefaultPaths() {
     graphicsPaths.push_back(".");
     graphicsPaths.push_back("graphics");
     graphicsPaths.push_back("../graphics");
+#endif
 }
 
 /**
@@ -744,6 +746,7 @@ string u4find_path(const string &fname, std::list<string> specificSubPaths) {
         return "";
 }
 
+#ifndef CONF_MODULE
 string u4find_music(const string &fname) {
     return u4find_path(fname, u4Path.musicPaths);
 }
@@ -759,3 +762,4 @@ string u4find_conf(const string &fname) {
 string u4find_graphics(const string &fname) {
     return u4find_path(fname, u4Path.graphicsPaths);
 }
+#endif
