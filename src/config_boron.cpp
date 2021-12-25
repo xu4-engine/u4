@@ -72,7 +72,7 @@ void Config::setGame(const char* name) {
 
 struct ConfigData
 {
-    const char* modulePath;
+    char* modulePath;
     vector<const char*> sarray;   // Temp. buffer for const char** values.
     vector<Layout> layouts;
     vector<string> schemeNames;
@@ -852,7 +852,7 @@ ConfigBoron::ConfigBoron(const char* modulePath)
 
     xcd.creatureTileIndex = NULL;
     xcd.tileset = NULL;
-    xcd.modulePath = modulePath;
+    xcd.modulePath = strdup(modulePath);
     memset(&xcd.usaveIds, 0, sizeof(xcd.usaveIds));
     ur_binInit(&evalBuf, 1024);
 
@@ -1071,6 +1071,7 @@ ConfigBoron::~ConfigBoron()
     boron_freeEnv( ut );
     free(fnamBuf);
     free(toc);
+    free(xcd.modulePath);
 }
 
 //--------------------------------------
@@ -1078,7 +1079,10 @@ ConfigBoron::~ConfigBoron()
 
 // Create configService.
 Config* configInit() {
-    return new ConfigBoron("u4.mod");
+    string path = u4find_path("u4.mod");
+    if (path.empty())
+        errorFatal("Cannot find module u4.mod");
+    return new ConfigBoron(path.c_str());
 }
 
 void configFree(Config* conf) {
