@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * TextView.cpp
  */
 
 #include <stdarg.h>
@@ -14,16 +14,21 @@
 
 Image *TextView::charset = NULL;
 
-TextView::TextView(int x, int y, int columns, int rows) : View(x, y, columns * CHAR_WIDTH, rows * CHAR_HEIGHT) {
+TextView::TextView(int x, int y, int columns, int rows)
+    : View(x, y, columns * CHAR_WIDTH, rows * CHAR_HEIGHT) {
     this->columns = columns;
     this->rows = rows;
-    this->cursorEnabled = false;
-    this->cursorFollowsText = false;
-    this->cursorX = 0;
-    this->cursorY = 0;
-    this->cursorPhase = 0;
+    cursorEnabled = false;
+    cursorFollowsText = false;
+    cursorX = 0;
+    cursorY = 0;
+    cursorPhase = 0;
+    colorFG = FONT_COLOR_INDEX(FG_WHITE);
+    colorBG = FONT_COLOR_INDEX(BG_NORMAL);
+
     if (charset == NULL)
         charset = xu4.imageMgr->get(BKGD_CHARSET)->image;
+
     xu4.eventHandler->getTimer()->add(&cursorTimer, /*SCR_CYCLE_PER_SECOND*/4, this);
 }
 
@@ -36,6 +41,42 @@ void TextView::reinit() {
     charset = xu4.imageMgr->get(BKGD_CHARSET)->image;
 }
 
+const RGBA fontColor[25] = {
+    {153,153,153,255},  // FG_GREY TEXT_FG_PRIMARY   (red 0xFF, 0xAA in EGA)
+    {102,102,102,255},  //         TEXT_FG_SECONDARY (red 0xC2)
+    { 51, 51, 51,255},  //         TEXT_FG_SHADOW    (red 0x80)
+
+    {102,102,255,255},  // FG_BLUE
+    { 51, 51,204,255},
+    { 51, 51, 51,255},
+
+    {255,102,255,255},  // FG_PURPLE
+    {204, 51,204,255},
+    { 51, 51, 51,255},
+
+    {102,255,102,255},  // FG_GREEN
+    {  0,153,  0,255},
+    { 51, 51, 51,255},
+
+    {255,102,102,255},  // FG_RED
+    {204, 51, 51,255},
+    { 51, 51, 51,255},
+
+    {255,255, 51,255},  // FG_YELLOW
+    {204,153, 51,255},
+    { 51, 51, 51,255},
+
+    {255,255,255,255},  // FG_WHITE (Default)
+    {204,204,204,255},
+    { 68, 68, 68,255},
+
+    {  0,  0,  0,255},  // BG_NORMAL
+    {  0,  0,  0,  0},
+    {  0,  0,  0,  0},
+
+    {  0,  0,102,255},  // BG_BRIGHT
+};
+
 /**
  * Draw a character from the charset onto the view.
  */
@@ -44,11 +85,12 @@ void TextView::drawChar(int chr, int x, int y) {
     ASSERT(y < rows, "y value of %d out of range", y);
 
     SCALED_VAR
-    charset->drawSubRect(SCALED(this->x + (x * CHAR_WIDTH)),
-                         SCALED(this->y + (y * CHAR_HEIGHT)),
-                         0, SCALED(chr * CHAR_HEIGHT),
-                         SCALED(CHAR_WIDTH),
-                         SCALED(CHAR_HEIGHT));
+    charset->drawLetter(SCALED(this->x + (x * CHAR_WIDTH)),
+                        SCALED(this->y + (y * CHAR_HEIGHT)),
+                        0, SCALED(chr * CHAR_HEIGHT),
+                        SCALED(CHAR_WIDTH), SCALED(CHAR_HEIGHT),
+                        (chr < ' ') ? NULL : fontColor + colorFG,
+                        fontColor + colorBG);
 }
 
 /**
@@ -72,17 +114,16 @@ void TextView::drawCharMasked(int chr, int x, int y, unsigned char mask) {
 
 /* highlight the selected row using a background color */
 void TextView::textSelectedAt(int x, int y, const char *text) {
-    if (!xu4.settings->enhancements ||
-        !xu4.settings->enhancementsOptions.textColorization) {
-        this->textAt(x, y, "%s", text);
-        return;
+    if (xu4.settings->enhancements &&
+        xu4.settings->enhancementsOptions.textColorization) {
+        colorBG = FONT_COLOR_INDEX(BG_BRIGHT);
+        for (int i=0; i < columns-1; i++)
+            textAt(x-1+i, y, " ");
+        textAt(x, y, "%s", text);
+        colorBG = FONT_COLOR_INDEX(BG_NORMAL);
+    } else {
+        textAt(x, y, "%s", text);
     }
-
-    this->setFontColorBG(BG_BRIGHT);
-    for (int i=0; i < this->getWidth()-1; i++)
-        this->textAt(x-1+i, y, " ");
-    this->textAt(x, y, "%s", text);
-    this->setFontColorBG(BG_NORMAL);
 }
 
 /* depending on the status type, apply colorization to the character */
@@ -107,7 +148,7 @@ string TextView::colorizeStatus(char statustype) {
 }
 
 /* depending on the status type, apply colorization to the character */
-string TextView::colorizeString(string input, ColorFG color, unsigned int colorstart, unsigned int colorlength) {
+string TextView::colorizeString(string input, TextColor color, unsigned int colorstart, unsigned int colorlength) {
     if (!xu4.settings->enhancements ||
         !xu4.settings->enhancementsOptions.textColorization)
         return input;
@@ -141,18 +182,6 @@ string TextView::colorizeString(string input, ColorFG color, unsigned int colors
     return output;
 }
 
-void TextView::setFontColor(ColorFG fg, ColorBG bg) {
-    charset->setFontColorFG(fg);
-    charset->setFontColorBG(bg);
-}
-
-void TextView::setFontColorFG(ColorFG fg) {
-    charset->setFontColorFG(fg);
-}
-void TextView::setFontColorBG(ColorBG bg) {
-    charset->setFontColorBG(bg);
-}
-
 void TextView::textAt(int x, int y, const char *fmt, ...) {
     char buffer[1024];
     unsigned int i;
@@ -178,7 +207,7 @@ void TextView::textAt(int x, int y, const char *fmt, ...) {
             case FG_RED:
             case FG_YELLOW:
             case FG_WHITE:
-                setFontColorFG((ColorFG)buffer[i]);
+                colorFG = FONT_COLOR_INDEX(buffer[i]);
                 offset++;
                 break;
             default:

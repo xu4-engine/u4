@@ -20,6 +20,7 @@
 #include "imagemgr.h"
 #include "scale.h"
 #include "settings.h"
+#include "textview.h"
 #include "tileanim.h"
 #include "tileset.h"
 #include "xu4.h"
@@ -52,7 +53,8 @@ struct Screen {
     int cursorY;
     int cursorStatus;
     int cursorEnabled;
-    int needPrompt;
+    short needPrompt;
+    short colorFG;
 #ifdef GPU_RENDER
     ImageInfo* textureInfo;
     TileView* renderMapView;
@@ -83,6 +85,7 @@ struct Screen {
         cursorStatus = 0;
         cursorEnabled = 1;
         needPrompt = 1;
+        colorFG = FONT_COLOR_INDEX(FG_WHITE);
 #ifdef GPU_RENDER
         textureInfo = NULL;
         renderMapView = NULL;
@@ -294,6 +297,8 @@ void screenMessage(const char *fmt, ...) {
 #ifdef IOS
     static bool recursed = false;
 #endif
+    bool colorize = xu4.settings->enhancements &&
+                    xu4.settings->enhancementsOptions.textColorization;
 
     if (!c)
         return; //Because some cases (like the intro) don't have the context initiated.
@@ -344,7 +349,8 @@ void screenMessage(const char *fmt, ...) {
             case FG_RED:
             case FG_YELLOW:
             case FG_WHITE:
-                screenTextColor(buffer[i]);
+                if (colorize)
+                    xu4.screen->colorFG = FONT_COLOR_INDEX(buffer[i]);
                 continue;
         }
 
@@ -728,7 +734,6 @@ void screenDrawImageInMapArea(Symbol name) {
                              VIEWPORT_H * SCALED(TILE_HEIGHT));
 }
 
-
 /**
  * Change the current text color
  */
@@ -747,7 +752,8 @@ void screenTextColor(int color) {
         case FG_RED:
         case FG_YELLOW:
         case FG_WHITE:
-            xu4.screen->charsetInfo->image->setFontColorFG((ColorFG)color);
+            xu4.screen->colorFG = FONT_COLOR_INDEX(color);
+            break;
     }
 }
 
@@ -755,13 +761,21 @@ void screenTextColor(int color) {
  * Draw a character from the charset onto the screen.
  */
 void screenShowChar(int chr, int x, int y) {
-    ImageInfo* charset = xu4.screen->charsetInfo;
+    Image* charset = xu4.screen->charsetInfo->image;
     SCALED_VAR
-    int charW = charset->image->width();
+    int charW = charset->width();
     int charH = SCALED(CHAR_HEIGHT);
+    int colorFG = xu4.screen->colorFG;
 
-    charset->image->drawSubRect(x * charW, y * charH,
-                                0, chr * charH, charW, charH);
+    if (colorFG == FONT_COLOR_INDEX(FG_WHITE)) {
+        charset->drawSubRect(x * charW, y * charH,
+                             0, chr * charH, charW, charH);
+    } else {
+        charset->drawLetter(x * charW, y * charH,
+                            0, chr * charH, charW, charH,
+                            (chr < ' ') ? NULL : fontColor + colorFG,
+                            fontColor + FONT_COLOR_INDEX(BG_NORMAL));
+    }
 }
 
 /**

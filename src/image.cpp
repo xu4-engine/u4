@@ -68,65 +68,6 @@ RGBA Image::setColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
     return color;
 }
 
-/* sets the specified font colors */
-bool Image::setFontColorFG(ColorFG fg) {
-#if 0
-    switch (fg) {
-        case FG_GREY:
-            if (!setPaletteIndex(TEXT_FG_PRIMARY_INDEX,   setColor(153,153,153))) return false;
-            if (!setPaletteIndex(TEXT_FG_SECONDARY_INDEX, setColor(102,102,102))) return false;
-            if (!setPaletteIndex(TEXT_FG_SHADOW_INDEX,    setColor(51,51,51))) return false;
-            break;
-        case FG_BLUE:
-            if (!setPaletteIndex(TEXT_FG_PRIMARY_INDEX,   setColor(102,102,255))) return false;
-            if (!setPaletteIndex(TEXT_FG_SECONDARY_INDEX, setColor(51,51,204))) return false;
-            if (!setPaletteIndex(TEXT_FG_SHADOW_INDEX,    setColor(51,51,51))) return false;
-            break;
-        case FG_PURPLE:
-            if (!setPaletteIndex(TEXT_FG_PRIMARY_INDEX,   setColor(255,102,255))) return false;
-            if (!setPaletteIndex(TEXT_FG_SECONDARY_INDEX, setColor(204,51,204))) return false;
-            if (!setPaletteIndex(TEXT_FG_SHADOW_INDEX,    setColor(51,51,51))) return false;
-            break;
-        case FG_GREEN:
-            if (!setPaletteIndex(TEXT_FG_PRIMARY_INDEX,   setColor(102,255,102))) return false;
-            if (!setPaletteIndex(TEXT_FG_SECONDARY_INDEX, setColor(0,153,0))) return false;
-            if (!setPaletteIndex(TEXT_FG_SHADOW_INDEX,    setColor(51,51,51))) return false;
-            break;
-        case FG_RED:
-            if (!setPaletteIndex(TEXT_FG_PRIMARY_INDEX,   setColor(255,102,102))) return false;
-            if (!setPaletteIndex(TEXT_FG_SECONDARY_INDEX, setColor(204,51,51))) return false;
-            if (!setPaletteIndex(TEXT_FG_SHADOW_INDEX,    setColor(51,51,51))) return false;
-            break;
-        case FG_YELLOW:
-            if (!setPaletteIndex(TEXT_FG_PRIMARY_INDEX,   setColor(255,255,51))) return false;
-            if (!setPaletteIndex(TEXT_FG_SECONDARY_INDEX, setColor(204,153,51))) return false;
-            if (!setPaletteIndex(TEXT_FG_SHADOW_INDEX,    setColor(51,51,51))) return false;
-            break;
-        default:
-            if (!setPaletteIndex(TEXT_FG_PRIMARY_INDEX,   setColor(255,255,255))) return false;
-            if (!setPaletteIndex(TEXT_FG_SECONDARY_INDEX, setColor(204,204,204))) return false;
-            if (!setPaletteIndex(TEXT_FG_SHADOW_INDEX,    setColor(68,68,68))) return false;
-    }
-#endif
-    return true;
-}
-
-/* sets the specified font colors */
-bool Image::setFontColorBG(ColorBG bg) {
-#if 0
-    switch (bg) {
-        case BG_BRIGHT:
-            if (!setPaletteIndex(TEXT_BG_INDEX, setColor(0,0,102)))
-                return false;
-            break;
-        default:
-            if (!setPaletteIndex(TEXT_BG_INDEX, setColor(0,0,0)))
-                return false;
-    }
-#endif
-    return true;
-}
-
 void Image::putPixel(int x, int y, int r, int g, int b, int a) {
     RGBA col;
     rgba_set(col, r, g, b, a);
@@ -292,6 +233,81 @@ void Image::draw(int x, int y) const {
  */
 void Image::drawSubRect(int x, int y, int rx, int ry, int rw, int rh) const {
     image32_blitRect(xu4.screenImage, x, y, this, rx, ry, rw, rh, blending);
+}
+
+/**
+ * Draws a region of the image onto the screen using the red channel as a
+ * palette index.
+ *
+ * This is precisely crafted to map the Ultima4 CHARSET.EGA & VGA letters.
+ * Any change to either the images or palette index equation will likely break
+ * the colors.
+ *
+ * The destination screen offset is the dx, dy values.
+ * The source area of the image is defined by the rectangle sx, sy, sw, sh.
+ *
+ * \param palette   Pointer to three foreground colors or NULL.
+ * \param bg        Pointer to one background color.  Must not be NULL.
+ */
+void Image::drawLetter(int dx, int dy, int sx, int sy, int sw, int sh,
+                       const RGBA* palette, const RGBA* bg) const
+{
+    Image32* dest = xu4.screenImage;
+    uint32_t background = *((uint32_t*) &black);
+    uint32_t* drow;
+    const uint32_t* srow;
+
+    // Clip position and source rect to positive values.
+    CLIP_SUB(dx, sx, sw, w, dest->w)
+    CLIP_SUB(dy, sy, sh, h, dest->h)
+
+    srow = pixels + w * sy + sx;
+    drow = dest->pixels + dest->w * dy + dx;
+
+    {
+    uint32_t* dp;
+    const uint32_t* sp;
+    const uint32_t* send;
+    int red;
+
+    if (palette) {
+        while (sh--) {
+            dp = drow;
+            sp = srow;
+            send = sp + sw;
+            while( sp != send ) {
+                if (*sp == background) {
+                    *dp++ = *((uint32_t*) bg);
+                } else {
+                    red = *((uint8_t*) sp);
+                    if (red >= 0x80) {
+                        red = (red - 127) / 43;     // Convert to 0-2.
+                        *dp++ = ((uint32_t*) palette)[2 - red];
+                    } else
+                        *dp++ = *sp;
+                }
+                ++sp;
+            }
+            drow += dest->w;
+            srow += w;
+        }
+    } else {
+        while (sh--) {
+            dp = drow;
+            sp = srow;
+            send = sp + sw;
+            while( sp != send ) {
+                if (*sp == background)
+                    *dp++ = *((uint32_t*) bg);
+                else
+                    *dp++ = *sp;
+                ++sp;
+            }
+            drow += dest->w;
+            srow += w;
+        }
+    }
+    }
 }
 
 /**

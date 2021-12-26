@@ -6,8 +6,7 @@
 #define IMAGE_H
 
 #include <cstddef>
-#include "textcolor.h"
-#include "support/image32.h"
+#include "image32.h"
 
 #if defined(IOS)
 typedef struct CGImage *CGImageRef;
@@ -35,14 +34,7 @@ public:
 
     void performTransparencyHack(const RGBA& colorValue, unsigned int numFrames, unsigned int currentFrameIndex, unsigned int haloWidth, unsigned int haloOpacityIncrementByPixelDistance);
 
-    bool setFontColorFG(ColorFG fg);
-    bool setFontColorBG(ColorBG bg);
-
-    RGBA getPaletteColor(int index);       // returns the color of the specified palette index
-    bool setPaletteIndex(unsigned int index, RGBA color);  // sets the specified palette index to the specified RGB color
-    int getPaletteIndex(RGBA color);              // returns the palette index of the specified RGB color
     RGBA setColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a = IM_OPAQUE);
-
 
     /* Will make the pixels that match the color disappear, with a blur halo */
     void makeColorTransparent(const RGBA& bgColor, int haloSize = 0, int shadowOpacity = 2);
@@ -62,6 +54,8 @@ public:
 
     void draw(int x, int y) const;
     void drawSubRect(int x, int y, int rx, int ry, int rw, int rh) const;
+    void drawLetter(int dx, int dy, int sx, int sy, int sw, int sh,
+                    const RGBA* palette, const RGBA* bg) const;
 
     /**
      * Draws a piece of the image onto the screen at the given offset, inverted.

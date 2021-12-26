@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * TextView.h
  */
 
 #ifndef TEXTVIEW_H
@@ -16,6 +16,21 @@
 
 #include "view.h"
 #include "image.h"
+
+enum TextColor {
+    FG_GREY   = '\023',     // Foreground
+    FG_BLUE   = '\024',
+    FG_PURPLE = '\025',
+    FG_GREEN  = '\026',
+    FG_RED    = '\027',
+    FG_YELLOW = '\030',
+    FG_WHITE  = '\031',
+    BG_NORMAL = '\032',     // Background
+    BG_BRIGHT = '\033'
+};
+
+#define FONT_COLOR_INDEX(n)  ((n - 19) * 3)
+extern const RGBA fontColor[25];
 
 /**
  * A view of a text area.  Keeps track of the cursor position.
@@ -44,15 +59,10 @@ public:
     void drawCursor();
     static void cursorTimer(void *data);
 
-    // functions to modify the charset font palette
-    void setFontColor(ColorFG fg, ColorBG bg);
-    void setFontColorFG(ColorFG fg);
-    void setFontColorBG(ColorBG bg);
-
     // functions to add color to strings
     void textSelectedAt(int x, int y, const char *text);
     string colorizeStatus(char statustype);
-    string colorizeString(string input, ColorFG color, unsigned int colorstart, unsigned int colorlength=0);
+    string colorizeString(string input, TextColor color, unsigned int colorstart, unsigned int colorlength=0);
 
 
 protected:
@@ -61,6 +71,8 @@ protected:
     bool cursorFollowsText;     /**< whether the cursor is moved past the last character written */
     int cursorX, cursorY;       /**< current position of cursor */
     int cursorPhase;            /**< the rotation state of the cursor */
+    uint8_t colorBG;
+    uint8_t colorFG;
     static Image *charset;      /**< image containing font */
 };
 

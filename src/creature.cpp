@@ -11,7 +11,7 @@
 #include "debug.h"
 #include "screen.h"
 #include "settings.h"
-#include "textcolor.h"  // required to change the color of screen message text
+#include "textview.h"   // required to change screenMessage() color
 #include "utils.h"
 #include "xu4.h"
 
