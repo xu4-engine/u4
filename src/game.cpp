@@ -117,6 +117,7 @@ bool AlphaActionController::keyPressed(int key) {
         key = toupper(key);
 
     if (key >= 'A' && key <= toupper(lastValidLetter)) {
+        screenMessage("%c\n", key);
         value = key - 'A';
         doneWaiting();
     } else if (key == U4_SPACE || key == U4_ESC || key == U4_ENTER) {
@@ -1415,6 +1416,8 @@ int gameGetPlayer(bool canBeDisabled, bool canBeActivePlayer) {
             ReadPlayerController readPlayerController;
             xu4.eventHandler->pushController(&readPlayerController);
             player = readPlayerController.waitFor();
+            if (player >= 0)
+                c->col--;   // Will display the name in place of the number
         }
 
         if (player == -1)
@@ -1424,10 +1427,10 @@ int gameGetPlayer(bool canBeDisabled, bool canBeActivePlayer) {
         }
     }
 
-    c->col--;// display the selected character name, in place of the number
     if ((player >= 0) && (player < 8))
     {
-        screenMessage("%s\n", c->saveGame->players[player].name); //Write player's name after prompt
+        // Write player's name after prompt
+        screenMessage("%s\n", c->saveGame->players[player].name);
     }
 
     if (!canBeDisabled && c->party->member(player)->isDisabled())

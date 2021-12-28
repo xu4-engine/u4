@@ -576,13 +576,12 @@ void putWeaponInInventory(int weapon) {
 }
 
 void useTelescope(int notused) {
-    screenMessage("You see a knob\non the telescope\nmarked A-P\nYou Select:");
+    screenMessage("You see a knob\non the telescope\nmarked A-P\nYou Select: ");
 #ifdef IOS
     U4IOS::IOSConversationChoiceHelper telescopeHelper;
     telescopeHelper.updateChoices("abcdefghijklmnop ");
 #endif
-    int choice = AlphaActionController::get('p', "You Select:");
-
+    int choice = AlphaActionController::get('p', "You Select: ");
     if (choice == -1)
         return;
 
