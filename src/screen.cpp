@@ -392,7 +392,7 @@ const vector<string>& screenGetGemLayoutNames() {
 const char** screenGetFilterNames() {
     static const char* filterNames[] = {
 #ifdef USE_GL
-        "point", "HQX", NULL
+        "point", "HQX", "xBR-lv2", NULL
 #else
         "point", "2xBi", "2xSaI", "Scale2x", NULL
 #endif

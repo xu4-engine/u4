@@ -440,7 +440,7 @@ const char* gpu_init(void* res, int w, int h, int scale, int filter)
 
 
     // Create scaler shader.
-    if (filter && scale > 1) {
+    if (filter == 1 && scale > 1) {
         if (scale > 4)
             scale = 4;
 
@@ -462,6 +462,20 @@ const char* gpu_init(void* res, int w, int h, int scale, int filter)
         glUniform2f(gr->slocScDim, (float) (w / scale), (float) (h / scale));
         glUniform1i(gr->slocScTex, GTU_CMAP);
         glUniform1i(gr->slocScLut, GTU_SCALER_LUT);
+    }
+    else if (filter == 2 && scale > 1) {
+        gr->scaler = sh = glCreateProgram();
+        if (compileSLFile(sh, "xbr-lv2.glsl", scale))
+            return "xbr-lv2.glsl";
+
+        gr->slocScMat = 0;
+        gr->slocScDim = glGetUniformLocation(sh, "TextureSize");
+        gr->slocScTex = glGetUniformLocation(sh, "Texture");
+        gr->slocScLut = 0;
+
+        glUseProgram(sh);
+        glUniform2f(gr->slocScDim, (float) (w / scale), (float) (h / scale));
+        glUniform1i(gr->slocScTex, GTU_CMAP);
     }
 
 

@@ -133,7 +133,7 @@ int parseOptions(Options* opt, int argc, char** argv) {
             "      --test-save         Save to /tmp/xu4/ and quit.\n"
 #endif
 #ifdef USE_GL
-            "\nFilters: point, HQX\n"
+            "\nFilters: point, HQX, xBR-lv2\n"
 #else
             "\nFilters: point, 2xBi, 2xSaI, Scale2x\n"
 #endif
