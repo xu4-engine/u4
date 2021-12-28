@@ -47,7 +47,10 @@ PartyMember::PartyMember(Party *p, SaveGamePlayerRecord *pr) :
 }
 
 PartyMember::~PartyMember() {
-    removeFromMaps();
+    // Need to check context as IntroController creates PartyMember objects.
+    if (c) {
+        removeFromMaps();
+    }
 }
 
 /**
