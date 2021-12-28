@@ -178,7 +178,9 @@ bool Settings::read() {
     screenAnimationFramesPerSecond = DEFAULT_ANIMATION_FRAMES_PER_SECOND;
     debug                 = DEFAULT_DEBUG;
     battleDiff            = DEFAULT_BATTLE_DIFFICULTY;
+#ifndef USE_BORON
     validateXml           = DEFAULT_VALIDATE_XML;
+#endif
     spellEffectSpeed      = DEFAULT_SPELL_EFFECT_SPEED;
     campTime              = DEFAULT_CAMP_TIME;
     innTime               = DEFAULT_INN_TIME;
@@ -267,8 +269,10 @@ bool Settings::read() {
         else if (strstr(buffer, "battleDiff=") == buffer)
             battleDiff = settingEnum(battleDiffStrings(),
                                      buffer + strlen("battleDiff="));
+#ifndef USE_BORON
         else if (strstr(buffer, "validateXml=") == buffer)
             validateXml = (int) strtoul(buffer + strlen("validateXml="), NULL, 0);
+#endif
         else if (strstr(buffer, "spellEffectSpeed=") == buffer)
             spellEffectSpeed = (int) strtoul(buffer + strlen("spellEffectSpeed="), NULL, 0);
         else if (strstr(buffer, "campTime=") == buffer)
@@ -389,7 +393,6 @@ bool Settings::write() {
             "gameCyclesPerSecond=%d\n"
             "debug=%d\n"
             "battleDiff=%s\n"
-            "validateXml=%d\n"
             "spellEffectSpeed=%d\n"
             "campTime=%d\n"
             "innTime=%d\n"
@@ -417,7 +420,6 @@ bool Settings::write() {
             gameCyclesPerSecond,
             debug,
             battleDiffStrings()[ battleDiff ],
-            validateXml,
             spellEffectSpeed,
             campTime,
             innTime,
@@ -425,6 +427,10 @@ bool Settings::write() {
             shakeInterval,
             titleSpeedRandom,
             titleSpeedOther);
+
+#ifndef USE_BORON
+    fprintf(settingsFile, "validateXml=%d\n", validateXml);
+#endif
 
     // Enhancements Options
     fprintf(settingsFile,
