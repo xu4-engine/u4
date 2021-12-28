@@ -11,7 +11,7 @@ Options:
   --version    Print version and exit.
 }}
 
-root-path: %module/u4/
+root-path: %module/Ultima-IV/
 module-file: none
 verbose: 1
 

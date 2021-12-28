@@ -1,0 +1,50 @@
+#!/usr/bin/sh
+# XU4 Linux Installer
+
+install_allegro() {
+	echo "Installing Allegro 5..."
+	. /etc/os-release
+	case $ID in
+	arch)
+		sudo pacman -Sy allegro
+		;;
+	fedora)
+		sudo dnf install allegro5-addon-acodec
+		;;
+	ubuntu|pop)
+		sudo add-apt-repository ppa:allegro/5.2
+		sudo apt-get install liballegro-acodec5.2
+		;;
+	*)
+		echo "You will need to install Allegro 5 manually (v5.2.7 or later is recommended)"
+		;;
+	esac
+}
+
+case $1 in
+install)
+	sudo install -m 755 xu4 /usr/bin
+	sudo install -D -m 644 Ultima-IV.mod /usr/share/xu4/Ultima-IV.mod
+	sudo install -D -m 644 desktop/xu4.png /usr/share/icons/hicolor/48x48/apps/xu4.png
+	sudo install -D -m 644 desktop/xu4.desktop /usr/share/applications/xu4.desktop
+	install_allegro
+	;;
+
+uninstall)
+	sudo rm -f /usr/bin/xu4 /usr/share/xu4/Ultima-IV.mod
+	sudo rm -f /usr/share/icons/hicolor/48x48/apps/xu4.png /usr/share/applications/xu4.desktop
+	;;
+
+*)
+	echo "Usage: $0 [install | uninstall]"
+	echo
+	echo "Actions:"
+	echo "  install     Install program files to system directories"
+	echo "  uninstall   Remove previously installed files."
+	echo
+	echo "Note that the program can be run from this directory - installation is optional."
+	echo
+	echo "You will need Ultima IV for DOS, it is not included here."
+	echo "See http://xu4.sourceforge.net/faq.html for more information."
+	;;
+esac

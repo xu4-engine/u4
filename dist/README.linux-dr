@@ -5,7 +5,8 @@ You will need Ultima IV for DOS, it is not included with this snapshot.
 See http://xu4.sourceforge.net/faq.html for more information.
 
 This program requires Allegro 5.2 to be installed from your distribution.
-Version 5.2.7 or later is recommended.
+Version 5.2.7 or later is recommended.  You can run ./setup or manually
+install it with the following commands.
 
     Arch:   sudo pacman -Sy allegro
 

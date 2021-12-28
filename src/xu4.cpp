@@ -120,7 +120,7 @@ int parseOptions(Options* opt, int argc, char** argv) {
             "  -h, --help              Print this message and quit.\n"
             "  -i, --skip-intro        Skip the intro. and load the last saved game.\n"
 #ifdef CONF_MODULE
-            "  -m, --module <file>     Specify game module (default is u4.mod).\n"
+            "  -m, --module <file>     Specify game module (default is Ultima-IV).\n"
 #endif
             "  -p, --profile <string>  Use another set of settings and save files.\n"
             "  -q, --quiet             Disable audio.\n"
@@ -137,7 +137,7 @@ int parseOptions(Options* opt, int argc, char** argv) {
 #else
             "\nFilters: point, 2xBi, 2xSaI, Scale2x\n"
 #endif
-            "\nHomepage: http://xu4.sourceforge.com\n");
+            "\nHomepage: http://xu4.sourceforge.net\n");
 
             return 0;
         }
@@ -210,7 +210,7 @@ void servicesInit(XU4GameServices* gs, Options* opt) {
 
     Debug::initGlobal("debug/global.txt");
 
-    gs->config = configInit(opt->module ? opt->module : "u4.mod");
+    gs->config = configInit(opt->module ? opt->module : "Ultima-IV.mod");
     screenInit();
     Tile::initSymbols(gs->config);
 

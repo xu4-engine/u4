@@ -214,7 +214,7 @@ bool Settings::read() {
     mouseOptions.enabled = 1;
 
     logging = DEFAULT_LOGGING;
-    game = "Ultima IV";
+    game = "Ultima-IV";
 
     settingsFile = fopen(filename.c_str(), "rt");
     if (!settingsFile)
