@@ -113,6 +113,10 @@ int soundInit(void)
         return 0;
     audioFunctional = true;
 
+    // Initialize the music
+    currentTrack = MUSIC_NONE;
+    musicStream = NULL;
+
     // Set up the volume.
     musicEnabled = xu4.settings->musicVol;
     musicSetVolume(xu4.settings->musicVol);
@@ -120,10 +124,6 @@ int soundInit(void)
     //TRACE(*logger, string("Music initialized: volume is ") + (musicEnabled ? "on" : "off"));
 
     sa_samples.resize(SOUND_MAX, NULL);
-
-    // Initialize the music
-    currentTrack = MUSIC_NONE;
-    musicStream = NULL;
 
     return 1;
 }
@@ -396,6 +396,8 @@ void musicFadeIn(int msec, bool loadFromMap)
 void musicSetVolume(int volume)
 {
     musicVolume = float(volume) / MAX_VOLUME;
+    if (musicStream)
+        al_set_audio_stream_gain(musicStream, musicVolume);
 }
 
 int musicVolumeDec()
