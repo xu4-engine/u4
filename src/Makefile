@@ -7,7 +7,7 @@
 PREFIX ?= /usr/local
 UI ?= allegro
 CONF ?= boron
-GPU ?= false
+GPU ?= scale
 
 bindir=$(PREFIX)/bin
 libdir=$(PREFIX)/lib
@@ -21,7 +21,11 @@ UILIBS=-lallegro_acodec -lallegro_audio -lallegro
 UIFLAGS=
 endif
 
-ifeq ($(GPU),true)
+ifeq ($(GPU),scale)
+	CONF=boron
+	UIFLAGS+=-DUSE_GL
+	UILIBS+=-lGL
+else ifeq ($(GPU),all)
 	CONF=boron
 	UIFLAGS+=-DUSE_GL -DGPU_RENDER
 	UILIBS+=-lGL

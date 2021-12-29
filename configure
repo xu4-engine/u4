@@ -7,15 +7,20 @@ if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
   echo "  --sdl             Use SDL 1.2 as the platform API"
   echo "  --boron           Use Boron/CDI configuration (default)"
   echo "  --xml             Use XML configuration"
-  echo "  --gpu             Use GPU rendering"
+  echo "  --gpu <use>       Use GPU for rendering (none, scale, all)"
   echo "  --prefix <dir>    Set install directory root"
+  echo
+  echo "GPU Use Options:"
+  echo "  none  - Use software renderer"
+  echo "  scale - Use GPU for scaling & filtering (default)"
+  echo "  all   - Use GPU for all rendering (experimental)"
   exit
 fi
 
 PLATFORM=allegro
 CONF=boron
 PREFIX=/usr/local
-GPU=false
+GPU=scale
 
 while [ "$1" != "" ]; do
   case $1 in
@@ -28,19 +33,27 @@ while [ "$1" != "" ]; do
     --xml)
       CONF=xml ;;
     --gpu)
-      GPU=true ;;
+      shift
+      GPU=$1 ;;
     --prefix)
       shift
       PREFIX=$1 ;;
     *)
-      echo "Invalid option $opt"
+      echo "Invalid option $1"
       exit 1
       ;;
   esac
   shift
 done
 
+leq() {
+  [[ $1 = $2 ]] && echo true || echo false
+}
+lne() {
+  [[ $1 != $2 ]] && echo true || echo false
+}
+
 echo "Generating make.config & project.config"
-printf "os_api: \'${PLATFORM}\nuse_boron: $([[ ${CONF} = boron ]] && echo true || echo false)\ngpu_render: ${GPU}\n" >project.config
-printf "PREFIX=${PREFIX}\nUI=${PLATFORM}\nCONF=${CONF}\nGPU=${GPU}" >make.config
+printf "os_api: \'${PLATFORM}\nuse_boron: $(leq ${CONF} boron)\nuse_gl: $(lne ${GPU} none)\ngpu_render: $(leq ${GPU} all)\n" >project.config
+printf "PREFIX=${PREFIX}\nUI=${PLATFORM}\nCONF=${CONF}\nGPU=${GPU}\n" >make.config
 echo "Now type make (or copr) to build."
