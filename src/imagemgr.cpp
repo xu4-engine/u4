@@ -221,6 +221,23 @@ void ImageMgr::fixupAbyssVision(Image *im) {
     }
 }
 
+static void swapColors(Image32* img, const RGBA* colorA, const RGBA* colorB) {
+    uint32_t* it  = img->pixels;
+    uint32_t* end = it + (img->w * img->h);
+    uint32_t ua, ub;
+
+    ua = *((uint32_t*) colorA);
+    ub = *((uint32_t*) colorB);
+
+    while (it != end) {
+        if (*it == ua)
+            *it = ub;
+        else if (*it == ub)
+            *it = ua;
+        ++it;
+    }
+}
+
 void ImageMgr::fixupAbacus(Image *im, int prescale) {
 
     /*
@@ -237,6 +254,13 @@ void ImageMgr::fixupAbacus(Image *im, int prescale) {
     im->fillRect(PRESCALE_4(32, 186, 1, 14), 0, 255, 80); /* green */
     im->fillRect(PRESCALE_4(24, 186, 8,  1), 0, 255, 80); /* green */
     im->fillRect(PRESCALE_4(24, 199, 8,  1), 0, 255, 80); /* green */
+
+    if (xu4.settings->videoType == "VGA") {
+        RGBA light, dark;
+        rgba_set(light, 0x55, 0xff, 0x50, 0xff);
+        rgba_set(dark,  0x58, 0x8d, 0x43, 0xff);
+        swapColors(im, &light, &dark);
+    }
 }
 
 /**
@@ -244,23 +268,10 @@ void ImageMgr::fixupAbacus(Image *im, int prescale) {
  * south.
  */
 void ImageMgr::fixupDungNS(Image *im) {
-    RGBA color;
-    uint32_t* it  = im->pixels;
-    uint32_t* end = it + (im->w * im->h);
-    uint32_t blue, green;
-
-    rgba_set(color, 0, 0, 0x80, 0xff);
-    blue = *((uint32_t*) &color);
-    rgba_set(color, 0, 0x80, 0, 0xff);
-    green = *((uint32_t*) &color);
-
-    while (it != end) {
-        if (*it == blue)
-            *it = green;
-        else if (*it == green)
-            *it = blue;
-        ++it;
-    }
+    RGBA blue, green;
+    rgba_set(blue,  0, 0, 0x80, 0xff);
+    rgba_set(green, 0, 0x80, 0, 0xff);
+    swapColors(im, &blue, &green);
 }
 
 /**

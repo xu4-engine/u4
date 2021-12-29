@@ -664,14 +664,22 @@ void IntroController::animateTree(Symbol frame) {
     SCALED_VAR
     int fi, fcount;
     int gateH, deltaH;
-    int x, y;
+    int x, y, ytop;
     const SubImage* subimage;
     ImageInfo *info = xu4.imageMgr->imageInfo(IMG_MOONGATE, &subimage);
     if (! subimage)
         return;
 
-    x = 72;
-    y = 68 + subimage->height;
+    // Hack to account for different tree images.
+    if (xu4.settings->videoType == "EGA") {
+        x = 72;
+        ytop = 68;
+    } else {
+        x = 84;
+        ytop = 53;
+    }
+
+    y = ytop + subimage->height;
     fcount = subimage->height;
 
     if (frame == IMG_MOONGATE) {
@@ -685,7 +693,7 @@ void IntroController::animateTree(Symbol frame) {
 
     for (fi = 0; fi < fcount; ++fi) {
         if (deltaH < 0)
-            backgroundArea.draw(frame, x, 68);
+            backgroundArea.draw(frame, x, ytop);
 
         info->image->drawSubRect(SCALED(x), SCALED(y - gateH),
                                  SCALED(subimage->x) / info->prescale,
@@ -707,7 +715,7 @@ void IntroController::animateTree(Symbol frame) {
 /**
  * Draws the cards in the character creation sequence with the gypsy.
  */
-void IntroController::drawCard(int pos, int card) {
+void IntroController::drawCard(int pos, int card, const uint8_t* origin) {
     static const char *cardNames[] = {
         "honestycard", "compassioncard", "valorcard", "justicecard",
         "sacrificecard", "honorcard", "spiritualitycard", "humilitycard"
@@ -717,19 +725,27 @@ void IntroController::drawCard(int pos, int card) {
     ASSERT(card < 8, "invalid card: %d", card);
 
     backgroundArea.draw(xu4.config->intern(cardNames[card]),
-                        pos ? 218 : 12, 12);
+                        pos ? origin[2] : origin[0], origin[1]);
 }
 
 /**
  * Draws the beads in the abacus during the character creation sequence
  */
 void IntroController::drawAbacusBeads(int row, int selectedVirtue, int rejectedVirtue) {
+    static const uint8_t positionTable[8] = {
+        128, 9, 24, 15,     // EGA
+        128, 8, 18, 16,     // VGA
+    };
     ASSERT(row >= 0 && row < 7, "invalid row: %d", row);
     ASSERT(selectedVirtue < 8 && selectedVirtue >= 0, "invalid virtue: %d", selectedVirtue);
     ASSERT(rejectedVirtue < 8 && rejectedVirtue >= 0, "invalid virtue: %d", rejectedVirtue);
 
-    backgroundArea.draw(IMG_WHITEBEAD, 128 + (selectedVirtue * 9), 24 + (row * 15));
-    backgroundArea.draw(IMG_BLACKBEAD, 128 + (rejectedVirtue * 9), 24 + (row * 15));
+    const uint8_t* pos = positionTable;
+    if (xu4.settings->videoType == "VGA")
+        pos += 4;
+    int y = pos[2] + (row * pos[3]);
+    backgroundArea.draw(IMG_WHITEBEAD, pos[0] + (selectedVirtue * pos[1]), y);
+    backgroundArea.draw(IMG_BLACKBEAD, pos[0] + (rejectedVirtue * pos[1]), y);
 }
 
 /**
@@ -979,8 +995,15 @@ void IntroController::showStory() {
  * characters class.
  */
 void IntroController::startQuestions() {
+    static uint8_t originTable[6] = {
+        12, 12, 218,    // EGA
+        22, 16, 218,    // VGA
+    };
     ReadChoiceController pauseController("");
     ReadChoiceController questionController("ab");
+    uint8_t* origin = originTable;
+    if (xu4.settings->videoType == "VGA")
+        origin += 3;
 
     questionRound = 0;
     initQuestionTree();
@@ -991,8 +1014,8 @@ void IntroController::startQuestions() {
             backgroundArea.draw(BKGD_ABACUS);
 
         // draw the cards and show the lead up text
-        drawCard(0, questionTree[questionRound * 2]);
-        drawCard(1, questionTree[questionRound * 2 + 1]);
+        drawCard(0, questionTree[questionRound * 2], origin);
+        drawCard(1, questionTree[questionRound * 2 + 1], origin);
 
         questionArea.clear();
         questionArea.textAt(0, 0, "%s", binData->introGypsy[questionRound == 0 ? GYP_PLACES_FIRST : (questionRound == 6 ? GYP_PLACES_LAST : GYP_PLACES_TWOMORE)].c_str());
@@ -1481,7 +1504,7 @@ bool IntroController::doQuestion(int answer) {
         questionTree[answerInd] = questionTree[questionRound * 2 + 1];
 
     drawAbacusBeads(questionRound, questionTree[answerInd],
-        questionTree[questionRound * 2 + ((answer) ? 0 : 1)]);
+                    questionTree[questionRound * 2 + ((answer) ? 0 : 1)]);
 
     answerInd++;
     questionRound++;

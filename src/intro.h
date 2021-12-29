@@ -118,7 +118,7 @@ private:
     void drawBeasties();
     void drawBeastie(int beast, int vertoffset, int frame);
     void animateTree(Symbol frame);
-    void drawCard(int pos, int card);
+    void drawCard(int pos, int card, const uint8_t* origin);
     void drawAbacusBeads(int row, int selectedVirtue, int rejectedVirtue);
 
     void initQuestionTree();

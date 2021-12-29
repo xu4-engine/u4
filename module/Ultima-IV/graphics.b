@@ -583,6 +583,32 @@ imageset EGA/VGA [
     image (name: tile_guard filename: "vga/tile_guard.png" tiles: 4 fixup: blackTransparencyHack)
     image (name: charset filename: "u4u/charset.vga" width: 8 height: 1024 depth: 8 filetype: u4raw tiles: 128)
     image (name: borders filename: "u4u/start.old" width: 320 height: 200 depth: 8 filetype: u4rle)
+    image (name: tree filename: "vutne/145-tree.png") [
+        moongate  0,152, 20,24
+        items    24,152, 20,24
+    ]
+    image (name: portal  filename: "vutne/146-portal.png")
+    image (name: outside filename: "vutne/147-outside.png")
+    image (name: inside  filename: "vutne/148-inside.png")
+    image (name: wagon   filename: "vutne/149-wagon.png")
+    image (name: gypsy   filename: "vutne/14a-gypsy.png")
+    image (name: abacus  filename: "vutne/14b-abacus.png")
+    image (name: abacus-beads filename: "u4/abacus.ega" width: 320 height: 200 depth: 4 filetype: u4lzw fixup: abacus) [
+        whitebead  8,187, 8,12
+        blackbead 24,187, 8,12
+    ]
+    image (name: cards1 filename: "vutne/cards1.png") [
+        honestycard         0,0, 80,112
+        compassioncard     80,0, 80,112
+        valorcard         160,0, 80,112
+        justicecard       240,0, 80,112
+    ]
+    image (name: cards2 filename: "vutne/cards2.png") [
+        sacrificecard       0,0, 80,112
+        honorcard          80,0, 80,112
+        spiritualitycard  160,0, 80,112
+        humilitycard      240,0, 80,112
+    ]
     image (name: key filename: "u4u/key7.old" width: 320 height: 200 depth: 8 filetype: u4rle)
     image (name: honesty filename: "u4u/honesty.old" width: 320 height: 200 depth: 8 filetype: u4rle fixup: abyss)
     image (name: compassn filename: "u4u/compassn.old" width: 320 height: 200 depth: 8 filetype: u4rle fixup: abyss)
