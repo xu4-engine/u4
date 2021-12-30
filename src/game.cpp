@@ -630,6 +630,7 @@ void GameController::flashTile(const Coords &coords, MapTile tile, int frames) {
     Map* map = c->location->map;
     map->annotations.add(coords, tile, true);
     screenTileUpdate(&xu4.game->mapArea, coords);
+    screenUploadToGPU();
 #endif
 
     EventHandler::wait_msecs(frames * 1000 /
