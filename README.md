@@ -62,26 +62,17 @@ Some thoughts for possible improvements:
 Compiling
 ---------
 
-To build on Linux and macOS use these commands:
+To build the binary on Linux and macOS use these commands:
 
     ./configure
     make
 
-To see the configure options run:
+> **_NOTE_:** The macOS build is currently broken.
 
-    ./configure -h
+If the required libraries & headers are present, make will create the
+executable `src/xu4`.
 
-If the required libraries & headers are present, make will create an
-executable called `xu4` in the src directory.
-
-The Allegro 5 build requires the allegro, allegro_audio, & allegro_acodec
-libraries & headers.
-
-To use SDL 1.2, the SDL & SDL_mixer libraries are required.  TiMidity++ may
-be necessary on some platforms, too.
-
-The libxml2 development files are necessary regardless of what platform API
-is used.
+For more detailed build instructions see [doc/build.md](doc/build.md).
 
 
 Running
