@@ -89,10 +89,10 @@ zipfile.
 
 xu4 searches for the zipfiles, or the unpacked contents of the
 zipfiles in the following places:
- - the current directory when u4 is run
- - a subdirectory named "ultima4" of the current directory
- - "/usr/lib/u4/ultima4/"
- - "/usr/local/lib/u4/ultima4/"
+ - The current directory when xu4 is run
+ - A subdirectory named `ultima4` of the current directory
+ - `/usr/share/xu4/`
+ - `/usr/local/share/xu4/`
 
 The zipfile doesn't need to be unpacked, but if it is, xu4 can handle
 uppercase or lowercase filenames even on case-sensitive filesystems,
@@ -101,44 +101,26 @@ avater.exe or even Avatar.exe.
 
 At the title screen, a configuration menu can be accessed by pressing
 'c'.  Here, the screen scale, filter, volume and other settings can be
-modified.  Note: the game must be restarted for the new settings to
-take effect.  These settings are stored in the file $HOME/.xu4rc.
+modified.  These settings are stored in the file `$HOME/.config/xu4/xu4rc`.
 
 xu4 also accepts the following command line options:
 
-    --fullscreen     Fullscreen mode.
-    -f
+        --filter <string>   Specify display filtering mode.
+                            (point, HQX, xBR-lv2)
+    -f, --fullscreen        Run in fullscreen mode.
+    -h, --help              Print this message and quit.
+    -i, --skip-intro        Skip the intro. and load the last saved game.
+    -m, --module <file>     Specify game module (default is Ultima-IV).
+    -p, --profile <string>  Use another set of settings and save files.
+    -q, --quiet             Disable audio.
+    -s, --scale <int>       Specify display scaling factor (1-5).
+    -v, --verbose           Enable verbose console output.
 
-    --filter <str>   Apply a filter on the scaled images. The <str>
-                     parameter must be set to one of the following
-                     case-sensitive options:
-                         point
-                         2xBi
-                         2xSaI
-                         Scale2x
+### Profiles
 
-    --skip-intro     Skip the intro, and go directly into the game.
-    -i               This option requires the existance of a valid saved
-                     game.
-
-    --profile <str>  Activate a specific save game profile.  Using this
-    -p <str>         option, you may have multiple saved games at the
-                     same time.
-                      * Use quotation marks around profile names that
-                        include spaces.
-                      * All profiles are stored in the "profiles"
-                        sub-directory.
-                      * The active profile name is shown on the
-                        introduction map view off the main menu.
-
-    --quiet          Quiet mode - no sound or music.
-    -q
-
-    --scale <n>      Scale the original graphics by a factor of <n>.
-    -s <n>           Factor <n> must be 1, 2, 3, 4, or 5.
-
-    --verbose        Verbose output; prints out information useful for
-    -v               trouble-shooting.
+Profiles are stored in the "profiles" sub-directory.
+Use quotation marks around profile names that include spaces.
+The active profile name is shown on the introduction map view off the main menu.
 
 
 Ultima 4 Documentation

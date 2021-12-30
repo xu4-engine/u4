@@ -115,7 +115,12 @@ int parseOptions(Options* opt, int argc, char** argv) {
                    "v%s (%s)\n\n", VERSION, __DATE__ );
             printf(
             "Options:\n"
-            "      --filter <string>   Specify display filtering options.\n"
+            "      --filter <string>   Specify display filtering mode.\n"
+#ifdef USE_GL
+            "                          (point, HQX, xBR-lv2)\n"
+#else
+            "                          (point, 2xBi, 2xSaI, Scale2x)\n"
+#endif
             "  -f, --fullscreen        Run in fullscreen mode.\n"
             "  -h, --help              Print this message and quit.\n"
             "  -i, --skip-intro        Skip the intro. and load the last saved game.\n"
@@ -124,18 +129,13 @@ int parseOptions(Options* opt, int argc, char** argv) {
 #endif
             "  -p, --profile <string>  Use another set of settings and save files.\n"
             "  -q, --quiet             Disable audio.\n"
-            "  -s, --scale <int>       Specify scaling factor (1-5).\n"
+            "  -s, --scale <int>       Specify display scaling factor (1-5).\n"
             "  -v, --verbose           Enable verbose console output.\n"
 #ifdef DEBUG
             "\nDEBUG Options:\n"
             "  -c, --capture <file>    Record user input.\n"
             "  -r, --replay <file>     Play using recorded input.\n"
             "      --test-save         Save to /tmp/xu4/ and quit.\n"
-#endif
-#ifdef USE_GL
-            "\nFilters: point, HQX, xBR-lv2\n"
-#else
-            "\nFilters: point, 2xBi, 2xSaI, Scale2x\n"
 #endif
             "\nHomepage: http://xu4.sourceforge.net\n");
 
