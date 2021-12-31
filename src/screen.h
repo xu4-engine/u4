@@ -150,7 +150,8 @@ void screenDetectDungeonTraps();
 
 void screenSetMouseCursor(MouseCursor cursor);
 void screenShowMouseCursor(bool visible);
-int screenPointInMouseArea(int x, int y, MouseArea *area);
+void screenPointToMouseArea(int* x, int* y);
+int  pointInMouseArea(int x, int y, MouseArea *area);
 
 Image *screenScale(Image *src, int scale, int n, int filter);
 Image *screenScaleDown(Image *src, int scale);

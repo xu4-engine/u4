@@ -1260,7 +1260,7 @@ static void screenFindLineOfSight() {
  * cased to return DBL_MAX for a and the x coordinate as b since they
  * cannot be represented with the above formula.
  */
-static void screenGetLineTerms(int x1, int y1, int x2, int y2, double *a, double *b) {
+static void getLineTerms(int x1, int y1, int x2, int y2, double *a, double *b) {
     if (x2 - x1 == 0) {
         *a = DBL_MAX;
         *b = x1;
@@ -1276,7 +1276,7 @@ static void screenGetLineTerms(int x1, int y1, int x2, int y2, double *a, double
  * the line).  The line is defined by the terms a and b of the
  * equation "ax + b = y".
  */
-static int screenPointsOnSameSideOfLine(int x1, int y1, int x2, int y2, double a, double b) {
+static int pointsOnSameSideOfLine(int x1, int y1, int x2, int y2, double a, double b) {
     double p1, p2;
 
     if (a == DBL_MAX) {
@@ -1296,46 +1296,56 @@ static int screenPointsOnSameSideOfLine(int x1, int y1, int x2, int y2, double a
     return 0;
 }
 
-static int screenPointInTriangle(int x, int y, int tx1, int ty1, int tx2, int ty2, int tx3, int ty3) {
+static int pointInTriangle(int x, int y, int tx1, int ty1, int tx2, int ty2, int tx3, int ty3) {
     double a[3], b[3];
 
-    screenGetLineTerms(tx1, ty1, tx2, ty2, &(a[0]), &(b[0]));
-    screenGetLineTerms(tx2, ty2, tx3, ty3, &(a[1]), &(b[1]));
-    screenGetLineTerms(tx3, ty3, tx1, ty1, &(a[2]), &(b[2]));
+    getLineTerms(tx1, ty1, tx2, ty2, &(a[0]), &(b[0]));
+    getLineTerms(tx2, ty2, tx3, ty3, &(a[1]), &(b[1]));
+    getLineTerms(tx3, ty3, tx1, ty1, &(a[2]), &(b[2]));
 
-    if (!screenPointsOnSameSideOfLine(x, y, tx3, ty3, a[0], b[0]))
+    if (! pointsOnSameSideOfLine(x, y, tx3, ty3, a[0], b[0]))
         return 0;
-    if (!screenPointsOnSameSideOfLine(x, y, tx1, ty1, a[1], b[1]))
+    if (! pointsOnSameSideOfLine(x, y, tx1, ty1, a[1], b[1]))
         return 0;
-    if (!screenPointsOnSameSideOfLine(x, y, tx2, ty2, a[2], b[2]))
+    if (! pointsOnSameSideOfLine(x, y, tx2, ty2, a[2], b[2]))
         return 0;
 
     return 1;
 }
 
+/*
+ * Transform window x,y to MouseArea coordinate system.
+ */
+void screenPointToMouseArea(int* x, int* y) {
+    const Screen* sp = xu4.screen;
+    int offsetX = (sp->dispWidth  - sp->aspectW) / 2;
+    int offsetY = (sp->dispHeight - sp->aspectH) / 2;
+    unsigned int scale = xu4.settings->scale;
+    *x = (*x - offsetX) / scale;
+    *y = (*y - offsetY) / scale;
+}
+
 /**
  * Determine if the given point is within a mouse area.
+ * The point is in MouseArea coordinates so use screenPointToMouseArea() to
+ * map window coordinates.
  */
-int screenPointInMouseArea(int x, int y, MouseArea *area) {
+int pointInMouseArea(int x, int y, MouseArea *area) {
     ASSERT(area->npoints == 2 || area->npoints == 3, "unsupported number of points in area: %d", area->npoints);
-    unsigned int scale = xu4.settings->scale;
 
     /* two points define a rectangle */
     if (area->npoints == 2) {
-        if (x >= (int)(area->point[0].x * scale) &&
-            y >= (int)(area->point[0].y * scale) &&
-            x < (int)(area->point[1].x * scale) &&
-            y < (int)(area->point[1].y * scale)) {
+        if (x >= (int)(area->point[0].x) && y >= (int)(area->point[0].y) &&
+            x <  (int)(area->point[1].x) && y <  (int)(area->point[1].y)) {
             return 1;
         }
     }
 
     /* three points define a triangle */
     else if (area->npoints == 3) {
-        return screenPointInTriangle(x, y,
-                                     area->point[0].x * scale, area->point[0].y * scale,
-                                     area->point[1].x * scale, area->point[1].y * scale,
-                                     area->point[2].x * scale, area->point[2].y * scale);
+        return pointInTriangle(x, y, area->point[0].x, area->point[0].y,
+                                     area->point[1].x, area->point[1].y,
+                                     area->point[2].x, area->point[2].y);
     }
 
     return 0;

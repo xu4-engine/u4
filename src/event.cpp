@@ -142,8 +142,9 @@ MouseArea* EventHandler::mouseAreaForPoint(int x, int y) {
     if (!areas)
         return NULL;
 
+    screenPointToMouseArea(&x, &y);
     for (i = 0; areas[i].npoints != 0; i++) {
-        if (screenPointInMouseArea(x, y, &(areas[i]))) {
+        if (pointInMouseArea(x, y, &(areas[i]))) {
             return &(areas[i]);
         }
     }
