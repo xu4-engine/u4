@@ -128,7 +128,7 @@ bool CheatMenuController::keyPressed(int key) {
                       "g - Goto\n"
                       "h - Help\n"
                       "i - Items\n"
-                      "k - Show Karma\n"
+                      "j - Join Compan.\n"
                       "(more)");
 
         ReadChoiceController pauseController("");
@@ -136,6 +136,7 @@ bool CheatMenuController::keyPressed(int key) {
         pauseController.waitFor();
 
         screenMessage("\n"
+                      "k - Show Karma\n"
                       "l - Location\n"
                       "m - Mixtures\n"
                       "o - Opacity\n"
@@ -146,13 +147,13 @@ bool CheatMenuController::keyPressed(int key) {
                       "v - Full Virtues\n"
                       "w - Change Wind\n"
                       "x - Exit Map\n"
-                      "y - Y-up\n"
                       "(more)");
 
         xu4.eventHandler->pushController(&pauseController);
         pauseController.waitFor();
 
         screenMessage("\n"
+                      "y - Y-up\n"
                       "z - Z-down\n"
                   );
         break;

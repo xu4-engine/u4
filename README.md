@@ -164,6 +164,7 @@ Cheat list:
         g     goto (enter a location and xu4 teleports you there)
         h     help (displays list of available cheats)
         i     items (gives the party Items and Equipment)
+        j     joined by companions (if eligible)
         k     show karma (shows your virtues)
         l     location (displays current map and coordinates)
         m     mixtures (gives the party 99 mixtures of all spells)
