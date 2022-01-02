@@ -497,6 +497,8 @@ void GameController::setMap(Map *map, bool saveLocation, const Portal *portal, T
         City *city = dynamic_cast<City*>(map);
         city->addPeople();
     }
+
+    gameStampCommandTime();     // Restart turn Pass timer.
 }
 
 /**
@@ -1071,6 +1073,8 @@ bool GameController::keyPressed(int key) {
             break;
 
         case 'h':
+            // FIXME: The entire resting scene should not be run inside the
+            // key handler.
             holeUp();
             break;
 
