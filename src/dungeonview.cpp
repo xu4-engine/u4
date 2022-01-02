@@ -117,12 +117,12 @@ void DungeonView::display(Context * c, TileView *view)
 
                     if ((distant_type == DNGGRAPHIC_DNGTILE) ||
                         (distant_type == DNGGRAPHIC_BASETILE))
-                        drawInDungeon(tileset->get(distant_tiles.front().getId()), 0, y_obj, dir);
+                        drawInDungeon(distant_tiles.front(), 0, y_obj, dir);
                     }
                 }
                 if ((type == DNGGRAPHIC_DNGTILE) ||
                     (type == DNGGRAPHIC_BASETILE))
-                    drawInDungeon(tileset->get(tiles.front().getId()), 0, y, dir);
+                    drawInDungeon(tiles.front(), 0, y, dir);
             }
         }
     }
@@ -146,7 +146,7 @@ void DungeonView::display(Context * c, TileView *view)
     }
 }
 
-void DungeonView::drawInDungeon(const Tile *tile, int x_offset, int distance, Direction orientation) {
+void DungeonView::drawInDungeon(const MapTile& mt, int x_offset, int distance, Direction orientation) {
     const static int nscale_vga[] = { 12, 8, 4, 2, 1};
     const static int nscale_ega[] = { 8, 4, 2, 1, 0};
 
@@ -173,14 +173,11 @@ void DungeonView::drawInDungeon(const Tile *tile, int x_offset, int distance, Di
     }
 
     //Put tile on animated scratchpad
-    if (tile->getAnim()) {
-        MapTile mt = tile->getId();
+    const Tile* tile = tileset->get(mt.id);
+    if (tile->getAnim())
         tile->getAnim()->draw(animated, tile, mt, orientation);
-    }
     else
-    {
         tile->getImage()->drawOn(animated, 0, 0);
-    }
 
     /* scale is based on distance; 1 means half size, 2 regular, 4 means scale by 2x, etc. */
     bool tiledWall = tile->isTiledInDungeon();

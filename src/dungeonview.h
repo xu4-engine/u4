@@ -37,7 +37,8 @@ public:
     }
 
 private:
-    void drawInDungeon(const Tile *tile, int x_offset, int distance, Direction orientation);
+    void drawInDungeon(const MapTile& mt, int x_offset, int distance,
+                       Direction orientation);
     int graphicIndex(const Coords& loc, int xoffset, int distance,
                      Direction orientation, DungeonGraphicType type);
     DungeonGraphicType tilesToGraphic(const Dungeon*,
