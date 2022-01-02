@@ -181,6 +181,17 @@ private:
     List deferredRemovals;
 };
 
+#define FS_SAMPLES  8
+
+struct FrameSleep {
+    uint32_t frameInterval;     // Milliseconds between display updates.
+    uint32_t realTime;
+    int ftime[FS_SAMPLES];      // Msec elapsed for past frames.
+    int ftimeSum;
+    uint16_t ftimeIndex;
+    uint16_t fsleep;            // Msec to sleep - adjusted slowly.
+};
+
 typedef void(*updateScreenCallback)(void);
 
 /**
@@ -253,9 +264,8 @@ public:
 protected:
     void handleInputEvents(Controller*, updateScreenCallback);
 
+    FrameSleep fs;
     uint32_t timerInterval;     // Milliseconds between timedEvents ticks.
-    uint32_t frameInterval;     // Milliseconds between display updates.
-    uint32_t realTime;
     uint32_t runTime;
     int runRecursion;
 #ifdef DEBUG

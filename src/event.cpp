@@ -17,18 +17,29 @@
 #include "textview.h"
 #include "xu4.h"
 
+static void frameSleepInit(FrameSleep* fs, int frameDuration) {
+    fs->frameInterval = frameDuration;
+    fs->realTime = 0;
+    for (int i = 0; i < 8; ++i)
+        fs->ftime[i] = frameDuration;
+    fs->ftimeSum = frameDuration * 8;
+    fs->ftimeIndex = 0;
+    fs->fsleep = frameDuration - 6;
+}
+
 /**
  * Constructs the event handler object.
  */
 EventHandler::EventHandler(int gameCycleDuration, int frameDuration) :
     timerInterval(gameCycleDuration),
-    frameInterval(frameDuration),
     runRecursion(0),
     updateScreen(NULL)
 {
     controllerDone = ended = false;
     anim_init(&flourishAnim, 64, NULL, NULL);
     anim_init(&fxAnim, 32, NULL, NULL);
+    frameSleepInit(&fs, frameDuration);
+
 #ifdef DEBUG
     recordFP = -1;
     recordMode = 0;
@@ -157,6 +168,64 @@ void EventHandler::setScreenUpdate(void (*updateFunc)(void)) {
 
 #include "support/getTicks.c"
 
+/*
+ * Return non-zero if waitTime has been reached or passed.
+ */
+static int frameSleep(FrameSleep* fs, uint32_t waitTime) {
+    uint32_t now;
+    int32_t elapsed, elapsedLimit, frameAdjust;
+    int i;
+
+    now = getTicks();
+    elapsed = now - fs->realTime;
+    fs->realTime = now;
+
+    elapsedLimit = fs->frameInterval * 8;
+    if (elapsed > elapsedLimit)
+        elapsed = elapsedLimit;
+
+    i = fs->ftimeIndex;
+    fs->ftimeSum += elapsed - fs->ftime[i];
+    fs->ftime[i] = elapsed;
+    fs->ftimeIndex = i ? i - 1 : FS_SAMPLES - 1;
+
+    frameAdjust = int(fs->frameInterval) - fs->ftimeSum / FS_SAMPLES;
+#if 0
+    // Adjust by 1 msec.
+    if (frameAdjust > 0) {
+        if (fs->fsleep < fs->frameInterval - 1)
+            ++fs->fsleep;
+    } else if (frameAdjust < 0) {
+        if (fs->fsleep)
+            --fs->fsleep;
+    }
+#else
+    // Adjust by 2 msec.
+    if (frameAdjust > 0) {
+        if (frameAdjust > 2)
+            frameAdjust = 2;
+        int sa = int(fs->fsleep) + frameAdjust;
+        int limit = fs->frameInterval - 1;
+        fs->fsleep = (sa > limit) ? limit : sa;
+    } else if (frameAdjust < 0) {
+        if (frameAdjust < -2)
+            frameAdjust = -2;
+        int sa = int(fs->fsleep) + frameAdjust;
+        fs->fsleep = (sa < 0) ? 0 : sa;
+    }
+#endif
+
+    if (waitTime && now >= waitTime)
+        return 1;
+#if 0
+    printf("KR fsleep %d ela:%d avg:%d adj:%d\n",
+           fs->fsleep, elapsed, fs->ftimeSum / FS_SAMPLES, frameAdjust);
+#endif
+    if (fs->fsleep)
+        msecSleep(fs->fsleep);
+    return 0;
+}
+
 /**
  * Delays program execution for the specified number of milliseconds.
  * This doesn't actually stop events, but it stops the user from interacting
@@ -172,7 +241,6 @@ bool EventHandler::wait_msecs(unsigned int msec) {
     Controller waitCon;     // Base controller consumes key events.
     EventHandler* eh = xu4.eventHandler;
     uint32_t waitTime = getTicks() + msec;
-    uint32_t now, elapsed;
 
     while (! eh->ended) {
         eh->handleInputEvents(&waitCon, NULL);
@@ -186,17 +254,11 @@ bool EventHandler::wait_msecs(unsigned int msec) {
             eh->runTime -= eh->timerInterval;
             eh->timedEvents.tick();
         }
-        eh->runTime += eh->frameInterval;
+        eh->runTime += eh->fs.frameInterval;
 
         screenSwapBuffers();
-
-        now = getTicks();
-        elapsed = now - eh->realTime;
-        eh->realTime = now;
-        if (now >= waitTime)    // Break only after realTime is updated.
+        if (frameSleep(&eh->fs, waitTime))
             break;
-        if (elapsed+2 < eh->frameInterval)
-            msecSleep(eh->frameInterval - elapsed);
     }
 
     return eh->ended;
@@ -209,14 +271,12 @@ bool EventHandler::wait_msecs(unsigned int msec) {
  * \return true if game should exit.
  */
 bool EventHandler::run() {
-    uint32_t now, elapsed;
-
     if (updateScreen)
         (*updateScreen)();
 
     if (! runRecursion) {
         runTime = 0;
-        realTime = getTicks();
+        fs.realTime = getTicks();
     }
     ++runRecursion;
 
@@ -234,15 +294,10 @@ bool EventHandler::run() {
             runTime -= timerInterval;
             timedEvents.tick();
         }
-        runTime += frameInterval;
+        runTime += fs.frameInterval;
 
         screenSwapBuffers();
-
-        now = getTicks();
-        elapsed = now - realTime;
-        realTime = now;
-        if (elapsed+2 < frameInterval)
-            msecSleep(frameInterval - elapsed);
+        frameSleep(&fs, 0);
     }
 
     --runRecursion;
