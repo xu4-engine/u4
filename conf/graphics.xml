@@ -1813,7 +1813,7 @@
             </transform>
             <transform type="pixel_color" x="4" y="8" width="5" height="6">
                 <color red="97" green="0" blue="0"/>
-                <color red="256" green="200" blue="0"/>                
+                <color red="255" green="200" blue="0"/>
             </transform>
         </tileanim>
         <tileanim name="phantom_flicker">
@@ -1872,7 +1872,7 @@
         <tileanim name="campfire">
             <transform type="pixel_color" x="4" y="7" width="5" height="7">
                 <color red="97" green="0" blue="0"/>
-                <color red="256" green="200" blue="0"/>                
+                <color red="255" green="200" blue="0"/>
             </transform>
             <transform type="pixel_color" x="4" y="7" width="5" height="7">
                 <color red="0" green="0" blue="0"/>
@@ -1935,7 +1935,7 @@
         <tileanim name="campfire">
             <transform type="pixel_color" x="4" y="7" width="5" height="7">
                 <color red="97" green="0" blue="0"/>
-                <color red="256" green="200" blue="0"/>                
+                <color red="255" green="200" blue="0"/>
             </transform>
             <transform type="pixel_color" x="4" y="7" width="5" height="7">
                 <color red="0" green="0" blue="0"/>
@@ -1994,7 +1994,7 @@
         <tileanim name="campfire">
             <transform type="pixel_color" x="4" y="7" width="5" height="7">
                 <color red="97" green="0" blue="0"/>
-                <color red="256" green="200" blue="0"/>                
+                <color red="255" green="200" blue="0"/>
             </transform>
             <transform type="pixel_color" x="4" y="7" width="5" height="7">
                 <color red="0" green="0" blue="0"/>
@@ -2053,7 +2053,7 @@
         <tileanim name="campfire">
             <transform type="pixel_color" x="4" y="7" width="5" height="7">
                 <color red="97" green="0" blue="0"/>
-                <color red="256" green="200" blue="0"/>                
+                <color red="255" green="200" blue="0"/>
             </transform>
             <transform type="pixel_color" x="4" y="7" width="5" height="7">
                 <color red="0" green="0" blue="0"/>
@@ -2113,7 +2113,7 @@
         <tileanim name="campfire">
             <transform type="pixel_color" x="4" y="7" width="5" height="7">
                 <color red="97" green="0" blue="0"/>
-                <color red="256" green="200" blue="0"/>                
+                <color red="255" green="200" blue="0"/>
             </transform>
             <transform type="pixel_color" x="4" y="7" width="5" height="7">
                 <color red="0" green="0" blue="0"/>
@@ -2173,7 +2173,7 @@
         <tileanim name="campfire">
             <transform type="pixel_color" x="4" y="7" width="5" height="7">
                 <color red="97" green="0" blue="0"/>
-                <color red="256" green="200" blue="0"/>                
+                <color red="255" green="200" blue="0"/>
             </transform>
             <transform type="pixel_color" x="4" y="7" width="5" height="7">
                 <color red="0" green="0" blue="0"/>

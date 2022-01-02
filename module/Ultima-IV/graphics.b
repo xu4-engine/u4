@@ -809,7 +809,7 @@ tileanimset EGA [
         ]
         pixel_color 4,8,5,6 [
              97,  0, 0
-            256,200, 0
+            255,200, 0
         ]
     ]
     phantom_flicker: [frame random 50 scroll 1]
@@ -840,7 +840,7 @@ tileanimset VGA [
     campfire: [
         pixel_color 4,7,5,7 [
              97,  0, 0
-            256,200, 0
+            255,200, 0
         ]
         pixel_color 4,7,5,7 [
               0, 0, 0

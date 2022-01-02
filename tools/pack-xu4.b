@@ -620,7 +620,15 @@ process-cfg [
               | 'scroll set n int!/coord! (new-transform 1 n)
               | 'frame                    (new-transform 2 0)
               | 'pixel_color set n coord! (new-transform 3 n) into [
-                    2 coord!
+                    set colA coord! set colB coord! (
+                        n: 13
+                        foreach chan reduce [
+                            first colA second colA third colA 0
+                            first colB second colB third colB 0
+                        ][
+                            poke current-trans ++ n chan
+                        ]
+                    )
                 ]
               | 'context-frame set n int! (
                     poke current-trans 3 1  ; ACON_FRAME

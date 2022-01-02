@@ -97,6 +97,11 @@ void TileAnimTransform::draw(Image* dest, const Tile* tile,
         diff.r -= start.r;
         diff.g -= start.g;
         diff.b -= start.b;
+#if 0
+        printf( "PC color %d,%d,%d\n", start.r, start.g, start.b );
+        printf( "   end   %d,%d,%d\n", end.r, end.g, end.b );
+        printf( "   diff  %d,%d,%d\n", diff.r, diff.g, diff.b );
+#endif
 
         for (int j = y; j < y + h; j++) {
             for (int i = x; i < x + w; i++) {
