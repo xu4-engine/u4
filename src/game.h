@@ -104,8 +104,7 @@ public:
     static void flashTile(const Coords &coords, Symbol tilename, int timeFactor);
 
     TileView mapArea;
-    bool paused;
-    int pausedTimer;
+    bool cutScene;
 
 private:
     static void gameNotice(int, void*, void*);

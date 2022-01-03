@@ -51,7 +51,7 @@
 #define BKGD_LOVE           ImageMgr::sym.love
 #define BKGD_COURAGE        ImageMgr::sym.courage
 #define BKGD_STONCRCL       ImageMgr::sym.stoncrcl
-#define BKGD_RUNE_INF       ImageMgr::sym.rune0
+#define BKGD_RUNE_INF       ImageMgr::sym.infinity
 #define BKGD_SHRINE_HON     ImageMgr::sym.rune1
 #define BKGD_SHRINE_COM     ImageMgr::sym.rune2
 #define BKGD_SHRINE_VAL     ImageMgr::sym.rune3
@@ -103,7 +103,7 @@ struct ImageSymbols {
     Symbol courage;
 
     Symbol stoncrcl;
-    Symbol rune0;
+    Symbol infinity;
 
     // These 8 are ordered to match visionImageNames (shrine.cpp)
     Symbol rune1;

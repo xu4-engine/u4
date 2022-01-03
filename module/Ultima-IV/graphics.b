@@ -239,7 +239,7 @@ imageset EGA [
     image (name: love filename: "u4/love.ega" width: 320 height: 200 depth: 4 filetype: u4rle fixup: transparent0)
     image (name: courage filename: "u4/courage.ega" width: 320 height: 200 depth: 4 filetype: u4rle fixup: transparent0)
     image (name: stoncrcl filename: "u4/stoncrcl.ega" width: 320 height: 200 depth: 4 filetype: u4rle)
-    image (name: rune0 filename: "u4/rune_5.ega" width: 320 height: 200 depth: 4 filetype: u4rle)
+    image (name: infinity filename: "u4/rune_5.ega" width: 320 height: 200 depth: 4 filetype: u4rle)
     image (name: rune1 filename: "u4/rune_1.ega" width: 320 height: 200 depth: 4 filetype: u4rle)
     image (name: rune2 filename: "u4/rune_2.ega" width: 320 height: 200 depth: 4 filetype: u4rle)
     image (name: rune3 filename: "u4/rune_0.ega" width: 320 height: 200 depth: 4 filetype: u4rle)
@@ -611,6 +611,8 @@ imageset EGA/VGA [
     ]
     image (name: key filename: "u4u/key7.old" width: 320 height: 200 depth: 8 filetype: u4rle)
     image (name: honesty filename: "u4u/honesty.old" width: 320 height: 200 depth: 8 filetype: u4rle fixup: abyss)
+    /*
+    ; These are currently broken - using EGA for now.
     image (name: compassn filename: "u4u/compassn.old" width: 320 height: 200 depth: 8 filetype: u4rle fixup: abyss)
     image (name: valor filename: "u4u/valor.old" width: 320 height: 200 depth: 8 filetype: u4rle fixup: abyss)
     image (name: justice filename: "u4u/justice.old" width: 320 height: 200 depth: 8 filetype: u4rle fixup: abyss)
@@ -621,8 +623,9 @@ imageset EGA/VGA [
     image (name: truth filename: "u4u/truth.old" width: 320 height: 200 depth: 8 filetype: u4rle fixup: abyss)
     image (name: love filename: "u4u/love.old" width: 320 height: 200 depth: 8 filetype: u4rle fixup: abyss)
     image (name: courage filename: "u4u/courage.old" width: 320 height: 200 depth: 8 filetype: u4rle fixup: abyss)
+    */
     image (name: stoncrcl filename: "u4u/stoncrcl.old" width: 320 height: 200 depth: 8 filetype: u4rle)
-    image (name: rune0 filename: "u4u/rune_5.old" width: 320 height: 400 depth: 8 filetype: u4rle)
+    image (name: infinity filename: "u4u/rune_0.old" width: 320 height: 200 depth: 8 filetype: u4rle)
     image (name: rune1 filename: "u4u/rune_1.old" width: 320 height: 200 depth: 8 filetype: u4rle)
     image (name: rune2 filename: "u4u/rune_2.old" width: 320 height: 200 depth: 8 filetype: u4rle)
     image (name: rune3 filename: "u4u/rune_3.old" width: 320 height: 200 depth: 8 filetype: u4rle)

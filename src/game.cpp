@@ -142,8 +142,8 @@ int AlphaActionController::get(char lastValidLetter, const string &prompt, Event
 
 GameController::GameController() : TurnController(1),
     mapArea(BORDER_WIDTH, BORDER_HEIGHT, VIEWPORT_W, VIEWPORT_H),
-    paused(false),
-    pausedTimer(0) {
+    cutScene(false)
+{
     gs_listen(1<<SENDER_LOCATION | 1<<SENDER_PARTY, gameNotice, this);
 }
 
@@ -412,6 +412,11 @@ write_error:
  * Sets the view mode.
  */
 void gameSetViewMode(ViewMode newMode) {
+    if (newMode == VIEW_GEM || newMode == VIEW_CODEX)
+        xu4.game->cutScene = true;
+    else if (newMode == VIEW_NORMAL)
+        xu4.game->cutScene = false;
+
     c->location->viewMode = newMode;
 }
 
@@ -530,6 +535,7 @@ int GameController::exitToParentMap() {
 #ifdef IOS
         U4IOS::updateGameControllerContext(c->location->context);
 #endif
+        gameStampCommandTime();     // Restart turn Pass timer.
         return 1;
     }
     return 0;
@@ -2656,11 +2662,9 @@ bool gamePeerCity(int city, void *data) {
 
     if (peerMap != NULL) {
         xu4.game->setMap(peerMap, 1, NULL);
-        c->location->viewMode = VIEW_GEM;
-        xu4.game->paused = true;
-        xu4.game->pausedTimer = 0;
-
+        gameSetViewMode(VIEW_GEM);
         screenDisableCursor();
+
 #ifdef IOS
         U4IOS::IOSConversationChoiceHelper continueHelper;
         continueHelper.updateChoices(" ");
@@ -2670,8 +2674,7 @@ bool gamePeerCity(int city, void *data) {
 
         xu4.game->exitToParentMap();
         screenEnableCursor();
-        xu4.game->paused = false;
-
+        gameSetViewMode(VIEW_NORMAL);
         return true;
     }
     return false;
@@ -2692,11 +2695,9 @@ void peer(bool useGem) {
         screenMessage("Peer at a Gem!\n");
     }
 
-    xu4.game->paused = true;
-    xu4.game->pausedTimer = 0;
     screenDisableCursor();
+    gameSetViewMode(VIEW_GEM);
 
-    c->location->viewMode = VIEW_GEM;
 #ifdef IOS
     U4IOS::IOSConversationChoiceHelper continueHelper;
     continueHelper.updateChoices(" ");
@@ -2705,8 +2706,7 @@ void peer(bool useGem) {
     ReadChoiceController::get("\015 \033");
 
     screenEnableCursor();
-    c->location->viewMode = VIEW_NORMAL;
-    xu4.game->paused = false;
+    gameSetViewMode(VIEW_NORMAL);
 }
 
 /**
@@ -2933,15 +2933,11 @@ void ztatsFor(int player) {
  * This function is called every quarter second.
  */
 void GameController::timerFired() {
-    if (pausedTimer > 0) {
-        pausedTimer--;
-        if (pausedTimer <= 0) {
-            pausedTimer = 0;
-            paused = false; /* unpause the game */
-        }
-    }
-
-    if (!paused && !pausedTimer) {
+    if (cutScene) {
+        screenCycle();
+        screenUpdateCursor();
+        screenUploadToGPU();
+    } else {
         if (++c->windCounter >= MOON_SECONDS_PER_PHASE * 4) {
             if (xu4_random(4) == 1 && !c->windLock)
                 c->windDirection = dirRandomDir(MASK_DIR_ALL);

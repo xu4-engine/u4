@@ -42,9 +42,25 @@ ImageMgr::ImageMgr() : vgaColors(NULL), resGroup(0) {
         "sachonor spirhum beasties key honesty\n"
         "compassn valor justice sacrific honor\n"
         "spirit humility truth love courage\n"
-        "stoncrcl rune0 rune1 rune2 rune3\n"
+        "stoncrcl infinity rune1 rune2 rune3\n"
         "rune4 rune5 rune6 rune7 rune8\n"
         "gemtiles moongate items blackbead whitebead");
+
+#if 0
+    // Dump images.
+    xu4.imageMgr = this;
+    char str[24];
+    Symbol* stable = &sym.key;
+    for (int i = 0; 1; ++i) {
+        ImageInfo* info = get(stable[i], true);
+        if (info && info->image) {
+            sprintf(str, "/tmp/img%02d.ppm", i);
+            info->image->save(str);
+        }
+        if (stable[i] == sym.whitebead)
+            break;
+    }
+#endif
 }
 
 ImageMgr::~ImageMgr() {

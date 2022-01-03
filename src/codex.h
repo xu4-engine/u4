@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * codex.h
  */
 
 #ifndef CODEX_H
