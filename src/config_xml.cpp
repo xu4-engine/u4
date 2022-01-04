@@ -1456,7 +1456,7 @@ static uint8_t mapFiletype(const string& str, ImageInfo* info) {
 
 static ImageInfo* loadImageInfo(ConfigXML* cfg, const ConfigElement &conf) {
     static const char *fixupEnumStrings[] = {
-        "none", "intro", "abyss", "abacus", "dungns",
+        "none", "intro", "abyss", "abacus", "dungns", "transparent0",
         "blackTransparencyHack", "fmtownsscreen", NULL
     };
 
@@ -1471,7 +1471,7 @@ static ImageInfo* loadImageInfo(ConfigXML* cfg, const ConfigElement &conf) {
     info->prescale = conf.getInt("prescale");
     info->filetype = mapFiletype(conf.getString("filetype"), info);
     info->tiles = conf.getInt("tiles");
-    info->transparentIndex = conf.getInt("transparentIndex", -1);
+    //info->transparentIndex = conf.getInt("transparentIndex", -1);
     info->fixup = static_cast<ImageFixup>(conf.getEnum("fixup", fixupEnumStrings));
     info->image = NULL;
 

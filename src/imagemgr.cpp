@@ -221,6 +221,22 @@ void ImageMgr::fixupAbyssVision(Image *im) {
     }
 }
 
+void ImageMgr::fixupTransparent(Image* img, RGBA color) {
+    uint32_t* it  = img->pixels;
+    uint32_t* end = it + (img->w * img->h);
+    uint32_t ucol, trans;
+
+    ucol = *((uint32_t*) &color);
+    color.a = 0;
+    trans = *((uint32_t*) &color);
+
+    while (it != end) {
+        if (*it == ucol)
+            *it = trans;
+        ++it;
+    }
+}
+
 static void swapColors(Image32* img, const RGBA* colorA, const RGBA* colorB) {
     uint32_t* it  = img->pixels;
     uint32_t* end = it + (img->w * img->h);
@@ -649,6 +665,9 @@ ImageInfo* ImageMgr::load(ImageInfo* info, bool returnUnscaled) {
         break;
     case FIXUP_FMTOWNSSCREEN:
         fixupFMTowns(unscaled);
+        break;
+    case FIXUP_TRANSPARENT0:
+        fixupTransparent(unscaled, Image::black);
         break;
     case FIXUP_BLACKTRANSPARENCYHACK:
         //Apply transparency shadow hack to ultima4 ega and vga upgrade classic graphics.

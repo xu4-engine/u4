@@ -232,17 +232,17 @@
 
         <!-- abyss vision images: codex symbol images are overlaid on top of each other, so color 0 (black) is set to be transparent -->
         <image name="key"      filename="u4/key7.ega"     width="320" height="200" depth="4" filetype="image/x-u4rle"/>
-        <image name="honesty"  filename="u4/honesty.ega"  width="320" height="200" depth="4" filetype="image/x-u4rle" transparentIndex="0"/>
-        <image name="compassn" filename="u4/compassn.ega" width="320" height="200" depth="4" filetype="image/x-u4rle" transparentIndex="0"/>
-        <image name="valor"    filename="u4/valor.ega"    width="320" height="200" depth="4" filetype="image/x-u4rle" transparentIndex="0"/>
-        <image name="justice"  filename="u4/justice.ega"  width="320" height="200" depth="4" filetype="image/x-u4rle" transparentIndex="0"/>
-        <image name="sacrific" filename="u4/sacrific.ega" width="320" height="200" depth="4" filetype="image/x-u4rle" transparentIndex="0"/>
-        <image name="honor"    filename="u4/honor.ega"    width="320" height="200" depth="4" filetype="image/x-u4rle" transparentIndex="0"/>
-        <image name="spirit"   filename="u4/spirit.ega"   width="320" height="200" depth="4" filetype="image/x-u4rle" transparentIndex="0"/>
-        <image name="humility" filename="u4/humility.ega" width="320" height="200" depth="4" filetype="image/x-u4rle" transparentIndex="0"/>
-        <image name="truth"    filename="u4/truth.ega"    width="320" height="200" depth="4" filetype="image/x-u4rle" transparentIndex="0"/>
-        <image name="love"     filename="u4/love.ega"     width="320" height="200" depth="4" filetype="image/x-u4rle" transparentIndex="0"/>
-        <image name="courage"  filename="u4/courage.ega"  width="320" height="200" depth="4" filetype="image/x-u4rle" transparentIndex="0"/>
+        <image name="honesty"  filename="u4/honesty.ega"  width="320" height="200" depth="4" filetype="image/x-u4rle" fixup="transparent0"/>
+        <image name="compassn" filename="u4/compassn.ega" width="320" height="200" depth="4" filetype="image/x-u4rle" fixup="transparent0"/>
+        <image name="valor"    filename="u4/valor.ega"    width="320" height="200" depth="4" filetype="image/x-u4rle" fixup="transparent0"/>
+        <image name="justice"  filename="u4/justice.ega"  width="320" height="200" depth="4" filetype="image/x-u4rle" fixup="transparent0"/>
+        <image name="sacrific" filename="u4/sacrific.ega" width="320" height="200" depth="4" filetype="image/x-u4rle" fixup="transparent0"/>
+        <image name="honor"    filename="u4/honor.ega"    width="320" height="200" depth="4" filetype="image/x-u4rle" fixup="transparent0"/>
+        <image name="spirit"   filename="u4/spirit.ega"   width="320" height="200" depth="4" filetype="image/x-u4rle" fixup="transparent0"/>
+        <image name="humility" filename="u4/humility.ega" width="320" height="200" depth="4" filetype="image/x-u4rle" fixup="transparent0"/>
+        <image name="truth"    filename="u4/truth.ega"    width="320" height="200" depth="4" filetype="image/x-u4rle" fixup="transparent0"/>
+        <image name="love"     filename="u4/love.ega"     width="320" height="200" depth="4" filetype="image/x-u4rle" fixup="transparent0"/>
+        <image name="courage"  filename="u4/courage.ega"  width="320" height="200" depth="4" filetype="image/x-u4rle" fixup="transparent0"/>
         <image name="stoncrcl" filename="u4/stoncrcl.ega" width="320" height="200" depth="4" filetype="image/x-u4rle"/>
 
         <!-- shrine vision images  for EGA -->

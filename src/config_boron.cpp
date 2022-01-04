@@ -1459,7 +1459,6 @@ static ImageInfo* loadImageInfo(const ConfigBoron* cfg, UBlockIt& bi) {
     info->height   = numA[1];
     info->subImageCount = 0;
     info->prescale = 0;
-    info->transparentIndex = -1;
     info->image    = NULL;
     info->subImages = NULL;
 

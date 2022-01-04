@@ -578,7 +578,7 @@ process-cfg [
                     ; Skip name which can be 'tiles (assuming name is first).
                     none-zero select skip at 2 'tiles
                     enum-value [
-                        none intro abyss abacus dungns
+                        none intro abyss abacus dungns transparent0
                         blackTransparencyHack fmtownsscreen
                     ] at/fixup
                 ]
