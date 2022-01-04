@@ -25,6 +25,7 @@ enum Sound {
     SOUND_ITEM_STOLEN,      // item was stolen from a PC, food or gold
     SOUND_LBHEAL,           // LB heals party
     SOUND_LEVELUP,          // PC level up
+    SOUND_ELEVATE,          // Gain virtue
     SOUND_MOONGATE,         // moongate used
 
     SOUND_CANNON,

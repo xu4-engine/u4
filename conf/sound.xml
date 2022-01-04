@@ -20,6 +20,7 @@
     <track file="flee.ogg"/>            <!--     ITEM_STOLEN    -->
     <track file="magic.ogg"/>           <!--     LBHEAL         -->
     <track file="reaper_sleeper.ogg"/>  <!--     LEVELUP        -->
+    <track file="elevate.ogg"/>         <!-- DOS gain virtue    -->
     <track file="moongate_flash.ogg"/>  <!--     MOONGATE       -->
     <track file="enemy_magic_proj.ogg"/><!--     CANNON         -->
     <track file="fx_tremor.ogg"/>       <!--     RUMBLE         -->

@@ -71,3 +71,12 @@ void Object::animateMovement()
     if (screenTileUpdate(&xu4.game->mapArea, coords))
         screenWait(1);
 }
+
+/*
+ * Set frame animation state.
+ */
+void Object::animControl(int animState)
+{
+    if (animId != ANIM_UNUSED)
+        anim_setState(&xu4.eventHandler->flourishAnim, animId, animState);
+}

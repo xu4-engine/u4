@@ -23,10 +23,10 @@ class MoveEvent;
 typedef enum {
     VIEW_NORMAL,
     VIEW_GEM,
-    VIEW_RUNE,
     VIEW_DUNGEON,
     VIEW_DEAD,
-    VIEW_CODEX,
+    VIEW_CUTSCENE,
+    VIEW_CUTSCENE_MAP,
     VIEW_MIXTURES
 } ViewMode;
 

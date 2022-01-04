@@ -375,7 +375,7 @@ void screenMessage(const char *fmt, ...) {
         /* don't show a space in column 1.  Helps with Hawkwind, but
          * disables centering of endgame message. */
         if (buffer[i] == ' ' && c->col == 0 &&
-            c->location->viewMode != VIEW_CODEX)
+            c->location->viewMode != VIEW_CUTSCENE)
           continue;
         screenShowChar(buffer[i], TEXT_AREA_X + c->col, TEXT_AREA_Y + c->line);
         c->col++;

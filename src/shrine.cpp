@@ -58,6 +58,8 @@ void Shrine::enter() {
         ss->advice = u4read_stringtable(avatar, 93682, 24);
         u4fclose(avatar);
     }
+
+    gameSetViewMode(VIEW_CUTSCENE_MAP);
 #ifdef IOS
     U4IOS::IOSHideGameControllerHelper hideControllsHelper;
 #endif
@@ -100,10 +102,9 @@ void Shrine::enter() {
     if (strncasecmp(input.c_str(), getVirtueName(virtue), 6) != 0 || ss->cycles == 0) {
         screenMessage("Thou art unable to focus thy thoughts on this subject!\n");
         eject();
-        return;
     }
-
-    if (((c->saveGame->moves / SHRINE_MEDITATION_INTERVAL) >= 0x10000) || (((c->saveGame->moves / SHRINE_MEDITATION_INTERVAL) & 0xffff) != c->saveGame->lastmeditation)) {
+    else if (((c->saveGame->moves / SHRINE_MEDITATION_INTERVAL) >= 0x10000) ||
+            (((c->saveGame->moves / SHRINE_MEDITATION_INTERVAL) & 0xffff) != c->saveGame->lastmeditation)) {
         screenMessage("Begin Meditation\n");
         meditationCycle();
     }
@@ -111,6 +112,8 @@ void Shrine::enter() {
         screenMessage("Thy mind is still weary from thy last Meditation!\n");
         eject();
     }
+
+    gameSetViewMode(VIEW_NORMAL);
 }
 
 void Shrine::enhancedSequence() {
@@ -123,8 +126,11 @@ void Shrine::enhancedSequence() {
     gameUpdateScreen();
     EventHandler::wait_msecs(1000);
 
-    Object *obj = addCreature(xu4.config->creature(BEGGAR_ID),
-                              Coords(5, 10, c->location->coords.z));
+    const Creature* beggar = xu4.config->creature(BEGGAR_ID);
+    Object *obj = addCreature(beggar, Coords(5, 10, c->location->coords.z));
+
+    // Change graphic to the Avatar (which has no animation).
+    obj->animControl(ANIM_PAUSED);
     obj->tile = tileset->getByName(Tile::sym.avatar)->getId();
 
     for (int i = 0; i < 4; ++i) {
@@ -135,10 +141,12 @@ void Shrine::enhancedSequence() {
 
     gameUpdateScreen();
     EventHandler::wait_msecs(800);
-    obj->tile = xu4.config->creature(BEGGAR_ID)->tile;
-    gameUpdateScreen();
+
+    obj->tile = beggar->tile;
+    obj->animControl(ANIM_PLAYING);
 
     screenMessage("\n...and kneel before the altar.\n");
+    gameUpdateScreen();
     EventHandler::wait_msecs(1000);
     screenEnableCursor();
 }
@@ -153,6 +161,7 @@ void Shrine::meditationCycle() {
 
     screenDisableCursor();
     for (int i = 0; i < MEDITATION_MANTRAS_PER_CYCLE; i++) {
+        screenUploadToGPU();
         if (EventHandler::wait_msecs(interval))
             return;
         screenMessage(".");
@@ -193,10 +202,11 @@ void Shrine::askMantra() {
         c->party->adjustKarma(KA_MEDITATION);
 
         bool elevated = ss->completedCycles == 3 && c->party->attemptElevation(virtue);
-        if (elevated)
-            screenMessage("\nThou hast achieved partial Avatarhood in the Virtue of %s\n\n",
+        if (elevated) {
+            screenMessage("\nThou hast achieved partial Avatarhood in the Virtue of %s\n",
                           getVirtueName(virtue));
-        else
+            gameSpellEffect(-1, -1, SOUND_ELEVATE);
+        } else
             screenMessage("\nThy thoughts are pure. "
                           "Thou art granted a vision!\n");
 
@@ -209,15 +219,14 @@ void Shrine::askMantra() {
         ReadChoiceController::get("");
         showVision(elevated);
         ReadChoiceController::get("");
-        gameSetViewMode(VIEW_NORMAL);
         eject();
     }
 }
 
 void Shrine::showVision(bool elevated) {
     if (elevated) {
-        screenMessage("Thou art granted a vision!\n");
-        gameSetViewMode(VIEW_RUNE);
+        screenMessage("\nThou art granted a vision!\n");
+        gameSetViewMode(VIEW_CUTSCENE);
         const Symbol* visionImageNames = &BKGD_SHRINE_HON;
         screenDrawImageInMapArea(visionImageNames[virtue & 7]);
     } else {

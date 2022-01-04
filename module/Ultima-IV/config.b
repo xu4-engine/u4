@@ -489,8 +489,9 @@ sound: [
     %evade.ogg
     %flee.ogg
     %flee.ogg
-    %magic.ogg
-    %reaper_sleeper.ogg
+    %magic.ogg              ; LB heals
+    %reaper_sleeper.ogg     ; Level up
+    %elevate.ogg            ; Gain virtue
     %moongate_flash.ogg
     %enemy_magic_proj.ogg
     %fx_tremor.ogg

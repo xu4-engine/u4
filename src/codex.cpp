@@ -92,7 +92,7 @@ void codexStart() {
     c->stats->update(true);
 
     // change the view mode so the dungeon doesn't get shown
-    gameSetViewMode(VIEW_CODEX);
+    gameSetViewMode(VIEW_CUTSCENE);
 
     pausedMessage(4, "\n\n\n\nThere is a sudden darkness, and you find yourself alone in an empty chamber.\n");
 

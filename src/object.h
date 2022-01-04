@@ -42,6 +42,7 @@ public:
     void removeFromMaps();
     bool setDirection(Direction d);
     void animateMovement();
+    void animControl(int animState);
 
     // Properties
     MapTile tile, prevTile;

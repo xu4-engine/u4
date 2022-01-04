@@ -412,10 +412,16 @@ write_error:
  * Sets the view mode.
  */
 void gameSetViewMode(ViewMode newMode) {
-    if (newMode == VIEW_GEM || newMode == VIEW_CODEX)
-        xu4.game->cutScene = true;
-    else if (newMode == VIEW_NORMAL)
-        xu4.game->cutScene = false;
+    switch (newMode) {
+        case VIEW_GEM:
+        case VIEW_CUTSCENE:
+        case VIEW_CUTSCENE_MAP:
+            xu4.game->cutScene = true;
+            break;
+        default:
+            xu4.game->cutScene = false;
+            break;
+    }
 
     c->location->viewMode = newMode;
 }
@@ -423,13 +429,11 @@ void gameSetViewMode(ViewMode newMode) {
 void gameUpdateScreen() {
     switch (c->location->viewMode) {
     case VIEW_NORMAL:
+    case VIEW_CUTSCENE_MAP:
         screenUpdate(&xu4.game->mapArea, true, false);
         break;
     case VIEW_GEM:
         screenGemUpdate();
-        break;
-    case VIEW_RUNE:
-        screenUpdate(&xu4.game->mapArea, false, false);
         break;
     case VIEW_DUNGEON:
         screenUpdate(&xu4.game->mapArea, true, false);
@@ -437,7 +441,7 @@ void gameUpdateScreen() {
     case VIEW_DEAD:
         screenUpdate(&xu4.game->mapArea, true, true);
         break;
-    case VIEW_CODEX: /* the screen updates will be handled elsewhere */
+    case VIEW_CUTSCENE: /* the screen updates will be handled elsewhere */
         break;
     case VIEW_MIXTURES: /* still testing */
         break;
