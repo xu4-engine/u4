@@ -707,12 +707,11 @@ bool ReadChoiceController::keyPressed(int key) {
     if ((key <= 0x7F) && (isupper(key)))
         key = tolower(key);
 
-    value = key;
-
-    if (choices.empty() || choices.find_first_of(value) < choices.length()) {
+    if (choices.empty() || choices.find_first_of(key) < choices.length()) {
         // If the value is printable, display it
         if (key > ' ')
             screenMessage("%c", toupper(key));
+        value = key;
         doneWaiting();
         return true;
     }
