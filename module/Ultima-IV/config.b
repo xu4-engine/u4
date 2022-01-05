@@ -477,7 +477,7 @@ sound: [
     %walk_slowed.ogg
     %walk_combat.ogg
     %blocked.ogg
-    %error.ogg
+    %error_dos.ogg
     %pc_attack.ogg
     %pc_struck.ogg
     %npc_attack.ogg
@@ -486,9 +486,9 @@ sound: [
     %enemy_magic_proj_hit.ogg
     %poison_effect.ogg
     %poison_damage.ogg
-    %evade.ogg
-    %flee.ogg
-    %flee.ogg
+    %evade_dos.ogg          ; Evaded
+    %evade_dos.ogg          ; Flee
+    %evade_dos.ogg          ; Item stolen
     %magic.ogg              ; LB heals
     %reaper_sleeper.ogg     ; Level up
     %elevate.ogg            ; Gain virtue

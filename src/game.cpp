@@ -2020,12 +2020,19 @@ bool getChestTrapHandler(int player) {
             (c->saveGame->players[player].dex + 25 < xu4_random(100)))
         {
             Map* map = c->location->map;
+
+            // Play sound for acid & bomb since applyEffect does not.
+            if (trapType == EFFECT_LAVA || trapType == EFFECT_FIRE)
+                soundPlay(SOUND_POISON_EFFECT);
+
             if (trapType == EFFECT_LAVA) /* bomb trap */
                 c->party->applyEffect(map, trapType);
             else
                 c->party->member(player)->applyEffect(map, trapType);
+        } else {
+            soundPlay(SOUND_EVADE);
+            screenMessage("Evaded!\n");
         }
-        else screenMessage("Evaded!\n");
 
         return true;
     }
