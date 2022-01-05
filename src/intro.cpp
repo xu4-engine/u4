@@ -1008,7 +1008,7 @@ void IntroController::startQuestions() {
     questionRound = 0;
     initQuestionTree();
 
-    while (1) {
+    while (xu4.stage == StageIntro) {
         // draw the abacus background, if necessary
         if (questionRound == 0)
             backgroundArea.draw(BKGD_ABACUS);

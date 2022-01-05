@@ -2530,7 +2530,7 @@ void mixReagents() {
                 break;
 
             int spell = choice - 'a';
-            screenMessage("%s\n", spellGetName(spell));
+            screenMessage("\b%s\n", spellGetName(spell));
 
             // ensure the mixtures for the spell isn't already maxed out
             if (c->saveGame->mixtures[spell] == 99) {
@@ -2564,7 +2564,7 @@ bool mixReagentsForSpellU4(int spell) {
 
     screenMessage("Reagent: ");
 
-    while (1) {
+    while (xu4.stage == StagePlay) {
         int choice = ReadChoiceController::get("abcdefgh\n\r \033");
 
         // done selecting reagents? mix it up and prompt to mix
@@ -2586,9 +2586,8 @@ bool mixReagentsForSpellU4(int spell) {
             return true;
         }
 
-        screenMessage("%c\n", toupper(choice));
-        if (!ingredients.addReagent((Reagent)(choice - 'a')))
-            screenMessage("%cNone Left!%c\n", FG_GREY, FG_WHITE);
+        if (! ingredients.addReagent((Reagent)(choice - 'a')))
+            screenMessage("\n%cNone Left!%c\n", FG_GREY, FG_WHITE);
         screenMessage("Reagent: ");
     }
 
