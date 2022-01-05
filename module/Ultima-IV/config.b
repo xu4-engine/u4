@@ -485,17 +485,17 @@ sound: [
     %enemy_magic_proj_hit.ogg
     %enemy_magic_proj_hit.ogg
     %poison_effect.ogg
-    %poison_damage.ogg
+    %poison_damage_dos.ogg
     %evade_dos.ogg          ; Evaded
     %evade_dos.ogg          ; Flee
     %evade_dos.ogg          ; Item stolen
     %magic.ogg              ; LB heals
     %reaper_sleeper.ogg     ; Level up
     %elevate.ogg            ; Gain virtue
-    %moongate_flash.ogg
+    %moongate_dos.ogg
     %enemy_magic_proj.ogg
     %fx_tremor.ogg
-    %spell_precast_R_with_mp45.ogg
+    %spell_precast_dos.ogg
     %spell_flash_25.ogg
     %fire_field_walking.ogg
     %fire_field_walking.ogg
