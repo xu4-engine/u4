@@ -35,6 +35,8 @@
 
 using std::vector;
 
+static const int MsgBufferSize = 1024;
+
 struct Screen {
     vector<string> gemLayoutNames;
     const Layout* gemLayout;
@@ -43,6 +45,7 @@ struct Screen {
     std::map<string, int> dungeonTileChars;
     ImageInfo* charsetInfo;
     ImageInfo* gemTilesInfo;
+    char* msgBuffer;
     ScreenState state;
     Scaler filterScaler;
     int dispWidth;      // Full display pixel dimensions.
@@ -75,6 +78,7 @@ struct Screen {
         dungeonView = NULL;
         charsetInfo = NULL;
         gemTilesInfo = NULL;
+        msgBuffer = new char[MsgBufferSize];
         state.tileanims = NULL;
         state.currentCycle = 0;
         state.vertOffset = 0;
@@ -94,6 +98,7 @@ struct Screen {
 
     ~Screen() {
         delete dungeonView;
+        delete[] msgBuffer;
     }
 };
 
@@ -101,8 +106,6 @@ static void screenLoadLayoutsFromConf(Screen*);
 #ifndef GPU_RENDER
 static void screenFindLineOfSight();
 #endif
-
-static const int BufferSize = 1024;
 
 extern bool verbose;
 
@@ -255,15 +258,15 @@ void screenReInit() {
 }
 
 void screenTextAt(int x, int y, const char *fmt, ...) {
-    char buffer[BufferSize];
-    unsigned int i;
+    char* buffer = xu4.screen->msgBuffer;
+    int i, buflen;
 
     va_list args;
     va_start(args, fmt);
-    vsnprintf(buffer, BufferSize, fmt, args);
+    buflen = vsnprintf(buffer, MsgBufferSize, fmt, args);
     va_end(args);
 
-    for (i = 0; i < strlen(buffer); i++)
+    for (i = 0; i < buflen; i++)
         screenShowChar(buffer[i], x + i, y);
 }
 
@@ -293,28 +296,33 @@ void screenCrLf() {
     }
 }
 
+// whitespace & color codes: " \b\t\n\r\023\024\025\026\027\030\031"
+static const uint8_t nonWordChars[32] = {
+    0x01, 0x27, 0xF8, 0x03, 0x01, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+};
+
 void screenMessage(const char *fmt, ...) {
-#ifdef IOS
-    static bool recursed = false;
-#endif
     bool colorize = xu4.settings->enhancements &&
                     xu4.settings->enhancementsOptions.textColorization;
+    char* buffer = xu4.screen->msgBuffer;
+    const int colCount = TEXT_AREA_W;
+    int i, w, buflen;
 
-    if (!c)
-        return; //Because some cases (like the intro) don't have the context initiated.
-    char buffer[BufferSize];
-    unsigned int i;
-    int wordlen;
+    if (! c)
+        return; // Some cases (like the intro) don't have the context initiated.
 
     va_list args;
     va_start(args, fmt);
-    vsnprintf(buffer, BufferSize, fmt, args);
+    buflen = vsnprintf(buffer, MsgBufferSize, fmt, args);
     va_end(args);
+    if (buflen < 1)
+        return;
+
 #ifdef IOS
-    if (recursed)
-        recursed = false;
-    else
-        U4IOS::drawMessageOnLabel(string(buffer, 1024));
+    U4IOS::drawMessageOnLabel(string(buffer, MsgBufferSize));
 #endif
 
     screenHideCursor();
@@ -325,24 +333,36 @@ void screenMessage(const char *fmt, ...) {
         screenScrollMessageArea();
     }
 
-    for (i = 0; i < strlen(buffer); i++) {
-        // include whitespace and color-change codes
-        wordlen = strcspn(buffer + i, " \b\t\n\024\025\026\027\030\031");
-
-        /* backspace */
-        if (buffer[i] == '\b') {
-            c->col--;
-            if (c->col < 0) {
-                c->col += 16;
-                c->line--;
-            }
-            continue;
-        }
-
-        /* color-change codes */
+    for (i = 0; i < buflen; i++) {
         switch (buffer[i])
         {
-            case FG_GREY:
+            case '\b':          // backspace
+                c->col--;
+                if (c->col < 0) {
+                    c->col += colCount;
+                    c->line--;
+                }
+                continue;
+
+            case '\n':          // new line
+newline:
+                c->col = 0;
+                c->line++;
+                if (c->line == TEXT_AREA_H) {
+                    c->line--;
+                    screenScrollMessageArea();
+                }
+                continue;
+
+            case '\r':          // carriage return
+                c->col = 0;
+                continue;
+
+            case 0x12:          // DC2 - code for move cursor right
+                c->col++;
+                continue;
+
+            case FG_GREY:       // color-change codes
             case FG_BLUE:
             case FG_PURPLE:
             case FG_GREEN:
@@ -352,33 +372,49 @@ void screenMessage(const char *fmt, ...) {
                 if (colorize)
                     xu4.screen->colorFG = FONT_COLOR_INDEX(buffer[i]);
                 continue;
+
+            case '\t':          // tab
+            case ' ':
+                if (c->col == colCount)
+                    goto newline;
+
+                /* don't show a space in column 1.  Helps with Hawkwind, but
+                 * disables centering of endgame message. */
+                if (c->col == 0 && c->location->viewMode != VIEW_CUTSCENE)
+                    continue;
+
+                screenShowChar(' ', TEXT_AREA_X+c->col, TEXT_AREA_Y+c->line);
+                c->col++;
+                continue;
         }
 
-        /* check for word wrap */
-        if ((c->col + wordlen > 16) || buffer[i] == '\n' || c->col == 16) {
-            if (buffer[i] == '\n' || buffer[i] == ' ')
-                i++;
-            c->line++;
-            c->col = 0;
-#ifdef IOS
-            recursed = true;
-#endif
-            screenMessage("%s", buffer + i);
-            return;
+        if (c->col == colCount) {
+            --i;            // Undo loop increment.
+            goto newline;
         }
 
-        /* code for move cursor right */
-        if (buffer[i] == 0x12) {
-            c->col++;
+        // Check for word wrap.
+        for (w = i; w < buflen; ++w) {
+            unsigned int c = ((uint8_t*) buffer)[w];
+            if (nonWordChars[c >> 3] & (1 << (c & 7)))
+                break;
+        }
+        if (w == i)
             continue;
+        if (c->col + (w - i) > colCount) {
+            if (c->col > 0) {
+                --i;            // Undo loop increment.
+                goto newline;
+            }
+            // Word doesn't fit on one line so break it up.
+            w = i + colCount;
         }
-        /* don't show a space in column 1.  Helps with Hawkwind, but
-         * disables centering of endgame message. */
-        if (buffer[i] == ' ' && c->col == 0 &&
-            c->location->viewMode != VIEW_CUTSCENE)
-          continue;
-        screenShowChar(buffer[i], TEXT_AREA_X + c->col, TEXT_AREA_Y + c->line);
-        c->col++;
+
+        for (; i < w; ++i) {
+            screenShowChar(buffer[i], TEXT_AREA_X+c->col, TEXT_AREA_Y+c->line);
+            c->col++;
+        }
+        --i;
     }
 
     screenSetCursorPos(TEXT_AREA_X + c->col, TEXT_AREA_Y + c->line);
