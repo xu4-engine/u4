@@ -11,6 +11,8 @@
 #include "tileset.h"
 #include "xu4.h"
 
+extern bool isPartyMember(const Object*);
+
 Object::Object(Type type) :
   tile(0),
   prevTile(0),
@@ -58,10 +60,13 @@ void Object::placeOnMap(Map* map, const Coords& pos) {
 void Object::removeFromMaps() {
     Location* loc = c->location;
     while (onMaps && loc) {
-        if (loc->map->removeObject(this, onMaps == 1))
+        if (loc->map->removeObject(this, false))
             --onMaps;
         loc = loc->prev;
     }
+
+    if (! isPartyMember(this))
+        delete this;
 }
 
 void Object::animateMovement()
