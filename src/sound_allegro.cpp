@@ -15,13 +15,15 @@
 #ifdef UNIT_TEST
 #include <vector>
 #include <cstdio>
+#include "support/getTicks.c"
 #define ASSERT(exp,msg)
 #define errorWarning(...)   printf(__VA_ARGS__); printf("\n");
 #define MAX_VOLUME 10
 struct Settings {
     int musicVol, soundVol;
+    bool volumeFades;
 };
-Settings ts = {5, 10};
+Settings ts = {5, 10, true};
 struct {
     Settings* settings = &ts;
 } xu4;
@@ -31,14 +33,15 @@ const char* config_soundFile(int id) {
 const char* config_musicFile(int id) {
     const char* fn = NULL;
     switch (id) {
-        case 1: fn = "../mid/minstrel/U4song1.ogg"; break;
+        case 1: fn = "../module/Ultima-IV/music/minstrel/castles.ogg"; break;
         case 2: fn = "../mid/Castles.mp3"; break;
-        case 3: fn = "../mid/castles.it";  break;
+        case 3: fn = "../mid/dungeon.it";  break;
         case 4: fn = "../mid/Castles.mid"; break;
     }
     printf("  musicFile: %s\n", fn ? fn : "none");
     return fn;
 }
+float screenFrameDuration() { return 1.0f/24.0f; }
 
 #else
 
@@ -51,6 +54,7 @@ const char* config_musicFile(int id) {
 #include "xu4.h"
 
 extern uint32_t getTicks();
+extern float screenFrameDuration();
 
 #define config_soundFile(id)    xu4.config->soundFile(id)
 #define config_musicFile(id)    xu4.config->musicFile(id)
@@ -384,7 +388,6 @@ void musicUpdate()
     }
 }
 
-extern float screenFrameDuration();
 #define FADE_DELTA(msec)    (1000.0f / msec * screenFrameDuration())
 
 void musicFadeOut(int msec)
@@ -493,7 +496,7 @@ int main() {
     printf( "al_init: %d\n", al_init());
     printf( "soundInit: %d\n", soundInit());
 
-    for (int i = 1; i < 4; ++i) {
+    for (int i = 1; i < 5; ++i) {
         printf("musicPlay(%d)\n", i);
         musicPlay(i);
         al_rest(4.0);
