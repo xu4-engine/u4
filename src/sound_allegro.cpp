@@ -50,14 +50,19 @@ const char* config_musicFile(int id) {
 #include "settings.h"
 #include "xu4.h"
 
+extern uint32_t getTicks();
+
 #define config_soundFile(id)    xu4.config->soundFile(id)
 #define config_musicFile(id)    xu4.config->musicFile(id)
 #endif
 
+#define FX_CONTROL_SLOTS    2
+#define FX_CONTROL_BITS     ((1<<FX_CONTROL_SLOTS) - 1)
 
 static bool audioFunctional = false;
 static bool musicEnabled = false;
 static int currentTrack;
+static int controlUsed;                 // Mask of active fxControl ids.
 static float musicVolume = 1.0;         // Final level desired by user.
 static float musicGain = 1.0;           // Current fade level.
 static float musicFade = 0.0;           // musicGain delta per frame.
@@ -65,6 +70,8 @@ static ALLEGRO_VOICE* voice = NULL;
 static ALLEGRO_MIXER* finalMix = NULL;
 static ALLEGRO_MIXER* fxMixer = NULL;
 static ALLEGRO_AUDIO_STREAM* musicStream = NULL;
+static ALLEGRO_SAMPLE_ID fxControl[FX_CONTROL_SLOTS];
+static uint32_t fxDuration[FX_CONTROL_SLOTS];
 static std::vector<ALLEGRO_SAMPLE *> sa_samples;
 
 #ifdef CONF_MODULE
@@ -124,6 +131,7 @@ int soundInit(void)
     //TRACE(*logger, string("Music initialized: volume is ") + (musicEnabled ? "on" : "off"));
 
     sa_samples.resize(SOUND_MAX, NULL);
+    controlUsed = 0;
 
     return 1;
 }
@@ -206,7 +214,8 @@ static bool sound_load(Sound sound) {
     return true;
 }
 
-void soundPlay(Sound sound, bool onlyOnce, int specificDurationInTicks) {
+void soundPlay(Sound sound, bool onlyOnce, int durationLimitMSec) {
+    (void) onlyOnce;
     ASSERT(sound < SOUND_MAX, "Attempted to play an invalid sound in soundPlay()");
 
     // If audio didn't initialize correctly, then we can't play it anyway
@@ -219,12 +228,26 @@ void soundPlay(Sound sound, bool onlyOnce, int specificDurationInTicks) {
             return;
     }
 
-    //if (!onlyOnce || !Mix_Playing(1)) {
-        // TODO: Handle specificDurationInTicks.
+    if (durationLimitMSec > 0 && controlUsed != FX_CONTROL_BITS) {
+        int bit, i;
+        // The controlUsed check above tells us there is a free control slot
+        // so find it and set its duration.
+        for (i = 0, bit = 1; i < FX_CONTROL_SLOTS; bit <<= 1, ++i) {
+            if ((controlUsed & bit) == 0) {
+                if (al_play_sample(sa_samples[sound], 1.0, 0.0, 1.0,
+                                   ALLEGRO_PLAYMODE_ONCE, fxControl + i)) {
+                    controlUsed |= bit;
+                    fxDuration[i] = getTicks() + durationLimitMSec;
+                } else
+                    fprintf(stderr, "Error playing sound %d\n", sound);
+                break;
+            }
+        }
+    } else {
         if (! al_play_sample(sa_samples[sound], 1.0, 0.0, 1.0,
                              ALLEGRO_PLAYMODE_ONCE, NULL))
             fprintf(stderr, "Error playing sound %d\n", sound);
-    //}
+    }
 }
 
 /*
@@ -333,6 +356,19 @@ void musicStop()
 // Private function for Allegro backend to control fading.
 void musicUpdate()
 {
+    if (controlUsed) {
+        int bit, i;
+        uint32_t now = getTicks();
+
+        // Stop any sounds with a duration limit.
+        for (i = 0, bit = 1; i < FX_CONTROL_SLOTS; bit <<= 1, ++i) {
+            if ((controlUsed & bit) && (now >= fxDuration[i])) {
+                controlUsed &= ~bit;
+                al_stop_sample(fxControl + i);
+            }
+        }
+    }
+
     if (musicStream && musicFade) {
         musicGain += musicFade;
         if (musicGain >= 1.0) {
