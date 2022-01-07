@@ -946,7 +946,8 @@ void IntroController::finishInitiateGame(const string &nameBuffer, SexType sex)
     // done: exit intro and let game begin
     questionArea.disableCursor();
 
-    xu4.stage = StagePlay;
+    if (xu4.stage != StageExitGame)
+        xu4.stage = StagePlay;
     xu4.eventHandler->setControllerDone();
 }
 
