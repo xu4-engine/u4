@@ -1,4 +1,4 @@
-#!/usr/bin/sh
+#!/bin/sh
 # XU4 Linux Installer
 
 install_allegro() {
@@ -13,6 +13,9 @@ install_allegro() {
 		;;
 	ubuntu|pop)
 		sudo add-apt-repository ppa:allegro/5.2
+		sudo apt-get install liballegro-acodec5.2
+		;;
+	debian|devuan)
 		sudo apt-get install liballegro-acodec5.2
 		;;
 	*)
