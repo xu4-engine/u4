@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/bin/sh
 # XU4 Linux Installer
 
 install_allegro() {
