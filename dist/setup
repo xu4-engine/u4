@@ -16,7 +16,7 @@ install_allegro() {
 		sudo apt-get install liballegro-acodec5.2
 		;;
 	debian|devuan)
-		sudo apt-get install liballegro5-dev
+		sudo apt-get install liballegro-acodec5.2
 		;;
 	*)
 		echo "You will need to install Allegro 5 manually (v5.2.7 or later is recommended)"
