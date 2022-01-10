@@ -88,6 +88,10 @@ static void handleKeyDownEvent(const ALLEGRO_EVENT* event,
                 key += U4_ALT;
             else if (event->keyboard.modifiers & ALLEGRO_KEYMOD_LWIN)
                 key += U4_META;
+#ifdef _WIN32
+            else if (event->keyboard.modifiers & ALLEGRO_KEYMOD_CTRL)
+                key = keycode;  // On Linux unichar is the same as keycode here
+#endif
             break;
     }
 

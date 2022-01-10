@@ -27,6 +27,10 @@
 #include "macosx/osxinit.h"
 #endif
 
+#if defined(_WIN32) && defined(DEBUG)
+#include "win32console.c"
+#endif
+
 #ifdef DEBUG
 extern int gameSave(const char*);
 #endif
@@ -261,6 +265,9 @@ XU4GameServices xu4;
 int main(int argc, char *argv[]) {
 #if defined(MACOSX)
     osxInit(argv[0]);
+#endif
+#if defined(_WIN32) && defined(DEBUG)
+    redirectIOToConsole();
 #endif
     //printf("sizeof(Tile) %ld\n", sizeof(Tile));
 

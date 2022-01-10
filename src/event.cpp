@@ -309,6 +309,7 @@ bool EventHandler::run() {
 
 #ifdef _WIN32
 #include <io.h>
+#include <sys/stat.h>
 #define close   _close
 #define read    _read
 #define write   _write
