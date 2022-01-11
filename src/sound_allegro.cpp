@@ -328,6 +328,7 @@ static bool music_load(int music, float newGain) {
 
     musicGain = newGain;
     al_set_audio_stream_gain(musicStream, musicVolume * musicGain);
+    al_set_audio_stream_playmode(musicStream, ALLEGRO_PLAYMODE_LOOP);
     al_attach_audio_stream_to_mixer(musicStream, finalMix);
     currentTrack = music;
     return true;
