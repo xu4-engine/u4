@@ -959,7 +959,7 @@ healer: context [
     ]
 
     give_blood: [
-        if ge? pc-attr 1 hp 400 [
+        either ge? pc-attr 1 hp 400 [
             >> "^/Art thou willing to give 100pts of thy blood to aid others? "
             input-choice [
                 'y' [
@@ -975,7 +975,7 @@ healer: context [
                 ]
                 end
             ]
-        ]
+        ] end
     ]
 
     inventory: {{
