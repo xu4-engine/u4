@@ -24,7 +24,6 @@ typedef enum {
     VIEW_NORMAL,
     VIEW_GEM,
     VIEW_DUNGEON,
-    VIEW_DEAD,
     VIEW_CUTSCENE,
     VIEW_CUTSCENE_MAP,
     VIEW_MIXTURES

@@ -438,9 +438,6 @@ void gameUpdateScreen() {
     case VIEW_DUNGEON:
         screenUpdate(&xu4.game->mapArea, true, false);
         break;
-    case VIEW_DEAD:
-        screenUpdate(&xu4.game->mapArea, true, true);
-        break;
     case VIEW_CUTSCENE: /* the screen updates will be handled elsewhere */
         break;
     case VIEW_MIXTURES: /* still testing */

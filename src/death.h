@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * death.h
  */
 
 #ifndef DEATH_H
