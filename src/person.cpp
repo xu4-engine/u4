@@ -148,6 +148,8 @@ list<string> Person::getConversationText(Conversation *cnv, const char *inquiry)
      * a conversation with a vendor
      */
     if (isVendor()) {
+        Controller noTurns;
+        xu4.eventHandler->pushController(&noTurns);
 #ifdef USE_BORON
         static const char* vendorId[] = {
             "weapons", "armor", "food", "tavern", "reagents",
@@ -182,6 +184,7 @@ list<string> Person::getConversationText(Conversation *cnv, const char *inquiry)
         script->unload();
 #endif
         cnv->state = Conversation::DONE;
+        xu4.eventHandler->popController();
     }
 
     /*

@@ -2964,18 +2964,16 @@ void GameController::timerFired() {
         screenCycle();
         gameUpdateScreen();
 
-        c->commandTimer += 1000 / xu4.settings->gameCyclesPerSecond;
-
         /*
          * force pass if no commands within last 20 seconds
          */
         Controller *controller = xu4.eventHandler->getController();
-        if (controller &&
-            (controller == xu4.game || dynamic_cast<CombatController *>(controller) != NULL) &&
-            gameTimeSinceLastCommand() > 20) {
-
-            /* pass the turn, and redraw the text area so the prompt is shown */
-            controller->keyPressed(U4_SPACE);
+        if (dynamic_cast<TurnController *>(controller)) {
+            c->commandTimer += 1000 / xu4.settings->gameCyclesPerSecond;
+            if (gameTimeSinceLastCommand() > 20) {
+                /* pass the turn, and redraw the text area prompt */
+                controller->keyPressed(U4_SPACE);
+            }
         }
     }
 }
