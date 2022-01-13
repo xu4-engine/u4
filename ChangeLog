@@ -1,5 +1,16 @@
 		XU4 Change Log
 
+v1.0 - 2022-03-08
+  - Added pauses during card casting.
+  - Tweaked death sequence to match DOS version.
+  - Animated codex opening during end game.
+  - Fixed VGA codex graphics.
+  - Rewrote the dialogue system for non-vendor NPCs.
+  - Enabled music looping in Allegro backend.
+  - Added audio cues for invalid keys & bad commands.
+  - Settings file allows line comments.
+  - Fixed a few bugs.
+
 v1.0beta5 - 2022-01-06
   - Allegro 5 is now used as the cross-platform middleware.
   - OpenGL is now used for scaling and filtering.

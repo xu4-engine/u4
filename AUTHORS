@@ -20,3 +20,5 @@ Michael Ryan <solus@users.sourceforge.net>
         Text colorization, profiles, enhanced LOS algorithm, title/intro sequence, general fixes
 Gregory Saunders <grerfy@users.sourceforge.net>
         Amiga file formats, minor enhancements
+Karl Robillard <wickedsmoke@users.sourceforge.net>
+        Allegro port, OpenGL rendering, Boron config & scripting, build automation, and lots more.

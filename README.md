@@ -193,7 +193,7 @@ Misc.
 See http://xu4.sourceforge.net/links.html for some other interesting
 Ultima IV related links.
 
-Please send me a mail at andrewtaylor@users.sourceforge.net if you are
+Please send an email to wickedsmoke@users.sourceforge.net if you are
 interested in helping.
 
 
