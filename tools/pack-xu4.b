@@ -396,9 +396,9 @@ new-transform: func [type data /extern current-trans] [
     ]
 ]
 
-map-labels: []
+map-labels: none
 map-portals: []
-map-moongates: []
+map-moongates: none
 map-roles: []
 
 cdi-begin "xu4^1"
@@ -718,9 +718,9 @@ process-cfg [
                 none-zero at/music
             ]
 
-            clear map-labels
+            map-labels: none
             clear map-portals
-            clear map-moongates
+            map-moongates: none
             clear map-roles
         )
       | into [some[
@@ -734,7 +734,7 @@ process-cfg [
                     ]
                 ]
             )
-          | 'label set at2 paren! (append/block map-labels at2)
+          | 'labels set map-labels block!
           | 'city  set at2 paren! into [any [
                 'personrole tok: paren! (append/block map-roles first tok)
             ]] (
@@ -758,15 +758,9 @@ process-cfg [
                     "sacrifice" "honor" "spirituality" "humility"
                 ] at2/virtue
             )
-          | 'moongate set at2 paren! (append/block map-moongates at2)
+          | 'moongates set map-moongates block!
         ]] (
-            emit-attr-block blk map-labels [
-                apair dest mark-sol it/name to-coord reduce [
-                    none-zero it/x
-                    none-zero it/y
-                    none-zero it/z
-                ]
-            ]
+            append/block blk map-labels
 
             emit-attr-block blk map-portals [
                 apair dest mark-sol it/message it/condition
@@ -801,9 +795,7 @@ process-cfg [
                 append dest it/retroActiveDest
             ]
 
-            emit-attr-block blk map-moongates [
-                append dest to-coord reduce [it/phase it/x it/y]
-            ]
+            append/block blk map-moongates
         )
     ]
 

@@ -31,27 +31,32 @@ maps: [
         portal (x: 205 y: 45 destmapid: 29 startx: 0 starty: 0 action: enter condition: shrine savelocation: true transport: footorhorse)
         portal (x: 81 y: 207 destmapid: 30 startx: 0 starty: 0 action: enter condition: shrine savelocation: true transport: footorhorse)
         portal (x: 231 y: 216 destmapid: 32 startx: 0 starty: 0 action: enter condition: shrine savelocation: true transport: footorhorse)
-        moongate (phase: 0 x: 224 y: 133)
-        moongate (phase: 1 x: 96 y: 102)
-        moongate (phase: 2 x: 38 y: 224)
-        moongate (phase: 3 x: 50 y: 37)
-        moongate (phase: 4 x: 166 y: 19)
-        moongate (phase: 5 x: 104 y: 194)
-        moongate (phase: 6 x: 23 y: 126)
-        moongate (phase: 7 x: 187 y: 167)
-        label (name: balloon x: 233 y: 242)
-        label (name: lockelake x: 127 y: 78)
-        label (name: mandrake1 x: 182 y: 54)
-        label (name: mandrake2 x: 100 y: 165)
-        label (name: nightshade1 x: 46 y: 149)
-        label (name: nightshade2 x: 205 y: 44)
-        label (name: bell x: 176 y: 208)
-        label (name: horn x: 45 y: 173)
-        label (name: wheel x: 96 y: 215)
-        label (name: skull x: 197 y: 245)
-        label (name: blackstone x: 224 y: 133)
-        label (name: whitestone x: 64 y: 80)
-        label (name: lasergun x: 48 y: 22)
+        moongates [
+          ; phase, x, y
+            0,224,133
+            1, 96,102
+            2, 38,224
+            3, 50, 37
+            4,166, 19
+            5,104,194
+            6, 23,126
+            7,187,167
+        ]
+        labels [
+            balloon     233,242
+            lockelake   127, 78
+            mandrake1   182, 54
+            mandrake2   100,165
+            nightshade1  46,149
+            nightshade2 205, 44
+            bell        176,208
+            horn         45,173
+            wheel        96,215
+            skull       197,245
+            blackstone  224,133
+            whitestone   64, 80
+            lasergun     48, 22
+        ]
     ]
     map (id: 1 type: city fname: "lcb_1.ult" width: 32 height: 32 levels: 1 borderbehavior: exit music: 9) [
         city (name: "Britannia" type: castle tlk_fname: "lcb.tlk") [
@@ -63,7 +68,7 @@ maps: [
         portal (x: 7 y: 2 destmapid: 23 startx: 5 starty: 5 action: descend savelocation: false message: "Descend into the depths!^/" transport: foot) [
             retroActiveDest (x: 239 y: 240 mapid: 0)
         ]
-        label (name: spiritualityrune x: 17 y: 8)
+        labels [spiritualityrune 17,8]
     ]
     map (id: 56 type: city fname: "lcb_2.ult" width: 32 height: 32 levels: 1 borderbehavior: exit music: 9) [
         city (name: "Britannia" type: castle tlk_fname: "lcb.tlk") [
@@ -76,20 +81,22 @@ maps: [
         city (name: "Lycaeum" type: castle tlk_fname: "lycaeum.tlk") [
             personrole (role: healer id: 23)
         ]
-        label (name: book x: 6 y: 6)
-        label (name: telescope x: 22 y: 3)
+        labels [
+            book 6,6
+            telescope 22,3
+        ]
     ]
     map (id: 3 type: city fname: "empath.ult" width: 32 height: 32 levels: 1 borderbehavior: exit music: 9) [
         city (name: "Empath Abbey" type: castle tlk_fname: "empath.tlk") [
             personrole (role: healer id: 30)
         ]
-        label (name: mysticarmor x: 22 y: 4)
+        labels [mysticarmor 22,4]
     ]
     map (id: 4 type: city fname: "serpent.ult" width: 32 height: 32 levels: 1 borderbehavior: exit music: 9) [
         city (name: "Serpents Hold" type: castle tlk_fname: "serpent.tlk") [
             personrole (role: healer id: 31)
         ]
-        label (name: mysticswords x: 8 y: 15)
+        labels [mysticswords 8,15]
     ]
     map (id: 5 type: city fname: "moonglow.ult" width: 32 height: 32 levels: 1 borderbehavior: exit music: 2) [
         city (name: "Moonglow" type: towne tlk_fname: "moonglow.tlk") [
@@ -99,7 +106,7 @@ maps: [
             personrole (role: healer id: 25)
             personrole (role: innkeeper id: 30)
         ]
-        label (name: honestyrune x: 8 y: 6)
+        labels [honestyrune 8,6]
     ]
     map (id: 6 type: city fname: "britain.ult" width: 32 height: 32 levels: 1 borderbehavior: exit music: 2) [
         city (name: "Britain" type: towne tlk_fname: "britain.tlk") [
@@ -111,7 +118,7 @@ maps: [
             personrole (role: healer id: 31)
             personrole (role: innkeeper id: 25)
         ]
-        label (name: compassionrune x: 25 y: 1)
+        labels [compassionrune 25,1]
     ]
     map (id: 7 type: city fname: "jhelom.ult" width: 32 height: 32 levels: 1 borderbehavior: exit music: 2) [
         city (name: "Jhelom" type: towne tlk_fname: "jhelom.tlk") [
@@ -124,7 +131,7 @@ maps: [
             personrole (role: healer id: 27)
             personrole (role: innkeeper id: 31)
         ]
-        label (name: valorrune x: 30 y: 30)
+        labels [valorrune 30,30]
     ]
     map (id: 8 type: city fname: "yew.ult" width: 32 height: 32 levels: 1 borderbehavior: exit music: 2) [
         city (name: "Yew" type: towne tlk_fname: "yew.tlk") [
@@ -132,7 +139,7 @@ maps: [
             personrole (role: foodvendor id: 27)
             personrole (role: healer id: 26)
         ]
-        label (name: justicerune x: 13 y: 6)
+        labels [justicerune 13,6]
     ]
     map (id: 9 type: city fname: "minoc.ult" width: 32 height: 32 levels: 1 borderbehavior: exit music: 2) [
         city (name: "Minoc" type: towne tlk_fname: "minoc.tlk") [
@@ -140,7 +147,7 @@ maps: [
             personrole (role: weaponsvendor id: 30)
             personrole (role: innkeeper id: 31)
         ]
-        label (name: sacrificerune x: 28 y: 30)
+        labels [sacrificerune 28,30]
     ]
     map (id: 10 type: city fname: "trinsic.ult" width: 32 height: 32 levels: 1 borderbehavior: exit music: 2) [
         city (name: "Trinsic" type: towne tlk_fname: "trinsic.tlk") [
@@ -150,7 +157,7 @@ maps: [
             personrole (role: tavernkeeper id: 31)
             personrole (role: innkeeper id: 30)
         ]
-        label (name: honorrune x: 2 y: 29)
+        labels [honorrune 2,29]
     ]
     map (id: 11 type: city fname: "skara.ult" width: 32 height: 32 levels: 1 borderbehavior: exit music: 2) [
         city (name: "Skara Brae" type: towne tlk_fname: "skara.tlk") [
@@ -175,7 +182,7 @@ maps: [
             personrole (role: reagentsvendor id: 28)
             personrole (role: horsevendor id: 18)
         ]
-        label (name: humilityrune x: 29 y: 29)
+        labels [humilityrune 29,29]
     ]
     map (id: 14 type: city fname: "den.ult" width: 32 height: 32 levels: 1 borderbehavior: exit music: 2) [
         city (name: "Buccaneers Den" type: village tlk_fname: "den.tlk") [
@@ -198,7 +205,7 @@ maps: [
         city (name: "Cove" type: village tlk_fname: "cove.tlk") [
             personrole (role: healer id: 31)
         ]
-        label (name: candle x: 22 y: 1)
+        labels [candle 22,1]
     ]
     map (id: 17 type: dungeon fname: "deceit.dng" width: 8 height: 8 levels: 8 borderbehavior: wrap firstperson: true music: 7) [
         dungeon (name: "Deceit" rooms: 16)
@@ -214,7 +221,7 @@ maps: [
         portal (x: 1 y: 1 z: 7 destmapid: 20 startx: 1 starty: 1 startlevel: 7 action: exit_west savelocation: false message: "into Dungeon Wrong^/" transport: foot) [
             retroActiveDest (x: 126 y: 20 mapid: 0)
         ]
-        label (name: bluestone x: 1 y: 7 z: 6)
+        labels [bluestone 1,7,6]
     ]
     map (id: 18 type: dungeon fname: "despise.dng" width: 8 height: 8 levels: 8 borderbehavior: wrap firstperson: true music: 7) [
         dungeon (name: "Despise" rooms: 16)
@@ -230,7 +237,7 @@ maps: [
         portal (x: 3 y: 3 z: 7 destmapid: 21 startx: 3 starty: 3 startlevel: 7 action: exit_west savelocation: false message: "into Dungeon Covetous^/" transport: foot) [
             retroActiveDest (x: 156 y: 27 mapid: 0)
         ]
-        label (name: yellowstone x: 3 y: 5 z: 4)
+        labels [yellowstone 3,5,4]
     ]
     map (id: 19 type: dungeon fname: "destard.dng" width: 8 height: 8 levels: 8 borderbehavior: wrap firstperson: true music: 7) [
         dungeon (name: "Destard" rooms: 16)
@@ -246,7 +253,7 @@ maps: [
         portal (x: 7 y: 7 z: 7 destmapid: 22 startx: 7 starty: 7 startlevel: 7 action: exit_west savelocation: false message: "into Dungeon Shame^/" transport: foot) [
             retroActiveDest (x: 58 y: 102 mapid: 0)
         ]
-        label (name: redstone x: 3 y: 7 z: 6)
+        labels [redstone 3,7,6]
     ]
     map (id: 20 type: dungeon fname: "wrong.dng" width: 8 height: 8 levels: 8 borderbehavior: wrap firstperson: true music: 7) [
         dungeon (name: "Wrong" rooms: 16)
@@ -274,7 +281,7 @@ maps: [
         portal (x: 3 y: 3 z: 7 destmapid: 21 startx: 3 starty: 3 startlevel: 7 action: exit_west savelocation: false message: "into Dungeon Covetous^/" transport: foot) [
             retroActiveDest (x: 156 y: 27 mapid: 0)
         ]
-        label (name: greenstone x: 6 y: 3 z: 7)
+        labels [greenstone 6,3,7]
     ]
     map (id: 21 type: dungeon fname: "covetous.dng" width: 8 height: 8 levels: 8 borderbehavior: wrap firstperson: true music: 7) [
         dungeon (name: "Covetous" rooms: 16)
@@ -302,7 +309,7 @@ maps: [
         portal (x: 7 y: 7 z: 7 destmapid: 22 startx: 7 starty: 7 startlevel: 7 action: exit_west savelocation: false message: "into Dungeon Shame^/" transport: foot) [
             retroActiveDest (x: 58 y: 102 mapid: 0)
         ]
-        label (name: orangestone x: 7 y: 1 z: 6)
+        labels [orangestone 7,1,6]
     ]
     map (id: 22 type: dungeon fname: "shame.dng" width: 8 height: 8 levels: 8 borderbehavior: wrap firstperson: true music: 7) [
         dungeon (name: "Shame" rooms: 16)
@@ -330,7 +337,7 @@ maps: [
         portal (x: 7 y: 7 z: 7 destmapid: 22 startx: 7 starty: 7 startlevel: 7 action: exit_west savelocation: false message: "into Dungeon Shame^/" transport: foot) [
             retroActiveDest (x: 58 y: 102 mapid: 0)
         ]
-        label (name: purplestone x: 7 y: 7 z: 1)
+        labels [purplestone 7,7,1]
     ]
     map (id: 23 type: dungeon fname: "hythloth.dng" width: 8 height: 8 levels: 8 borderbehavior: wrap firstperson: true music: 7) [
         dungeon (name: "Hythloth" rooms: 16)

@@ -497,10 +497,10 @@ static std::pair<Symbol, Coords> conf_initLabel(const UCell* it)
 {
     assert(ur_is(it, UT_WORD));
     assert(ur_is(it+1, UT_COORD));
-    assert(it[1].coord.len == 3);
 
     const int16_t* pos = it[1].coord.n;
-    return std::pair<Symbol, Coords> (ur_atom(it), Coords(pos[0], pos[1], pos[2]));
+    int z = (it[1].coord.len > 2) ? pos[2] : 0;
+    return std::pair<Symbol, Coords> (ur_atom(it), Coords(pos[0], pos[1], z));
 }
 
 static Map* conf_makeMap(ConfigBoron* cfg, Tileset* tiles, UBlockIt& bi)

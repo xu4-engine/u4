@@ -107,11 +107,11 @@ void dumpMap(const Config* cfg, Map* map) {
         printf("  )\n");
     }
 
-    std::map<Symbol, MapCoords>::const_iterator it = map->labels.begin();
+    std::map<Symbol, Coords>::const_iterator it = map->labels.begin();
     if (it != map->labels.end()) {
         printf("    (");
         for (; it != map->labels.end(); ++it) {
-            MapCoords pos = it->second;
+            Coords pos = it->second;
             printf("%s %d,%d,%d ", CF_SYM(it->first), pos.x, pos.y, pos.z);
         }
         printf(")\n");
