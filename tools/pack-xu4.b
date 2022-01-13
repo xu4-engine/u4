@@ -399,7 +399,7 @@ new-transform: func [type data /extern current-trans] [
 map-labels: none
 map-portals: []
 map-moongates: none
-map-roles: []
+map-roles: none
 
 cdi-begin "xu4^1"
 
@@ -721,7 +721,7 @@ process-cfg [
             map-labels: none
             clear map-portals
             map-moongates: none
-            clear map-roles
+            map-roles: none
         )
       | into [some[
             'portal set at2 paren! content: opt block! (
@@ -736,20 +736,24 @@ process-cfg [
             )
           | 'labels set map-labels block!
           | 'city  set at2 paren! into [any [
-                'personrole tok: paren! (append/block map-roles first tok)
+                'roles set map-roles block!
             ]] (
                 append blk reduce [at2/name at2/type to-file at2/tlk_fname]
-                emit-attr-block blk map-roles [
-                    append dest to-coord reduce [
-                        enum-value [
-                            companion    weaponsvendor  armorvendor
-                            foodvendor   tavernkeeper   reagentsvendor
-                            healer       innkeeper      guildvendor
-                            horsevendor  lordbritish    hawkwind
-                        ] it/role
-                        it/id
+                append/block blk either map-roles [
+                    dest: make block! 0
+                    foreach [role id] map-roles [
+                        append dest to-coord reduce [
+                            enum-value [
+                                companion    weaponsvendor  armorvendor
+                                foodvendor   tavernkeeper   reagentsvendor
+                                healer       innkeeper      guildvendor
+                                horsevendor  lordbritish    hawkwind
+                            ] role
+                            id
+                        ]
                     ]
-                ]
+                    dest
+                ] none
             )
           | 'dungeon  set at2 paren! (apair blk at2/name at2/rooms)
           | 'shrine   set at2 paren! (

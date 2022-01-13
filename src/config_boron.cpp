@@ -390,7 +390,7 @@ static void conf_ultimaSaveIds(ConfigBoron* cfg, UltimaSaveIds* usaveIds,
 static void conf_initCity(ConfigBoron* cfg, City* city, UBlockIt& bi)
 {
     static const uint8_t cityParam[4] = {
-        // name  type  tlk_fname  personrole
+        // name  type  tlk_fname  roles
         UT_STRING, UT_WORD, UT_FILE, BLOCK_NONE
     };
     if (! validParam(bi, sizeof(cityParam), cityParam))

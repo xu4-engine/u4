@@ -60,8 +60,10 @@ maps: [
     ]
     map (id: 1 type: city fname: "lcb_1.ult" width: 32 height: 32 levels: 1 borderbehavior: exit music: 9) [
         city (name: "Britannia" type: castle tlk_fname: "lcb.tlk") [
-            personrole (role: healer id: 29)
-            personrole (role: hawkwind id: 30)
+            roles [
+                healer 29
+                hawkwind 30
+            ]
         ]
         portal (x: 3 y: 3 destmapid: 56 startx: 3 starty: 3 action: klimb savelocation: false message: "Klimb to second floor!^/" transport: foot)
         portal (x: 27 y: 3 destmapid: 56 startx: 27 starty: 3 action: klimb savelocation: false message: "Klimb to second floor!^/" transport: foot)
@@ -72,14 +74,14 @@ maps: [
     ]
     map (id: 56 type: city fname: "lcb_2.ult" width: 32 height: 32 levels: 1 borderbehavior: exit music: 9) [
         city (name: "Britannia" type: castle tlk_fname: "lcb.tlk") [
-            personrole (role: lordbritish id: 32)
+            roles [lordbritish 32]
         ]
         portal (x: 3 y: 3 destmapid: 1 startx: 3 starty: 3 action: descend savelocation: false message: "Descend to first floor!^/" transport: foot)
         portal (x: 27 y: 3 destmapid: 1 startx: 27 starty: 3 action: descend savelocation: false message: "Descend to first floor!^/" transport: foot)
     ]
     map (id: 2 type: city fname: "lycaeum.ult" width: 32 height: 32 levels: 1 borderbehavior: exit music: 9) [
         city (name: "Lycaeum" type: castle tlk_fname: "lycaeum.tlk") [
-            personrole (role: healer id: 23)
+            roles [healer 23]
         ]
         labels [
             book 6,6
@@ -88,122 +90,142 @@ maps: [
     ]
     map (id: 3 type: city fname: "empath.ult" width: 32 height: 32 levels: 1 borderbehavior: exit music: 9) [
         city (name: "Empath Abbey" type: castle tlk_fname: "empath.tlk") [
-            personrole (role: healer id: 30)
+            roles [healer 30]
         ]
         labels [mysticarmor 22,4]
     ]
     map (id: 4 type: city fname: "serpent.ult" width: 32 height: 32 levels: 1 borderbehavior: exit music: 9) [
         city (name: "Serpents Hold" type: castle tlk_fname: "serpent.tlk") [
-            personrole (role: healer id: 31)
+            roles [healer 31]
         ]
         labels [mysticswords 8,15]
     ]
     map (id: 5 type: city fname: "moonglow.ult" width: 32 height: 32 levels: 1 borderbehavior: exit music: 2) [
         city (name: "Moonglow" type: towne tlk_fname: "moonglow.tlk") [
-            personrole (role: companion id: 32)
-            personrole (role: foodvendor id: 26)
-            personrole (role: reagentsvendor id: 24)
-            personrole (role: healer id: 25)
-            personrole (role: innkeeper id: 30)
+            roles [
+                companion 32
+                foodvendor 26
+                reagentsvendor 24
+                healer 25
+                innkeeper 30
+            ]
         ]
         labels [honestyrune 8,6]
     ]
     map (id: 6 type: city fname: "britain.ult" width: 32 height: 32 levels: 1 borderbehavior: exit music: 2) [
         city (name: "Britain" type: towne tlk_fname: "britain.tlk") [
-            personrole (role: companion id: 32)
-            personrole (role: weaponsvendor id: 29)
-            personrole (role: armorvendor id: 28)
-            personrole (role: foodvendor id: 27)
-            personrole (role: tavernkeeper id: 26)
-            personrole (role: healer id: 31)
-            personrole (role: innkeeper id: 25)
+            roles [
+                companion 32
+                weaponsvendor 29
+                armorvendor 28
+                foodvendor 27
+                tavernkeeper 26
+                healer 31
+                innkeeper 25
+            ]
         ]
         labels [compassionrune 25,1]
     ]
     map (id: 7 type: city fname: "jhelom.ult" width: 32 height: 32 levels: 1 borderbehavior: exit music: 2) [
         city (name: "Jhelom" type: towne tlk_fname: "jhelom.tlk") [
-            personrole (role: companion id: 32)
-            personrole (role: weaponsvendor id: 29)
-            personrole (role: armorvendor id: 28)
-            personrole (role: tavernkeeper id: 30)
-            personrole (role: healer id: 25)
-            personrole (role: healer id: 26)
-            personrole (role: healer id: 27)
-            personrole (role: innkeeper id: 31)
+            roles [
+                companion 32
+                weaponsvendor 29
+                armorvendor 28
+                tavernkeeper 30
+                healer 25
+                healer 26
+                healer 27
+                innkeeper 31
+            ]
         ]
         labels [valorrune 30,30]
     ]
     map (id: 8 type: city fname: "yew.ult" width: 32 height: 32 levels: 1 borderbehavior: exit music: 2) [
         city (name: "Yew" type: towne tlk_fname: "yew.tlk") [
-            personrole (role: companion id: 32)
-            personrole (role: foodvendor id: 27)
-            personrole (role: healer id: 26)
+            roles [
+                companion 32
+                foodvendor 27
+                healer 26
+            ]
         ]
         labels [justicerune 13,6]
     ]
     map (id: 9 type: city fname: "minoc.ult" width: 32 height: 32 levels: 1 borderbehavior: exit music: 2) [
         city (name: "Minoc" type: towne tlk_fname: "minoc.tlk") [
-            personrole (role: companion id: 32)
-            personrole (role: weaponsvendor id: 30)
-            personrole (role: innkeeper id: 31)
+            roles [
+                companion 32
+                weaponsvendor 30
+                innkeeper 31
+            ]
         ]
         labels [sacrificerune 28,30]
     ]
     map (id: 10 type: city fname: "trinsic.ult" width: 32 height: 32 levels: 1 borderbehavior: exit music: 2) [
         city (name: "Trinsic" type: towne tlk_fname: "trinsic.tlk") [
-            personrole (role: companion id: 32)
-            personrole (role: weaponsvendor id: 29)
-            personrole (role: armorvendor id: 28)
-            personrole (role: tavernkeeper id: 31)
-            personrole (role: innkeeper id: 30)
+            roles [
+                companion 32
+                weaponsvendor 29
+                armorvendor 28
+                tavernkeeper 31
+                innkeeper 30
+            ]
         ]
         labels [honorrune 2,29]
     ]
     map (id: 11 type: city fname: "skara.ult" width: 32 height: 32 levels: 1 borderbehavior: exit music: 2) [
         city (name: "Skara Brae" type: towne tlk_fname: "skara.tlk") [
-            personrole (role: companion id: 32)
-            personrole (role: foodvendor id: 28)
-            personrole (role: reagentsvendor id: 30)
-            personrole (role: healer id: 31)
-            personrole (role: innkeeper id: 29)
+            roles [
+                companion 32
+                foodvendor 28
+                reagentsvendor 30
+                healer 31
+                innkeeper 29
+            ]
         ]
     ]
     map (id: 12 type: city fname: "magincia.ult" width: 32 height: 32 levels: 1 borderbehavior: exit music: 2) [
         city (name: "Magincia" type: ruins tlk_fname: "magincia.tlk") [
-            personrole (role: companion id: 32)
+            roles [companion 32]
         ]
     ]
     map (id: 13 type: city fname: "paws.ult" width: 32 height: 32 levels: 1 borderbehavior: exit music: 2) [
         city (name: "Paws" type: village tlk_fname: "paws.tlk") [
-            personrole (role: armorvendor id: 27)
-            personrole (role: foodvendor id: 31)
-            personrole (role: tavernkeeper id: 30)
-            personrole (role: tavernkeeper id: 29)
-            personrole (role: reagentsvendor id: 28)
-            personrole (role: horsevendor id: 18)
+            roles [
+                armorvendor 27
+                foodvendor 31
+                tavernkeeper 30
+                tavernkeeper 29
+                reagentsvendor 28
+                horsevendor 18
+            ]
         ]
         labels [humilityrune 29,29]
     ]
     map (id: 14 type: city fname: "den.ult" width: 32 height: 32 levels: 1 borderbehavior: exit music: 2) [
         city (name: "Buccaneers Den" type: village tlk_fname: "den.tlk") [
-            personrole (role: weaponsvendor id: 28)
-            personrole (role: armorvendor id: 27)
-            personrole (role: tavernkeeper id: 26)
-            personrole (role: reagentsvendor id: 30)
-            personrole (role: guildvendor id: 29)
+            roles [
+                weaponsvendor 28
+                armorvendor 27
+                tavernkeeper 26
+                reagentsvendor 30
+                guildvendor 29
+            ]
         ]
     ]
     map (id: 15 type: city fname: "vesper.ult" width: 32 height: 32 levels: 1 borderbehavior: exit music: 2) [
         city (name: "Vesper" type: village tlk_fname: "vesper.tlk") [
-            personrole (role: weaponsvendor id: 25)
-            personrole (role: tavernkeeper id: 23)
-            personrole (role: innkeeper id: 26)
-            personrole (role: guildvendor id: 24)
+            roles [
+                weaponsvendor 25
+                tavernkeeper 23
+                innkeeper 26
+                guildvendor 24
+            ]
         ]
     ]
     map (id: 16 type: city fname: "cove.ult" width: 32 height: 32 levels: 1 borderbehavior: exit music: 2) [
         city (name: "Cove" type: village tlk_fname: "cove.tlk") [
-            personrole (role: healer id: 31)
+            roles [healer 31]
         ]
         labels [candle 22,1]
     ]
