@@ -2721,16 +2721,13 @@ void peer(bool useGem) {
  * NPC is present at that point, zero is returned.
  */
 bool talkAt(const Coords &coords) {
-    extern int personIsVendor(const Person *person);
-    City *city;
-
     /* can't have any conversations outside of town */
-    if (!isCity(c->location->map)) {
+    if (! isCity(c->location->map)) {
         screenMessage("Funny, no response!\n");
         return true;
     }
 
-    city = dynamic_cast<City*>(c->location->map);
+    City* city = static_cast<City*>(c->location->map);
     Person *talker = city->personAt(coords);
 
     /* make sure we have someone we can talk with */
@@ -2743,14 +2740,16 @@ bool talkAt(const Coords &coords) {
          talker->getId() != PYTHON_ID)
         return false;
 
-    /* if we're talking to Lord British and the avatar is dead, LB resurrects them! */
-    if (talker->getNpcType() == NPC_LORD_BRITISH &&
-        c->party->member(0)->getStatus() == STAT_DEAD) {
-        screenMessage("%s, Thou shalt live again!\n", c->party->member(0)->getName().c_str());
-
-        c->party->member(0)->setStatus(STAT_GOOD);
-        c->party->member(0)->heal(HT_FULLHEAL);
-        gameSpellEffect('r', -1, SOUND_LBHEAL);
+    /* If talking to Lord British and the avatar is dead, LB resurrects them! */
+    if (talker->getNpcType() == NPC_LORD_BRITISH) {
+        PartyMember* p0 = c->party->member(0);
+        if (p0->getStatus() == STAT_DEAD) {
+            screenMessage("%s, Thou shalt live again!\n",
+                          p0->getName().c_str());
+            p0->setStatus(STAT_GOOD);
+            p0->heal(HT_FULLHEAL);
+            gameSpellEffect('r', -1, SOUND_LBHEAL);
+        }
     }
 
     Conversation conv;
@@ -2766,7 +2765,7 @@ bool talkAt(const Coords &coords) {
  * Executes the current conversation until it is done.
  */
 void talkRunConversation(Conversation &conv, Person *talker, bool showPrompt) {
-    while (conv.state != Conversation::DONE) {
+    while (conv.state != Conversation::DONE && xu4.stage == StagePlay) {
         // TODO: instead of calculating linesused again, cache the
         // result in person.cpp somewhere.
         int linesused = linecount(conv.reply.front(), TEXT_AREA_W);
@@ -2799,13 +2798,11 @@ void talkRunConversation(Conversation &conv, Person *talker, bool showPrompt) {
         /* When Lord British heals the party */
         else if (conv.state == Conversation::FULLHEAL) {
             int i;
-
             for (i = 0; i < c->party->size(); i++) {
                 c->party->member(i)->heal(HT_CURE);        // cure the party
                 c->party->member(i)->heal(HT_FULLHEAL);    // heal the party
             }
             gameSpellEffect('r', -1, SOUND_MAGIC); // same spell effect as 'r'esurrect
-
             conv.state = Conversation::TALK;
         }
         /* When Lord British checks and advances each party member's level */
@@ -2848,8 +2845,6 @@ void talkRunConversation(Conversation &conv, Person *talker, bool showPrompt) {
             yesNoHelper.updateChoices("yn ");
 #endif
             int choice = ReadChoiceController::get("");
-
-
             message[0] = choice;
             message[1] = '\0';
 
@@ -2865,6 +2860,7 @@ void talkRunConversation(Conversation &conv, Person *talker, bool showPrompt) {
             break;
         }
     }
+
     if (conv.reply.size() > 0)
         screenMessage("%s", conv.reply.front().c_str());
 }
