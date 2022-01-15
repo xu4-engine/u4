@@ -7,7 +7,7 @@ Usage: pack-xu4 [<OPTIONS>] <module-path>
 Options:
   -h           Print this help and exit.
   -o <module>  Output module file.
-  -v <level>   Set verbose level. (1-2, default is 1)
+  -v <level>   Set verbose level. (0-2, default is 1)
   --version    Print version and exit.
 }}
 
@@ -256,13 +256,17 @@ file-id: func [str /extern file-id-seen] [
 
 img_id: "IM^0^0"
 tmx_id: "MA^0^0"
+npc_id: "NC^0^0"
 file_buf: make binary! 4096
+
+poke-id: func [id n] [
+    poke id 3 div n 256
+    poke id 4 and n 255
+]
 
 ; Return app_id of PNG chunk.
 pack-png: func [path filename] [
-    n: file-id filename
-    poke img_id 3 div n 256
-    poke img_id 4 and n 255
+    poke-id img_id file-id filename
 
     ifn file-id-seen [
         cdi-chunk 0x1002 img_id read/into join path filename file_buf
@@ -272,8 +276,7 @@ pack-png: func [path filename] [
 
 ; Return app_id of map chunk.
 pack-tmx: func [id filename chunk-dim] [
-    poke tmx_id 3 div id 256
-    poke tmx_id 4 and id 255
+    poke-id tmx_id id
 
     tmx: load-tmx filename
     data: tmx/data
@@ -324,9 +327,69 @@ foreach file includes [
 process-cfg: func [blk] [do bind blk cfg]
 
 ;---------------------------------------
+; NPC Talk
+
+context [
+store: sdict: none
+meld: func [data] [
+    map it data [
+        switch type? it [
+            string! [
+                ifn ss: pick sdict it [
+                    ss: tail store
+                    append store it
+                    poke sdict it ss: slice ss tail store
+                    append store '^0'
+                ]
+                it: ss
+            ]
+            block! [meld it]
+        ]
+        it
+    ]
+]
+
+set 'meld-strings func [data /extern store sdict] [
+    store: make string! 1024
+    sdict: make hash-map! 256
+    meld data
+    sdict
+]
+]
+
+npc-talk: context [
+    name:
+    pronoun:
+    look: none
+    turn-away: 0
+    topics: none
+]
+
+; Return app_id of talk chunk.
+pack-talk: func [filename /local it] [
+    poke-id npc_id file-id filename
+    ifn file-id-seen [
+        meld-strings spec: load join root-path filename
+        tblk: make block! mul size? spec 5
+        foreach it spec [
+            do bind it npc-talk
+            append tblk mark-sol values-of npc-talk
+        ]
+        if ge? verbose 2 [
+            print [filename '>' to-binary npc_id]
+            probe tblk
+        ]
+        cdi-chunk 0x4007 npc_id serialize tblk
+    ]
+    npc_id
+]
+
+;---------------------------------------
 ; Build module package.
 
 process-sound: func [blk app_id] [
+    ifn blk [return none]
+
     path: root-path
     n: 0
     app_id: copy app_id
@@ -340,9 +403,7 @@ process-sound: func [blk app_id] [
             ] ext: file-ext fname
             ifn fmt [fatal config ["Unknown audio file extension" ext]]
 
-            poke app_id 3 div n 256
-            poke app_id 4 and n 255
-            ++ n
+            poke-id app_id ++ n
 
             cdi-chunk fmt app_id read join path first tok
         )
@@ -356,6 +417,8 @@ process-sound: func [blk app_id] [
   The global 'blk variable is the output block which 'rules should append to.
 */
 process-blk: func ['data rules /extern blk] [
+    ifn get data [return none]
+
     blk: make block! 16
     ifn parse get data [some rules] [
         fatal config join "Invalid " data
@@ -738,7 +801,14 @@ process-cfg [
           | 'city  set at2 paren! into [any [
                 'roles set map-roles block!
             ]] (
-                append blk reduce [at2/name at2/type to-file at2/tlk_fname]
+                tlk_name: at2/tlk_fname
+                either eq? ".tlk" file-ext tlk_name [
+                    tlk_name: to-file tlk_name
+                ][
+                    tlk_name: copy pack-talk tlk_name
+                ]
+
+                append blk reduce [at2/name at2/type tlk_name]
                 append/block blk either map-roles [
                     dest: make block! 0
                     foreach [role id] map-roles [
@@ -803,12 +873,14 @@ process-cfg [
         )
     ]
 
-    bin: make binary! mul 16 4
-    foreach it ega-palette [
-        apair bin first it second it
-        apair bin third it 255
+    if ega-palette [
+        bin: make binary! mul 16 4
+        foreach it ega-palette [
+            apair bin first it second it
+            apair bin third it 255
+        ]
+        ega-palette: bin
     ]
-    ega-palette: bin
 ]
 
 ; Pull in shader files
@@ -832,9 +904,7 @@ if exists? spath: join root-path %shader/ [
     foreach file read spath [
         switch file-ext file [
             %.glsl [
-                n: file-id file
-                poke sl_id 3 div n 256
-                poke sl_id 4 and n 255
+                poke-id sl_id file-id file
                 ifn file-id-seen [
                     cdi-chunk 0x0001 sl_id
                         strip-shader read/into join spath file file_buf
