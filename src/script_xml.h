@@ -136,7 +136,7 @@ public:
     Script();
     ~Script();
 
-    void talkToVendor(const string& goods);
+    void talkToVendor(const char* locale, const string& goods);
 
     void addProvider(const string &name, Provider *p);
     bool load(const string &filename, const string &baseId, const string &subNodeName = "", const string &subNodeId = "");

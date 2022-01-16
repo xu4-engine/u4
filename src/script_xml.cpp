@@ -1728,11 +1728,11 @@ void Script::funcParse(const string & str, string *funcName, string *contents) {
     else funcName->erase();
 }
 
-void Script::talkToVendor(const string& goods) {
+void Script::talkToVendor(const char* locale, const string& goods) {
     // unload the previous script if it wasn't already unloaded
     if (getState() != Script::STATE_UNLOADED)
         unload();
-    load("vendorScript.xml", goods, "vendor", c->location->map->getName());
+    load("vendorScript.xml", goods, "vendor", locale);
     run("intro");
 #ifdef IOS
     U4IOS::IOSConversationChoiceHelper choiceDialog;

@@ -127,6 +127,7 @@ exe %xu4 [
 		%dialogueloader_lb.cpp
 		%dialogueloader_tlk.cpp
 		%direction.cpp
+		%discourse.cpp
 		%dungeon.cpp
 		%dungeonview.cpp
 		%error.cpp

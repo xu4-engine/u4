@@ -5,9 +5,7 @@
 #include <cstring>
 #include "conversation.h"
 #include "debug.h"
-#ifndef USE_BORON
-#include "script_xml.h"
-#endif
+
 #ifdef IOS
 #include "context.h"
 #include "ios_helpers.h"
@@ -162,8 +160,8 @@ void Dialogue::addKeyword(const string &kw, Response *response) {
     keywords[kw] = new Keyword(kw, response);
 }
 
-Dialogue::Keyword *Dialogue::operator[](const string &kw) {
-    KeywordMap::iterator i = keywords.find(kw);
+const Dialogue::Keyword *Dialogue::operator[](const string &kw) const {
+    KeywordMap::const_iterator i = keywords.find(kw);
 
     // If they entered the keyword verbatim, return it!
     if (i != keywords.end())
@@ -188,16 +186,18 @@ ResponseCommand Dialogue::getAction() const {
     return (attackProb - prob < 0x40) ? RC_END : RC_ATTACK;
 }
 
-string Dialogue::dump(const string &arg) {
+string Dialogue::dump(const string &arg) const {
+    KeywordMap::const_iterator it;
     string result;
     if (arg == "") {
         result = "keywords:\n";
-        for (KeywordMap::iterator i = keywords.begin(); i != keywords.end(); i++) {
-            result += i->first + "\n";
+        for (it = keywords.begin(); it != keywords.end(); it++) {
+            result += it->first + "\n";
         }
     } else {
-        if (keywords.find(arg) != keywords.end())
-            result = static_cast<string>(*keywords[arg]->getResponse());
+        it = keywords.find(arg);
+        if (it != keywords.end())
+            result = static_cast<string>(*it->second->getResponse());
     }
 
     return result;
@@ -209,9 +209,6 @@ string Dialogue::dump(const string &arg) {
 
 Conversation::Conversation() : logger(0), state(INTRO) {
     logger = new Debug("debug/conversation.txt", "Conversation");
-#ifndef USE_BORON
-    script = new Script();
-#endif
 #ifdef IOS
     U4IOS::incrementConversationCount();
 #endif
@@ -223,9 +220,6 @@ Conversation::~Conversation() {
     U4IOS::decrementConversationCount();
 #endif
     delete logger;
-#ifndef USE_BORON
-    delete script;
-#endif
 }
 
 Conversation::InputType Conversation::getInputRequired(int *bufferlen) {
@@ -277,4 +271,3 @@ Conversation::InputType Conversation::getInputRequired(int *bufferlen) {
     ASSERT(0, "invalid state: %d", state);
     return INPUT_NONE;
 }
-

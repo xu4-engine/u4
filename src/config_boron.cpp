@@ -1162,6 +1162,23 @@ int Config::scriptItemId(Symbol name) {
     return 0;
 }
 
+/*
+ * Load a chunk from the game module (or overlay).
+ * Return buffer which caller must free().
+ */
+uint8_t* Config::loadChunk(uint32_t appId) const {
+    uint8_t* buf = NULL;
+    const CDIEntry* ent = cdi_findAppId(CX->toc, CX->tocUsed, appId);
+    if (ent) {
+        FILE* fp = fopen(CB->modulePath, "rb");
+        if (fp) {
+            buf = cdi_loadPakChunk(fp, ent);
+            fclose(fp);
+        }
+    }
+    return buf;
+}
+
 const char* Config::modulePath() const {
     return CB->modulePath;
 }

@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "controller.h"
+#include "discourse.h"
 #include "event.h"
 #include "map.h"
 #include "sound.h"
@@ -103,6 +104,8 @@ public:
     static void flashTile(const Coords &coords, Symbol tilename, int timeFactor);
 
     TileView mapArea;
+    Discourse vendorDisc;
+    Discourse castleDisc;
     bool cutScene;
 
 private:

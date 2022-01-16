@@ -47,7 +47,6 @@ void newOrder();
 
 /* conversation functions */
 bool talkAt(const Coords &coords);
-void talkRunConversation(Conversation &conv, Person *talker, bool showPrompt);
 
 /* action functions */
 bool attackAt(const Coords &coords);
@@ -57,9 +56,6 @@ bool jimmyAt(const Coords &coords);
 bool openAt(const Coords &coords);
 void wearArmor(int player = -1);
 void ztatsFor(int player = -1);
-
-/* checking functions */
-void gameLordBritishCheckLevels(void);
 
 /* creature functions */
 void gameDestroyAllCreatures(void);
@@ -145,9 +141,18 @@ GameController::GameController() : TurnController(1),
     cutScene(false)
 {
     gs_listen(1<<SENDER_LOCATION | 1<<SENDER_PARTY, gameNotice, this);
+
+    // Vendor scripts are shared by all cities.
+    discourse_load(&vendorDisc, "vendors");
+
+    // Custom castle dialogue will be loaded on demand.
+    discourse_init(&castleDisc);
 }
 
 GameController::~GameController() {
+    discourse_free(&vendorDisc);
+    discourse_free(&castleDisc);
+
     delete c;
     c = NULL;
 }
@@ -2725,147 +2730,49 @@ void peer(bool useGem) {
  */
 bool talkAt(const Coords &coords) {
     /* can't have any conversations outside of town */
-    if (! isCity(c->location->map)) {
+    City* city = static_cast<City*>(c->location->map);
+    if (! isCity(city)) {
         screenMessage("Funny, no response!\n");
         return true;
     }
 
-    City* city = static_cast<City*>(c->location->map);
-    Person *talker = city->personAt(coords);
-
     /* make sure we have someone we can talk with */
-    if (!talker || !talker->canConverse())
+    Person* speaker = city->personAt(coords);
+    if (! speaker)
         return false;
+
+    PersonNpcType npcType = speaker->getNpcType();
+    if (speaker->isVendor()) {
+        return discourse_run(&xu4.game->vendorDisc,
+                             npcType - NPC_VENDOR_WEAPONS, speaker);
+    }
+
+    if (npcType >= NPC_LORD_BRITISH) {
+        if (npcType == NPC_LORD_BRITISH) {
+            /* If the avatar is dead Lord British resurrects them! */
+            PartyMember* p0 = c->party->member(0);
+            if (p0->getStatus() == STAT_DEAD) {
+                screenMessage("%s, Thou shalt live again!\n",
+                              p0->getName().c_str());
+                p0->setStatus(STAT_GOOD);
+                p0->heal(HT_FULLHEAL);
+                gameSpellEffect('r', -1, SOUND_LBHEAL);
+            }
+        }
+
+        Discourse* dis = &xu4.game->castleDisc;
+        if (! dis->convCount)
+            discourse_load(dis, "castle");
+        return discourse_run(dis, npcType - NPC_LORD_BRITISH, speaker);
+    }
 
     /* No response from alerted guards... does any monster both
        attack and talk besides Nate the Snake? */
-    if  (talker->movement == MOVEMENT_ATTACK_AVATAR &&
-         talker->getId() != PYTHON_ID)
+    if (speaker->movement == MOVEMENT_ATTACK_AVATAR &&
+        speaker->getId() != PYTHON_ID)
         return false;
 
-    /* If talking to Lord British and the avatar is dead, LB resurrects them! */
-    if (talker->getNpcType() == NPC_LORD_BRITISH) {
-        PartyMember* p0 = c->party->member(0);
-        if (p0->getStatus() == STAT_DEAD) {
-            screenMessage("%s, Thou shalt live again!\n",
-                          p0->getName().c_str());
-            p0->setStatus(STAT_GOOD);
-            p0->heal(HT_FULLHEAL);
-            gameSpellEffect('r', -1, SOUND_LBHEAL);
-        }
-    }
-
-    Conversation conv;
-    conv.state = Conversation::INTRO;
-    conv.reply = talker->getConversationText(&conv, "");
-    conv.playerInput.erase();
-    talkRunConversation(conv, talker, false);
-
-    return true;
-}
-
-/**
- * Executes the current conversation until it is done.
- */
-void talkRunConversation(Conversation &conv, Person *talker, bool showPrompt) {
-    while (conv.state != Conversation::DONE && xu4.stage == StagePlay) {
-        // TODO: instead of calculating linesused again, cache the
-        // result in person.cpp somewhere.
-        int linesused = linecount(conv.reply.front(), TEXT_AREA_W);
-        screenMessage("%s", conv.reply.front().c_str());
-        conv.reply.pop_front();
-
-        /* if all chunks haven't been shown, wait for a key and process next chunk*/
-        int size = conv.reply.size();
-        if (size > 0) {
-#ifdef IOS
-            U4IOS::IOSConversationChoiceHelper continueDialog;
-            continueDialog.updateChoices(" ");
-#endif
-            ReadChoiceController::get("");
-            continue;
-        }
-
-        /* otherwise, clear current reply and proceed based on conversation state */
-        conv.reply.clear();
-
-        /* they're attacking you! */
-        if (conv.state == Conversation::ATTACK) {
-            conv.state = Conversation::DONE;
-            talker->movement = MOVEMENT_ATTACK_AVATAR;
-        }
-
-        if (conv.state == Conversation::DONE)
-            break;
-
-        /* When Lord British heals the party */
-        else if (conv.state == Conversation::FULLHEAL) {
-            int i;
-            for (i = 0; i < c->party->size(); i++) {
-                c->party->member(i)->heal(HT_CURE);        // cure the party
-                c->party->member(i)->heal(HT_FULLHEAL);    // heal the party
-            }
-            gameSpellEffect('r', -1, SOUND_MAGIC); // same spell effect as 'r'esurrect
-            conv.state = Conversation::TALK;
-        }
-        /* When Lord British checks and advances each party member's level */
-        else if (conv.state == Conversation::ADVANCELEVELS) {
-            gameLordBritishCheckLevels();
-            conv.state = Conversation::TALK;
-        }
-
-        if (showPrompt) {
-            string prompt = talker->getPrompt(&conv);
-            if (!prompt.empty()) {
-                if (linesused + linecount(prompt, TEXT_AREA_W) > TEXT_AREA_H) {
-#ifdef IOS
-                    U4IOS::IOSConversationChoiceHelper continueDialog;
-                    continueDialog.updateChoices(" ");
-#endif
-                    ReadChoiceController::get("");
-                }
-
-                screenMessage("%s", prompt.c_str());
-            }
-        }
-
-        int maxlen;
-        switch (conv.getInputRequired(&maxlen)) {
-        case Conversation::INPUT_STRING: {
-            conv.playerInput = gameGetInput(maxlen);
-#ifdef IOS
-            screenMessage("%s", conv.playerInput.c_str()); // Since we put this in a different window, we need to show it again.
-#endif
-            conv.reply = talker->getConversationText(&conv, conv.playerInput.c_str());
-            conv.playerInput.erase();
-            showPrompt = true;
-            break;
-        }
-        case Conversation::INPUT_CHARACTER: {
-            char message[2];
-#ifdef IOS
-            U4IOS::IOSConversationChoiceHelper yesNoHelper;
-            yesNoHelper.updateChoices("yn ");
-#endif
-            int choice = ReadChoiceController::get("");
-            message[0] = choice;
-            message[1] = '\0';
-
-            conv.reply = talker->getConversationText(&conv, message);
-            conv.playerInput.erase();
-
-            showPrompt = true;
-            break;
-        }
-
-        case Conversation::INPUT_NONE:
-            conv.state = Conversation::DONE;
-            break;
-        }
-    }
-
-    if (conv.reply.size() > 0)
-        screenMessage("%s", conv.reply.front().c_str());
+    return discourse_run(&city->disc, speaker->discourseId(), speaker);
 }
 
 /**
@@ -3412,30 +3319,6 @@ void GameController::checkBridgeTrolls() {
     Creature *m = map->addCreature(xu4.config->creature(TROLL_ID),
                                    c->location->coords);
     CombatController::engage(MapId(MAP_BRIDGE_CON), m);
-}
-
-/**
- * Check the levels of each party member while talking to Lord British
- */
-void gameLordBritishCheckLevels() {
-    bool advanced = false;
-
-    for (int i = 0; i < c->party->size(); i++) {
-        PartyMember *player = c->party->member(i);
-        if (player->getRealLevel() <
-            player->getMaxLevel()) {
-
-            // add an extra space to separate messages
-            if (!advanced) {
-                screenMessage("\n");
-                advanced = true;
-            }
-
-            player->advanceLevel();
-        }
-    }
-
-    screenMessage("\nWhat would thou\nask of me?\n");
 }
 
 /**

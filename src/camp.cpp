@@ -7,11 +7,12 @@
 #include "city.h"
 #include "config.h"
 #include "context.h"
-#include "conversation.h"
+#include "discourse.h"
 #include "mapmgr.h"
 #include "screen.h"
 #include "settings.h"
 #include "tileset.h"
+#include "utils.h"
 #include "xu4.h"
 
 
@@ -179,15 +180,11 @@ bool InnController::heal() {
 void InnController::maybeMeetIsaac()
 {
     // Does Isaac the Ghost pay a visit to the Avatar?
-    //  if ((location == skara_brae) && (random(4) = 0) {
-    //          // create Isaac the Ghost
-    //  }
     if ((c->location->map->id == 11) && (xu4_random(4) == 0)) {
         City *city = dynamic_cast<City*>(c->location->map);
 
-        if (city->extraDialogues.size() == 1 &&
-            city->extraDialogues[0]->getName() == "Isaac") {
-
+        int pos = discourse_findName(&city->disc, "Isaac");
+        if (pos >= 0) {
             Coords coords(27, xu4_random(3) + 10, c->location->coords.z);
 
             // If Isaac is already around, just bring him back to the inn
@@ -201,17 +198,14 @@ void InnController::maybeMeetIsaac()
                 }
             }
 
-            // Otherwise, we need to create Isaac
-            Person *Isaac;
-            Isaac = new Person(xu4.config->creature(GHOST_ID)->tile);
+            // Otherwise, we need to create Isaac near the Avatar
+            Person *Isaac = new Person(xu4.config->creature(GHOST_ID)->tile);
 
             Isaac->movement = MOVEMENT_WANDER;
-
-            Isaac->setDialogue(city->extraDialogues[0]);
+            Isaac->setDiscourseId(pos);
             Isaac->getStart() = coords;
             Isaac->prevTile = Isaac->tile;
 
-            // Add Isaac near the Avatar
             city->addPerson(Isaac);
         }
     }

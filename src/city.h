@@ -6,6 +6,7 @@
 #define CITY_H
 
 #include "map.h"
+#include "discourse.h"
 
 struct PersonRole {
     int16_t role;   // PersonNpcType
@@ -13,12 +14,12 @@ struct PersonRole {
 };
 
 class Person;
-class Dialogue;
 
 typedef std::vector<Person *> PersonList;
 
 class City : public Map {
 public:
+    City();
     ~City();
 
     // Members
@@ -35,8 +36,7 @@ public:
     Symbol cityType;
     PersonList persons;
     std::vector<PersonRole> personroles;
-    std::vector<Dialogue *> dialogueStore;  // Only used to delete Dialogues.
-    std::vector<Dialogue *> extraDialogues;
+    Discourse disc;
 };
 
 #endif

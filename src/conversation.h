@@ -18,7 +18,6 @@ using std::vector;
 
 class Debug;
 class Person;
-class Script;
 
 enum ResponseCommand {
     RC_NONE,
@@ -154,7 +153,7 @@ public:
          * Accessor methods
          */
         const string &getKeyword()  {return keyword;}
-        Response *getResponse()     {return response;}
+        Response *getResponse() const {return response;}
 
     private:
         string keyword;
@@ -178,9 +177,9 @@ public:
     const string &getName() const                   {return name;}
     const string &getPronoun() const                {return pronoun;}
     const string &getPrompt() const                 {return prompt;}
-    Response *getIntro(bool familiar = false)       {return intro;}
-    Response *getLongIntro(bool familiar = false)   {return longIntro;}
-    Response *getDefaultAnswer()                    {return defaultAnswer;}
+    Response *getIntro(bool familiar = false) const {return intro;}
+    Response *getLongIntro(bool familiar = false) const {return longIntro;}
+    Response *getDefaultAnswer() const              {return defaultAnswer;}
     const Dialogue::Question* getQuestion() const   {return &question;}
 
     /*
@@ -199,12 +198,12 @@ public:
     void addKeyword(const string &kw, Response *response);
 
     ResponseCommand getAction() const;
-    string dump(const string &arg);
+    string dump(const string &arg) const;
 
     /*
      * Operators
      */
-    Keyword *operator[](const string &kw);
+    const Keyword *operator[](const string &kw) const;
 
 private:
     string name;
@@ -274,9 +273,7 @@ public:
     State state;                /**< The state of the conversation */
     string playerInput;         /**< A string holding the text the player inputs */
     list<string> reply;         /**< What the talker says */
-#ifndef USE_BORON
-    class Script *script;       /**< A script that this person follows during the conversation (may be NULL) */
-#endif
+    const Dialogue* dialogue;
     const Dialogue::Question *question; /**< The current question the player is being asked */
     int quant;                  /**< For vendor transactions */
     int player;                 /**< For vendor transactions */

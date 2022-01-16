@@ -2,6 +2,7 @@
  * maploader.cpp
  */
 
+#include <cassert>
 #include <cstring>
 #include "u4.h"
 
@@ -163,10 +164,6 @@ static int moveBehavior(int ultValue) {
     return -1;
 }
 
-extern Dialogue* U4Tlk_load(U4FILE *file);
-extern Dialogue* U4LordBritish_load();
-extern Dialogue* U4Hawkwind_load();
-
 /**
  * Load city data from 'ult' and 'tlk' files.
  */
@@ -178,7 +175,6 @@ static bool loadCityMap(Map *map, U4FILE *ult) {
     Person* per;
     Person *people[CITY_MAX_PERSONS];
     const UltimaSaveIds* usaveIds = xu4.config->usaveIds();
-    Dialogue* dlg;
     bool ok = false;
 
     /* the map must be 32x32 to be read from an .ULT file */
@@ -220,39 +216,25 @@ static bool loadCityMap(Map *map, U4FILE *ult) {
 
     {
     const uint8_t* conv_idx = data + PD_CONV;
-    U4FILE *tlk = u4fopen(xu4.config->confString(city->tlk_fname));
-    if (! tlk)
-        errorFatal("Unable to open .TLK file");
+    const char* err;
+    int count;
 
-    // NOTE: Ultima 4 .TLK files only have 16 conversations, but this`loop
-    // will support mods with more.
-    for (i = 0; i < CITY_MAX_PERSONS; i++) {
-        dlg = U4Tlk_load(tlk);
-        if (! dlg)
-            break;
+    err = discourse_load(&city->disc, xu4.config->confString(city->tlk_fname));
+    if (err)
+        errorFatal(err);
 
+    count = city->disc.convCount;
+    for (i = 0; i < count; i++) {
         /*
          * Match up dialogues with their respective people. Multiple people
-         * can share the same dialogue.
+         * can share the same dialogue. Some NPCs, like Isaac the ghost in
+         * Skara Brae, will attach to their dialogue later.
          */
-        bool found = false;
         for (j = 0; j < CITY_MAX_PERSONS; j++) {
-            if (conv_idx[j] == i+1) {
-                people[j]->setDialogue(dlg);
-                found = true;
-            }
+            if (conv_idx[j] == i+1)
+                people[j]->setDiscourseId(i);
         }
-        /*
-         * if the dialogue doesn't match up with a person, attach it to the
-         * city; Isaac the ghost in Skara Brae is handled like this
-         */
-        if (! found)
-            city->extraDialogues.push_back(dlg);
-        else
-            city->dialogueStore.push_back(dlg);
     }
-
-    u4fclose(tlk);
     }
 
     /*
@@ -262,18 +244,8 @@ static bool loadCityMap(Map *map, U4FILE *ult) {
     vector<PersonRole>::iterator ri;
     foreach (ri, city->personroles) {
         per = people[ (*ri).id - 1 ];
-        if (per) {
-            if ((*ri).role == NPC_LORD_BRITISH) {
-                dlg = U4LordBritish_load();
-set_dialog:
-                per->setDialogue(dlg);
-                city->dialogueStore.push_back(dlg);
-            } else if ((*ri).role == NPC_HAWKWIND) {
-                dlg = U4Hawkwind_load();
-                goto set_dialog;
-            }
+        if (per)
             per->setNpcType(static_cast<PersonNpcType>((*ri).role));
-        }
     }
     }
     ok = true;

@@ -14,9 +14,7 @@ using std::list;
 using std::string;
 
 class Conversation;
-class Dialogue;
 class Response;
-class ResponsePart;
 
 typedef enum {
    NPC_EMPTY,
@@ -43,16 +41,15 @@ public:
     Person(const MapTile& tile);
     Person(const Person *p);
 
-    bool canConverse() const;
     bool isVendor() const;
-    virtual string getName() const;
-    void setDialogue(Dialogue *d);
+    void setDiscourseId(uint16_t n);
+    uint16_t discourseId() const { return convId; }
     Coords &getStart() { return start; }
     PersonNpcType getNpcType() const { return npcType; }
     void setNpcType(PersonNpcType t);
 
     list<string> getConversationText(Conversation *cnv, const char *inquiry);
-    string getPrompt(Conversation *cnv);
+    string personPrompt(Conversation *cnv);
 
     string getIntro(Conversation *cnv);
     string processResponse(Conversation *cnv, Response *response);
@@ -61,17 +58,15 @@ public:
     string talkerGetQuestionResponse(Conversation *cnv, const char *inquiry);
     string beggarGetQuantityResponse(Conversation *cnv, const char *response);
     string lordBritishGetQuestionResponse(Conversation *cnv, const char *answer);
-    string getQuestion(Conversation *cnv);
 
 private:
-    Dialogue* dialogue;
+    void initNpcType();
+
     Coords start;
     PersonNpcType npcType;
+    uint16_t convId;
 };
 
 bool isPerson(const Object *punknown);
-
-list<string> replySplit(const string &text);
-int linecount(const string &s, int columnmax);
 
 #endif

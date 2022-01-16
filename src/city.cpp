@@ -6,20 +6,19 @@
 
 #include "config.h"
 #include "context.h"
-#include "conversation.h"
 #include "party.h"
 #include "xu4.h"
 
+
+City::City() {
+    discourse_init(&disc);
+}
 
 City::~City() {
     for (PersonList::iterator i = persons.begin(); i != persons.end(); i++)
         delete *i;
 
-    std::vector<Dialogue *>::iterator k;
-    for (k = dialogueStore.begin(); k != dialogueStore.end(); k++)
-        delete *k;
-    for (k = extraDialogues.begin(); k != extraDialogues.end(); k++)
-        delete *k;
+    discourse_free(&disc);
 }
 
 /**

@@ -2,7 +2,6 @@
  * $Id$
  */
 
-#include <algorithm>
 #include <cstring>
 #include <vector>
 
@@ -14,6 +13,7 @@
 #include "game.h"   // Included for ReadPlayerController
 #include "party.h"
 #include "settings.h"
+#include "screen.h"
 #include "u4.h"
 #include "xu4.h"
 
@@ -47,7 +47,7 @@ bool isPerson(const Object *punknown) {
 /**
  * Splits a piece of response text into screen-sized chunks.
  */
-list<string> replySplit(const string &text) {
+static list<string> replySplit(const string &text) {
     string str = text;
     int pos, real_lines;
     list<string> reply;
@@ -94,159 +94,267 @@ Person::Person(const MapTile& tile) :
     start(0, 0)
 {
     objType = Object::PERSON;
-    dialogue = NULL;
     npcType = NPC_EMPTY;
+    convId = 0xffff;
 }
 
 Person::Person(const Person *p) {
     *this = *p;
 }
 
-bool Person::canConverse() const {
-    return isVendor() || dialogue != NULL;
-}
-
 bool Person::isVendor() const {
-    return
-        npcType >= NPC_VENDOR_WEAPONS &&
-        npcType <= NPC_VENDOR_STABLE;
+    return npcType >= NPC_VENDOR_WEAPONS &&
+           npcType <= NPC_VENDOR_STABLE;
 }
 
-string Person::getName() const {
-    if (dialogue)
-        return dialogue->getName();
-    else if (npcType == NPC_EMPTY)
-        return Creature::getName();
-    else
-        return "(unnamed person)";
-}
-
-void Person::setDialogue(Dialogue *d) {
-    dialogue = d;
-    if (tile.getTileType()->name == Tile::sym.beggar)
+void Person::initNpcType() {
+    Symbol tname = tile.getTileType()->name;
+    if (tname == Tile::sym.beggar)
         npcType = NPC_TALKER_BEGGAR;
-    else if (tile.getTileType()->name == Tile::sym.guard)
+    else if (tname == Tile::sym.guard)
         npcType = NPC_TALKER_GUARD;
     else
         npcType = NPC_TALKER;
 }
 
-void Person::setNpcType(PersonNpcType t) {
-    npcType = t;
-    ASSERT(!isVendor() || dialogue == NULL, "vendor has dialogue");
+void Person::setDiscourseId(uint16_t n) {
+    convId = n;
+    initNpcType();
 }
 
-static void pauseFollow(Object* obj) {
-    if (obj->movement == MOVEMENT_FOLLOW_AVATAR)
-        obj->movement = MOVEMENT_FOLLOW_PAUSE;
+void Person::setNpcType(PersonNpcType t) {
+    npcType = t;
 }
 
 list<string> Person::getConversationText(Conversation *cnv, const char *inquiry) {
-    string text;
+    string text("\n\n\n");
 
-    /*
-     * a conversation with a vendor
-     */
-    if (isVendor()) {
-        Controller noTurns;
-        xu4.eventHandler->pushController(&noTurns);
-#ifdef USE_BORON
-        static const char* vendorId[] = {
-            "weapons", "armor", "food", "tavern", "reagents",
-            "healer", "inn", "guild", "stable"
-        };
-        if (cnv->state == Conversation::INTRO) {
-            // Make a valid Boron word! from names with spaces.
-            text = c->location->map->getName();
-            replace(text.begin(), text.end(), ' ', '-');
+    switch (cnv->state) {
+    case Conversation::INTRO:
+        text = getIntro(cnv);
+        break;
 
-            xu4.config->scriptEvalArg("talk-to %s '%s",
-                vendorId[npcType - NPC_VENDOR_WEAPONS], text.c_str());
-            text.clear();
-            pauseFollow(this);
-        }
-#else
-        static const string ids[] = {
-            "Weapons", "Armor", "Food", "Tavern", "Reagents",
-            "Healer", "Inn", "Guild", "Stable"
-        };
-        Script *script = cnv->script;
+    case Conversation::TALK:
+        text += getResponse(cnv, inquiry) + "\n";
+        break;
 
-        /**
-         * We aren't currently running a script, load the appropriate one!
-         */
-        if (cnv->state == Conversation::INTRO) {
-            script->talkToVendor(ids[npcType - NPC_VENDOR_WEAPONS]);
-            pauseFollow(this);
-        }
+    case Conversation::CONFIRMATION:
+        ASSERT(npcType == NPC_LORD_BRITISH, "invalid state: %d", cnv->state);
+        text += lordBritishGetQuestionResponse(cnv, inquiry);
+        break;
 
-        // Unload the script
-        script->unload();
-#endif
-        cnv->state = Conversation::DONE;
-        xu4.eventHandler->popController();
-    }
+    case Conversation::ASK:
+    case Conversation::ASKYESNO:
+        ASSERT(npcType != NPC_HAWKWIND, "invalid state for hawkwind conversation");
+        text += talkerGetQuestionResponse(cnv, inquiry) + "\n";
+        break;
 
-    /*
-     * a conversation with a non-vendor
-     */
-    else {
-        text = "\n\n\n";
+    case Conversation::GIVEBEGGAR:
+        ASSERT(npcType == NPC_TALKER_BEGGAR, "invalid npc type: %d", npcType);
+        text = beggarGetQuantityResponse(cnv, inquiry);
+        break;
 
-        switch (cnv->state) {
-        case Conversation::INTRO:
-            text = getIntro(cnv);
-            break;
+    case Conversation::FULLHEAL:
+    case Conversation::ADVANCELEVELS:
+        /* handled elsewhere */
+        break;
 
-        case Conversation::TALK:
-            text += getResponse(cnv, inquiry) + "\n";
-            break;
-
-        case Conversation::CONFIRMATION:
-            ASSERT(npcType == NPC_LORD_BRITISH, "invalid state: %d", cnv->state);
-            text += lordBritishGetQuestionResponse(cnv, inquiry);
-            break;
-
-        case Conversation::ASK:
-        case Conversation::ASKYESNO:
-            ASSERT(npcType != NPC_HAWKWIND, "invalid state for hawkwind conversation");
-            text += talkerGetQuestionResponse(cnv, inquiry) + "\n";
-            break;
-
-        case Conversation::GIVEBEGGAR:
-            ASSERT(npcType == NPC_TALKER_BEGGAR, "invalid npc type: %d", npcType);
-            text = beggarGetQuantityResponse(cnv, inquiry);
-            break;
-
-        case Conversation::FULLHEAL:
-        case Conversation::ADVANCELEVELS:
-            /* handled elsewhere */
-            break;
-
-        default:
-            ASSERT(0, "invalid state: %d", cnv->state);
-        }
+    default:
+        ASSERT(0, "invalid state: %d", cnv->state);
     }
 
     return replySplit(text);
 }
 
 /**
+ * Check the levels of each party member while talking to Lord British
+ */
+static void lordBritishCheckLevels() {
+    bool advanced = false;
+
+    for (int i = 0; i < c->party->size(); i++) {
+        PartyMember *player = c->party->member(i);
+        if (player->getRealLevel() <
+            player->getMaxLevel()) {
+
+            // add an extra space to separate messages
+            if (!advanced) {
+                screenMessage("\n");
+                advanced = true;
+            }
+
+            player->advanceLevel();
+        }
+    }
+
+    screenMessage("\nWhat would thou\nask of me?\n");
+}
+
+/**
+ * Returns the number of characters needed to get to
+ * the next line of text (based on column width).
+ */
+static int chars_to_next_line(const char *s, int columnmax) {
+    int chars = -1;
+
+    if (strlen(s) > 0) {
+        int lastbreak = columnmax;
+        chars = 0;
+        for (const char *str = s; *str; str++) {
+            if (*str == '\n')
+                return (str - s);
+            else if (*str == ' ')
+                lastbreak = (str - s);
+            else if (++chars >= columnmax)
+                return lastbreak;
+        }
+    }
+
+    return chars;
+}
+
+/**
+ * Counts the number of lines (of the maximum width given by
+ * columnmax) in the string.
+ */
+static int linecount(const string &s, int columnmax) {
+    int lines = 0;
+    unsigned ch = 0;
+    while (ch < s.length()) {
+        ch += chars_to_next_line(s.c_str() + ch, columnmax);
+        if (ch < s.length())
+            ch++;
+        lines++;
+    }
+    return lines;
+}
+
+/**
+ * Executes the current conversation until it is done.
+ */
+void talkRunConversation(Person* talker, const Dialogue* dial) {
+    Conversation conv;
+    bool showPrompt = false;
+
+    conv.state = Conversation::INTRO;
+    conv.dialogue = dial;
+    conv.reply = talker->getConversationText(&conv, "");
+    conv.playerInput.erase();
+
+    while (conv.state != Conversation::DONE && xu4.stage == StagePlay) {
+        // TODO: instead of calculating linesused again, cache the
+        // result in person.cpp somewhere.
+        int linesused = linecount(conv.reply.front(), TEXT_AREA_W);
+        screenMessage("%s", conv.reply.front().c_str());
+        conv.reply.pop_front();
+
+        /* if all chunks haven't been shown, wait for a key and process next chunk*/
+        int size = conv.reply.size();
+        if (size > 0) {
+#ifdef IOS
+            U4IOS::IOSConversationChoiceHelper continueDialog;
+            continueDialog.updateChoices(" ");
+#endif
+            ReadChoiceController::get("");
+            continue;
+        }
+
+        /* otherwise, clear current reply and proceed based on conversation state */
+        conv.reply.clear();
+
+        /* they're attacking you! */
+        if (conv.state == Conversation::ATTACK) {
+            conv.state = Conversation::DONE;
+            talker->movement = MOVEMENT_ATTACK_AVATAR;
+        }
+
+        if (conv.state == Conversation::DONE)
+            break;
+
+        /* When Lord British heals the party */
+        else if (conv.state == Conversation::FULLHEAL) {
+            int i;
+            for (i = 0; i < c->party->size(); i++) {
+                c->party->member(i)->heal(HT_CURE);        // cure the party
+                c->party->member(i)->heal(HT_FULLHEAL);    // heal the party
+            }
+            gameSpellEffect('r', -1, SOUND_MAGIC); // same spell effect as 'r'esurrect
+            conv.state = Conversation::TALK;
+        }
+        /* When Lord British checks and advances each party member's level */
+        else if (conv.state == Conversation::ADVANCELEVELS) {
+            lordBritishCheckLevels();
+            conv.state = Conversation::TALK;
+        }
+
+        if (showPrompt) {
+            string prompt = talker->personPrompt(&conv);
+            if (!prompt.empty()) {
+                if (linesused + linecount(prompt, TEXT_AREA_W) > TEXT_AREA_H) {
+#ifdef IOS
+                    U4IOS::IOSConversationChoiceHelper continueDialog;
+                    continueDialog.updateChoices(" ");
+#endif
+                    ReadChoiceController::get("");
+                }
+
+                screenMessage("%s", prompt.c_str());
+            }
+        }
+
+        int maxlen;
+        switch (conv.getInputRequired(&maxlen)) {
+        case Conversation::INPUT_STRING: {
+            conv.playerInput = gameGetInput(maxlen);
+#ifdef IOS
+            screenMessage("%s", conv.playerInput.c_str()); // Since we put this in a different window, we need to show it again.
+#endif
+            conv.reply = talker->getConversationText(&conv, conv.playerInput.c_str());
+            conv.playerInput.erase();
+            showPrompt = true;
+            break;
+        }
+        case Conversation::INPUT_CHARACTER: {
+            char message[2];
+#ifdef IOS
+            U4IOS::IOSConversationChoiceHelper yesNoHelper;
+            yesNoHelper.updateChoices("yn ");
+#endif
+            int choice = ReadChoiceController::get("");
+            message[0] = choice;
+            message[1] = '\0';
+
+            conv.reply = talker->getConversationText(&conv, message);
+            conv.playerInput.erase();
+
+            showPrompt = true;
+            break;
+        }
+
+        case Conversation::INPUT_NONE:
+            conv.state = Conversation::DONE;
+            break;
+        }
+    }
+
+    if (conv.reply.size() > 0)
+        screenMessage("%s", conv.reply.front().c_str());
+}
+
+/**
  * Get the prompt shown after each reply.
  */
-string Person::getPrompt(Conversation *cnv) {
-    if (isVendor())
-        return "";
-
+string Person::personPrompt(Conversation *cnv) {
     string prompt;
+
     if (cnv->state == Conversation::ASK)
-        prompt = getQuestion(cnv);
+        prompt = "\n" + cnv->question->text + "\n\nYou say: ";
     else if (cnv->state == Conversation::GIVEBEGGAR)
         prompt = "How much? ";
     else if (cnv->state == Conversation::CONFIRMATION)
         prompt = "\n\nHe asks: Art thou well?";
     else if (cnv->state != Conversation::ASKYESNO)
-        prompt = dialogue->getPrompt();
+        prompt = cnv->dialogue->getPrompt();
 
     return prompt;
 }
@@ -261,14 +369,12 @@ string Person::getIntro(Conversation *cnv) {
     // name in the introduction
     Response *intro;
     if (xu4_random(2) == 0)
-        intro = dialogue->getIntro();
+        intro = cnv->dialogue->getIntro();
     else
-        intro = dialogue->getLongIntro();
+        intro = cnv->dialogue->getLongIntro();
 
     cnv->state = Conversation::TALK;
-    string text = processResponse(cnv, intro);
-
-    return text;
+    return processResponse(cnv, intro);
 }
 
 string Person::processResponse(Conversation *cnv, Response *response) {
@@ -293,7 +399,7 @@ string Person::processResponse(Conversation *cnv, Response *response) {
 void Person::runCommand(Conversation *cnv, int command) {
     switch (command) {
         case RC_ASK:
-            cnv->question = dialogue->getQuestion();
+            cnv->question = cnv->dialogue->getQuestion();
             cnv->state = Conversation::ASK;
             break;
         case RC_END:
@@ -335,6 +441,7 @@ void Person::runCommand(Conversation *cnv, int command) {
 string Person::getResponse(Conversation *cnv, const char *inquiry) {
     string reply;
     Virtue v;
+    const Dialogue* dialogue = cnv->dialogue;
     int cmd = dialogue->getAction();
 
     reply = "\n";
@@ -346,7 +453,7 @@ string Person::getResponse(Conversation *cnv, const char *inquiry) {
     }
     if (cmd == RC_ATTACK) {
         runCommand(cnv, cmd);
-        return string("\n") + getName() + " says: On guard! Fool!";
+        return string("\n") + dialogue->getName() + " says: On guard! Fool!";
     }
 
     if (npcType == NPC_TALKER_BEGGAR && strncasecmp(inquiry, "give", 4) == 0) {
@@ -355,8 +462,8 @@ string Person::getResponse(Conversation *cnv, const char *inquiry) {
     }
 
     else if (strncasecmp(inquiry, "join", 4) == 0 &&
-             c->party->canPersonJoin(getName(), &v)) {
-        CannotJoinError join = c->party->join(getName());
+             c->party->canPersonJoin(dialogue->getName(), &v)) {
+        CannotJoinError join = c->party->join(dialogue->getName());
 
         if (join == JOIN_SUCCEEDED) {
             reply += "I am honored to join thee!";
@@ -370,7 +477,7 @@ string Person::getResponse(Conversation *cnv, const char *inquiry) {
     }
 
     else if ((*dialogue)[inquiry]) {
-        Dialogue::Keyword *kw = (*dialogue)[inquiry];
+        const Dialogue::Keyword *kw = (*dialogue)[inquiry];
 
         reply = processResponse(cnv, kw->getResponse());
     }
@@ -417,10 +524,9 @@ string Person::beggarGetQuantityResponse(Conversation *cnv, const char *response
     if (cnv->quant > 0) {
         if (c->party->donate(cnv->quant)) {
             reply = "\n";
-            reply += dialogue->getPronoun();
+            reply += cnv->dialogue->getPronoun();
             reply += " says: Oh Thank thee! I shall never forget thy kindness!\n";
         }
-
         else
             reply = "\n\nThou hast not that much gold!\n";
     } else
@@ -437,59 +543,14 @@ string Person::lordBritishGetQuestionResponse(Conversation *cnv, const char *ans
     if (tolower(answer[0]) == 'y') {
         reply = "Y\n\nHe says: That is good.\n";
     }
-
     else if (tolower(answer[0]) == 'n') {
         reply = "N\n\nHe says: Let me heal thy wounds!\n";
         cnv->state = Conversation::FULLHEAL;
     }
-
     else
         reply = "\n\nThat I cannot\nhelp thee with.\n";
 
     return reply;
-}
-
-string Person::getQuestion(Conversation *cnv) {
-    return "\n" + cnv->question->text + "\n\nYou say: ";
-}
-
-/**
- * Returns the number of characters needed to get to
- * the next line of text (based on column width).
- */
-int chars_to_next_line(const char *s, int columnmax) {
-    int chars = -1;
-
-    if (strlen(s) > 0) {
-        int lastbreak = columnmax;
-        chars = 0;
-        for (const char *str = s; *str; str++) {
-            if (*str == '\n')
-                return (str - s);
-            else if (*str == ' ')
-                lastbreak = (str - s);
-            else if (++chars >= columnmax)
-                return lastbreak;
-        }
-    }
-
-    return chars;
-}
-
-/**
- * Counts the number of lines (of the maximum width given by
- * columnmax) in the string.
- */
-int linecount(const string &s, int columnmax) {
-    int lines = 0;
-    unsigned ch = 0;
-    while (ch < s.length()) {
-        ch += chars_to_next_line(s.c_str() + ch, columnmax);
-        if (ch < s.length())
-            ch++;
-        lines++;
-    }
-    return lines;
 }
 
 /**
