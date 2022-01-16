@@ -7,7 +7,6 @@
 
 #include "context.h"
 #include "conversation.h"
-#include "dialogueloader_hw.h"
 #include "party.h"
 
 using std::string;
@@ -30,12 +29,10 @@ Response *hawkwindGetIntro(DynamicResponse *dynResp);
 
 std::vector<string> hawkwindText;
 
-DialogueLoader* U4HWDialogueLoader::instance = DialogueLoader::registerLoader(new U4HWDialogueLoader, "application/x-u4hwtlk");
-
 /**
  * A special case dialogue loader for Hawkwind.
  */
-Dialogue* U4HWDialogueLoader::load(void *source) {
+Dialogue* U4Hawkwind_load() {
     U4FILE *avatar = u4fopen("avatar.exe");
     if (!avatar)
         return NULL;

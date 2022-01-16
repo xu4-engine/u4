@@ -7,7 +7,6 @@
 
 #include "context.h"
 #include "conversation.h"
-#include "dialogueloader_lb.h"
 #include "party.h"
 
 using std::string;
@@ -15,8 +14,6 @@ using std::vector;
 
 Response* lordBritishGetHelp(DynamicResponse* resp);
 Response* lordBritishGetIntro(DynamicResponse* resp);
-
-DialogueLoader* U4LBDialogueLoader::instance = DialogueLoader::registerLoader(new U4LBDialogueLoader, "application/x-u4lbtlk");
 
 // Farewell is dynamic just to switch between singular & plural "friend".
 static Response* lordBritishFarewell(DynamicResponse* resp) {
@@ -34,7 +31,7 @@ static Response* lordBritishFarewell(DynamicResponse* resp) {
  * "help" response is a special case that changes based on the
  * current party status.
  */
-Dialogue* U4LBDialogueLoader::load(void *source) {
+Dialogue* U4LordBritish_load() {
     U4FILE *avatar = u4fopen("avatar.exe");
     if (!avatar)
         return NULL;

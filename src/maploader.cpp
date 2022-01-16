@@ -7,7 +7,6 @@
 
 #include "city.h"
 #include "config.h"
-#include "dialogueloader.h"
 #include "debug.h"
 #include "dungeon.h"
 #include "error.h"
@@ -164,6 +163,10 @@ static int moveBehavior(int ultValue) {
     return -1;
 }
 
+extern Dialogue* U4Tlk_load(U4FILE *file);
+extern Dialogue* U4LordBritish_load();
+extern Dialogue* U4Hawkwind_load();
+
 /**
  * Load city data from 'ult' and 'tlk' files.
  */
@@ -221,12 +224,10 @@ static bool loadCityMap(Map *map, U4FILE *ult) {
     if (! tlk)
         errorFatal("Unable to open .TLK file");
 
-    DialogueLoader *dlgLoader = DialogueLoader::getLoader("application/x-u4tlk");
-
     // NOTE: Ultima 4 .TLK files only have 16 conversations, but this`loop
     // will support mods with more.
     for (i = 0; i < CITY_MAX_PERSONS; i++) {
-        dlg = dlgLoader->load(tlk);
+        dlg = U4Tlk_load(tlk);
         if (! dlg)
             break;
 
@@ -263,12 +264,12 @@ static bool loadCityMap(Map *map, U4FILE *ult) {
         per = people[ (*ri).id - 1 ];
         if (per) {
             if ((*ri).role == NPC_LORD_BRITISH) {
-                dlg = DialogueLoader::getLoader("application/x-u4lbtlk")->load(NULL);
+                dlg = U4LordBritish_load();
 set_dialog:
                 per->setDialogue(dlg);
                 city->dialogueStore.push_back(dlg);
             } else if ((*ri).role == NPC_HAWKWIND) {
-                dlg = DialogueLoader::getLoader("application/x-u4hwtlk")->load(NULL);
+                dlg = U4Hawkwind_load();
                 goto set_dialog;
             }
             per->setNpcType(static_cast<PersonNpcType>((*ri).role));

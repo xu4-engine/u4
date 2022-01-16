@@ -123,7 +123,6 @@ exe %xu4 [
 		%creature.cpp
 		%death.cpp
 		%debug.cpp
-		%dialogueloader.cpp
 		%dialogueloader_hw.cpp
 		%dialogueloader_lb.cpp
 		%dialogueloader_tlk.cpp

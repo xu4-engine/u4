@@ -6,19 +6,14 @@
 #include <cstring>
 
 #include "conversation.h"
-#include "dialogueloader_tlk.h"
 #include "u4file.h"
 
 using std::string;
 
-DialogueLoader* U4TlkDialogueLoader::instance = DialogueLoader::registerLoader(new U4TlkDialogueLoader, "application/x-u4tlk");
-
 /**
  * A dialogue loader for standard u4dos .tlk files.
  */
-Dialogue* U4TlkDialogueLoader::load(void *source) {
-    U4FILE *file = static_cast<U4FILE*>(source);
-
+Dialogue* U4Tlk_load(U4FILE *file) {
     enum QTrigger {
         NONE = 0,
         JOB = 3,
