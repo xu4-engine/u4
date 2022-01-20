@@ -2,6 +2,7 @@
  * tlkconv.c
  */
 
+#include <ctype.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -67,6 +68,29 @@ void talk_init(struct Talk* ts, char* tlk_buffer) {
         default:
             ts->askAfter = NULL; break;
     }
+}
+
+//--------------------------------------
+
+static char fixed[128];
+
+/*
+ * Make the first character lowercase and ensure the string ends with a period.
+ */
+const char* fixLook(const struct Talk* ts) {
+    char* it   = fixed;
+    char* last = fixed + sizeof(fixed) - 1;
+    const char* src  = ts->look;
+
+    while (it != last && *src)
+        *it++ = *src++;
+
+    fixed[0] = tolower(fixed[0]);
+    if (it != last && it[-1] != '.')
+        *it++ = '.';
+
+    *it = '\0';
+    return fixed;
 }
 
 //--------------------------------------
@@ -209,7 +233,7 @@ void xmlToTlk(xmlDocPtr doc, FILE *tlk) {
     }
 }
 
-xmlDocPtr tlkToXml(FILE *tlk) {
+xmlDocPtr tlkToXml(FILE *tlk, int editLook) {
     xmlDocPtr doc;
     xmlNodePtr root, node;
     int i;
@@ -243,7 +267,7 @@ xmlDocPtr tlkToXml(FILE *tlk) {
         sprintf(buf, "%d", ts.turnAway);
         xmlSetProp(node, (const xmlChar *)"turnAwayProb", (const xmlChar *)buf);
 
-        addAsText(doc, xmlNewTextChild(node, NULL, (const xmlChar *)"description", NULL), ts.look);
+        addAsText(doc, xmlNewTextChild(node, NULL, (const xmlChar *)"description", NULL), editLook ? fixLook(&ts) : ts.look);
 
         job = addAsText(doc, xmlNewTextChild(node, NULL, (const xmlChar *)"topic", NULL), ts.job);
         xmlSetProp(job, (const xmlChar *)"query", (const xmlChar *)"job");
@@ -286,40 +310,70 @@ xmlDocPtr tlkToXml(FILE *tlk) {
 
 //--------------------------------------
 
-void askBoron(FILE *out, struct Talk* ts) {
-    fprintf( out, "    ask {%s} [\n"
-                  "      {%s}\n"
-                  "      {%s}\n"
-                  "    ]\n",
-             ts->question, ts->yes, ts->no );
+static char bstrBuf[128];
+
+/*
+ * Boron single line string.
+ */
+const char* bstr(const char* src) {
+    char* it   = bstrBuf;
+    char* last = bstrBuf + sizeof(bstrBuf) - 1;
+    int ch;
+
+    while (it != last && *src) {
+        ch = *src++;
+        if (ch == '\n') {
+            *it++ = '^';
+            *it++ = '/';
+        } else if (ch == '\t') {
+            *it++ = '^';
+            *it++ = '-';
+        } else
+            *it++ = ch;
+    }
+
+    *it = '\0';
+    return bstrBuf;
 }
 
-void tlkToBoron(FILE *tlk, FILE* out) {
+void askBoron(FILE *out, struct Talk* ts) {
+    fprintf(out, "    ask%s {%s} [\n", ts->questionHumility ? "-humility" : "",
+                                       bstr(ts->question));
+    fprintf(out, "      {%s}\n", bstr(ts->yes));
+    fprintf(out, "      {%s}\n"
+                 "    ]\n", bstr(ts->no));
+}
+
+void tlkToBoron(FILE *tlk, FILE* out, int editLook) {
     char tlk_buffer[288];
+    const char* look;
     struct Talk ts;
+    int num = 0;
     int i;
 
     for (i = 0; ; i++) {
         if (fread(tlk_buffer, 1, sizeof(tlk_buffer), tlk) != sizeof(tlk_buffer))
             break;
         talk_init(&ts, tlk_buffer);
+        look = editLook ? fixLook(&ts) : ts.look;
 
-        fprintf( out, "[\n  name: \"%s\"\n", ts.name );
+        fprintf( out, "[\n  name: \"%s\"\t; %d\n", ts.name, num++ );
         fprintf( out, "  pronoun: \"%s\"\n", ts.pronoun );
-        fprintf( out, "  look: {%s}\n", ts.look );
-        fprintf( out, "  turn-away: %d\n", ts.turnAway );
-        fprintf( out, "  topics [\n" );
+        fprintf( out, "  look: \"%s\"\n", bstr(look) );
+        if (ts.turnAway)
+            fprintf( out, "  turn-away: %d\n", ts.turnAway );
+        fprintf( out, "  topics: [\n" );
 
-        fprintf( out, "    \"job\" {%s}\n", ts.job );
+        fprintf( out, "    \"job\" {%s}\n", bstr(ts.job) );
         if (ts.askAfter == ts.job) askBoron(out, &ts);
 
-        fprintf( out, "    \"health\" {%s}\n", ts.health );
+        fprintf( out, "    \"health\" {%s}\n", bstr(ts.health) );
         if (ts.askAfter == ts.health) askBoron(out, &ts);
 
-        fprintf( out, "    \"%s\" {%s}\n", ts.topic1, ts.response1 );
+        fprintf( out, "    \"%s\" {%s}\n", ts.topic1, bstr(ts.response1) );
         if (ts.askAfter == ts.topic1) askBoron(out, &ts);
 
-        fprintf( out, "    \"%s\" {%s}\n", ts.topic2, ts.response2 );
+        fprintf( out, "    \"%s\" {%s}\n", ts.topic2, bstr(ts.response2) );
         if (ts.askAfter == ts.topic2) askBoron(out, &ts);
 
         fprintf( out, "  ]\n]" );
@@ -334,6 +388,7 @@ void usage() {
            "\nOptions:\n"
            "  -f <format>   Output file format (boron, tlk, xml)\n"
            "  -h            Print this help and exit\n"
+           "  -l            Edit look for consistency\n"
            "  -o <file>     Output filename    (defaults to stdout)\n");
 }
 
@@ -347,6 +402,7 @@ int main(int argc, char *argv[1]) {
     char *infile = NULL;
     char *outfile = NULL;
     int outFormat = 'x';
+    int editLook = 0;
     xmlDocPtr doc;
     char *xml;
     int xmlSize;
@@ -363,6 +419,9 @@ int main(int argc, char *argv[1]) {
                 case 'h':
                     usage();
                     return 0;
+                case 'l':
+                    editLook = 1;
+                    break;
                 case 'o':
                     if (++i >= argc)
                         missingArg(argv[i-1]);
@@ -401,7 +460,7 @@ int main(int argc, char *argv[1]) {
 
     switch (outFormat) {
         case 'b':
-            tlkToBoron(in, out);
+            tlkToBoron(in, out, editLook);
             break;
 
         case 't':
@@ -416,7 +475,7 @@ int main(int argc, char *argv[1]) {
             break;
 
         case 'x':
-            doc = tlkToXml(in);
+            doc = tlkToXml(in, editLook);
             xmlDocDumpFormatMemory(doc, (xmlChar **)&xml, &xmlSize, 1);
             fwrite(xml, xmlSize, 1, out);
             xmlFree(xml);
