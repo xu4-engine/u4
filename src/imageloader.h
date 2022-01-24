@@ -21,6 +21,8 @@ enum ImageFiletype {
     FTYPE_ATLAS         // Special internal type for ImageInfo.
 };
 
+#define BPP_CLUT8   -8
+
 Image* loadImage(U4FILE *file, int ftype, int width, int height, int bpp);
 
 #endif /* IMAGELOADER_H */

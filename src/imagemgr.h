@@ -211,6 +211,7 @@ public:
     void freeResourceGroup(uint16_t group);
 
     const RGBA* vgaPalette();
+    const RGBA* greyPalette();
 
 private:
     static void notice(int, void*, void*);
@@ -221,7 +222,7 @@ private:
     ImageInfo* getInfoFromSet(Symbol name, ImageSet *set);
 
     void fixupIntro(Image *im, int prescale);
-    void fixupAbyssVision(Image *im);
+    void fixupAbyssVision(Image32*);
     void fixupTransparent(Image*, RGBA color);
     void fixupAbacus(Image *im, int prescale);
     void fixupDungNS(Image *im);
@@ -230,6 +231,8 @@ private:
     std::map<Symbol, ImageSet *> imageSets;
     ImageSet *baseSet;
     RGBA* vgaColors;
+    RGBA* greyColors;
+    uint8_t* visionBuf;
     Debug *logger;
     int listenerId;
     uint16_t resGroup;

@@ -16,6 +16,8 @@ static RGBA bwPalette[2] = {{0,0,0,0}, {255,255,255,255}};
 static const RGBA* stdPalette(int bpp)
 {
     switch(bpp) {
+        case BPP_CLUT8:
+            return xu4.imageMgr->greyPalette();
         case 8:
             return xu4.imageMgr->vgaPalette();
         case 4:

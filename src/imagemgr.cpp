@@ -24,7 +24,9 @@ Image *screenScale(Image *src, int scale, int n, int filter);
 
 ImageSymbols ImageMgr::sym;
 
-ImageMgr::ImageMgr() : vgaColors(NULL), resGroup(0) {
+ImageMgr::ImageMgr() :
+    vgaColors(NULL), greyColors(NULL), visionBuf(NULL),
+    resGroup(0) {
 #ifdef TRACE_ON
     logger = new Debug("debug/imagemgr.txt", "ImageMgr");
     TRACE(*logger, "creating ImageMgr");
@@ -71,6 +73,8 @@ ImageMgr::~ImageMgr() {
         delete it->second;
 
     delete[] vgaColors;
+    delete[] greyColors;
+    delete[] visionBuf;
     delete logger;
 }
 
@@ -208,31 +212,28 @@ void ImageMgr::fixupIntro(Image *im, int prescale) {
         im->fillRect(PRESCALE_4(i, 31, 1, 1), color.r, color.g, color.b);
 }
 
-void ImageMgr::fixupAbyssVision(Image *im) {
-    static unsigned int *data = NULL;
+/*
+ * Each VGA vision component must be XORed with all the previous
+ * vision components to get the actual image.
+ */
+void ImageMgr::fixupAbyssVision(Image32* img) {
+    const RGBA* palette = vgaPalette();
+    RGBA* cp = (RGBA*) img->pixels;
+    int n = img->w * img->h;
+    int i, ci;
 
-    /*
-     * Each VGA vision components must be XORed with all the previous
-     * vision components to get the actual image.
-     */
-    if (data != NULL) {
-        for (int y = 0; y < im->height(); y++) {
-            for (int x = 0; x < im->width(); x++) {
-                unsigned int index;
-                im->getPixelIndex(x, y, index);
-                index ^= data[y * im->width() + x];
-                im->putPixelIndex(x, y, index);
-            }
+    if (visionBuf) {
+        for (i = 0; i < n; ++i) {
+            ci = cp->r ^ visionBuf[i];
+            visionBuf[i] = ci;
+            *cp++ = palette[ci];
         }
     } else {
-        data = new unsigned int[im->width() * im->height()];
-    }
-
-    for (int y = 0; y < im->height(); y++) {
-        for (int x = 0; x < im->width(); x++) {
-            unsigned int index;
-            im->getPixelIndex(x, y, index);
-            data[y * im->width() + x] = index;
+        visionBuf = new uint8_t[n];
+        for (i = 0; i < n; ++i) {
+            ci = cp->r;
+            visionBuf[i] = ci;
+            *cp++ = palette[ci];
         }
     }
 }
@@ -590,7 +591,8 @@ ImageInfo* ImageMgr::load(ImageInfo* info, bool returnUnscaled) {
         //printf( "ImageMgr load %d:%s\n", resGroup, info->filename.c_str() );
 
         unscaled = loadImage(file, info->filetype, info->width, info->height,
-                             info->depth);
+                             (info->fixup == FIXUP_ABYSS) ? BPP_CLUT8
+                                                          : info->depth);
         u4fclose(file);
 
         if (! unscaled) {
@@ -821,6 +823,20 @@ const RGBA* ImageMgr::vgaPalette() {
         u4fclose(pal);
     }
     return vgaColors;
+}
+
+/**
+ * Return a palette where color is equal to CLUT index.
+ */
+const RGBA* ImageMgr::greyPalette() {
+    if (! greyColors) {
+        greyColors = new RGBA[256];
+        for (int i = 0; i < 256; i++) {
+            greyColors[i].r = greyColors[i].g = greyColors[i].b = i;
+            greyColors[i].a = 255;
+        }
+    }
+    return greyColors;
 }
 
 /**

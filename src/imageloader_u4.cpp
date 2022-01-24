@@ -16,10 +16,14 @@ Image *loadImage_u4(U4FILE *file, int ftype, int width, int height, int bpp) {
     unsigned char *raw = NULL;
     unsigned char *compressed = NULL;
     long rawLen, compLen;
+    int bppIn = bpp;
 
 
     if (width == -1 || height == -1 || bpp == -1)
           errorFatal("dimensions not set for U4 image");
+
+    if (bpp == BPP_CLUT8)
+        bpp = 8;
 
     ASSERT(bpp == 1 || bpp == 4 || bpp == 8 || bpp == 24 || bpp == 32,
            "invalid bpp: %d", bpp);
@@ -82,7 +86,7 @@ Image *loadImage_u4(U4FILE *file, int ftype, int width, int height, int bpp) {
 
     image = Image::create(width, height);
     if (image)
-        setFromRawData(image, width, height, bpp, raw, stdPalette(bpp));
+        setFromRawData(image, width, height, bpp, raw, stdPalette(bppIn));
 
 cleanup_raw:
     free(raw);

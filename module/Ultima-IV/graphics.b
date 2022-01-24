@@ -611,8 +611,6 @@ imageset EGA/VGA [
     ]
     image (name: key filename: "u4u/key7.old" width: 320 height: 200 depth: 8 filetype: u4rle)
     image (name: honesty filename: "u4u/honesty.old" width: 320 height: 200 depth: 8 filetype: u4rle fixup: abyss)
-    /*
-    ; These are currently broken - using EGA for now.
     image (name: compassn filename: "u4u/compassn.old" width: 320 height: 200 depth: 8 filetype: u4rle fixup: abyss)
     image (name: valor filename: "u4u/valor.old" width: 320 height: 200 depth: 8 filetype: u4rle fixup: abyss)
     image (name: justice filename: "u4u/justice.old" width: 320 height: 200 depth: 8 filetype: u4rle fixup: abyss)
@@ -623,7 +621,6 @@ imageset EGA/VGA [
     image (name: truth filename: "u4u/truth.old" width: 320 height: 200 depth: 8 filetype: u4rle fixup: abyss)
     image (name: love filename: "u4u/love.old" width: 320 height: 200 depth: 8 filetype: u4rle fixup: abyss)
     image (name: courage filename: "u4u/courage.old" width: 320 height: 200 depth: 8 filetype: u4rle fixup: abyss)
-    */
     image (name: stoncrcl filename: "u4u/stoncrcl.old" width: 320 height: 200 depth: 8 filetype: u4rle)
     image (name: infinity filename: "u4u/rune_0.old" width: 320 height: 200 depth: 8 filetype: u4rle)
     image (name: rune1 filename: "u4u/rune_1.old" width: 320 height: 200 depth: 8 filetype: u4rle)
