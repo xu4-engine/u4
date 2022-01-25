@@ -12,6 +12,7 @@
 #include "game.h"
 #include "imagemgr.h"
 #include "savegame.h"
+#include "settings.h"
 #include "screen.h"
 #include "stats.h"
 #include "u4.h"
@@ -93,6 +94,7 @@ void codexStart() {
 
     // change the view mode so the dungeon doesn't get shown
     gameSetViewMode(VIEW_CUTSCENE);
+    musicFadeOut(1000);
 
     pausedMessage(4, "\n\n\n\nThere is a sudden darkness, and you find yourself alone in an empty chamber.\n");
 
@@ -368,8 +370,37 @@ correct:
     EventHandler::wait_msecs(2000);
     soundPlay(SOUND_RUMBLE);
     screenShake(10);
-    // TODO: Animate reveal of infinity symbol.
-    screenDrawImageInMapArea(BKGD_RUNE_INF);
+
+    // Split codex to reveal infinity image.
+    {
+    Image32 codexImg;
+    Image32* screen = xu4.screenImage;
+    const int mid = VIEWPORT_W * TILE_HEIGHT / 2;
+    SCALED_VAR;
+    int bx = SCALED(BORDER_WIDTH);
+    int by = SCALED(BORDER_HEIGHT);
+    int w  = SCALED(VIEWPORT_W * TILE_HEIGHT);
+    int h  = SCALED(VIEWPORT_H * TILE_HEIGHT);
+    int rx;
+
+    image32_allocPixels(&codexImg, w, h);
+    image32_blitRect(&codexImg, 0, 0, screen, bx, by, w, h, 0);
+
+    for (i = 0; i <= mid; ++i) {
+        w  = SCALED(mid - i);
+        rx = SCALED(mid + i);
+        screenDrawImageInMapArea(BKGD_RUNE_INF);
+        if (w > 0) {
+            image32_blitRect(screen, bx, by, &codexImg, SCALED(i), 0, w, h, 0);
+            image32_blitRect(screen, bx + rx, by,
+                             &codexImg, SCALED(mid), 0, w, h, 0);
+        }
+        screenUploadToGPU();
+        EventHandler::wait_msecs(42);
+    }
+
+    image32_freePixels(&codexImg);
+    }
     return true;
 }
 
