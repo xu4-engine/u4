@@ -55,8 +55,8 @@ public:
     UThread* boronThread() const;
     int scriptItemId(Symbol name);
     const void* scriptEvalArg(const char* fmt, ...);
+    int32_t npcTalk(uint32_t appId);
 #endif
-    uint8_t* loadChunk(uint32_t appId) const;
     const char* modulePath() const;
     const CDIEntry* fileEntry( const char* sourceFilename ) const;
     const CDIEntry* imageFile( const char* id ) const;

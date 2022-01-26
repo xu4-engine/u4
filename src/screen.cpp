@@ -292,7 +292,10 @@ void screenCrLf() {
         c->line--;
         screenHideCursor();
         screenScrollMessageArea();
+        screenSetCursorPos(TEXT_AREA_X + c->col, TEXT_AREA_Y + c->line);
         screenShowCursor();
+    } else {
+        screenSetCursorPos(TEXT_AREA_X + c->col, TEXT_AREA_Y + c->line);
     }
 }
 

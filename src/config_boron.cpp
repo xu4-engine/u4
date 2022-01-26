@@ -68,6 +68,28 @@ void Config::setGame(const char* name) {
 #endif
 
 //--------------------------------------
+
+#define TALK_CACHE_SIZE 2
+
+struct NpcTalkCache
+{
+    UIndex blkN;
+    uint32_t appId[TALK_CACHE_SIZE];
+    int lastUsed;
+};
+
+static void npcTalk_init(NpcTalkCache* tc, UThread* ut) {
+    memset(tc, 0, sizeof(NpcTalkCache));
+
+    tc->blkN = ur_makeBlock(ut, TALK_CACHE_SIZE);
+    ur_hold(tc->blkN);      // Keep forever.
+
+    UBuffer* blk = ur_buffer(tc->blkN);
+    ur_blkAppendNew(blk, UT_NONE);
+    ur_blkAppendNew(blk, UT_NONE);
+}
+
+//--------------------------------------
 // Boron Backend
 
 struct ConfigData
@@ -88,6 +110,7 @@ struct ConfigData
     int16_t  tileRuleDefault;
     Tileset* tileset;
     UltimaSaveIds usaveIds;
+    NpcTalkCache talk;
 
     uint16_t armorCount;
 };
@@ -923,6 +946,8 @@ fail:
     if (error)
         errorFatal(error);
 
+    npcTalk_init(&xcd.talk, ut);
+
 
     // Load primary elements.
 
@@ -1163,20 +1188,39 @@ int Config::scriptItemId(Symbol name) {
 }
 
 /*
- * Load a chunk from the game module (or overlay).
- * Return buffer which caller must free().
+ * Load an NPC Talk chunk from the game module (or overlay).
+ * Return block buffer index or UR_INVALID_BUF.
  */
-uint8_t* Config::loadChunk(uint32_t appId) const {
-    uint8_t* buf = NULL;
+int32_t Config::npcTalk(uint32_t appId) {
+    NpcTalkCache& talk = CB->talk;
+    UThread* ut = CX->ut;
+    UCell* talkCell = ur_buffer(talk.blkN)->ptr.cell;
+    int n;
+    for (n = 0; n < TALK_CACHE_SIZE; ++n) {
+        if (talk.appId[n] == appId) {
+            talk.lastUsed = n;
+            return talkCell[n].series.buf;
+        }
+    }
+
     const CDIEntry* ent = cdi_findAppId(CX->toc, CX->tocUsed, appId);
     if (ent) {
+        uint8_t* buf;
+        UStatus ok;
         FILE* fp = fopen(CB->modulePath, "rb");
         if (fp) {
             buf = cdi_loadPakChunk(fp, ent);
             fclose(fp);
+            if (buf) {
+                talk.lastUsed ^= 1;
+                talkCell += talk.lastUsed;
+                ok = ur_unserialize(ut, buf, buf + ent->bytes, talkCell);
+                free(buf);
+                return (ok == UR_OK) ? talkCell->series.buf : UR_INVALID_BUF;
+            }
         }
     }
-    return buf;
+    return UR_INVALID_BUF;
 }
 
 const char* Config::modulePath() const {

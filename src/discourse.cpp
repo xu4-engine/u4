@@ -17,6 +17,8 @@
 #include "xu4.h"
 #endif
 
+#include "discourse_tlk.cpp"
+
 void discourse_init(Discourse* dis)
 {
     memset(dis, 0, sizeof(Discourse));
@@ -39,16 +41,17 @@ static const char* vendorGoods[] = {
 const char* discourse_load(Discourse* dis, const char* resource)
 {
 #ifdef CONF_MODULE
-    if (strlen(resource) == 4) {
+    if (resource[0] == 'N' && strlen(resource) == 4) {
         const uint8_t* ub = (const uint8_t*) resource;
-        const uint8_t* npcTalk =
-            xu4.config->loadChunk(CDI32(ub[0], ub[1], ub[2], ub[3]));
-        if (! npcTalk)
+        dis->conv.id = CDI32(ub[0], ub[1], ub[2], ub[3]);
+
+        int32_t n = xu4.config->npcTalk(dis->conv.id);
+        if (! n)
             return "Unable to load NPC talk chunk";
 
         dis->system = DISCOURSE_XU4_TALK;
-        dis->conv.id = 0;
-        // TODO: Initialize dis to reference block!.
+        //UThread* ut = xu4.config->boronThread();
+        //dis->convCount = ur_buffer(n)->used / 5;
     } else
 #endif
     if (strcmp(resource, "vendors") == 0) {
@@ -68,20 +71,32 @@ const char* discourse_load(Discourse* dis, const char* resource)
         // Ultima 4 .TLK files only have 16 conversations.
         const int convLimit = 16;
         int i;
-        Dialogue** dtable;
         U4FILE* fh = u4fopen(resource);
         if (! fh)
             return "Unable to open .TLK file";
 
+#if 1
+        dis->system = DISCOURSE_U4_TLK;
+        dis->conv.table = malloc(convLimit * (sizeof(U4Talk) + 288));
+        U4Talk* tlk = (U4Talk*) dis->conv.table;
+        char* strings = (char*) (tlk + convLimit);
+
+        for (i = 0; i < convLimit; ++tlk, ++i) {
+            if (! U4Talk_load(fh, tlk, strings))
+                break;
+            strings += 288;
+        }
+#else
         dis->system = DISCOURSE_CONV;
         dis->conv.table = calloc(convLimit, sizeof(void*));
-        dtable = (Dialogue**) dis->conv.table;
+        Dialogue** dtable = (Dialogue**) dis->conv.table;
 
         for (i = 0; i < convLimit; i++) {
             dtable[i] = U4Tlk_load(fh);
             if (! dtable[i])
                 break;
         }
+#endif
         dis->convCount = i;
 
         u4fclose(fh);
@@ -102,12 +117,18 @@ void discourse_free(Discourse* dis)
             free(dis->conv.table);
         }
             break;
+
+        case DISCOURSE_U4_TLK:
+            free(dis->conv.table);
+            break;
     }
 
     dis->system = DISCOURSE_UNSET;
     dis->conv.table = NULL;
     dis->convCount = 0;
 }
+
+extern void talkRunU4Tlk(const Discourse*, int, Person*);
 
 bool discourse_run(const Discourse* dis, uint16_t entry, Person* npc)
 {
@@ -119,9 +140,20 @@ bool discourse_run(const Discourse* dis, uint16_t entry, Person* npc)
         talkRunConversation(npc, ((const Dialogue**) dis->conv.table)[entry]);
         return true;
 
+    case DISCOURSE_U4_TLK:
+        talkRunU4Tlk(dis, entry, npc);
+        return true;
+
 #ifdef CONF_MODULE
     case DISCOURSE_XU4_TALK:
-        return true;
+    {
+        int32_t blkN = xu4.config->npcTalk(dis->conv.id);
+        if (blkN) {
+            talkRunBoron(dis, entry, npc);
+            return true;
+        }
+    }
+        return false;
 #endif
 
     case DISCOURSE_VENDOR:
@@ -164,10 +196,17 @@ bool discourse_run(const Discourse* dis, uint16_t entry, Person* npc)
  */
 int discourse_findName(const Discourse* dis, const char* name)
 {
-    if (dis->system == DISCOURSE_CONV) {
+    int i;
+    if (dis->system == DISCOURSE_U4_TLK) {
+        const U4Talk* tlk = (const U4Talk*) dis->conv.table;
+        for (i = 0; i < dis->convCount; ++i) {
+            if (strcmp(tlk->strings + tlk->name, name) == 0)
+                return i;
+            ++tlk;
+        }
+    } else if (dis->system == DISCOURSE_CONV) {
         string str(name);
         Dialogue** dtable = (Dialogue**) dis->conv.table;
-        int i;
         for (i = 0; i < dis->convCount; ++i) {
             if (dtable[i] && dtable[i]->getName() == str)
                 return i;
