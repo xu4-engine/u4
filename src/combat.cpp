@@ -184,6 +184,9 @@ void CombatController::applyCreatureTileEffects() {
 void CombatController::beginCombat() {
     bool partyIsReadyToFight = false;
 
+    if (c->horseSpeed == HORSE_GALLOP)
+        c->horseSpeed = HORSE_GALLOP_INTERRUPT;
+
     /* place party members on the map */
     if (placePartyOnMap)
         placePartyMembers();

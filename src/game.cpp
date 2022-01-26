@@ -866,13 +866,16 @@ bool GameController::keyPressed(int key) {
 
                 /* horse doubles speed (make sure we're on the same map as the previous move first) */
                 if (retval & (MOVE_SUCCEEDED | MOVE_SLOWED) &&
-                    (c->transportContext == TRANSPORT_HORSE) && c->horseSpeed) {
+                    c->transportContext == TRANSPORT_HORSE &&
+                    c->horseSpeed == HORSE_GALLOP) {
                     gameUpdateScreen(); /* to give it a smooth look of movement */
                     if (previous_map == c->location->map->fname) {
                         EventHandler::wait_msecs(166);
                         c->location->move(keyToDirection(key), false);
                     }
                 }
+                if (c->horseSpeed == HORSE_GALLOP_INTERRUPT)
+                    c->horseSpeed = HORSE_GALLOP;
 
                 endTurn = (retval & MOVE_END_TURN); /* let the movement handler decide to end the turn */
             }
@@ -1229,7 +1232,7 @@ bool GameController::keyPressed(int key) {
             if (c->transportContext == TRANSPORT_HORSE) {
                 if (c->horseSpeed == 0) {
                     screenMessage("Giddyup!\n");
-                    c->horseSpeed = 1;
+                    c->horseSpeed = HORSE_GALLOP;
                 } else {
                     screenMessage("Whoa!\n");
                     c->horseSpeed = 0;

@@ -25,6 +25,12 @@ typedef enum {
     TRANSPORT_ANY       = 0xffff
 } TransportContext;
 
+enum HorseSpeed {
+    HORSE_WALK,
+    HORSE_GALLOP,
+    HORSE_GALLOP_INTERRUPT
+};
+
 /**
  * The Context class holds the world simulation state.
  */
