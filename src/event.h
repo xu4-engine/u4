@@ -93,7 +93,7 @@ class ReadIntController : public ReadStringController {
 public:
     ReadIntController(int maxlen, int screenX, int screenY);
 
-    static int get(int maxlen, int screenX, int screenY, EventHandler *eh = NULL);
+    static int get(int maxlen, int screenX, int screenY);
     int getInt() const;
 };
 
@@ -105,7 +105,7 @@ public:
     ReadChoiceController(const string &choices);
     virtual bool keyPressed(int key);
 
-    static char get(const string &choices, EventHandler *eh = NULL);
+    static char get(const string &choices);
 
 protected:
     string choices;

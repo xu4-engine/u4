@@ -684,12 +684,9 @@ string ReadStringController::get(int maxlen, TextView *view, const char* extraCh
 
 ReadIntController::ReadIntController(int maxlen, int screenX, int screenY) : ReadStringController(maxlen, screenX, screenY, NULL, "0123456789 \n\r\010") {}
 
-int ReadIntController::get(int maxlen, int screenX, int screenY, EventHandler *eh) {
-    if (!eh)
-        eh = xu4.eventHandler;
-
+int ReadIntController::get(int maxlen, int screenX, int screenY) {
     ReadIntController ctrl(maxlen, screenX, screenY);
-    eh->pushController(&ctrl);
+    xu4.eventHandler->pushController(&ctrl);
     ctrl.waitFor();
     return ctrl.getInt();
 }
@@ -720,12 +717,9 @@ bool ReadChoiceController::keyPressed(int key) {
     return false;
 }
 
-char ReadChoiceController::get(const string &choices, EventHandler *eh) {
-    if (!eh)
-        eh = xu4.eventHandler;
-
+char ReadChoiceController::get(const string &choices) {
     ReadChoiceController ctrl(choices);
-    eh->pushController(&ctrl);
+    xu4.eventHandler->pushController(&ctrl);
     return ctrl.waitFor();
 }
 
