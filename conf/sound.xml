@@ -5,7 +5,7 @@
     <track file="walk_normal.ogg"/>     <!-- C64 WALK           -->
     <track file="walk_slowed.ogg"/>     <!-- C64 WALK_SLOW      -->
     <track file="walk_combat.ogg"/>     <!-- C64 WALK_COMBAT    -->
-    <track file="blocked.ogg"/>         <!-- C64 BLOCKED        -->
+    <track file="blocked_dos.ogg"/>     <!-- DOS BLOCKED/INVALID KEY -->
     <track file="error_dos.ogg"/>       <!-- DOS ERROR          -->
     <track file="pc_attack.ogg"/>       <!-- C64 PC_ATTACK      -->
     <track file="pc_struck.ogg"/>       <!-- C64 PC_STRUCK      -->

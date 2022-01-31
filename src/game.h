@@ -158,6 +158,7 @@ void gameCreatureCleanup(void);
 bool gameSpawnCreature(const class Creature *m);
 
 /* etc */
+void gameBadCommand();
 string gameGetInput(int maxlen = 32);
 int gameGetPlayer(bool canBeDisabled, bool canBeActivePlayer);
 void gameGetPlayerForCommand(bool (*commandFn)(int player), bool canBeDisabled, bool canBeActivePlayer);

@@ -772,6 +772,11 @@ void gameCastSpell(unsigned int spell, int caster, int param) {
     }
 }
 
+void gameBadCommand() {
+    soundPlay(SOUND_ERROR);
+    screenMessage("%cBad command%c\n", FG_GREY, FG_WHITE);
+}
+
 /**
  * The main key handler for the game.  Interpretes each key as a
  * command - 'a' for attack, 't' for talk, etc.
@@ -1386,7 +1391,8 @@ bool GameController::keyPressed(int key) {
         case '9':
             if (settings.enhancements && settings.enhancementsOptions.activePlayer)
                 gameSetActivePlayer(key - '1');
-            else screenMessage("%cBad command!%c\n", FG_GREY, FG_WHITE);
+            else
+                gameBadCommand();
 
             endTurn = 0;
             break;

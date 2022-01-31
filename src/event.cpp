@@ -14,6 +14,7 @@
 #include "location.h"
 #include "savegame.h"
 #include "screen.h"
+#include "sound.h"
 #include "textview.h"
 #include "u4.h"
 #include "xu4.h"
@@ -615,9 +616,11 @@ ReadStringController::ReadStringController(int maxlen, int screenX, int screenY,
     }
 }
 
-bool ReadStringController::keyPressed(int key) {
-    bool valid = true;
+static void soundInvalidInput() {
+    soundPlay(SOUND_BLOCKED);
+}
 
+bool ReadStringController::keyPressed(int key) {
     if (key < MAX_BITS && TEST_BIT(accepted, key)) {
         int len = value.length();
 
@@ -635,7 +638,8 @@ bool ReadStringController::keyPressed(int key) {
                     screenSetCursorPos(screenX + len - 1, screenY);
                     screenShowCursor();
                 }
-            }
+            } else
+                soundInvalidInput();
         }
         else if (key == '\n' || key == '\r') {
             doneWaiting();
@@ -658,10 +662,15 @@ bool ReadStringController::keyPressed(int key) {
                 screenShowCursor();
             }
         }
+        else
+            soundInvalidInput();
+        return true;
+    } else {
+        bool valid = KeyHandler::defaultHandler(key, NULL);
+        if (! valid)
+            soundInvalidInput();
+        return valid;
     }
-    else valid = false;
-
-    return valid || KeyHandler::defaultHandler(key, NULL);
 }
 
 string ReadStringController::get(int maxlen, int screenX, int screenY, const char* extraChars) {

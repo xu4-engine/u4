@@ -10,7 +10,7 @@ enum Sound {
     SOUND_WALK_NORMAL,      // walk, world and town
     SOUND_WALK_SLOWED,      // walk, slow progress
     SOUND_WALK_COMBAT,      // walk, combat
-    SOUND_BLOCKED,          // location blocked
+    SOUND_BLOCKED,          // location blocked/invalid key
     SOUND_ERROR,            // error/bad command
     SOUND_PC_ATTACK,        // PC attacks
     SOUND_PC_STRUCK,        // PC damaged

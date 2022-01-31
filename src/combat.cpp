@@ -848,22 +848,24 @@ void CombatController::movePartyMember(MoveEvent &event) {
 
     screenMessage("%s\n", getDirectionName(event.dir));
     if (event.result & MOVE_MUST_USE_SAME_EXIT) {
-        soundPlay(SOUND_ERROR);                                                // ERROR move, all PCs must use the same exit
+        // ERROR move, all PCs must use the same exit
+        // NOTE: In the DOS version SOUND_BLOCKED is played for this.
+        soundPlay(SOUND_ERROR);
         screenMessage("All must use same exit!\n");
     }
     else if (event.result & MOVE_BLOCKED) {
-        soundPlay(SOUND_BLOCKED);                                              // BLOCKED move
+        soundPlay(SOUND_BLOCKED);               // BLOCKED move
         screenMessage("%cBlocked!%c\n", FG_GREY, FG_WHITE);
     }
     else if (event.result & MOVE_SLOWED) {
-        soundPlay(SOUND_WALK_SLOWED);                                          // WALK_SLOWED move
+        soundPlay(SOUND_WALK_SLOWED);           // WALK_SLOWED move
         screenMessage("%cSlow progress!%c\n", FG_GREY, FG_WHITE);
     }
     else if (winOrLose && getCreature()->isEvil() && (event.result & (MOVE_EXIT_TO_PARENT | MOVE_MAP_CHANGE))) {
-        soundPlay(SOUND_FLEE);                                                 // FLEE move
+        soundPlay(SOUND_FLEE);                  // FLEE move
     }
     else {
-        soundPlay(SOUND_WALK_COMBAT);                                          // WALK_COMBAT move
+        soundPlay(SOUND_WALK_COMBAT);           // WALK_COMBAT move
     }
 }
 
@@ -885,7 +887,7 @@ bool CombatController::keyPressed(int key) {
         if (settings.debug)
             endCombat(false);   /* don't adjust karma */
         else
-            screenMessage("Bad command\n");
+            gameBadCommand();
         break;
 
     case ' ':
@@ -1080,8 +1082,8 @@ bool CombatController::keyPressed(int key) {
     case '9':
         if (settings.enhancements && settings.enhancementsOptions.activePlayer)
             gameSetActivePlayer(key - '1');
-        else screenMessage("Bad command\n");
-
+        else
+            gameBadCommand();
         break;
 
     default:

@@ -476,7 +476,7 @@ sound: [
     %walk_normal.ogg
     %walk_slowed.ogg
     %walk_combat.ogg
-    %blocked.ogg
+    %blocked_dos.ogg
     %error_dos.ogg
     %pc_attack.ogg
     %pc_struck.ogg
