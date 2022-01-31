@@ -15,6 +15,7 @@
 #include "savegame.h"
 #include "screen.h"
 #include "textview.h"
+#include "u4.h"
 #include "xu4.h"
 
 static void frameSleepInit(FrameSleep* fs, int frameDuration) {
@@ -682,10 +683,12 @@ string ReadStringController::get(int maxlen, TextView *view, const char* extraCh
     return ctrl.waitFor();
 }
 
-ReadIntController::ReadIntController(int maxlen, int screenX, int screenY) : ReadStringController(maxlen, screenX, screenY, NULL, "0123456789 \n\r\010") {}
+ReadIntController::ReadIntController(int maxlen, int screenX, int screenY) :
+    ReadStringController(maxlen, screenX, screenY, NULL, "0123456789 \n\r\010")
+{}
 
-int ReadIntController::get(int maxlen, int screenX, int screenY) {
-    ReadIntController ctrl(maxlen, screenX, screenY);
+int ReadIntController::get(int maxlen) {
+    ReadIntController ctrl(maxlen, TEXT_AREA_X + c->col, TEXT_AREA_Y + c->line);
     xu4.eventHandler->pushController(&ctrl);
     ctrl.waitFor();
     return ctrl.getInt();

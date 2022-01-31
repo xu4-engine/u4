@@ -365,8 +365,7 @@ CFUNC(cf_inputNumber)
     int maxLen = ur_int(a1);
     if (maxLen <= 0)
         maxLen = 7;     //Conversation::BUFFERLEN;
-    int val = ReadIntController::get(maxLen, TEXT_AREA_X + c->col,
-                                             TEXT_AREA_Y + c->line);
+    int val = ReadIntController::get(maxLen);
     screenCrLf();
 
     if (val) {

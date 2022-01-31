@@ -93,7 +93,7 @@ class ReadIntController : public ReadStringController {
 public:
     ReadIntController(int maxlen, int screenX, int screenY);
 
-    static int get(int maxlen, int screenX, int screenY);
+    static int get(int maxlen);
     int getInt() const;
 };
 

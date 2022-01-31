@@ -2624,7 +2624,7 @@ bool mixReagentsForSpellU5(int spell) {
 
     screenMessage("How many? ");
 
-    int howmany = ReadIntController::get(2, TEXT_AREA_X + c->col, TEXT_AREA_Y + c->line);
+    int howmany = ReadIntController::get(2);
     gameSpellMixHowMany(spell, howmany, &ingredients);
 
     return true;
@@ -3582,7 +3582,7 @@ mixReagentsSuper() {
       screenMessage("You can make %d.\n", (mixQty > ingQty) ? ingQty : mixQty);
       screenMessage("How many? ");
 
-      int howmany = ReadIntController::get(2, TEXT_AREA_X + c->col, TEXT_AREA_Y + c->line);
+      int howmany = ReadIntController::get(2);
 
       if (howmany == 0) {
         screenMessage("\nNone mixed!\n");

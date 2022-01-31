@@ -1767,7 +1767,7 @@ void Script::talkToVendor(const char* locale, const string& goods) {
                 U4IOS::IOSConversationHelper ipadNumberInput;
                 ipadNumberInput.beginConversation(U4IOS::UIKeyboardTypeNumberPad, "Amount?");
 #endif
-                int val = ReadIntController::get(getInputMaxLen(), TEXT_AREA_X + c->col, TEXT_AREA_Y + c->line);
+                int val = ReadIntController::get(getInputMaxLen());
                 setVar(getInputName(), val);
             } break;
 
