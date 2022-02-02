@@ -149,11 +149,53 @@ uint8_t Settings::settingEnum(const char** names, const char* value) {
     return 0;
 }
 
+// Return pointer to start of trimmed line.
+static char* trimLine(char* buf) {
+    char* end;
+    int ch;
+
+    // Trim spaces & tabs from start.
+    while ((ch = *buf)) {
+        if (ch != ' ' && ch != '\t')
+            break;
+        ++buf;
+    }
+
+    // Find end of line.
+    end = buf;
+    while (*end)
+        ++end;
+
+    // Remove whitespace from end of line.
+    while (end != buf && isspace(end[-1])) {
+        --end;
+        *end = '\0';
+    }
+    return buf;
+}
+
+// Return pointer to setting value or NULL if buf does not start with name.
+static const char* settingValue(const char* buf, const char* name) {
+    // Check the initial character first to provide a fast fail path.
+    if (name[0] == buf[0]) {
+        int n = strlen(name);
+        if (strncmp(buf, name, n) == 0)
+            return buf + n;
+    }
+    return NULL;
+}
+
+static int toInt(const char* str) {
+    return (int) strtoul(str, NULL, 0);
+}
+
 /**
  * Read settings in from the settings file.
  */
 bool Settings::read() {
     char buffer[256];
+    const char* cp;
+    const char* val;
     FILE *settingsFile;
 
     /* default settings */
@@ -222,135 +264,117 @@ bool Settings::read() {
     if (!settingsFile)
         return false;
 
-    while(fgets(buffer, sizeof(buffer), settingsFile) != NULL) {
-        while (isspace(buffer[strlen(buffer) - 1]))
-            buffer[strlen(buffer) - 1] = '\0';
+#define VALUE(name) (val = settingValue(cp, name))
 
-        if (strstr(buffer, "scale=") == buffer)
-            scale = (unsigned int) strtoul(buffer + strlen("scale="), NULL, 0);
-        else if (strstr(buffer, "fullscreen=") == buffer)
-            fullscreen = (int) strtoul(buffer + strlen("fullscreen="), NULL, 0);
-        else if (strstr(buffer, "filter=") == buffer)
-            filter = settingEnum(screenGetFilterNames(),
-                               buffer + strlen("filter="));
-        else if (strstr(buffer, "lineOfSight=") == buffer)
-            lineOfSight = settingEnum(screenGetLineOfSightStyles(),
-                                      buffer + strlen("lineOfSight="));
-        else if (strstr(buffer, "video=") == buffer)
-            videoType = buffer + strlen("video=");
-        else if (strstr(buffer, "gemLayout=") == buffer)
-            gemLayout = buffer + strlen("gemLayout=");
-        else if (strstr(buffer, "screenShakes=") == buffer)
-            screenShakes = (int) strtoul(buffer + strlen("screenShakes="), NULL, 0);
-        else if (strstr(buffer, "gamma=") == buffer)
-            gamma = (int) strtoul(buffer + strlen("gamma="), NULL, 0);
-        else if (strstr(buffer, "musicVol=") == buffer)
-            musicVol = (int) strtoul(buffer + strlen("musicVol="), NULL, 0);
-        else if (strstr(buffer, "soundVol=") == buffer)
-            soundVol = (int) strtoul(buffer + strlen("soundVol="), NULL, 0);
-        else if (strstr(buffer, "volumeFades=") == buffer)
-            volumeFades = (int) strtoul(buffer + strlen("volumeFades="), NULL, 0);
-        else if (strstr(buffer, "shortcutCommands=") == buffer)
-            shortcutCommands = (int) strtoul(buffer + strlen("shortcutCommands="), NULL, 0);
-        else if (strstr(buffer, "keydelay=") == buffer)
-            keydelay = (int) strtoul(buffer + strlen("keydelay="), NULL, 0);
-        else if (strstr(buffer, "keyinterval=") == buffer)
-            keyinterval = (int) strtoul(buffer + strlen("keyinterval="), NULL, 0);
-        else if (strstr(buffer, "filterMoveMessages=") == buffer)
-            filterMoveMessages = (int) strtoul(buffer + strlen("filterMoveMessages="), NULL, 0);
-        else if (strstr(buffer, "battlespeed=") == buffer)
-            battleSpeed = (int) strtoul(buffer + strlen("battlespeed="), NULL, 0);
-        else if (strstr(buffer, "enhancements=") == buffer)
-            enhancements = (int) strtoul(buffer + strlen("enhancements="), NULL, 0);
-        else if (strstr(buffer, "gameCyclesPerSecond=") == buffer)
-            gameCyclesPerSecond = (int) strtoul(buffer + strlen("gameCyclesPerSecond="), NULL, 0);
-        else if (strstr(buffer, "debug=") == buffer)
-            debug = (int) strtoul(buffer + strlen("debug="), NULL, 0);
-        else if (strstr(buffer, "battleDiff=") == buffer)
-            battleDiff = settingEnum(battleDiffStrings(),
-                                     buffer + strlen("battleDiff="));
+    while(fgets(buffer, sizeof(buffer), settingsFile) != NULL) {
+        cp = trimLine(buffer);
+
+        // Skip empty and comment lines.
+        if (cp[0] == '\n' || cp[0] == '#' || cp[0] == ';')
+            continue;
+
+        if (VALUE("scale="))
+            scale = (unsigned int) toInt(val);
+        else if (VALUE("fullscreen="))
+            fullscreen = toInt(val);
+        else if (VALUE("filter="))
+            filter = settingEnum(screenGetFilterNames(), val);
+        else if (VALUE("lineOfSight="))
+            lineOfSight = settingEnum(screenGetLineOfSightStyles(), val);
+        else if (VALUE("video="))
+            videoType = val;
+        else if (VALUE("gemLayout="))
+            gemLayout = val;
+        else if (VALUE("screenShakes="))
+            screenShakes = toInt(val);
+        else if (VALUE("gamma="))
+            gamma = toInt(val);
+        else if (VALUE("musicVol="))
+            musicVol = toInt(val);
+        else if (VALUE("soundVol="))
+            soundVol = toInt(val);
+        else if (VALUE("volumeFades="))
+            volumeFades = toInt(val);
+        else if (VALUE("shortcutCommands="))
+            shortcutCommands = toInt(val);
+        else if (VALUE("keydelay="))
+            keydelay = toInt(val);
+        else if (VALUE("keyinterval="))
+            keyinterval = toInt(val);
+        else if (VALUE("filterMoveMessages="))
+            filterMoveMessages = toInt(val);
+        else if (VALUE("battlespeed="))
+            battleSpeed = toInt(val);
+        else if (VALUE("enhancements="))
+            enhancements = toInt(val);
+        else if (VALUE("gameCyclesPerSecond="))
+            gameCyclesPerSecond = toInt(val);
+        else if (VALUE("debug="))
+            debug = toInt(val);
+        else if (VALUE("battleDiff="))
+            battleDiff = settingEnum(battleDiffStrings(), val);
 #ifndef USE_BORON
-        else if (strstr(buffer, "validateXml=") == buffer)
-            validateXml = (int) strtoul(buffer + strlen("validateXml="), NULL, 0);
+        else if (VALUE("validateXml="))
+            validateXml = toInt(val);
 #endif
-        else if (strstr(buffer, "spellEffectSpeed=") == buffer)
-            spellEffectSpeed = (int) strtoul(buffer + strlen("spellEffectSpeed="), NULL, 0);
-        else if (strstr(buffer, "campTime=") == buffer)
-            campTime = (int) strtoul(buffer + strlen("campTime="), NULL, 0);
-        else if (strstr(buffer, "innTime=") == buffer)
-            innTime = (int) strtoul(buffer + strlen("innTime="), NULL, 0);
-        else if (strstr(buffer, "shrineTime=") == buffer)
-            shrineTime = (int) strtoul(buffer + strlen("shrineTime="), NULL, 0);
-        else if (strstr(buffer, "shakeInterval=") == buffer)
-            shakeInterval = (int) strtoul(buffer + strlen("shakeInterval="), NULL, 0);
-        else if (strstr(buffer, "titleSpeedRandom=") == buffer)
-            titleSpeedRandom = (int) strtoul(buffer + strlen("titleSpeedRandom="), NULL, 0);
-        else if (strstr(buffer, "titleSpeedOther=") == buffer)
-            titleSpeedOther = (int) strtoul(buffer + strlen("titleSpeedOther="), NULL, 0);
+        else if (VALUE("spellEffectSpeed="))
+            spellEffectSpeed = toInt(val);
+        else if (VALUE("campTime="))
+            campTime = toInt(val);
+        else if (VALUE("innTime="))
+            innTime = toInt(val);
+        else if (VALUE("shrineTime="))
+            shrineTime = toInt(val);
+        else if (VALUE("shakeInterval="))
+            shakeInterval = toInt(val);
+        else if (VALUE("titleSpeedRandom="))
+            titleSpeedRandom = toInt(val);
+        else if (VALUE("titleSpeedOther="))
+            titleSpeedOther = toInt(val);
 
         /* minor enhancement options */
-        else if (strstr(buffer, "activePlayer=") == buffer)
-            enhancementsOptions.activePlayer = (int) strtoul(buffer + strlen("activePlayer="), NULL, 0);
-        else if (strstr(buffer, "u5spellMixing=") == buffer)
-            enhancementsOptions.u5spellMixing = (int) strtoul(buffer + strlen("u5spellMixing="), NULL, 0);
-        else if (strstr(buffer, "u5shrines=") == buffer)
-            enhancementsOptions.u5shrines = (int) strtoul(buffer + strlen("u5shrines="), NULL, 0);
-        else if (strstr(buffer, "slimeDivides=") == buffer)
-            enhancementsOptions.slimeDivides = (int) strtoul(buffer + strlen("slimeDivides="), NULL, 0);
-        else if (strstr(buffer, "gazerSpawnsInsects=") == buffer)
-            enhancementsOptions.gazerSpawnsInsects = (int) strtoul(buffer + strlen("gazerSpawnsInsects="), NULL, 0);
-        else if (strstr(buffer, "textColorization=") == buffer)
-            enhancementsOptions.textColorization = (int) strtoul(buffer + strlen("textColorization="), NULL, 0);
-        else if (strstr(buffer, "c64chestTraps=") == buffer)
-            enhancementsOptions.c64chestTraps = (int) strtoul(buffer + strlen("c64chestTraps="), NULL, 0);
-        else if (strstr(buffer, "smartEnterKey=") == buffer)
-            enhancementsOptions.smartEnterKey = (int) strtoul(buffer + strlen("smartEnterKey="), NULL, 0);
+        else if (VALUE("activePlayer="))
+            enhancementsOptions.activePlayer = toInt(val);
+        else if (VALUE("u5spellMixing="))
+            enhancementsOptions.u5spellMixing = toInt(val);
+        else if (VALUE("u5shrines="))
+            enhancementsOptions.u5shrines = toInt(val);
+        else if (VALUE("slimeDivides="))
+            enhancementsOptions.slimeDivides = toInt(val);
+        else if (VALUE("gazerSpawnsInsects="))
+            enhancementsOptions.gazerSpawnsInsects = toInt(val);
+        else if (VALUE("textColorization="))
+            enhancementsOptions.textColorization = toInt(val);
+        else if (VALUE("c64chestTraps="))
+            enhancementsOptions.c64chestTraps = toInt(val);
+        else if (VALUE("smartEnterKey="))
+            enhancementsOptions.smartEnterKey = toInt(val);
 
         /* major enhancement options */
-        else if (strstr(buffer, "peerShowsObjects=") == buffer)
-            enhancementsOptions.peerShowsObjects = (int) strtoul(buffer + strlen("peerShowsObjects="), NULL, 0);
-        else if (strstr(buffer, "u5combat=") == buffer)
-            enhancementsOptions.u5combat = (int) strtoul(buffer + strlen("u5combat="), NULL, 0);
-        else if (strstr(buffer, "innAlwaysCombat=") == buffer)
-            innAlwaysCombat = (int) strtoul(buffer + strlen("innAlwaysCombat="), NULL, 0);
-        else if (strstr(buffer, "campingAlwaysCombat=") == buffer)
-            campingAlwaysCombat = (int) strtoul(buffer + strlen("campingAlwaysCombat="), NULL, 0);
+        else if (VALUE("peerShowsObjects="))
+            enhancementsOptions.peerShowsObjects = toInt(val);
+        else if (VALUE("u5combat="))
+            enhancementsOptions.u5combat = toInt(val);
+        else if (VALUE("innAlwaysCombat="))
+            innAlwaysCombat = toInt(val);
+        else if (VALUE("campingAlwaysCombat="))
+            campingAlwaysCombat = toInt(val);
 
         /* mouse options */
-        else if (strstr(buffer, "mouseEnabled=") == buffer)
-            mouseOptions.enabled = (int) strtoul(buffer + strlen("mouseEnabled="), NULL, 0);
-        else if (strstr(buffer, "logging=") == buffer)
-            logging = buffer + strlen("logging=");
-        else if (strstr(buffer, "game=") == buffer)
-            game = buffer + strlen("game=");
+        else if (VALUE("mouseEnabled="))
+            mouseOptions.enabled = toInt(val);
+        else if (VALUE("logging="))
+            logging = val;
+        else if (VALUE("game="))
+            game = val;
 
         /* graphics enhancements options */
-        else if (strstr(buffer, "renderTileTransparency=") == buffer)
-            enhancementsOptions.u4TileTransparencyHack = (int) strtoul(buffer + strlen("renderTileTransparency="), NULL, 0);
-        else if (strstr(buffer, "transparentTilePixelShadowOpacity=") == buffer)
-            enhancementsOptions.u4TileTransparencyHackPixelShadowOpacity = (int) strtoul(buffer + strlen("transparentTilePixelShadowOpacity="), NULL, 0);
-        else if (strstr(buffer, "transparentTileShadowSize=") == buffer)
-            enhancementsOptions.u4TrileTransparencyHackShadowBreadth = (int) strtoul(buffer + strlen("transparentTileShadowSize="), NULL, 0);
-
-
-
-        /**
-         * FIXME: this is just to avoid an error for those who have not written
-         * a new xu4.cfg file since these items were removed.  Remove them after a reasonable
-         * amount of time
-         *
-         * remove:  attackspeed, minorEnhancements, majorEnhancements, vol
-         */
-
-        else if (strstr(buffer, "attackspeed=") == buffer);
-        else if (strstr(buffer, "minorEnhancements=") == buffer)
-            enhancements = (int)strtoul(buffer + strlen("minorEnhancements="), NULL, 0);
-        else if (strstr(buffer, "majorEnhancements=") == buffer);
-        else if (strstr(buffer, "vol=") == buffer)
-            musicVol = soundVol = (int) strtoul(buffer + strlen("vol="), NULL, 0);
-
-        /***/
-
+        else if (VALUE("renderTileTransparency="))
+            enhancementsOptions.u4TileTransparencyHack = toInt(val);
+        else if (VALUE("transparentTilePixelShadowOpacity="))
+            enhancementsOptions.u4TileTransparencyHackPixelShadowOpacity = toInt(val);
+        else if (VALUE("transparentTileShadowSize="))
+            enhancementsOptions.u4TrileTransparencyHackShadowBreadth = toInt(val);
         else
             errorWarning("invalid line in settings file %s", buffer);
     }
