@@ -119,13 +119,9 @@ exe %xu4 [
 		%combat.cpp
 		%controller.cpp
 		%context.cpp
-		%conversation.cpp
 		%creature.cpp
 		%death.cpp
 		%debug.cpp
-		%dialogueloader_hw.cpp
-		%dialogueloader_lb.cpp
-		%dialogueloader_tlk.cpp
 		%direction.cpp
 		%discourse.cpp
 		%dungeon.cpp

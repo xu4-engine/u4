@@ -31,7 +31,6 @@ public:
 protected:
     void setDeleteOnPop(bool enable = true) { autoDelete = enable; }
 
-private:
     short timerInterval;
     bool autoDelete;
 };

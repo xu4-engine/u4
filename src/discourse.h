@@ -9,7 +9,7 @@
 
 enum DiscourseSystem {
     DISCOURSE_UNSET,
-    DISCOURSE_CONV,         // Conversation class
+    DISCOURSE_CASTLE,       // Original Ultima 4 data for LB & Hawkwind
     DISCOURSE_U4_TLK,       // Original Ultima 4 data
     DISCOURSE_XU4_TALK,     // Boron specification
     DISCOURSE_VENDOR        // Boron/XML script

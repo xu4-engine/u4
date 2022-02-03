@@ -8,7 +8,6 @@
 #include "cheat.h"
 #include "city.h"
 #include "config.h"
-#include "conversation.h"
 #include "debug.h"
 #include "dungeon.h"
 #include "death.h"
@@ -28,6 +27,7 @@
 #include "stats.h"
 #include "tileset.h"
 #include "u4.h"
+#include "utils.h"
 #include "weapon.h"
 #include "xu4.h"
 
@@ -2754,18 +2754,6 @@ bool talkAt(const Coords &coords) {
     }
 
     if (npcType >= NPC_LORD_BRITISH) {
-        if (npcType == NPC_LORD_BRITISH) {
-            /* If the avatar is dead Lord British resurrects them! */
-            PartyMember* p0 = c->party->member(0);
-            if (p0->getStatus() == STAT_DEAD) {
-                screenMessage("%s, Thou shalt live again!\n",
-                              p0->getName().c_str());
-                p0->setStatus(STAT_GOOD);
-                p0->heal(HT_FULLHEAL);
-                gameSpellEffect('r', -1, SOUND_LBHEAL);
-            }
-        }
-
         Discourse* dis = &xu4.game->castleDisc;
         if (! dis->convCount)
             discourse_load(dis, "castle");

@@ -3,6 +3,7 @@
 #include "game.h"
 #include "party.h"
 #include "screen.h"
+#include "utils.h"
 
 enum DialogueString {
     DS_NAME,
@@ -198,6 +199,19 @@ enum QuestionTrigger {
 };
 
 /*
+ * Return the number of bytes used for count strings.
+ */
+int U4Talk_setOffsets(uint16_t* offset, const char* strings, int initOff,
+                      int count) {
+    const char* ptr = strings + initOff;
+    for (int i = 0; i < count; ++i) {
+        *offset++ = ptr - strings;
+        ptr += strlen(ptr) + 1;
+    }
+    return ptr - strings;
+}
+
+/*
  * Replace any trailing spaces with NUL.
  * If the keyword is "A   " then set the offset to zero to mark it as unused.
  */
@@ -234,15 +248,7 @@ int U4Talk_load(U4FILE *file, U4Talk* tlk, char* tlkBuf)
     tlk->questionHumility = tlkBuf[1];
     tlk->turnAway = tlkBuf[2];
 
-    {
-    uint16_t* offset = &tlk->name;
-    ptr = tlkBuf + 3;
-    for (int i = 0; i < 12; ++i) {
-        *offset++ = ptr - tlkBuf;
-        ptr += strlen(ptr) + 1;
-    }
-    len = ptr - tlkBuf;
-    }
+    len = U4Talk_setOffsets(&tlk->name, tlkBuf, 3, 12);
 
     // Fix the description string, converting the first character to lower-case.
     cp = tlkBuf + tlk->look;

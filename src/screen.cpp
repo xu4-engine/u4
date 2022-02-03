@@ -308,11 +308,8 @@ static const uint8_t nonWordChars[32] = {
 };
 
 void screenMessage(const char *fmt, ...) {
-    bool colorize = xu4.settings->enhancements &&
-                    xu4.settings->enhancementsOptions.textColorization;
     char* buffer = xu4.screen->msgBuffer;
-    const int colCount = TEXT_AREA_W;
-    int i, w, buflen;
+    int buflen;
 
     if (! c)
         return; // Some cases (like the intro) don't have the context initiated.
@@ -327,6 +324,15 @@ void screenMessage(const char *fmt, ...) {
 #ifdef IOS
     U4IOS::drawMessageOnLabel(string(buffer, MsgBufferSize));
 #endif
+
+    screenMessageN(buffer, buflen);
+}
+
+void screenMessageN(const char* buffer, int buflen) {
+    bool colorize = xu4.settings->enhancements &&
+                    xu4.settings->enhancementsOptions.textColorization;
+    const int colCount = TEXT_AREA_W;
+    int i, w;
 
     screenHideCursor();
 

@@ -51,6 +51,7 @@ enum HealType {
     HT_NONE,
     HT_CURE,
     HT_FULLHEAL,
+    HT_RESTORE,     // CURE & FULLHEAL
     HT_RESURRECT,
     HT_HEAL,
     HT_CAMPHEAL,

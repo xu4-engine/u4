@@ -7,27 +7,29 @@
 #include <string>
 
 #include "context.h"
-#include "conversation.h"
 #include "discourse.h"
 #include "event.h"
 #include "u4file.h"
+#include "xu4.h"
 
 #ifdef CONF_MODULE
 #include "config.h"
-#include "xu4.h"
+#else
+#include "script_xml.h"
 #endif
 
+void pauseFollow(Person* npc) {
+    if (npc->movement == MOVEMENT_FOLLOW_AVATAR)
+        npc->movement = MOVEMENT_FOLLOW_PAUSE;
+}
+
 #include "discourse_tlk.cpp"
+#include "discourse_castle.cpp"
 
 void discourse_init(Discourse* dis)
 {
     memset(dis, 0, sizeof(Discourse));
 }
-
-extern Dialogue* U4LordBritish_load();
-extern Dialogue* U4Hawkwind_load();
-extern Dialogue* U4Tlk_load(U4FILE* file);
-extern void talkRunConversation(Person*, const Dialogue*);
 
 // These are ordered to match the VENDOR PersonNpcType.
 static const char* vendorGoods[] = {
@@ -60,13 +62,19 @@ const char* discourse_load(Discourse* dis, const char* resource)
         dis->convCount = sizeof(vendorGoods) / sizeof(char*);
     }
     else if (strcmp(resource, "castle") == 0) {
-        dis->system = DISCOURSE_CONV;
+        dis->system = DISCOURSE_CASTLE;
         dis->conv.table = calloc(2, sizeof(void*));
-        dis->convCount = 2;
+        dis->convCount = 0;
 
-        Dialogue** dtable = (Dialogue**) dis->conv.table;
-        dtable[0] = U4LordBritish_load();
-        dtable[1] = U4Hawkwind_load();
+        U4FILE* fh = u4fopen("avatar.exe");
+        if (! fh)
+            return "Unable to load dialogue from avatar.exe";
+
+        void** dtable = (void**) dis->conv.table;
+        dtable[0] = U4LordBritish_load(fh);
+        dtable[1] = U4Hawkwind_load(fh);
+        u4fclose(fh);
+        dis->convCount = 2;
     } else {
         // Ultima 4 .TLK files only have 16 conversations.
         const int convLimit = 16;
@@ -75,7 +83,6 @@ const char* discourse_load(Discourse* dis, const char* resource)
         if (! fh)
             return "Unable to open .TLK file";
 
-#if 1
         dis->system = DISCOURSE_U4_TLK;
         dis->conv.table = malloc(convLimit * (sizeof(U4Talk) + 288));
         U4Talk* tlk = (U4Talk*) dis->conv.table;
@@ -86,17 +93,6 @@ const char* discourse_load(Discourse* dis, const char* resource)
                 break;
             strings += 288;
         }
-#else
-        dis->system = DISCOURSE_CONV;
-        dis->conv.table = calloc(convLimit, sizeof(void*));
-        Dialogue** dtable = (Dialogue**) dis->conv.table;
-
-        for (i = 0; i < convLimit; i++) {
-            dtable[i] = U4Tlk_load(fh);
-            if (! dtable[i])
-                break;
-        }
-#endif
         dis->convCount = i;
 
         u4fclose(fh);
@@ -108,12 +104,12 @@ const char* discourse_load(Discourse* dis, const char* resource)
 void discourse_free(Discourse* dis)
 {
     switch (dis->system) {
-        case DISCOURSE_CONV:
+        case DISCOURSE_CASTLE:
         {
-            Dialogue** dtable = (Dialogue**) dis->conv.table;
+            void** dtable = (void**) dis->conv.table;
             int i;
             for (i = 0; i < dis->convCount; i++)
-                delete dtable[i];
+                free(dtable[i]);
             free(dis->conv.table);
         }
             break;
@@ -136,9 +132,8 @@ bool discourse_run(const Discourse* dis, uint16_t entry, Person* npc)
         return false;
 
     switch (dis->system) {
-    case DISCOURSE_CONV:
-        talkRunConversation(npc, ((const Dialogue**) dis->conv.table)[entry]);
-        return true;
+    case DISCOURSE_CASTLE:
+        return talkRunU4Castle(dis, entry, npc);
 
     case DISCOURSE_U4_TLK:
         talkRunU4Tlk(dis, entry, npc);
@@ -180,10 +175,7 @@ bool discourse_run(const Discourse* dis, uint16_t entry, Person* npc)
         delete script;
 #endif
 
-        // Pause follow.
-        if (npc->movement == MOVEMENT_FOLLOW_AVATAR)
-            npc->movement = MOVEMENT_FOLLOW_PAUSE;
-
+        pauseFollow(npc);
         xu4.eventHandler->popController();
     }
         return true;
@@ -204,11 +196,11 @@ int discourse_findName(const Discourse* dis, const char* name)
                 return i;
             ++tlk;
         }
-    } else if (dis->system == DISCOURSE_CONV) {
-        string str(name);
-        Dialogue** dtable = (Dialogue**) dis->conv.table;
+    } else if (dis->system == DISCOURSE_CASTLE) {
+        const U4Talk** tlkTable = (const U4Talk**) dis->conv.table;
         for (i = 0; i < dis->convCount; ++i) {
-            if (dtable[i] && dtable[i]->getName() == str)
+            const U4Talk* tlk = tlkTable[i];
+            if (strcmp(tlk->strings + tlk->name, name) == 0)
                 return i;
         }
     }

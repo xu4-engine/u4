@@ -10,7 +10,6 @@
 #include "camp.h"
 #include "config.h"
 #include "context.h"
-#include "conversation.h"
 #include "debug.h"
 #include "error.h"
 #include "event.h"
@@ -1213,7 +1212,7 @@ Script::ReturnCode Script::input(xmlNodePtr script, xmlNodePtr current) {
     // Does the variable have a maximum length?
     if (xmlPropExists(current, "maxlen"))
         this->inputMaxLen = getPropAsInt(current, "maxlen");
-    else this->inputMaxLen = Conversation::BUFFERLEN;
+    else this->inputMaxLen = TEXT_AREA_W;
 
     // Should we name the variable something other than "input"
     if (xmlPropExists(current, "name"))

@@ -120,6 +120,7 @@ void screenGemUpdate(void);
 
 void screenCrLf();
 void screenMessage(const char *fmt, ...) PRINTF_LIKE(1, 2);
+void screenMessageN(const char* buffer, int buflen);
 void screenPrompt(void);
 void screenRedrawMapArea(void);
 void screenShake(int iterations);

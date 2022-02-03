@@ -120,6 +120,14 @@ public:
     virtual bool keyPressed(int key);
 };
 
+class AnyKeyController : public Controller {
+public:
+    void wait();
+    void waitTimeout();
+    virtual bool keyPressed(int key);
+    virtual void timerFired();
+};
+
 /**
  * A class for handling timed events.
  */
@@ -214,6 +222,7 @@ public:
 
     /* Member functions */
     void setTimerInterval(int msecs);
+    uint32_t getTimerInterval() const { return timerInterval; }
     TimedEventMgr* getTimer();
 
     /* Event functions */

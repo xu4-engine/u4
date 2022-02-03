@@ -764,6 +764,26 @@ bool ReadDirController::keyPressed(int key) {
 }
 
 
+void AnyKeyController::wait() {
+    timerInterval = 0;
+    xu4.eventHandler->runController(this);
+}
+
+// Wait briefly (10 seconds) for a key press.
+void AnyKeyController::waitTimeout() {
+    timerInterval = 10000 / xu4.eventHandler->getTimerInterval();
+    xu4.eventHandler->runController(this);
+}
+
+bool AnyKeyController::keyPressed(int key) {
+    xu4.eventHandler->setControllerDone();
+    return true;
+}
+
+void AnyKeyController::timerFired() {
+    xu4.eventHandler->setControllerDone();
+}
+
 //----------------------------------------------------------------------------
 
 

@@ -1,20 +1,11 @@
 /*
- * $Id$
+ * person.h
  */
 
 #ifndef PERSON_H
 #define PERSON_H
 
-#include <list>
-#include <string>
-
 #include "creature.h"
-
-using std::list;
-using std::string;
-
-class Conversation;
-class Response;
 
 typedef enum {
    NPC_EMPTY,
@@ -47,17 +38,6 @@ public:
     Coords &getStart() { return start; }
     PersonNpcType getNpcType() const { return npcType; }
     void setNpcType(PersonNpcType t);
-
-    list<string> getConversationText(Conversation *cnv, const char *inquiry);
-    string personPrompt(Conversation *cnv);
-
-    string getIntro(Conversation *cnv);
-    string processResponse(Conversation *cnv, Response *response);
-    void runCommand(Conversation *cnv, int command);
-    string getResponse(Conversation *cnv, const char *inquiry);
-    string talkerGetQuestionResponse(Conversation *cnv, const char *inquiry);
-    string beggarGetQuantityResponse(Conversation *cnv, const char *response);
-    string lordBritishGetQuestionResponse(Conversation *cnv, const char *answer);
 
 private:
     void initNpcType();
