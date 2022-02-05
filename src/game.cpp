@@ -763,12 +763,12 @@ void gameSpellEffect(int spell, int player, Sound sound) {
 
 void gameCastSpell(unsigned int spell, int caster, int param) {
     SpellCastError spellError;
-    string msg;
+    const char* msg;
 
-    if (!spellCast(spell, caster, param, &spellError, true)) {
+    if (! spellCast(spell, caster, param, &spellError, true)) {
         msg = spellGetErrorMessage(spell, spellError);
-        if (!msg.empty())
-            screenMessage("%s", msg.c_str());
+        if (msg)
+            screenMessage(msg);
     }
 }
 

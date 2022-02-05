@@ -192,7 +192,7 @@ TransportContext spellGetTransportContext(unsigned int spell) {
     return spells[spell].transportContext;
 }
 
-string spellGetErrorMessage(unsigned int spell, SpellCastError error) {
+const char* spellGetErrorMessage(unsigned int spell, SpellCastError error) {
     unsigned int i;
     SpellCastError err = error;
 
@@ -209,10 +209,10 @@ string spellGetErrorMessage(unsigned int spell, SpellCastError error) {
     /* find the message that we're looking for and return it! */
     for (i = 0; i < sizeof(spellErrorMsgs) / sizeof(spellErrorMsgs[0]); i++) {
         if (err == spellErrorMsgs[i].err)
-            return string(spellErrorMsgs[i].msg);
+            return spellErrorMsgs[i].msg;
     }
 
-    return string();
+    return NULL;
 }
 
 /**
