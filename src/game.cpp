@@ -1207,6 +1207,8 @@ bool GameController::keyPressed(int key) {
             U4IOS::IOSConversationHelper::setIntroString("Use which item?");
 #endif
             itemUse(gameGetInput().c_str());
+            if (settings.enhancements)
+                c->stats->setView(STATS_PARTY_OVERVIEW);
             break;
         }
 
