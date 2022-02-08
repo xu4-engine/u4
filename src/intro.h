@@ -210,6 +210,7 @@ private:
     TextView extendedMenuArea;
     TextView questionArea;
     TileView mapArea;
+    AnyKeyController anyKey;
 
     // menus
     Menu mainMenu;

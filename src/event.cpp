@@ -711,6 +711,8 @@ ReadChoiceController::ReadChoiceController(const string &choices) {
     this->choices = choices;
 }
 
+extern int screenCursorEnabled();
+
 bool ReadChoiceController::keyPressed(int key) {
     // isupper() accepts 1-byte characters, yet the modifier keys
     // (ALT, SHIFT, ETC) produce values beyond 255
@@ -719,7 +721,7 @@ bool ReadChoiceController::keyPressed(int key) {
 
     if (choices.empty() || choices.find_first_of(key) < choices.length()) {
         // If the value is printable, display it
-        if (key > ' ')
+        if (screenCursorEnabled() && key > ' ' && key <= 0x7F)
             screenMessage("%c", toupper(key));
         value = key;
         doneWaiting();

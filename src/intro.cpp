@@ -862,6 +862,11 @@ void IntroController::initiateNewGame() {
     else
         sex = SEX_FEMALE;
 
+    // Display entry for a moment.
+    menuArea.drawChar(toupper(sexChoice), 28, 3);
+    screenUploadToGPU();
+    EventHandler::wait_msecs(250);
+
     finishInitiateGame(nameBuffer, sex);
 }
 
@@ -910,7 +915,6 @@ void IntroController::finishInitiateGame(const string &nameBuffer, SexType sex)
     strcpy(avatar.name, nameBuffer.c_str());
     avatar.sex = sex;
     saveGame.init(&avatar);
-    screenHideCursor();
     initPlayers(&saveGame);
     saveGame.food = 30000;
     saveGame.gold = 200;
@@ -934,14 +938,10 @@ void IntroController::finishInitiateGame(const string &nameBuffer, SexType sex)
 #ifdef IOS
     U4IOS::switchU4IntroControllerToContinueButton();
 #endif
-    ReadChoiceController pauseController("");
-    xu4.eventHandler->pushController(&pauseController);
-    pauseController.waitFor();
+    anyKey.wait();
 
     showText(binData->introGypsy[GYP_SEGUE2]);
-
-    xu4.eventHandler->pushController(&pauseController);
-    pauseController.waitFor();
+    anyKey.wait();
 
     // done: exit intro and let game begin
     questionArea.disableCursor();
@@ -952,8 +952,6 @@ void IntroController::finishInitiateGame(const string &nameBuffer, SexType sex)
 }
 
 void IntroController::showStory() {
-    ReadChoiceController pauseController("");
-
     beastiesVisible = false;
 
     questionArea.setCursorFollowsText(true);
@@ -982,10 +980,9 @@ void IntroController::showStory() {
 
         showText(binData->introText[storyInd]);
 
-        xu4.eventHandler->pushController(&pauseController);
         // enable the cursor here to avoid drawing in undesirable locations
         questionArea.enableCursor();
-        pauseController.waitFor();
+        anyKey.wait();
         if (xu4.stage != StageIntro)
             break;
     }
@@ -1000,7 +997,6 @@ void IntroController::startQuestions() {
         12, 12, 218,    // EGA
         22, 16, 218,    // VGA
     };
-    ReadChoiceController pauseController("");
     ReadChoiceController questionController("ab");
     uint8_t* origin = originTable;
     if (xu4.settings->videoType == "VGA")
@@ -1030,10 +1026,8 @@ void IntroController::startQuestions() {
         U4IOS::switchU4IntroControllerToContinueButton();
 #endif
         // wait for a key
-        xu4.eventHandler->pushController(&pauseController);
-        pauseController.waitFor();
+        anyKey.wait();
 
-        screenEnableCursor();
         // show the question to choose between virtues
         showText(getQuestion(questionTree[questionRound * 2], questionTree[questionRound * 2 + 1]));
 
@@ -1104,7 +1098,7 @@ void IntroController::about() {
     menuArea.textAt(4, 9, "Copyright \011 1987, Lord British");
     drawBeasties();
 
-    ReadChoiceController::get("");
+    anyKey.wait();
 
     screenShowCursor();
     updateScreen();

@@ -56,16 +56,16 @@ public:
     void setCursorPos(int x, int y, bool clearOld = true);
     void enableCursor();
     void disableCursor();
-    void drawCursor();
-    static void cursorTimer(void *data);
 
     // functions to add color to strings
     void textSelectedAt(int x, int y, const char *text);
     string colorizeStatus(char statustype);
     string colorizeString(string input, TextColor color, unsigned int colorstart, unsigned int colorlength=0);
 
-
 protected:
+    void drawCursor();
+    static void cursorTimer(void *data);
+
     int columns, rows;          /**< size of the view in character cells  */
     bool cursorEnabled;         /**< whether the cursor is enabled */
     bool cursorFollowsText;     /**< whether the cursor is moved past the last character written */

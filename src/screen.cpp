@@ -901,6 +901,19 @@ void screenUpdateWind() {
     }
 }
 
+// Private function for ReadChoiceController.
+int screenCursorEnabled() {
+    return xu4.screen->cursorEnabled;
+}
+
+/*
+void screenDumpCursor() {
+    Screen* scr = xu4.screen;
+    printf("cursor %d,%d %d,%d\n", scr->cursorStatus, scr->cursorEnabled,
+            scr->cursorX, scr->cursorY);
+}
+*/
+
 void screenShowCursor() {
     Screen* scr = xu4.screen;
     if (! scr->cursorStatus && scr->cursorEnabled) {
