@@ -1005,22 +1005,39 @@ void IntroController::startQuestions() {
     questionRound = 0;
     initQuestionTree();
 
+    const vector<string>& gypsyText = binData->introGypsy;
+    int i1, i2, n;
+
     while (xu4.stage == StageIntro) {
         // draw the abacus background, if necessary
-        if (questionRound == 0)
+        if (questionRound == 0) {
             backgroundArea.draw(BKGD_ABACUS);
+            n = GYP_PLACES_FIRST;
+        } else {
+            n = (questionRound == 6) ? GYP_PLACES_LAST : GYP_PLACES_TWOMORE;
+        }
+
+        i1 = questionRound * 2;
+        i2 = i1 + 1;
 
         // draw the cards and show the lead up text
-        drawCard(0, questionTree[questionRound * 2], origin);
-        drawCard(1, questionTree[questionRound * 2 + 1], origin);
 
+        questionArea.disableCursor();
         questionArea.clear();
-        questionArea.textAt(0, 0, "%s", binData->introGypsy[questionRound == 0 ? GYP_PLACES_FIRST : (questionRound == 6 ? GYP_PLACES_LAST : GYP_PLACES_TWOMORE)].c_str());
-        questionArea.textAt(0, 1, "%s", binData->introGypsy[GYP_UPON_TABLE].c_str());
-        questionArea.textAt(0, 2, "%s and %s.  She says",
-                            binData->introGypsy[questionTree[questionRound * 2] + 4].c_str(),
-                            binData->introGypsy[questionTree[questionRound * 2 + 1] + 4].c_str());
+        questionArea.textAt(0, 0, gypsyText[n].c_str());
+        questionArea.textAt(0, 1, gypsyText[GYP_UPON_TABLE].c_str());
+        EventHandler::wait_msecs(1000);
+
+        const string& virtue1 = gypsyText[questionTree[i1] + 4];
+        questionArea.textAt(0, 2, "%s and", virtue1.c_str());
+        drawCard(0, questionTree[i1], origin);
+        EventHandler::wait_msecs(1000);
+
+        questionArea.textAt(virtue1.size() + 4, 2, " %s.  She says",
+                            gypsyText[questionTree[i2] + 4].c_str());
+        drawCard(1, questionTree[i2], origin);
         questionArea.textAt(0, 3, "\"Consider this:\"");
+        questionArea.enableCursor();
 
 #ifdef IOS
         U4IOS::switchU4IntroControllerToContinueButton();
@@ -1029,7 +1046,7 @@ void IntroController::startQuestions() {
         anyKey.wait();
 
         // show the question to choose between virtues
-        showText(getQuestion(questionTree[questionRound * 2], questionTree[questionRound * 2 + 1]));
+        showText(getQuestion(questionTree[i1], questionTree[i2]));
 
 #ifdef IOS
         U4IOS::switchU4IntroControllerToABButtons();
@@ -1039,9 +1056,8 @@ void IntroController::startQuestions() {
         int choice = questionController.waitFor();
 
         // update the question tree
-        if (doQuestion(choice == 'a' ? 0 : 1)) {
+        if (doQuestion(choice == 'a' ? 0 : 1))
             return;
-        }
     }
 }
 
