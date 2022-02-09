@@ -2090,6 +2090,14 @@ void GameController::initMoons()
         updateMoons(false);
 }
 
+//#define REPORT_GATES
+#ifdef REPORT_GATES
+static char gateState[9] = "        ";
+#define GATE_STATE(C,I) gateState[I] = C;
+#else
+#define GATE_STATE(C,I)
+#endif
+
 /**
  * Updates the phases of the moons and shows
  * the visual moongates on the map, if desired
@@ -2098,6 +2106,7 @@ void GameController::updateMoons(bool showmoongates)
 {
     int realMoonPhase,
         oldTrammel,
+        trammel,
         trammelSubphase;
     const Coords *gate;
 
@@ -2110,11 +2119,18 @@ void GameController::updateMoons(bool showmoongates)
         trammelSubphase = c->moonPhase % (MOON_SECONDS_PER_PHASE * 4 * 3);
         realMoonPhase = (c->moonPhase / (4 * MOON_SECONDS_PER_PHASE));
 
-        c->saveGame->trammelphase = realMoonPhase / 3;
+        trammel = realMoonPhase / 3;
+        if (trammel > 7)
+            trammel = 7;
+        c->saveGame->trammelphase = trammel;
         c->saveGame->feluccaphase = realMoonPhase % 8;
 
-        if (c->saveGame->trammelphase > 7)
-            c->saveGame->trammelphase = 7;
+#ifdef REPORT_GATES
+        printf("moons %d,%d tsub:%2d real:%2d [%s]\n",
+               c->saveGame->trammelphase,
+               c->saveGame->feluccaphase,
+               trammelSubphase, realMoonPhase, gateState);
+#endif
 
         if (showmoongates)
         {
@@ -2123,57 +2139,63 @@ void GameController::updateMoons(bool showmoongates)
 
             /* update the moongates if trammel changed */
             if (trammelSubphase == 0) {
+                GATE_STATE(' ', oldTrammel)
+                GATE_STATE('.', trammel)
                 gate = xu4.config->moongateCoords(oldTrammel);
                 if (gate)
                     annot->remove(*gate, usaveIds->moduleId(0x40));
-                gate = xu4.config->moongateCoords(c->saveGame->trammelphase);
+                gate = xu4.config->moongateCoords(trammel);
                 if (gate)
                     annot->add(*gate, usaveIds->moduleId(0x40));
             }
             else if (trammelSubphase == 1) {
-                gate = xu4.config->moongateCoords(c->saveGame->trammelphase);
+                GATE_STATE('^', trammel)
+                gate = xu4.config->moongateCoords(trammel);
                 if (gate) {
                     annot->remove(*gate, usaveIds->moduleId(0x40));
                     annot->add(*gate, usaveIds->moduleId(0x41));
                 }
             }
             else if (trammelSubphase == 2) {
-                gate = xu4.config->moongateCoords(c->saveGame->trammelphase);
+                gate = xu4.config->moongateCoords(trammel);
                 if (gate) {
                     annot->remove(*gate, usaveIds->moduleId(0x41));
                     annot->add(*gate, usaveIds->moduleId(0x42));
                 }
             }
             else if (trammelSubphase == 3) {
-                gate = xu4.config->moongateCoords(c->saveGame->trammelphase);
+                GATE_STATE('O', trammel)
+                gate = xu4.config->moongateCoords(trammel);
                 if (gate) {
                     annot->remove(*gate, usaveIds->moduleId(0x42));
                     annot->add(*gate, usaveIds->moduleId(0x43));
                 }
             }
             else if ((trammelSubphase > 3) && (trammelSubphase < (MOON_SECONDS_PER_PHASE * 4 * 3) - 3)) {
-                gate = xu4.config->moongateCoords(c->saveGame->trammelphase);
+                gate = xu4.config->moongateCoords(trammel);
                 if (gate) {
                     annot->remove(*gate, usaveIds->moduleId(0x43));
                     annot->add(*gate, usaveIds->moduleId(0x43));
                 }
             }
             else if (trammelSubphase == (MOON_SECONDS_PER_PHASE * 4 * 3) - 3) {
-                gate = xu4.config->moongateCoords(c->saveGame->trammelphase);
+                GATE_STATE('v', trammel)
+                gate = xu4.config->moongateCoords(trammel);
                 if (gate) {
                     annot->remove(*gate, usaveIds->moduleId(0x43));
                     annot->add(*gate, usaveIds->moduleId(0x42));
                 }
             }
             else if (trammelSubphase == (MOON_SECONDS_PER_PHASE * 4 * 3) - 2) {
-                gate = xu4.config->moongateCoords(c->saveGame->trammelphase);
+                gate = xu4.config->moongateCoords(trammel);
                 if (gate) {
                     annot->remove(*gate, usaveIds->moduleId(0x42));
                     annot->add(*gate, usaveIds->moduleId(0x41));
                 }
             }
             else if (trammelSubphase == (MOON_SECONDS_PER_PHASE * 4 * 3) - 1) {
-                gate = xu4.config->moongateCoords(c->saveGame->trammelphase);
+                GATE_STATE('.', trammel)
+                gate = xu4.config->moongateCoords(trammel);
                 if (gate) {
                     annot->remove(*gate, usaveIds->moduleId(0x41));
                     annot->add(*gate, usaveIds->moduleId(0x40));
