@@ -959,10 +959,6 @@ void IntroController::showStory() {
     for (int storyInd = 0; storyInd < 24; storyInd++) {
         if (storyInd == 0)
             backgroundArea.draw(BKGD_TREE);
-        else if (storyInd == 3)
-            animateTree(IMG_MOONGATE);
-        else if (storyInd == 5)
-            animateTree(IMG_ITEMS);
         else if (storyInd == 6)
             backgroundArea.draw(BKGD_PORTAL);
         else if (storyInd == 11)
@@ -979,6 +975,14 @@ void IntroController::showStory() {
             backgroundArea.draw(BKGD_ABACUS);
 
         showText(binData->introText[storyInd]);
+
+        if (storyInd == 3) {
+            questionArea.disableCursor();
+            animateTree(IMG_MOONGATE);
+        } else if (storyInd == 5) {
+            questionArea.disableCursor();
+            animateTree(IMG_ITEMS);
+        }
 
         // enable the cursor here to avoid drawing in undesirable locations
         questionArea.enableCursor();
