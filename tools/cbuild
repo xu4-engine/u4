@@ -2,7 +2,7 @@
 # Container build script for xu4 Linux & Windows packages.
 
 if [ ! -s project.tar.gz ]; then
-	sed -i "s/KR-1.0/DR-$(git rev-parse --short HEAD)/" project.b
+	sed -i "s/DR-1.0/DR-$(git rev-parse --short HEAD)/" project.b
 	copr -a -t mingw use_gl:true gpu_render:true
 fi
 

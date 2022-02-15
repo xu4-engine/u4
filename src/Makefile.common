@@ -1,7 +1,7 @@
 NULL=
 MAIN=xu4$(EXEEXT)
 
-VERSION=1.1svn
+VERSION=DR-1.0
 
 CSRCS=\
         anim.c \

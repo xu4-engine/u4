@@ -106,7 +106,7 @@ exe %xu4 [
 		include_from %src/win32
 		sources/flags [%src/win32/xu4.rc] "-I src/win32"
 	]
-	cflags {-DVERSION=\"KR-1.0\"}
+	cflags {-DVERSION=\"DR-1.0\"}
 
 	sources_from %src [
 		%anim.c
