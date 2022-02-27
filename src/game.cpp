@@ -46,7 +46,7 @@ void mixReagentsSuper();
 void newOrder();
 
 /* conversation functions */
-bool talkAt(const Coords &coords);
+static bool talkAt(const Coords &coords, int distance);
 
 /* action functions */
 bool attackAt(const Coords &coords);
@@ -2517,14 +2517,16 @@ void talk() {
     }
 
     Direction dir = gameGetDirection();
-
     if (dir == DIR_NONE)
         return;
 
-    vector<Coords> path = gameGetDirectionalActionPath(MASK_DIR(dir), MASK_DIR_ALL, c->location->coords,
-                                                                       1, 2, &Tile::canTalkOverTile, true);
+    vector<Coords> path =
+        gameGetDirectionalActionPath(MASK_DIR(dir), MASK_DIR_ALL,
+                                     c->location->coords, 1, 2,
+                                     &Tile::canTalkOverTile, true);
+    int dist = 1;
     for (vector<Coords>::iterator i = path.begin(); i != path.end(); i++) {
-        if (talkAt(*i))
+        if (talkAt(*i, dist++))
             return;
     }
 
@@ -2759,7 +2761,7 @@ void peer(bool useGem) {
  * Begins a conversation with the NPC at map coordinates x,y.  If no
  * NPC is present at that point, zero is returned.
  */
-bool talkAt(const Coords &coords) {
+static bool talkAt(const Coords &coords, int distance) {
     /* can't have any conversations outside of town */
     City* city = static_cast<City*>(c->location->map);
     if (! isCity(city)) {
@@ -2784,6 +2786,12 @@ bool talkAt(const Coords &coords) {
             discourse_load(dis, "castle");
         return discourse_run(dis, npcType - NPC_LORD_BRITISH, speaker);
     }
+
+    /* Prevent talking to ghosts & skeletons over the counter in Magincia.
+       In the DOS version ghosts on a counter space also ignore the player,
+       but will speak when they are inside walls. */
+    if (speaker->isUndead() && distance > 1)
+        return false;
 
     /* No response from alerted guards... does any monster both
        attack and talk besides Nate the Snake? */
