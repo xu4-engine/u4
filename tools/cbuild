@@ -1,8 +1,10 @@
 #!/usr/bin/bash
 # Container build script for xu4 Linux & Windows packages.
 
+VERSION=DR-$(git rev-parse --short HEAD)
+
 if [ ! -s project.tar.gz ]; then
-	sed -i "s/DR-1.0/DR-$(git rev-parse --short HEAD)/" project.b
+	sed -i "s/DR-1.0/${VERSION}/" project.b
 	copr -a -t mingw use_gl:true gpu_render:true
 fi
 
@@ -12,7 +14,7 @@ SCRIPT=build-$TIME
 ID=${SCRIPT}
 HDIR=/tmp
 CDIR=/tmp
-ARC_DIR=/tmp/xu4
+ARC_DIR=/tmp/xu4-${VERSION}
 SDK_DIR=dist/sdk
 
 if [ ! -d ${SDK_DIR} ]; then
@@ -52,6 +54,7 @@ windows)
 		tar xf $FN -C ${ARC_DIR}
 		cp /tmp/xu4.exe-$TIME ${ARC_DIR}/xu4.exe
 		cp Ultima-IV.mod ${ARC_DIR}
+		cp COPYING ${ARC_DIR}/COPYING.txt
 		cp README.md ${ARC_DIR}/README.txt
 		cd ${ARC_DIR%/*}; zip -r xu4-win32.zip ${ARC_DIR##*/}
 	fi
@@ -77,7 +80,7 @@ linux)
 	if [ "$2" != "-b" ]; then
 		clean_dir ${ARC_DIR}
 		cp /tmp/xu4-$TIME ${ARC_DIR}/xu4
-		cp Ultima-IV.mod dist/setup ${ARC_DIR}
+		cp Ultima-IV.mod COPYING dist/setup ${ARC_DIR}
 		cp README.md ${ARC_DIR}/README
 		cp dist/README.linux-dr ${ARC_DIR}/README-Linux
         mkdir ${ARC_DIR}/desktop
