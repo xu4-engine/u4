@@ -19,7 +19,7 @@ CONF=xml
 
 CXX=g++
 CC=gcc
-CXXFLAGS=-Wall -g -I. $(SDL_CXXFLAGS) $(XML_CXXFLAGS) -DVERSION=\"$(VERSION)\" -DHAVE_VARIADIC_MACROS
+CXXFLAGS=-Wall -g -I. -Isupport $(SDL_CXXFLAGS) $(XML_CXXFLAGS) -DVERSION=\"$(VERSION)\" -DHAVE_VARIADIC_MACROS
 CFLAGS=$(CXXFLAGS)
 LDFLAGS=-static-libgcc -static-libstdc++
 LIBS=-lmingw32 $(SDL_LIBS) $(XML_LIBS) -lpng -mwindows

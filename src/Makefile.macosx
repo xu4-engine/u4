@@ -61,7 +61,7 @@ SYSROOT=
 SPECIFIC_ARCH=
 
 
-CXXFLAGS=$(FEATURES) -Wall -I. $(UIFLAGS) $(shell xml2-config --cflags) -DVERSION=\"$(VERSION)\" $(DEBUGCXXFLAGS) -DNPERF -DMACOSX -DMACOSX_USER_FILES_PATH=\"/Library/Application\ Support/xu4\" -no-cpp-precomp -L$(PREFIX)/lib $(SYSROOT) $(SPECIFIC_ARCH)
+CXXFLAGS=$(FEATURES) -Wall -I. -Isupport $(UIFLAGS) $(shell xml2-config --cflags) -DVERSION=\"$(VERSION)\" $(DEBUGCXXFLAGS) -DNPERF -DMACOSX -DMACOSX_USER_FILES_PATH=\"/Library/Application\ Support/xu4\" -no-cpp-precomp -L$(PREFIX)/lib $(SYSROOT) $(SPECIFIC_ARCH)
 CFLAGS=$(CXXFLAGS)
 LIBS=-lxml2 -lz -lpthread -licucore -lm $(UILIBS) -lobjc $(SPECIFIC_ARCH)
 
