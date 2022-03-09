@@ -14,10 +14,16 @@ libdir=$(PREFIX)/lib
 datadir=$(PREFIX)/share
 
 ifeq ($(UI), sdl)
+SOUND=sdl
 UILIBS=$(shell sdl-config --libs) -lSDL_mixer
 UIFLAGS=$(shell sdl-config --cflags)
 else
+SOUND=faun
+ifeq ($(SOUND),faun)
+UILIBS=-lallegro -lfaun
+else
 UILIBS=-lallegro_acodec -lallegro_audio -lallegro
+endif
 UIFLAGS=
 endif
 

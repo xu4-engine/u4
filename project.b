@@ -2,6 +2,7 @@ options [
 	os_api: 'allegro	"Platform API ('allegro 'sdl)"
 	use_gl: true
 	use_boron: true
+	use_faun: true
 	boron_sdk: none		"Path to Boron headers and libraries"
 	gpu_render: false
 	make_util: true
@@ -32,15 +33,23 @@ exe %xu4 [
 	switch os_api [
 		allegro [
 			unix [
-				libs [%allegro_acodec %allegro_audio %allegro]
+				libs pick [
+					[%allegro %faun %pulse-simple %pulse %vorbisfile]
+					[%allegro_acodec %allegro_audio %allegro]
+				] use_faun
 			]
 			win32 [
-				libs_from %../usr/lib [%allegro_acodec %allegro_audio %allegro]
+				libs_from %../usr/lib pick [
+					[%allegro %faun %vorbisfile %ole32]
+					[%allegro_acodec %allegro_audio %allegro]
+				] use_faun
 			]
-			sources_from %src [
+			sources_from %src reduce [
 				%event_allegro.cpp
 				%screen_allegro.cpp
-				%sound_allegro.cpp
+				either use_faun
+					%sound_faun.cpp
+					%sound_allegro.cpp
 			]
 		]
 		sdl [

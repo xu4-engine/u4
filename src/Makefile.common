@@ -58,7 +58,7 @@ CXXSRCS=\
         screen_$(UI).cpp \
         settings.cpp \
         shrine.cpp \
-        sound_$(UI).cpp \
+        sound_$(SOUND).cpp \
         spell.cpp \
         stats.cpp \
         textview.cpp \
