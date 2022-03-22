@@ -11,26 +11,31 @@
 #include <time.h>
 #endif
 
-static uint32_t getTicks_start = 0;
+static int64_t getTicks_start = 0;
 
 // Return milliseconds elapsed since first call to getTicks().
 uint32_t getTicks()
 {
-    uint32_t now;
+    int64_t now;
 
 #ifdef _WIN32
     struct _timeb tb;
     _ftime( &tb );
-    now = (uint32_t) (tb.time*1000 + tb.millitm);
+    now = (int64_t) tb.time*1000 + tb.millitm;
+#elif defined(CLOCK_MONOTONIC)
+    // Android, Linux, macOS 10.12
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    now = (int64_t) ts.tv_sec*1000 + ts.tv_nsec/1000000;
 #else
-    // Android, Linux, iOS, macOS.
+    // Older POSIX systems.  POSIX.1-2008 marks gettimeofday() as obsolete.
     struct timeval ts;
     gettimeofday(&ts, NULL);
-    now = (uint32_t) (ts.tv_sec*1000 + ts.tv_usec/1000);
+    now = (int64_t) ts.tv_sec*1000 + ts.tv_usec/1000;
 #endif
 
     if (getTicks_start)
-        return now - getTicks_start;
+        return (uint32_t) (now - getTicks_start);
     getTicks_start = now;
     return 0;
 }
