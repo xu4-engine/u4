@@ -394,6 +394,11 @@ U4FILE * ImageMgr::getImageFile(ImageInfo *info)
                     basename = vgaFile;
                 else
                     basename = getInfoFromSet(info->name, scheme(sname[1]))->getFilename();
+
+                // Remove u4/ or u4u/ path again.
+                size_t pos = basename.find('/');
+                if (pos != string::npos)
+                    basename.erase(0,pos+1);
             }
         }
 
