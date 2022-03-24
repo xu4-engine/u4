@@ -16,6 +16,7 @@
 
 #define config_soundFile(id)    xu4.config->soundFile(id)
 #define config_musicFile(id)    xu4.config->musicFile(id)
+#define config_voiceParts(id)   xu4.config->voiceParts(id)
 #define BUFFER_LIMIT    32
 #define SOURCE_LIMIT    8
 #define SID_END         7
@@ -24,6 +25,7 @@
 #define BUFFER_MS_FAILED    1
 
 static int currentTrack;
+static int currentDialog;
 static int musicEnabled;
 static int nextSource;              // Use sources in round-robin order.
 static int musicFadeMs;             // Minimizes calls to faun_setParameter.
@@ -39,6 +41,7 @@ int soundInit()
     const char* error;
 
     currentTrack = MUSIC_NONE;
+    currentDialog = 0;
     nextSource = 0;
     musicFadeMs = 0;
     memset(bufferMs, 0, sizeof(bufferMs));
@@ -63,7 +66,7 @@ void soundDelete()
 
 static int loadSoundBuffer(int sound)
 {
-    float duration;
+    float duration = 0.0f;
     uint16_t ms;
 
 #ifdef CONF_MODULE
@@ -114,6 +117,52 @@ void soundPlay(Sound sound, bool onlyOnce, int limitMSec)
         if (++nextSource >= SID_END)
             nextSource = 0;
     }
+}
+
+/*
+ * Play a line of spoken dialogue.
+ */
+void soundSpeakLine(int streamId, int line, bool wait) {
+#ifdef CONF_MODULE
+    if (soundVolume <= 0.0f || streamId < 1)
+        return;
+
+    const float* streamPart = config_voiceParts(streamId);
+    if (! streamPart)
+        return;
+    streamPart += line * 2;
+    if (streamPart[0] < 0.3f)           // Ignore NUL entries.
+        return;
+
+    //printf("KR soundSpeakLine %d %d %f,%f\n",
+    //       streamId, line, streamPart[0], streamPart[1]);
+
+    if (streamId == currentDialog)
+        goto speak;     // Dialogue already loaded
+
+    currentDialog = 0;
+    {
+    const CDIEntry* ent = config_musicFile(streamId);
+    if (ent) {
+        faun_playStream(SID_SPEECH, xu4.config->modulePath(ent),
+                        ent->offset, ent->bytes, 0);
+        currentDialog = streamId;
+        goto speak;
+    }
+    }
+
+    errorWarning("Dialogue audio stream %d not found", streamId);
+    return;
+
+speak:
+    faun_playStreamPart(SID_SPEECH, streamPart[1], streamPart[0],
+                        FAUN_PLAY_ONCE);
+    if (wait)
+        EventHandler::wait_msecs(int(1000.0f * streamPart[0]));
+#else
+    (void) streamId;
+    (void) line;
+#endif
 }
 
 /*

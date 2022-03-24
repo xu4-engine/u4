@@ -123,6 +123,7 @@ struct ConfigBoron : public Config {
     Module mod;
     UIndex configN;
     UIndex itemIdN;         // item-id context!
+    UIndex musicN;          // music parts block!
     size_t tocUsed;
     ConfigData xcd;
     UBuffer evalBuf;
@@ -890,6 +891,36 @@ static void mergeGraphics(ConfigBoron* cfg, const UCell* rep)
     }
 }
 
+static void mergeMusic(ConfigBoron* cfg, const UCell* rep)
+{
+    if (! ur_is(rep, UT_BLOCK))
+        return;
+
+    UThread* ut = cfg->ut;
+    UBuffer* buf = ur_buffer(cfg->configN);
+    UCell* cell = ur_ctxCell(buf, CI_MUSIC);
+    if (ur_is(cell, UT_BLOCK)) {
+        // Overwrite any existing music part values.
+        buf = ur_bufferSerM(cell);
+        if (buf) {
+            int existing = buf->used;
+            const UBuffer* repBlk = ur_bufferSeries(ut, rep);
+            if (repBlk->used > existing)
+                ur_blkAppendCells(buf, repBlk->ptr.cell + existing,
+                                  repBlk->used - existing);
+            cell = repBlk->ptr.cell;
+            for (int i = 0; i < existing; ++cell, ++i) {
+                if (! ur_is(cell, UT_NONE))
+                    buf->ptr.cell[i] = *cell;
+            }
+        }
+    } else {
+        // No existing music block! so use replacement as-is.
+        *cell = *rep;
+        cfg->musicN = rep->series.buf;
+    }
+}
+
 // Load and merge config.
 static const char* confLoader(FILE* fp, const CDIEntry* ent, void* user)
 {
@@ -907,24 +938,25 @@ static const char* confLoader(FILE* fp, const CDIEntry* ent, void* user)
             if (cfg->configN == UR_INVALID_BUF) {
                 cfg->configN = res->series.buf;
                 ur_hold(cfg->configN);  // Keep forever.
+
+                const UCell* cell =
+                    ur_ctxCell(ur_buffer(cfg->configN), CI_MUSIC);
+                if (ur_is(cell, UT_BLOCK))
+                    cfg->musicN = cell->series.buf;
             } else {
                 UBuffer* cur = ur_buffer(cfg->configN);
                 UBuffer* ctx = ur_buffer(res->series.buf);
                 int i;
 
-                // Replace existing config context values (except for music).
+                // Replace existing config context values.
                 for (i = 0; i < CI_COUNT; ++i) {
-                    if (i == CI_MUSIC)
-                        continue;
-
                     res = ur_ctxCell(ctx, i);
 
-                    if (i == CI_GRAPHICS) {
+                    if (i == CI_GRAPHICS)
                         mergeGraphics(cfg, res);
-                        continue;
-                    }
-
-                    if (! ur_is(res, UT_NONE)) {
+                    else if (i == CI_MUSIC)
+                        mergeMusic(cfg, res);
+                    else if (! ur_is(res, UT_NONE)) {
                         cur->ptr.cell[i] = *res;
                         //printf("KR config overlay %d\n", i);
                     }
@@ -963,7 +995,7 @@ ConfigBoron::ConfigBoron(const char* renderPath, const char* modulePath,
                        " imageset tileanims _cel rect", &sym_hitFlash);
 
     mod_init(&mod, 4);
-    configN = UR_INVALID_BUF;
+    configN = musicN = UR_INVALID_BUF;
 
     if (renderPath && renderPath[0]) {
         error = mod_addLayer(&mod, renderPath, NULL, NULL, NULL);
@@ -1310,6 +1342,24 @@ const CDIEntry* Config::musicFile( uint32_t id ) const {
 const CDIEntry* Config::soundFile( uint32_t id ) const {
     uint32_t appId = CDI32('S', 'O', (id >> 8), (id & 255));
     return mod_findAppId(&CX->mod, appId);
+}
+
+/*
+ * Return a table of (duration, start) values for a MusicTrack id.
+ */
+const float* Config::voiceParts( uint32_t id ) const {
+    const ConfigBoron* cfg = CX;
+    if (cfg->musicN != UR_INVALID_BUF) {
+        const UThread* ut = cfg->ut;
+        const UBuffer* buf = ur_buffer(cfg->musicN);
+        --id;
+        if (id < (uint32_t) buf->used) {
+            const UCell* cell = buf->ptr.cell + id;
+            if (ur_is(cell, UT_VECTOR))
+                return ur_bufferSeries(ut, cell)->ptr.f;
+        }
+    }
+    return NULL;
 }
 
 /*

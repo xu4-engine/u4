@@ -149,6 +149,8 @@ void soundPlay(Sound sound, bool onlyOnce, int specificDurationInTicks) {
     }
 }
 
+void soundSpeakLine(int, int, bool) {}
+
 /*
  * Return duration in milliseconds.
  */

@@ -1,0 +1,59 @@
+#!/usr/bin/bash
+# Create NPC voice .ogg files using Larynx TTS & oggenc.
+
+if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
+	echo "Usage: vocalize [OPTIONS] <character>"
+	echo "Options:"
+	echo "  -c          Complete process; run both text-to-speech and encode."
+	echo "  -e          Encode existing .wav files as .ogg"
+	echo "  -h, --help  Display this help and exit"
+	exit
+fi
+
+VOCALIZE=1
+ENCODE=0
+
+while [ "$1" != "" ]; do
+	case $1 in
+	-c)
+		VOCALIZE=1
+		ENCODE=1 ;;
+	-e)
+		VOCALIZE=0
+		ENCODE=1 ;;
+	*)
+		CHARACTER=${1%%.lines} ;;
+	esac
+	shift
+done
+
+if [ -z ${CHARACTER} ]; then
+	echo "Please specify a character"
+	exit 64
+fi
+
+BIN=$(dirname "$(readlink -f "$0")")
+
+if [ ${VOCALIZE} = 1 ]; then
+	# Run Larynx TTS container to generate Wave files.
+
+	TIME=$(date +%H%M%S)
+	SCRIPT=vocal-$TIME
+	ID=${SCRIPT}
+	HDIR=/tmp
+	CDIR=/tmp
+
+	boron ${BIN}/tts-script.b ${CHARACTER}.lines >$HDIR/${SCRIPT} || exit
+
+	podman run -d -it --name=$ID xu4/larynx /bin/bash || exit
+	podman cp $HDIR/${SCRIPT} $ID:$CDIR
+	podman exec -it $ID /bin/bash $CDIR/${SCRIPT}
+	#podman cp $ID:/tmp /tmp/voice-$TIME
+	podman cp $ID:/tmp ${CHARACTER}
+	podman stop $ID
+fi
+
+if [ ${ENCODE} = 1 ]; then
+	rm -rf /tmp/xu4-vocalize
+	boron -s ${BIN}/tts-encode.b -c ${CHARACTER} ${CHARACTER}/*.wav
+fi

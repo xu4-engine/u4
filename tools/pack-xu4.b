@@ -480,32 +480,54 @@ pack-talk: func [filename /local it] [
 ;---------------------------------------
 ; Build module package.
 
+emit-audio: func [app_id fname] [
+	fmt: select [
+		".wav"  0x2006
+		".mp3"  0x2007
+		".ogg"  0x2008
+		".flac" 0x2011
+		".rfx"  0x2030
+	] ext: file-ext fname
+	ifn fmt [fatal config ["Unknown audio file extension" ext]]
+
+	cdi-chunk fmt app_id read fname
+]
+
 process-sound: func [blk app_id] [
 	ifn blk [return none]
 
+	parts: make block! 16
 	path: root-path
-	n: 0
+	high: n: 0
 	app_id: copy app_id
 	parse blk [some[
 		tok: file! (
-			fname: first tok
-			fmt: select [
-				".wav"  0x2006
-				".mp3"  0x2007
-				".ogg"  0x2008
-				".flac" 0x2011
-				".rfx"  0x2030
-			] ext: file-ext fname
-			ifn fmt [fatal config ["Unknown audio file extension" ext]]
-
 			poke-id app_id ++ n
-
-			cdi-chunk fmt app_id read join path first tok
+			emit-audio app_id join path first tok
 		)
 	  | int! (n: first tok)
 	  | 'path file! (path: terminate join root-path second tok '/')
+	  | 'parts file! (
+			fn: join path second tok
+
+			poke-id app_id ++ n
+			emit-audio app_id fn
+
+			vec: make vector! 'f32
+			append vec collect double!
+						load construct to-string fn [".ogg" "-parts.b"]
+			appair parts n vec
+			high: maximum high n
+		)
 	]]
-	n
+
+	either empty? parts n [
+		append/repeat parts-table: make block! high none high
+		foreach [n vec] parts [
+			poke parts-table n vec
+		]
+		parts-table
+	]
 ]
 
 /*

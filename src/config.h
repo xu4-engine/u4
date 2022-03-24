@@ -64,6 +64,7 @@ public:
     const CDIEntry* mapFile( uint32_t id ) const;
     const CDIEntry* musicFile( uint32_t id ) const;
     const CDIEntry* soundFile( uint32_t id ) const;
+    const float*    voiceParts( uint32_t id ) const;
     int atlasImages(StringId spec, AtlasSubImage* images, int max);
 #else
     const char* musicFile( uint32_t id );

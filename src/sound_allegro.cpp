@@ -58,6 +58,7 @@ extern float screenFrameDuration();
 
 #define config_soundFile(id)    xu4.config->soundFile(id)
 #define config_musicFile(id)    xu4.config->musicFile(id)
+#define config_voiceParts(id)   xu4.config->voiceParts(id)
 #endif
 
 #define FX_CONTROL_SLOTS    2
@@ -80,6 +81,14 @@ static std::vector<ALLEGRO_SAMPLE *> sa_samples;
 
 #ifdef CONF_MODULE
 static ALLEGRO_FILE* moduleFile = NULL;
+
+#define CONF_SPEAK
+#ifdef CONF_SPEAK
+static ALLEGRO_AUDIO_STREAM* dialogStream = NULL;
+static ALLEGRO_FILE* moduleDialog = NULL;
+static double dialogEnd;
+static int currentDialog;
+#endif
 #endif
 
 /*
@@ -128,6 +137,13 @@ int soundInit(void)
     currentTrack = MUSIC_NONE;
     musicStream = NULL;
 
+#ifdef CONF_SPEAK
+    // Initialize the dialog
+    currentDialog = 0;
+    dialogStream = NULL;
+    dialogEnd = 0.0;
+#endif
+
     // Set up the volume.
     musicEnabled = xu4.settings->musicVol;
     musicSetVolume(xu4.settings->musicVol);
@@ -154,6 +170,16 @@ void soundDelete(void)
         al_fclose(moduleFile);
         moduleFile = NULL;
     }
+#ifdef CONF_SPEAK
+    if (dialogStream) {
+        al_destroy_audio_stream(dialogStream);
+        dialogStream = NULL;
+    }
+    if (moduleDialog) {
+        al_fclose(moduleDialog);
+        moduleDialog = NULL;
+    }
+#endif
 #endif
     if (fxMixer) {
         al_destroy_mixer(fxMixer);
@@ -203,7 +229,10 @@ static bool sound_load(Sound sound) {
                 al_fseek(af, ent->offset, ALLEGRO_SEEK_SET);
                 slice = al_fopen_slice(af, ent->bytes, "r");
                 sa_samples[sound] = al_load_sample_f(slice, audioExt(ent));
-                al_fclose(slice);   // Does unwanted seek to slice end.
+
+                // NOTE: al_fclose does an unwanted seek to the slice end.
+                //       Allegro 5.2.8 will have a 'n' mode to prevent this.
+                al_fclose(slice);
                 al_fclose(af);
             }
         }
@@ -254,6 +283,84 @@ void soundPlay(Sound sound, bool onlyOnce, int durationLimitMSec) {
                              ALLEGRO_PLAYMODE_ONCE, NULL))
             fprintf(stderr, "Error playing sound %d\n", sound);
     }
+}
+
+static ALLEGRO_AUDIO_STREAM* moduleAudioStream(const CDIEntry* ent,
+                                               ALLEGRO_FILE** fileHandlePtr) {
+    ALLEGRO_FILE* fh = *fileHandlePtr;
+    if (! fh)
+        *fileHandlePtr = fh = al_fopen(xu4.config->modulePath(), "rb");
+
+    if (fh) {
+        ALLEGRO_FILE* slice;
+        al_fseek(fh, ent->offset, ALLEGRO_SEEK_SET);
+        slice = al_fopen_slice(fh, ent->bytes, "r");
+        return al_load_audio_stream_f(slice, audioExt(ent), 4, 2048);
+
+        // NOTE: Stream takes ownership of ALLEGRO_FILE.
+        // Since we pass a slice, we must still close moduleFile ourselves.
+    }
+    return NULL;
+}
+
+#ifdef CONF_SPEAK
+static void speakPart(ALLEGRO_AUDIO_STREAM* stream, const float* segment,
+                      bool wait) {
+    double start = segment[1];
+#if ALLEGRO_VERSION_INT < 0x05020800
+    dialogEnd = start + segment[0];
+#else
+    // Allegro 5.2.8 will internally handle ending stream segments.
+    al_set_audio_stream_loop_secs(stream, start, start + segment[0]);
+#endif
+    if (al_seek_audio_stream_secs(stream, start)) {
+        al_set_audio_stream_playing(stream, 1);
+        if (wait)
+            EventHandler::wait_msecs(int(1000.0f * segment[0]));
+    }
+}
+#endif
+
+void soundSpeakLine(int streamId, int line, bool wait) {
+#ifdef CONF_SPEAK
+    if (!audioFunctional || !xu4.settings->soundVol || streamId < 1)
+        return;
+
+    const float* streamPart = config_voiceParts(streamId);
+    if (! streamPart)
+        return;
+    streamPart += line * 2;
+    if (streamPart[0] < 0.3f)           // Ignore NUL entries.
+        return;
+
+    // Dialog already loaded
+    if (streamId == currentDialog && dialogStream) {
+        speakPart(dialogStream, streamPart, wait);
+        return;
+    }
+
+    if (dialogStream) {
+        al_destroy_audio_stream(dialogStream);
+        dialogStream = NULL;
+        currentDialog = 0;
+        dialogEnd = 0.0;
+    }
+
+    const CDIEntry* ent = config_musicFile(streamId);
+    if (ent)
+        dialogStream = moduleAudioStream(ent, &moduleDialog);
+
+    if (! dialogStream) {
+        errorWarning("Unable to load dialogue audio stream %d", streamId);
+    } else {
+        al_attach_audio_stream_to_mixer(dialogStream, fxMixer);
+        currentDialog = streamId;
+        speakPart(dialogStream, streamPart, wait);
+    }
+#else
+    (void) streamId;
+    (void) line;
+#endif
 }
 
 /*
@@ -315,20 +422,8 @@ static bool music_load(int music, float newGain) {
 
 #ifdef CONF_MODULE
     const CDIEntry* ent = config_musicFile(music);
-    if (ent) {
-        if (! moduleFile)
-            moduleFile = al_fopen(xu4.config->modulePath(ent), "rb");
-
-        if (moduleFile) {
-            ALLEGRO_FILE* slice;
-            al_fseek(moduleFile, ent->offset, ALLEGRO_SEEK_SET);
-            slice = al_fopen_slice(moduleFile, ent->bytes, "r");
-            musicStream = al_load_audio_stream_f(slice, audioExt(ent), 4, 2048);
-
-            // NOTE: Stream takes ownership of ALLEGRO_FILE.
-            // Since we pass a slice, we must still close moduleFile ourselves.
-        }
-    }
+    if (ent)
+        musicStream = moduleAudioStream(ent, &moduleFile);
 #else
     const char* pathname = config_musicFile(music);
     if (! pathname)
@@ -403,6 +498,24 @@ void musicUpdate()
         }
         al_set_audio_stream_gain(musicStream, musicVolume * musicGain);
     }
+
+#if defined(CONF_SPEAK) && (ALLEGRO_VERSION_INT < 0x05020800)
+    // Allegro 5.2.8 will internally handle ending stream segments.
+    if (dialogStream && dialogEnd > 0.0) {
+        double pos = al_get_audio_stream_position_secs(dialogStream);
+        //printf("KR dialog %f %f\n", pos, dialogEnd);
+
+        // al_get_audio_stream_position_secs() reports the stream read
+        // position, not the play position, so we must move it back a bit or
+        // the segment will get clipped at the end.
+        pos -= 0.2;
+
+        if (pos >= dialogEnd) {
+            dialogEnd = 0.0;
+            al_set_audio_stream_playing(dialogStream, 0);
+        }
+    }
+#endif
 }
 
 #define FADE_DELTA(msec)    (1000.0f / msec * screenFrameDuration())

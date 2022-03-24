@@ -931,6 +931,7 @@ void IntroController::finishInitiateGame(const string &nameBuffer, SexType sex)
 
     // show the text thats segues into the main game
     showText(binData->introGypsy[GYP_SEGUE1]);
+    soundSpeakLine(VOICE_GYPSY, 4);
 #ifdef IOS
     U4IOS::switchU4IntroControllerToContinueButton();
 #endif
@@ -972,12 +973,24 @@ void IntroController::showStory() {
 
         showText(binData->introText[storyInd]);
 
-        if (storyInd == 3) {
-            questionArea.disableCursor();
-            animateTree(IMG_MOONGATE);
-        } else if (storyInd == 5) {
-            questionArea.disableCursor();
-            animateTree(IMG_ITEMS);
+        switch (storyInd) {
+            case 3:
+                questionArea.disableCursor();
+                animateTree(IMG_MOONGATE);
+                break;
+            case 5:
+                questionArea.disableCursor();
+                animateTree(IMG_ITEMS);
+                break;
+            case 20:
+                soundSpeakLine(VOICE_GYPSY, 0);
+                break;
+            case 22:
+                soundSpeakLine(VOICE_GYPSY, 1);
+                break;
+            case 23:
+                soundSpeakLine(VOICE_GYPSY, 2);
+                break;
         }
 
         // enable the cursor here to avoid drawing in undesirable locations
@@ -1033,6 +1046,7 @@ void IntroController::startQuestions() {
         drawCard(0, questionTree[i1], origin);
         EventHandler::wait_msecs(1000);
 
+        soundSpeakLine(VOICE_GYPSY, 3);
         questionArea.textAt(virtue1.size() + 4, 2, " %s.  She says",
                             gypsyText[questionTree[i2] + 4].c_str());
         drawCard(1, questionTree[i2], origin);

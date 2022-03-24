@@ -58,6 +58,10 @@ enum MusicTrack {
     MUSIC_COMBAT,
     MUSIC_CASTLES,
 
+    VOICE_LB,
+    VOICE_HW,
+    VOICE_GYPSY,
+
     MUSIC_MAX
 };
 
@@ -65,6 +69,7 @@ int soundInit(void);
 void soundDelete(void);
 
 void soundPlay(Sound sound, bool onlyOnce = true, int specificDurationInTicks = -1);
+void soundSpeakLine(int streamId, int line, bool wait = false);
 
 int  soundDuration(Sound sound);
 void soundStop();

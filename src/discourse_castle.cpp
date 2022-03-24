@@ -23,7 +23,7 @@
 #define HW_DEFAULT      49
 #define HW_ALREADYAVATAR 50
 #define HW_GOTOSHRINE   51
-#define HW_BYE          52
+#define HW_FAREWELL     52
 
 struct U4TalkLordBritish {
     char* strings;
@@ -135,6 +135,38 @@ static void messageParts(AnyKeyController* anyKey, const char* text) {
     screenMessageN(text, cp - text);
 }
 
+static const uint8_t lbKeyLine[LB_KEY_COUNT] = {
+    /*
+    name  look      job       truth love         courage  honesty compassion
+    valor justice   sacrifice honor spirituality humility pride   avatar
+    quest britannia ankh      abyss mondain      minax    exodus  virtue
+    */
+     0,255,  1,  2,  3,  4,  5,  6,
+     7,  8,  9, 10, 11, 12, 14, 16,
+    18, 20, 23, 24, 27, 28, 29, 30
+};
+
+enum SpokenLines {
+    LINE_WELCOME = 31,
+    LINE_WELCOME_ADV,
+    LINE_ASK_OF_ME,
+    LINE_AT_LAST,
+    LINE_NEW_AGE,
+    LINE_CHAMPION,
+    LINE_I_AM_WELL,
+    LINE_CANNOT_HELP,
+    LINE_FAREWELL,
+    LINE_FAREWELL_S,
+    LINE_LIVE_AGAIN,
+    LINE_GOOD,
+    LINE_LET_ME_HEAL,
+    LINE_TO_SURVIVE,
+    LINE_TRAVEL_NOT,
+    LINE_LEARN_YE,
+    LINE_VISIT_THE,
+    LINE_GO_YE_NOW
+};
+
 /**
  * Generate the appropriate response when the player asks Lord British
  * for help.  The help text depends on the current party status; when
@@ -159,6 +191,7 @@ static void lordBritishHelp(AnyKeyController* anyKey) {
     }
 
     if (saveGame->moves <= 1000) {
+        soundSpeakLine(VOICE_LB, LINE_TO_SURVIVE);
         text = "To survive in this hostile land thou must first know thyself!"
                " Seek ye to master thy weapons and thy magical ability!\n"
                "\nTake great care in these thy first travels in Britannia.\n"
@@ -166,6 +199,7 @@ static void lordBritishHelp(AnyKeyController* anyKey) {
                " safety of the townes!\n";
     }
     else if (saveGame->members == 1) {
+        soundSpeakLine(VOICE_LB, LINE_TRAVEL_NOT);
         text = "Travel not the open lands alone. There are many worthy people"
                " in the diverse townes whom it would be wise to ask to Join"
                " thee!\n"
@@ -173,6 +207,7 @@ static void lordBritishHelp(AnyKeyController* anyKey) {
                " leader can win the Quest!\n";
     }
     else if (saveGame->runes == 0) {
+        soundSpeakLine(VOICE_LB, LINE_LEARN_YE);
         text = "Learn ye the paths of virtue. Seek to gain entry unto the"
                " eight shrines!\n"
                "\nFind ye the Runes, needed for entry into each shrine, and"
@@ -183,6 +218,7 @@ static void lordBritishHelp(AnyKeyController* anyKey) {
                " are remembered and can return to hinder thee!\n";
     }
     else if (! partialAvatar) {
+        soundSpeakLine(VOICE_LB, LINE_VISIT_THE);
         text = "Visit the Seer Hawkwind often and use his wisdom to help thee"
                " prove thy virtue.\n"
                "\nWhen thou art ready, Hawkwind will advise thee to seek the"
@@ -191,6 +227,7 @@ static void lordBritishHelp(AnyKeyController* anyKey) {
                " for only then shalt thou be ready to seek the codex!\n";
     }
     else if (saveGame->stones == 0) {
+        soundSpeakLine(VOICE_LB, LINE_GO_YE_NOW);
         text = "Go ye now into the depths of the dungeons. Therein recover the"
                " 8 colored stones from the altar pedestals in the halls of the"
                " dungeons.\n"
@@ -230,9 +267,11 @@ static void lordBritishHelp(AnyKeyController* anyKey) {
 
 static void lordBritishHeal(char answer) {
     if (answer == 'y') {
+        soundSpeakLine(VOICE_LB, LINE_GOOD);
         message("\n\nHe says: That is good.\n");
     }
     else if (answer == 'n') {
+        soundSpeakLine(VOICE_LB, LINE_LET_ME_HEAL);
         message("\n\nHe says: Let me heal thy wounds!\n");
 
         // Same spell effect as 'r'esurrect.
@@ -260,6 +299,7 @@ static void runTalkLordBritish(const U4TalkLordBritish* lb)
 
     /* If the avatar is dead Lord British resurrects them! */
     if (p0->getStatus() == STAT_DEAD) {
+        soundSpeakLine(VOICE_LB, LINE_LIVE_AGAIN);
         screenMessage("%s, Thou shalt live again!\n", pcName.c_str());
         p0->setStatus(STAT_GOOD);
         p0->heal(HT_FULLHEAL);
@@ -274,32 +314,39 @@ static void runTalkLordBritish(const U4TalkLordBritish* lb)
         switch (party->size()) {
             case 1:
                 message("%s%s!\n", welcome, pcName.c_str());
+                soundSpeakLine(VOICE_LB, LINE_WELCOME, true);
                 break;
             case 2:
                 message("%s%s and thee also %s!\n", welcome, pcName.c_str(),
                         party->member(1)->getName().c_str());
+                soundSpeakLine(VOICE_LB, LINE_WELCOME, true);
                 break;
             default:
                 message("%s%s and thy worthy Adventurers!\n",
                         welcome, pcName.c_str());
+                soundSpeakLine(VOICE_LB, LINE_WELCOME_ADV, true);
                 break;
         }
 
         // Check levels here, just like the original!
         lordBritishCheckLevels();
 
+        soundSpeakLine(VOICE_LB, LINE_ASK_OF_ME);
         message("\nWhat would thou ask of me?\n");
     } else {
         c->saveGame->lbintro = 1;
 
+        soundSpeakLine(VOICE_LB, LINE_AT_LAST);
         message("\n\n\nLord British rises and says: At long last!\n%s"
                 " thou hast come!  We have waited such a long, long time...\n",
                 pcName.c_str());
         anyKey.waitTimeout();
+        soundSpeakLine(VOICE_LB, LINE_NEW_AGE);
         message("\n\nLord British sits and says: A new age is upon Britannia."
                 " The great evil Lords are gone but our people lack direction"
                 " and purpose in their lives...\n");
         anyKey.wait();      // There's no timeout here in the DOS version.
+        soundSpeakLine(VOICE_LB, LINE_CHAMPION);
         message("A champion of virtue is called for. Thou may be this champion,"                " but only time shall tell.  I will aid thee any way that I"
                 " can!\n"
                 "How may I help thee?\n");
@@ -310,8 +357,10 @@ static void runTalkLordBritish(const U4TalkLordBritish* lb)
         screenCrLf();
         in = input.c_str();
         if (input.empty() || strncasecmp("bye", in, 3) == 0) {
+            int plural = (c->party->size() > 1) ? 1 : 0;
+            soundSpeakLine(VOICE_LB, LINE_FAREWELL + plural);
             message("\nLord British says: Fare thee well my friend%s!\n",
-                    (c->party->size() > 1) ? "s" : "");
+                    plural ? "s" : "");
             break;
         }
 
@@ -321,14 +370,19 @@ static void runTalkLordBritish(const U4TalkLordBritish* lb)
                 break;
         }
         if (k < LB_KEY_COUNT) {
+            int l = lbKeyLine[k];
+            if (l < LINE_WELCOME)
+                soundSpeakLine(VOICE_LB, l);
             messageParts(&anyKey, strings + lb->text[k]);
         } else if (inputEq("help")) {
             lordBritishHelp(&anyKey);
         } else if (inputEq("heal")) {
+            soundSpeakLine(VOICE_LB, LINE_I_AM_WELL);
             message("\n\n\n\n\n\nHe says: I am\nwell, thank ye.\n"
                     "\nHe asks: Art thou well? ");
             lordBritishHeal(ReadChoiceController::get("yn \n\033"));
         } else {
+            soundSpeakLine(VOICE_LB, LINE_CANNOT_HELP);
             message("\nHe says: I cannot help thee with that.\n");
         }
 
@@ -363,16 +417,19 @@ static void runTalkHawkwind(const U4TalkHawkwind* hw)
     musicPlay(MUSIC_SHOPPING);
     c->party->adjustKarma(KA_HAWKWIND);
 
+    soundSpeakLine(VOICE_HW, HW_GREETING);
     message("%s%s%s", HW_STRING(HW_WELCOME), pcName, HW_STRING(HW_GREETING));
     anyKey.wait();
 
     while (xu4.stage == StagePlay) {
+        soundSpeakLine(VOICE_HW, prompt);
         message(HW_STRING(prompt));
         prompt = HW_PROMPT;
         input = gameGetInput(16);
         in = input.c_str();
         if (input.empty() || strncasecmp("bye", in, 3) == 0 ) {
-            message(HW_STRING(HW_BYE));
+            soundSpeakLine(VOICE_HW, HW_FAREWELL);
+            message(HW_STRING(HW_FAREWELL));
             break;
         }
 
@@ -383,13 +440,19 @@ static void runTalkHawkwind(const U4TalkHawkwind* hw)
         }
         if (v < VIRT_MAX) {
             int virtueLevel = c->saveGame->karma[v];
-            if (virtueLevel == 0)
+            if (virtueLevel == 0) {
                 message("\n\n%s\n", HW_STRING(HW_ALREADYAVATAR));
-            else if (virtueLevel < 80)
-                message("\n\n%s", HW_STRING((virtueLevel / 20) * 8 + v));
-            else if (virtueLevel < 99)
-                message("\n\n%s", HW_STRING(3 * 8 + v));
-            else { /* virtueLevel >= 99 */
+                soundSpeakLine(VOICE_HW, HW_ALREADYAVATAR, true);
+            } else if (virtueLevel < 80) {
+                v += (virtueLevel / 20) * 8;
+                message("\n\n%s", HW_STRING(v));
+                soundSpeakLine(VOICE_HW, v, true);
+            } else if (virtueLevel < 99) {
+                v += 3 * 8;
+                message("\n\n%s", HW_STRING(v));
+                soundSpeakLine(VOICE_HW, v, true);
+            } else { /* virtueLevel >= 99 */
+                soundSpeakLine(VOICE_HW, HW_GOTOSHRINE);
                 message("\n\n%s\n%s", HW_STRING(4 * 8 + v),
                                       HW_STRING(HW_GOTOSHRINE));
                 anyKey.wait();
@@ -398,6 +461,7 @@ static void runTalkHawkwind(const U4TalkHawkwind* hw)
             screenCrLf();
         } else {
             message("\n%s", HW_STRING(HW_DEFAULT));
+            soundSpeakLine(VOICE_HW, HW_DEFAULT, true);
         }
     }
 
