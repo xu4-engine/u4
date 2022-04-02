@@ -397,9 +397,11 @@ process-sound: func [blk app_id] [
         tok: file!  (
             fname: first tok
             fmt: select [
-                ".wav" 0x2006
-                ".mp3" 0x2007
-                ".ogg" 0x2008
+                ".wav"  0x2006
+                ".mp3"  0x2007
+                ".ogg"  0x2008
+                ".flac" 0x2011
+                ".rfx"  0x2030
             ] ext: file-ext fname
             ifn fmt [fatal config ["Unknown audio file extension" ext]]
 
