@@ -33,15 +33,17 @@ windows)
   unzip /tmp/allegro-x86_64-w64-mingw32-gcc-10.2.0-posix-seh-static-5.2.7.0.zip
   mv allegro usr
   unzip /tmp/boron-x86_64-w64-mingw32-static-2.0.7.zip
+  unzip /tmp/faun-x86_64-w64-mingw32-static-0.1.0.zip -d usr
   mkdir u4
   cd u4
   tar xf /tmp/project.tar.gz
   copr -t mingw use_gl:true make_util:false
 ' >$HDIR/${SCRIPT}
 
-	podman run -d -it --name=$ID xu4/f33-mingw:1.0 /bin/bash || exit
+	podman run -d -it --name=$ID xu4/f33-mingw /bin/bash || exit
 	podman cp ${SDK_DIR}/allegro-x86_64-w64-mingw32-gcc-10.2.0-posix-seh-static-5.2.7.0.zip $ID:$CDIR
 	podman cp ${SDK_DIR}/boron-x86_64-w64-mingw32-static-2.0.7.zip $ID:$CDIR
+	podman cp ${SDK_DIR}/faun-x86_64-w64-mingw32-static-0.1.0.zip $ID:$CDIR
 	podman cp project.tar.gz $ID:$CDIR
 	podman cp $HDIR/${SCRIPT} $ID:$CDIR/${SCRIPT}
 	podman exec -it -u build $ID /bin/bash $CDIR/${SCRIPT}
@@ -50,7 +52,7 @@ windows)
 	# Build zip archive.
 	if [ "$2" != "-b" ]; then
 		clean_dir ${ARC_DIR}
-		FN=`readlink -f ${SDK_DIR}/allegro-dll.tar.bz2`
+		FN=`readlink -f ${SDK_DIR}/allegro-faun-dll.tar.bz2`
 		tar xf $FN -C ${ARC_DIR}
 		cp /tmp/xu4.exe-$TIME ${ARC_DIR}/xu4.exe
 		cp Ultima-IV.mod ${ARC_DIR}
@@ -63,14 +65,16 @@ windows)
 linux)
 	echo '
   tar xjf /tmp/boron-x86_64-static-2.0.7.tar.bz2
+  tar xjf /tmp/faun-x86_64-static-0.1.0.tar.bz2 -C boron --strip-components=1
   mkdir u4
   cd u4
   tar xf /tmp/project.tar.gz
-  copr use_gl:true make_util:false boron_sdk:%../boron
+  copr use_gl:true make_util:false sdk_dir:%../boron
 ' >$HDIR/${SCRIPT}
 
-	podman run -d -it --name=$ID xu4/f33-gcc:1.0 /bin/bash || exit
+	podman run -d -it --name=$ID xu4/f33-gcc /bin/bash || exit
 	podman cp ${SDK_DIR}/boron-x86_64-static-2.0.7.tar.bz2 $ID:$CDIR
+	podman cp ${SDK_DIR}/faun-x86_64-static-0.1.0.tar.bz2 $ID:$CDIR
 	podman cp project.tar.gz $ID:$CDIR
 	podman cp $HDIR/${SCRIPT} $ID:$CDIR/${SCRIPT}
 	podman exec -it $ID /bin/bash $CDIR/${SCRIPT}

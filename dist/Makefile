@@ -5,16 +5,20 @@ DBUILD=buildah bud
 
 cbuild-images:
 	$(DBUILD) -f Dockerfile.fedora33 -t xu4/fedora33:base .
-	$(DBUILD) -f Dockerfile.gcc -t xu4/f33-gcc:1.0 .
-	$(DBUILD) -f Dockerfile.mingw -t xu4/f33-mingw:1.0 .
+	$(DBUILD) -f Dockerfile.gcc -t xu4/f33-gcc .
+	$(DBUILD) -f Dockerfile.mingw -t xu4/f33-mingw .
 
 XU4_DL=http://xu4.sourceforge.net/download
 BORON_SDK_LINUX=boron-x86_64-static-2.0.7.tar.bz2
 BORON_SDK_MINGW=boron-x86_64-w64-mingw32-static-2.0.7.zip
-DLL_MINGW=allegro-dll.tar.bz2
+DLL_MINGW=allegro-faun-dll.tar.bz2
 
 ALLEGRO_DL=https://github.com/liballeg/allegro5/releases/download/5.2.7.0
 ALLEGRO_SDK_MINGW=allegro-x86_64-w64-mingw32-gcc-10.2.0-posix-seh-static-5.2.7.0.zip
+
+FAUN_DL=https://wickedsmoke.github.io/sdk
+FAUN_SDK_LINUX=faun-x86_64-static-0.1.0.tar.bz2
+FAUN_SDK_MINGW=faun-x86_64-w64-mingw32-static-0.1.0.zip
 
 sdk:
 	mkdir sdk
@@ -24,6 +28,8 @@ cbuild-sdks: sdk
 	curl -sSL -o sdk/$(BORON_SDK_MINGW) $(XU4_DL)/$(BORON_SDK_MINGW)
 	curl -sSL -o sdk/$(DLL_MINGW) $(XU4_DL)/$(DLL_MINGW)
 	curl -sSL -o sdk/$(ALLEGRO_SDK_MINGW) $(ALLEGRO_DL)/$(ALLEGRO_SDK_MINGW)
+	curl -sSL -o sdk/$(FAUN_SDK_LINUX) $(FAUN_DL)/$(FAUN_SDK_LINUX)
+	curl -sSL -o sdk/$(FAUN_SDK_MINGW) $(FAUN_DL)/$(FAUN_SDK_MINGW)
 
 clean-sdks:
 	rm -rf sdk

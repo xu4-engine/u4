@@ -3,7 +3,7 @@ options [
 	use_gl: true
 	use_boron: true
 	use_faun: true
-	boron_sdk: none		"Path to Boron headers and libraries"
+	sdk_dir: none		"Path to Boron/Faun headers and libraries (UNIX only)"
 	gpu_render: false
 	make_util: true
 ]
@@ -25,6 +25,12 @@ libxml2: does [
 
 exe %xu4 [
 	include_from [%src %src/lzw %src/support]
+	unix [
+		if sdk_dir [
+			include_from join sdk_dir %/include
+			lflags rejoin ["-L" sdk_dir %/lib]
+		]
+	]
 	win32 [
 		include_from %../usr/include
 		include-define "_WIN32"		; Needed to archive glad.*
@@ -66,13 +72,8 @@ exe %xu4 [
 	either use_boron [
 		cflags "-DUSE_BORON -DCONF_MODULE"
 		unix [
-			either [boron_sdk] [
-				include_from join boron_sdk %/include
-				libs_from    join boron_sdk %/lib %boron
-				libs %pthread
-			][
-				libs %boron
-			]
+			libs %boron
+			if sdk_dir [libs %pthread]  ; Needed for static libboron.
 		]
 		win32 [
 			libs_from %../usr/lib either msvc %libboron %boron
