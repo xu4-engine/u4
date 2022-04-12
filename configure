@@ -5,8 +5,6 @@ if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
   echo "  -h, --help        Display this help and exit"
   echo "  --allegro         Use Allegro 5.2 as the platform API (default)"
   echo "  --sdl             Use SDL 1.2 as the platform API"
-  echo "  --boron           Use Boron/CDI configuration (default)"
-  echo "  --xml             Use XML configuration"
   echo "  --gpu <use>       Use GPU for rendering (none, scale, all)"
   echo "  --prefix <dir>    Set install directory root"
   echo
@@ -18,7 +16,6 @@ if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
 fi
 
 PLATFORM=allegro
-CONF=boron
 PREFIX=/usr/local
 GPU=scale
 
@@ -28,10 +25,6 @@ while [ "$1" != "" ]; do
       PLATFORM=allegro ;;
     --sdl)
       PLATFORM=sdl ;;
-    --boron )
-      CONF=boron ;;
-    --xml)
-      CONF=xml ;;
     --gpu)
       shift
       GPU=$1 ;;
@@ -54,6 +47,6 @@ lne() {
 }
 
 echo "Generating make.config & project.config"
-printf "os_api: \'${PLATFORM}\nuse_boron: $(leq ${CONF} boron)\nuse_gl: $(lne ${GPU} none)\ngpu_render: $(leq ${GPU} all)\n" >project.config
-printf "PREFIX=${PREFIX}\nUI=${PLATFORM}\nCONF=${CONF}\nGPU=${GPU}\n" >make.config
+printf "os_api: \'${PLATFORM}\nuse_gl: $(lne ${GPU} none)\ngpu_render: $(leq ${GPU} all)\n" >project.config
+printf "PREFIX=${PREFIX}\nUI=${PLATFORM}\nGPU=${GPU}\n" >make.config
 echo "Now type make (or copr) to build."

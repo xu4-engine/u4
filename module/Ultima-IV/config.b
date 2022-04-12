@@ -471,7 +471,7 @@ music: [
 ]
 
 sound: [
-    path %../../sound
+    path %sound
     %title_fade.ogg
     %walk_normal.ogg
     %walk_slowed.ogg

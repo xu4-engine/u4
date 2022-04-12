@@ -139,7 +139,6 @@ public:
     int                 shrineTime;     // Seconds for one meditation cycle.
     int                 soundVol;
     int                 spellEffectSpeed;
-    bool                validateXml;
     bool                volumeFades;
     int                 titleSpeedRandom;
     int                 titleSpeedOther;

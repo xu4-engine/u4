@@ -1,5 +1,0 @@
-<!-- $Id$ -->
-
-<!ELEMENT constraint EMPTY >
-<!ATTLIST constraint canuse             %bool;  #REQUIRED
-                     class              %class; #REQUIRED>

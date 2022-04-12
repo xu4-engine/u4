@@ -1,6 +1,0 @@
-<!-- $Id$ -->
-
-<!ELEMENT color EMPTY >
-<!ATTLIST color red               NMTOKEN  #REQUIRED
-                green             NMTOKEN  #REQUIRED
-                blue              NMTOKEN  #REQUIRED>

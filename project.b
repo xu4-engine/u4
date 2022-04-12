@@ -1,7 +1,6 @@
 options [
 	os_api: 'allegro	"Platform API ('allegro 'sdl)"
 	use_gl: true
-	use_boron: true
 	use_faun: true
 	sdk_dir: none		"Path to Boron/Faun headers and libraries (UNIX only)"
 	gpu_render: false
@@ -69,7 +68,7 @@ exe %xu4 [
 		]
 	]
 
-	either use_boron [
+	;if use_boron [
 		cflags "-DUSE_BORON -DCONF_MODULE"
 		unix [
 			libs %boron
@@ -83,15 +82,7 @@ exe %xu4 [
 			%config_boron.cpp
 			%support/cdi.c
 		]
-	][
-		libxml2
-		sources_from %src [
-			%config_xml.cpp
-			%script_xml.cpp
-			%xml.cpp
-			%support/SymbolTable.cpp
-		]
-	]
+	;]
 
 	if use_gl [
 		if gpu_render [cflags "-DGPU_RENDER"]

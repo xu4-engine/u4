@@ -74,12 +74,10 @@ CXXSRCS=\
         lzw/u6decode.cpp \
         $(NULL)
 
-ifeq ($(CONF),xml)
-	CXXSRCS+=config_xml.cpp script_xml.cpp xml.cpp support/SymbolTable.cpp
-else
+#ifeq ($(CONF),boron)
 	CSRCS+=support/cdi.c
 	CXXSRCS+=config_boron.cpp
-endif
+#endif
 
 OBJS += $(CSRCS:.c=.o) $(CXXSRCS:.cpp=.o)
 
