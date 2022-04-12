@@ -108,7 +108,6 @@ void Tile::loadImage() {
 #ifndef GPU_RENDER
     if (!image) {
         //vid = VID_UNSET;
-        scale = 1;
 
         const SubImage* subimage;
         ImageInfo* info = xu4.imageMgr->imageInfo(imageName, &subimage);
@@ -131,8 +130,9 @@ void Tile::loadImage() {
 #endif
 
         if (info) {
-            w = (subimage ? subimage->width * scale : info->width * scale / info->prescale);
-            h = (subimage ? (subimage->height * scale) / frames : (info->height * scale / info->prescale) / frames);
+            w = (subimage ? subimage->width : info->width / info->prescale);
+            h = (subimage ? subimage->height / frames
+                          : (info->height / info->prescale) / frames);
             image = Image::create(w, h * frames);
 
             // NOTE: Blending should be off by default, but TileView::drawTile
@@ -143,7 +143,8 @@ void Tile::loadImage() {
             /* draw the tile from the image we found to our tile image */
             if (subimage) {
                 Image *tiles = info->image;
-                tiles->drawSubRectOn(image, 0, 0, subimage->x * scale, subimage->y * scale, subimage->width * scale, subimage->height * scale);
+                tiles->drawSubRectOn(image, 0, 0, subimage->x, subimage->y,
+                                     subimage->width, subimage->height);
 
                 // Set visual to subimage index.
                 //vid = subimage - info->subImages;
@@ -182,7 +183,6 @@ void Tile::deleteImage()
         delete image;
         image = NULL;
     }
-    scale = 1;
 #endif
 }
 

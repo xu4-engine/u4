@@ -107,7 +107,6 @@ public:
     int getWidth() const                {return w;}
     int getHeight() const               {return h;}
     int getFrames() const               {return frames;}
-    int getScale() const                {return scale;}
     TileAnim *getAnim() const           {return anim;}
     const Image *getImage() const       {return image;}
 
@@ -164,7 +163,6 @@ public:
     int16_t w;          /**< Pixel width of the tile */
     int16_t h;          /**< Pixel height of the tile */
     int16_t frames;     /**< The number of frames this tile has */
-    int16_t scale;      /**< The scale of the tile */
     uint8_t opaque;     /**< Visibility blocking shape (1=square, 2=round) */
 
     bool foreground;    /**< As a maptile, is a foreground that will search neighbour maptiles for a land-based background replacement. ex: chests */

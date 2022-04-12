@@ -307,7 +307,6 @@ static Tile* conf_tile(ConfigBoron* cfg, Tile* tile, int id, UBlockIt& bi)
         return NULL;
 
     tile->id = id;
-    tile->scale = 1;
     tile->name = ur_atom(bi.it);
 
     const UCell* cell = bi.it+1;
