@@ -130,9 +130,9 @@ void Tile::loadImage() {
 #endif
 
         if (info) {
-            w = (subimage ? subimage->width : info->width / info->prescale);
-            h = (subimage ? subimage->height / frames
-                          : (info->height / info->prescale) / frames);
+            w = subimage ? subimage->width : info->width;
+            h = subimage ? subimage->height / frames
+                         : info->height / frames;
             image = Image::create(w, h * frames);
 
             // NOTE: Blending should be off by default, but TileView::drawTile

@@ -692,11 +692,8 @@ void IntroController::animateTree(Symbol frame) {
         if (deltaH < 0)
             backgroundArea.draw(frame, x, ytop);
 
-        info->image->drawSubRect(x, y - gateH,
-                                 subimage->x / info->prescale,
-                                 subimage->y / info->prescale,
-                                 subimage->width / info->prescale,
-                                 gateH / info->prescale);
+        info->image->drawSubRect(x, y - gateH, subimage->x, subimage->y,
+                                 subimage->width, gateH);
         gateH += deltaH;
         if (gateH < 0)
             gateH = 0;

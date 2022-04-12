@@ -168,7 +168,6 @@ public:
     int16_t width, height;
     int16_t subImageCount;
     uint8_t depth;
-    uint8_t prescale;
     uint8_t filetype;
     uint8_t fixup;              /**< a routine to do miscellaneous fixes to the image */
     Image *image;               /**< the image we're describing */
@@ -217,10 +216,10 @@ private:
     ImageSet* scheme(Symbol setname);
     ImageInfo* getInfoFromSet(Symbol name, ImageSet *set);
 
-    void fixupIntro(Image *im, int prescale);
+    void fixupIntro(Image *im);
     void fixupAbyssVision(Image32*);
     void fixupTransparent(Image*, RGBA color);
-    void fixupAbacus(Image *im, int prescale);
+    void fixupAbacus(Image *im);
     void fixupDungNS(Image *im);
     void fixupFMTowns(Image *im);
 

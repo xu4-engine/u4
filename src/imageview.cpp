@@ -20,10 +20,8 @@ ImageView::~ImageView() {
 void ImageView::draw(const ImageInfo* info, int sub, int ox, int oy) {
     const SubImage* subimage = info->subImages + sub;
     info->image->drawSubRect(x + ox, y + oy,
-                             subimage->x / info->prescale,
-                             subimage->y / info->prescale,
-                             subimage->width / info->prescale,
-                             subimage->height / info->prescale);
+                             subimage->x, subimage->y,
+                             subimage->width, subimage->height);
 }
 
 /**
@@ -36,10 +34,8 @@ void ImageView::draw(Symbol imageName, int x, int y) {
         errorLoadImage(imageName);
     } else if (subimage) {
         info->image->drawSubRect(this->x + x, this->y + y,
-                                 subimage->x / info->prescale,
-                                 subimage->y / info->prescale,
-                                 subimage->width / info->prescale,
-                                 subimage->height / info->prescale);
+                                 subimage->x, subimage->y,
+                                 subimage->width, subimage->height);
     } else
         info->image->draw(this->x + x, this->y + y);
 }

@@ -453,17 +453,13 @@ void DungeonView::cacheGraphicData() {
 }
 
 static void drawGraphic(const ImageInfo* info, const SubImage* subimage,
-                        int x, int y, int sscale) {
+                        int x, int y) {
     x += BORDER_WIDTH;
     y += BORDER_HEIGHT;
 
     if (subimage) {
-        int scalep = sscale / info->prescale;
-        info->image->drawSubRect(x, y,
-                                 subimage->x * scalep,
-                                 subimage->y * scalep,
-                                 subimage->width * scalep,
-                                 subimage->height * scalep);
+        info->image->drawSubRect(x, y, subimage->x, subimage->y,
+                                 subimage->width, subimage->height);
     } else
         info->image->draw(x, y);
 }
@@ -472,7 +468,6 @@ void DungeonView::drawWall(int index) {
     const SubImage* subimage;
     int x, y;
     int i2;
-    unsigned int scale = 1;
 
     if (index < 0)
         return;
@@ -490,7 +485,7 @@ void DungeonView::drawWall(int index) {
     } else {
         x = y = 0;
     }
-    drawGraphic(graphic[index].info, subimage, x, y, scale);
+    drawGraphic(graphic[index].info, subimage, x, y);
 
     // FIXME: subimage2 is a horrible hack, needs to be cleaned up
     i2 = dngGraphicInfo[index].subimage2;
@@ -502,7 +497,7 @@ void DungeonView::drawWall(int index) {
             x = dngGraphicInfo[index].vga_x2;
             y = dngGraphicInfo[index].vga_y2;
         }
-        drawGraphic(graphic[i2].info, graphic[i2].sub, x, y, scale);
+        drawGraphic(graphic[i2].info, graphic[i2].sub, x, y);
     }
 }
 

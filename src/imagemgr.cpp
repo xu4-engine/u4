@@ -75,7 +75,7 @@ ImageMgr::~ImageMgr() {
     delete logger;
 }
 
-void ImageMgr::fixupIntro(Image *im, int prescale) {
+void ImageMgr::fixupIntro(Image *im) {
     const unsigned char *sigData;
     int i, x, y;
     RGBA color;
@@ -258,7 +258,7 @@ static void swapColors(Image32* img, const RGBA* colorA, const RGBA* colorB) {
     }
 }
 
-void ImageMgr::fixupAbacus(Image *im, int prescale) {
+void ImageMgr::fixupAbacus(Image *im) {
 
     /*
      * surround each bead with a row green pixels to avoid artifacts
@@ -640,8 +640,6 @@ ImageInfo* ImageMgr::load(ImageInfo* info, bool returnUnscaled) {
     if (unscaled == NULL)
         return NULL;
 
-    info->prescale = 1;
-
     /*
      * fixup the image before scaling it
      */
@@ -649,13 +647,13 @@ ImageInfo* ImageMgr::load(ImageInfo* info, bool returnUnscaled) {
     case FIXUP_NONE:
         break;
     case FIXUP_INTRO:
-        fixupIntro(unscaled, info->prescale);
+        fixupIntro(unscaled);
         break;
     case FIXUP_ABYSS:
         fixupAbyssVision(unscaled);
         break;
     case FIXUP_ABACUS:
-        fixupAbacus(unscaled, info->prescale);
+        fixupAbacus(unscaled);
         break;
     case FIXUP_DUNGNS:
         fixupDungNS(unscaled);
