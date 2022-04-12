@@ -27,10 +27,8 @@ public:
     virtual void highlight(int x, int y, int width, int height);
     virtual void unhighlight();
 
-#ifdef USE_GL
     bool highlightActive() const { return highlighted; }
     int screenRect[4];
-#endif
 
 protected:
     int x, y, width, height;

@@ -1572,9 +1572,7 @@ static ImageInfo* loadImageInfo(const ConfigBoron* cfg, UBlockIt& bi) {
             subimage->height = numA[3];
             celCount         = (sit.it->coord.len > 4) ? numA[4] : 1;
 
-#ifdef USE_GL
             subimage->celCount = celCount;
-#endif
 #ifndef GPU_RENDER
             // Animated tiles denoted by height. TODO: Eliminate this.
             if (celCount > 1)

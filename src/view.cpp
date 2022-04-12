@@ -19,22 +19,19 @@ View::View(int x, int y, int width, int height) :
  * Hook for reinitializing when graphics reloaded.
  */
 void View::reinit() {
-#ifdef USE_GL
     int scale = xu4.settings->scale;
     screenRect[0] = x * scale;
     screenRect[1] = (xu4.screenImage->height() - (y + height)) * scale;
     screenRect[2] = width  * scale;
     screenRect[3] = height * scale;
-#endif
 }
 
 /**
  * Clear the view to black.
  */
 void View::clear() {
-    SCALED_VAR
     unhighlight();
-    xu4.screenImage->fillRect(SCALED(x), SCALED(y), SCALED(width), SCALED(height), 0, 0, 0);
+    xu4.screenImage->fillRect(x, y, width, height, 0, 0, 0);
 }
 
 /**
@@ -79,13 +76,14 @@ void View::unhighlight() {
 }
 
 void View::drawHighlighted() {
-    SCALED_VAR
-    Image *tmp = Image::create(SCALED(highlightW), SCALED(highlightH));
+    Image *tmp = Image::create(highlightW, highlightH);
     if (!tmp)
         return;
 
-    xu4.screenImage->drawSubRectOn(tmp, 0, 0, SCALED(this->x + highlightX), SCALED(this->y + highlightY), SCALED(highlightW), SCALED(highlightH));
+    xu4.screenImage->drawSubRectOn(tmp, 0, 0,
+                                this->x + highlightX,
+                                this->y + highlightY, highlightW, highlightH);
     tmp->drawHighlighted();
-    tmp->draw(SCALED(this->x + highlightX), SCALED(this->y + highlightY));
+    tmp->draw(this->x + highlightX, this->y + highlightY);
     delete tmp;
 }

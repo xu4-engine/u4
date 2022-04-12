@@ -137,9 +137,7 @@ struct AtlasSubImage {
 struct SubImage {
     Symbol name;
     int16_t x, y, width, height;
-#ifdef USE_GL
     uint16_t celCount;
-#endif
 };
 
 enum ImageFixup {
@@ -174,10 +172,8 @@ public:
     uint8_t filetype;
     uint8_t fixup;              /**< a routine to do miscellaneous fixes to the image */
     Image *image;               /**< the image we're describing */
-#ifdef USE_GL
     uint32_t tex;               /**< OpenGL texture name */
     const float* tileTexCoord;  /**< Indexed by VisualId */
-#endif
     const SubImage* subImages;
     std::map<Symbol, int> subImageIndex;
 };

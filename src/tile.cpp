@@ -108,7 +108,7 @@ void Tile::loadImage() {
 #ifndef GPU_RENDER
     if (!image) {
         //vid = VID_UNSET;
-        scale = SCALED_BASE;
+        scale = 1;
 
         const SubImage* subimage;
         ImageInfo* info = xu4.imageMgr->imageInfo(imageName, &subimage);
@@ -182,7 +182,7 @@ void Tile::deleteImage()
         delete image;
         image = NULL;
     }
-    scale = SCALED_BASE;
+    scale = 1;
 #endif
 }
 

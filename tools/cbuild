@@ -5,7 +5,7 @@ VERSION=DR-$(git rev-parse --short HEAD)
 
 if [ ! -s project.tar.gz ]; then
 	sed -i "s/DR-1.0/${VERSION}/" project.b
-	copr -a -t mingw use_gl:true gpu_render:true
+	copr -a -t mingw gpu_render:true
 fi
 
 
@@ -37,7 +37,7 @@ windows)
   mkdir u4
   cd u4
   tar xf /tmp/project.tar.gz
-  copr -t mingw use_gl:true make_util:false
+  copr -t mingw make_util:false
 ' >$HDIR/${SCRIPT}
 
 	podman run -d -it --name=$ID xu4/f33-mingw /bin/bash || exit
@@ -69,7 +69,7 @@ linux)
   mkdir u4
   cd u4
   tar xf /tmp/project.tar.gz
-  copr use_gl:true make_util:false sdk_dir:%../boron
+  copr make_util:false sdk_dir:%../boron
 ' >$HDIR/${SCRIPT}
 
 	podman run -d -it --name=$ID xu4/f33-gcc /bin/bash || exit

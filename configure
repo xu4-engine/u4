@@ -3,15 +3,9 @@
 if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
   echo "Configuration Options:"
   echo "  -h, --help        Display this help and exit"
-  echo "  --allegro         Use Allegro 5.2 as the platform API (default)"
-  echo "  --sdl             Use SDL 1.2 as the platform API"
-  echo "  --gpu <use>       Use GPU for rendering (none, scale, all)"
+# echo "  --sdl             Use SDL 1.2 as the platform API"
+  echo "  --gpu             Use GPU for rendering (experimental)"
   echo "  --prefix <dir>    Set install directory root"
-  echo
-  echo "GPU Use Options:"
-  echo "  none  - Use software renderer"
-  echo "  scale - Use GPU for scaling & filtering (default)"
-  echo "  all   - Use GPU for all rendering (experimental)"
   exit
 fi
 
@@ -21,13 +15,10 @@ GPU=scale
 
 while [ "$1" != "" ]; do
   case $1 in
-    --allegro )
-      PLATFORM=allegro ;;
-    --sdl)
-      PLATFORM=sdl ;;
+#   --sdl)
+#     PLATFORM=sdl ;;
     --gpu)
-      shift
-      GPU=$1 ;;
+      GPU=all ;;
     --prefix)
       shift
       PREFIX=$1 ;;
@@ -47,6 +38,6 @@ lne() {
 }
 
 echo "Generating make.config & project.config"
-printf "os_api: \'${PLATFORM}\nuse_gl: $(lne ${GPU} none)\ngpu_render: $(leq ${GPU} all)\n" >project.config
+printf "os_api: \'${PLATFORM}\ngpu_render: $(leq ${GPU} all)\n" >project.config
 printf "PREFIX=${PREFIX}\nUI=${PLATFORM}\nGPU=${GPU}\n" >make.config
 echo "Now type make (or copr) to build."

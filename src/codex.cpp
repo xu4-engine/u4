@@ -376,24 +376,23 @@ correct:
     Image32 codexImg;
     Image32* screen = xu4.screenImage;
     const int mid = VIEWPORT_W * TILE_HEIGHT / 2;
-    SCALED_VAR;
-    int bx = SCALED(BORDER_WIDTH);
-    int by = SCALED(BORDER_HEIGHT);
-    int w  = SCALED(VIEWPORT_W * TILE_HEIGHT);
-    int h  = SCALED(VIEWPORT_H * TILE_HEIGHT);
+    int bx = BORDER_WIDTH;
+    int by = BORDER_HEIGHT;
+    int w  = VIEWPORT_W * TILE_HEIGHT;
+    int h  = VIEWPORT_H * TILE_HEIGHT;
     int rx;
 
     image32_allocPixels(&codexImg, w, h);
     image32_blitRect(&codexImg, 0, 0, screen, bx, by, w, h, 0);
 
     for (i = 0; i <= mid; ++i) {
-        w  = SCALED(mid - i);
-        rx = SCALED(mid + i);
+        w  = mid - i;
+        rx = mid + i;
         screenDrawImageInMapArea(BKGD_RUNE_INF);
         if (w > 0) {
-            image32_blitRect(screen, bx, by, &codexImg, SCALED(i), 0, w, h, 0);
+            image32_blitRect(screen, bx, by, &codexImg, i, 0, w, h, 0);
             image32_blitRect(screen, bx + rx, by,
-                             &codexImg, SCALED(mid), 0, w, h, 0);
+                             &codexImg, mid, 0, w, h, 0);
         }
         screenUploadToGPU();
         EventHandler::wait_msecs(42);

@@ -26,12 +26,8 @@ endif
 UIFLAGS=
 endif
 
-ifeq ($(GPU),scale)
-	UIFLAGS+=-DUSE_GL
-	UILIBS+=-lGL
-else ifeq ($(GPU),all)
-	UIFLAGS+=-DUSE_GL -DGPU_RENDER
-	UILIBS+=-lGL
+ifeq ($(GPU),all)
+	UIFLAGS+=-DGPU_RENDER
 endif
 
 #ifeq ($(CONF),boron)
@@ -43,7 +39,7 @@ FEATURES=-DHAVE_BACKTRACE=1 -DHAVE_VARIADIC_MACROS=1
 DEBUGCXXFLAGS=-rdynamic -g
 CXXFLAGS=$(FEATURES) -Wall -I. -Isupport $(UIFLAGS) -DVERSION=\"$(VERSION)\" $(DEBUGCXXFLAGS)
 CFLAGS=$(CXXFLAGS)
-LIBS=$(UILIBS) -lpng -lz
+LIBS=$(UILIBS) -lGL -lpng -lz
 INSTALL=install
 
 ifeq ($(STATIC_GCC_LIBS),true)

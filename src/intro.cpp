@@ -21,12 +21,10 @@
 #include "utils.h"
 #include "xu4.h"
 
-#ifdef USE_GL
 #ifdef GPU_RENDER
 extern bool loadMapData(Map *map, U4FILE *uf, Symbol borderTile);
 #endif
 #include "gpu.h"
-#endif
 
 #ifdef IOS
 #include "ios_helpers.h"
@@ -661,7 +659,6 @@ void IntroController::drawBeastie(int beast, int vertoffset, int frame) {
  * dot representing the anhk and history book.
  */
 void IntroController::animateTree(Symbol frame) {
-    SCALED_VAR
     int fi, fcount;
     int gateH, deltaH;
     int x, y, ytop;
@@ -695,11 +692,11 @@ void IntroController::animateTree(Symbol frame) {
         if (deltaH < 0)
             backgroundArea.draw(frame, x, ytop);
 
-        info->image->drawSubRect(SCALED(x), SCALED(y - gateH),
-                                 SCALED(subimage->x) / info->prescale,
-                                 SCALED(subimage->y) / info->prescale,
-                                 SCALED(subimage->width) / info->prescale,
-                                 SCALED(gateH) / info->prescale);
+        info->image->drawSubRect(x, y - gateH,
+                                 subimage->x / info->prescale,
+                                 subimage->y / info->prescale,
+                                 subimage->width / info->prescale,
+                                 gateH / info->prescale);
         gateH += deltaH;
         if (gateH < 0)
             gateH = 0;
@@ -1717,9 +1714,6 @@ void IntroController::addTitle(int x, int y, int w, int h, AnimType method, int 
         NULL,               // storage for the source image
         NULL,               // storage for the animation frame
         std::vector<AnimPlot>()
-#ifndef USE_GL
-        , false
-#endif
     };
     titles.push_back(data);
 }
@@ -1743,19 +1737,6 @@ void IntroController::getTitleSourceData()
     if (!info)
         errorLoadImage(BKGD_INTRO);
 
-#ifdef USE_GL
-#define ISCALE(n)   n
-#else
-#define ISCALE(n)   (n * info->prescale)
-    if (info->width  / info->prescale != 320 ||
-        info->height / info->prescale != 200)
-    {
-        // the image appears to have been scaled already
-        errorWarning("The title image has been scaled too early!");
-    }
-    SCALED_VAR;
-#endif
-
     // for each element, get the source data
     for (unsigned i=0; i < titles.size(); i++)
     {
@@ -1763,16 +1744,12 @@ void IntroController::getTitleSourceData()
             && (titles[i].method != BAR))
         {
             // create a place to store the source image
-            titles[i].srcImage = Image::create(
-                ISCALE(titles[i].rw),
-                ISCALE(titles[i].rh));
+            titles[i].srcImage = Image::create(titles[i].rw, titles[i].rh);
 
             // get the source image
             info->image->drawSubRectOn(titles[i].srcImage, 0, 0,
-                ISCALE(titles[i].rx),
-                ISCALE(titles[i].ry),
-                ISCALE(titles[i].rw),
-                ISCALE(titles[i].rh));
+                                       titles[i].rx, titles[i].ry,
+                                       titles[i].rw, titles[i].rh);
         }
 
         // after getting the srcImage
@@ -1827,7 +1804,7 @@ void IntroController::getTitleSourceData()
                     int x = (y < 6) ? 133 : 0;
                     for ( ; x < titles[i].rw ; x++)
                     {
-                        titles[i].srcImage->getPixel(ISCALE(x), ISCALE(y), r, g, b, a);
+                        titles[i].srcImage->getPixel(x, y, r, g, b, a);
                         if (r || g || b)
                         {
                             AnimPlot plot = {
@@ -1846,16 +1823,6 @@ void IntroController::getTitleSourceData()
             {
                 // fill the map area with the transparent color
                 titles[i].srcImage->fillRect(8, 8, 304, 80, 0, 0, 0, 0);
-
-#ifndef USE_GL
-                Image *scaled;      // the scaled and filtered image
-                scaled = screenScale(titles[i].srcImage, xu4.settings->scale / info->prescale, 1, 1);
-
-                titles[i].prescaled = true;
-                delete titles[i].srcImage;
-                titles[i].srcImage = scaled;
-#endif
-
                 titles[i].animStepMax = 20;
                 break;
             }
@@ -1868,25 +1835,10 @@ void IntroController::getTitleSourceData()
         }
 
         // create the initial animation frame
-        titles[i].destImage = Image::create(
-#ifdef USE_GL
-            2 + titles[i].rw, 2 + titles[i].rh
-#else
-            2 + (titles[i].prescaled ? SCALED(titles[i].rw) : titles[i].rw) * info->prescale ,
-            2 + (titles[i].prescaled ? SCALED(titles[i].rh) : titles[i].rh) * info->prescale
-#endif
-            );
+        titles[i].destImage = Image::create(2 + titles[i].rw,
+                                            2 + titles[i].rh);
         titles[i].destImage->fill(Image::black);
     }
-
-#ifndef USE_GL
-    // scale the original image now
-    Image *scaled = screenScale(info->image,
-                                xu4.settings->scale / info->prescale,
-                                1, 1);
-    delete info->image;
-    info->image = scaled;
-#endif
 }
 
 
@@ -2087,8 +2039,6 @@ bool IntroController::updateTitle()
 
         case MAP:
         {
-            SCALED_VAR
-
             if (bSkipTitles)
                 title->animStep = title->animStepMax;
             else
@@ -2100,22 +2050,14 @@ bool IntroController::updateTitle()
             int step = (title->animStep == title->animStepMax ? title->animStepMax - 1 : title->animStep);
 
             // blit src to the canvas one row at a time, center out
-            title->srcImage->drawSubRectOn(
-                title->destImage,
-                SCALED( 153-(step*8) ),
-                SCALED( 1 ),
-                0,
-                0,
-                SCALED( (step+1) * 8 ),
-                SCALED( title->srcImage->height()) );
-            title->srcImage->drawSubRectOn(
-                title->destImage,
-                SCALED( 161 ),
-                SCALED( 1 ),
-                SCALED( 312-(step*8) ),
-                0,
-                SCALED( (step+1) * 8 ),
-                SCALED( title->srcImage->height()) );
+            title->srcImage->drawSubRectOn(title->destImage,
+                                    153-(step*8), 1,
+                                    0, 0,
+                                    (step+1) * 8, title->srcImage->height());
+            title->srcImage->drawSubRectOn(title->destImage,
+                                    161, 1,
+                                    312-(step*8), 0,
+                                    (step+1) * 8, title->srcImage->height());
 
 #ifdef GPU_RENDER
             //printf( "KR reveal %d\n", step );
@@ -2141,22 +2083,16 @@ bool IntroController::updateTitle()
                 // draw the updated map display
                 drawMapStatic();
 
-                xu4.screenImage->drawSubRectOn(title->srcImage,
-                    SCALED(8), SCALED(8),
-                    SCALED(8), SCALED(13*8),
-                    SCALED(38*8), SCALED(10*8));
+                xu4.screenImage->drawSubRectOn(title->srcImage, 8, 8,
+                                               8, 13*8, 38*8, 10*8);
 
                 title->timeDuration = newtime + 250/4;
             }
 
-            title->srcImage->drawSubRectOn(
-                title->destImage,
-                SCALED( 161 - (step * 8) ),
-                SCALED( 9 ),
-                SCALED( 160 - (step * 8) ),
-                SCALED( 8 ),
-                SCALED( (step * 2) * 8 ),
-                SCALED( (10 * 8) ) );
+            title->srcImage->drawSubRectOn(title->destImage,
+                                           161 - (step * 8), 9,
+                                           160 - (step * 8), 8,
+                                           (step * 2) * 8, 10 * 8);
 #endif
             break;
         }
@@ -2225,33 +2161,8 @@ void IntroController::compactTitle()
 //
 void IntroController::drawTitle()
 {
-#ifdef USE_GL
     title->destImage->drawSubRect(title->rx, title->ry, 1, 1,
                                   title->rw, title->rh);
-#else
-    Image *scaled;      // the scaled and filtered image
-    SCALED_VAR
-
-    // blit the scaled and filtered surface to the screen
-    if (title->prescaled)
-        scaled = title->destImage;
-    else
-        scaled = screenScale(title->destImage, xu4.settings->scale, 1, 1);
-
-    scaled->drawSubRect(
-        SCALED(title->rx),    // dest x, y
-        SCALED(title->ry),
-        SCALED(1),              // src x, y, w, h
-        SCALED(1),
-        SCALED(title->rw),
-        SCALED(title->rh));
-
-    if (!title->prescaled)
-    {
-        delete scaled;
-        scaled = NULL;
-    }
-#endif
 }
 
 

@@ -1,6 +1,5 @@
 options [
 	os_api: 'allegro	"Platform API ('allegro 'sdl)"
-	use_gl: true
 	use_faun: true
 	sdk_dir: none		"Path to Boron/Faun headers and libraries (UNIX only)"
 	gpu_render: false
@@ -84,11 +83,9 @@ exe %xu4 [
 		]
 	;]
 
-	if use_gl [
-		if gpu_render [cflags "-DGPU_RENDER"]
-		cflags "-DUSE_GL"
-		opengl
-	]
+	if gpu_render [cflags "-DGPU_RENDER"]
+	cflags "-DUSE_GL"
+	opengl
 
 	unix [
 		cflags "-Wno-unused-parameter"

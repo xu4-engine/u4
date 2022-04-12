@@ -98,15 +98,12 @@ static ALLEGRO_BITMAP* loadBitmapPng(const char* filename) {
 #endif
 
 
-#ifdef USE_GL
 #include "gpu_opengl.cpp"
 #include <allegro5/allegro_opengl.h>
-#endif
 
 
 void screenInit_sys(const Settings* settings, int* dim, int reset) {
     ScreenAllegro* sa;
-#ifdef USE_GL
     const char* gpuError;
 #ifdef _WIN32
     // ALLEGRO_OPENGL_3_0 causes al_create_display() to fail on Windows 7 and
@@ -117,9 +114,6 @@ void screenInit_sys(const Settings* settings, int* dim, int reset) {
     int dflags = ALLEGRO_OPENGL | ALLEGRO_OPENGL_3_0 |
                  ALLEGRO_OPENGL_FORWARD_COMPATIBLE;
 #endif
-#else
-    int dflags = 0;
-#endif
     int dw = 320 * settings->scale;
     int dh = 200 * settings->scale;
 
@@ -128,9 +122,7 @@ void screenInit_sys(const Settings* settings, int* dim, int reset) {
 
         al_unregister_event_source(sa->queue, al_get_display_event_source(sa->disp));
 
-#ifdef USE_GL
         gpu_free(&sa->gpu);
-#endif
         al_destroy_display(sa->disp);
         sa->disp = NULL;
 
@@ -139,9 +131,7 @@ void screenInit_sys(const Settings* settings, int* dim, int reset) {
             al_unregister_event_source(sa->queue, source);
     } else {
         xu4.screenSys = sa = new ScreenAllegro;
-#ifdef USE_GL
         xu4.gpu = &sa->gpu;
-#endif
         memset(sa, 0, sizeof(ScreenAllegro));
 
         if (! al_init())
@@ -159,9 +149,7 @@ void screenInit_sys(const Settings* settings, int* dim, int reset) {
         dflags |= ALLEGRO_FULLSCREEN_WINDOW;
     al_set_new_display_flags(dflags);
 
-#ifdef USE_GL
     //al_set_new_display_option(ALLEGRO_ALPHA_SIZE, 8, ALLEGRO_REQUIRE);
-#endif
 
     sa->disp = al_create_display(dw, dh);
     if (! sa->disp) {
@@ -179,7 +167,7 @@ void screenInit_sys(const Settings* settings, int* dim, int reset) {
             goto fatal;
     }
 
-#if defined(_WIN32) && defined(USE_GL)
+#ifdef _WIN32
     {
     uint32_t ver = al_get_opengl_version();
     int major = ver>>24;
@@ -216,31 +204,6 @@ void screenInit_sys(const Settings* settings, int* dim, int reset) {
 
     // Can settings->gamma be applied?
 
-#ifndef USE_GL
-    // Default bitmap format is ALLEGRO_PIXEL_FORMAT_ANY_WITH_ALPHA.
-    //printf("KR fmt %d\n", al_get_new_bitmap_format());
-    //al_set_new_bitmap_format(ALLEGRO_PIXEL_FORMAT_ABGR_8888);
-    //al_set_new_bitmap_flags(ALLEGRO_VIDEO_BITMAP);
-
-    {
-    ScreenState* state = screenState();
-    int format = al_get_display_format(sa->disp);
-    switch (format) {
-        default:
-            errorWarning("Unsupported Allegro pixel format: %d", format);
-            // Fall through...
-        case ALLEGRO_PIXEL_FORMAT_ARGB_8888:
-        case ALLEGRO_PIXEL_FORMAT_XRGB_8888:
-            state->formatIsABGR = false;
-            break;
-        case ALLEGRO_PIXEL_FORMAT_ABGR_8888:
-        case ALLEGRO_PIXEL_FORMAT_XBGR_8888:
-            state->formatIsABGR = true;
-            break;
-    }
-    }
-#endif
-
     /* enable or disable the mouse cursor */
     if (settings->mouseOptions.enabled) {
         if (!al_install_mouse())
@@ -267,7 +230,6 @@ void screenInit_sys(const Settings* settings, int* dim, int reset) {
         al_hide_mouse_cursor(sa->disp);
     }
 
-#ifdef USE_GL
     // NOTE: The GL context is made current after creating the mouse cursors
     // as the context is lost when mucking with bitmaps.
     al_set_current_opengl_context(sa->disp);
@@ -275,7 +237,6 @@ void screenInit_sys(const Settings* settings, int* dim, int reset) {
     gpuError = gpu_init(&sa->gpu, dw, dh, settings->scale, settings->filter);
     if (gpuError)
         errorFatal("Unable to obtain OpenGL resource (%s)", gpuError);
-#endif
 
     sa->refreshRate = 1.0 / settings->screenAnimationFramesPerSecond;
     if (! reset) {
@@ -292,9 +253,7 @@ fatal:
 void screenDelete_sys() {
     ScreenAllegro* sa = SA;
 
-#ifdef USE_GL
     gpu_free(&sa->gpu);
-#endif
 
     for( int i = 1; i < 5; ++i )
         al_destroy_mouse_cursor(sa->cursors[i]);
@@ -321,91 +280,16 @@ void screenIconify() {
 //#define CPU_TEST
 #include "support/cpuCounter.h"
 
-#ifndef USE_GL
-/*
- * Show screenImage on the display.
- * If w is zero then the entire display is updated.
- */
-static void updateDisplay(int x, int y, int w, int h) {
-    const ALLEGRO_LOCKED_REGION* lr;
-    uint32_t* drow;
-    uint32_t* dp;
-    const uint32_t* srow;
-    const uint32_t* send;
-    const uint32_t* sp;
-    int dpitch, cr;
-    int screenImageW = xu4.screenImage->width();
-    int offset = screenState()->vertOffset;
-
-#if 0
-    static uint32_t dt = 0;
-    uint32_t ms = getTicks();
-    printf("KR ud %d (%d)\n", ms, ms-dt);
-    dt = ms;
-#endif
-
-    CPU_START()
-
-    if (w == 0) {
-        w = xu4.screenImage->width();
-        h = xu4.screenImage->height();
-    }
-
-    ALLEGRO_BITMAP* backBuf = al_get_backbuffer(SA->disp);
-
-    lr = al_lock_bitmap(backBuf, ALLEGRO_PIXEL_FORMAT_ANY,
-                        ALLEGRO_LOCK_WRITEONLY);
-    assert(lr);
-#if 0
-    printf("KR updateDisplay format:%d psize:%d pitch:%d\n",
-            lr->format, lr->pixel_size, lr->pitch);
-#endif
-    dpitch = lr->pitch / sizeof(uint32_t);
-    drow = ((uint32_t*) lr->data) + y*dpitch + x;
-    srow = xu4.screenImage->pixelData() + y*screenImageW + x;
-
-    if (offset > 0) {
-        h -= offset;
-        while (offset) {
-            memset(drow, 0, w * sizeof(uint32_t));
-            drow += dpitch;
-            --offset;
-        }
-    }
-
-    for (cr = 0; cr < h; ++cr) {
-        dp = drow;
-        sp = srow;
-        send = srow + w;
-        while (sp != send) {
-            *dp++ = *sp++;
-        }
-        drow += dpitch;
-        srow += screenImageW;
-    }
-    al_unlock_bitmap(backBuf);
-
-    al_flip_display();
-
-    CPU_END("ut:")
-}
-#else
 extern void screenRender();
-#endif
-
 extern void musicUpdate();
 
 void screenSwapBuffers() {
     musicUpdate();
 
-#ifdef USE_GL
     CPU_START()
     screenRender();
     al_flip_display();
     CPU_END("ut:")
-#else
-    updateDisplay(0, 0, 0, 0);
-#endif
 }
 
 // Private function for Allegro backend.
@@ -414,7 +298,7 @@ float screenFrameDuration() {
 }
 
 void screenWait(int numberOfAnimationFrames) {
-#if defined(USE_GL) && ! defined(GPU_RENDER)
+#ifndef GPU_RENDER
     screenUploadToGPU();
 #endif
 

@@ -28,8 +28,7 @@ TileView::TileView(int x, int y, int columns, int rows) : View(x, y, columns * T
     tileWidth  = TILE_WIDTH;
     tileHeight = TILE_HEIGHT;
     tileset = xu4.config->tileset();
-    SCALED_VAR
-    animated = Image::create(SCALED(tileWidth), SCALED(tileHeight));
+    animated = Image::create(tileWidth, tileHeight);
 
 #ifdef GPU_RENDER
     scissor = NULL;
@@ -53,8 +52,7 @@ void TileView::reinit() {
         delete animated;
         animated = NULL;
     }
-    SCALED_VAR
-    animated = Image::create(SCALED(tileWidth), SCALED(tileHeight));
+    animated = Image::create(tileWidth, tileHeight);
 }
 
 void TileView::loadTile(const MapTile &mapTile)
@@ -73,7 +71,6 @@ void TileView::loadTile(const MapTile &mapTile)
  */
 void TileView::drawTile(const MapTile &mapTile, int x, int y) {
     const Tile *tile = tileset->get(mapTile.id);
-    SCALED_VAR
 
     ASSERT(x < columns, "x value of %d out of range", x);
     ASSERT(y < rows, "y value of %d out of range", y);
@@ -87,21 +84,17 @@ void TileView::drawTile(const MapTile &mapTile, int x, int y) {
         tile->getAnim()->draw(animated, tile, mapTile, DIR_NONE);
 
         // Then draw it to the screen
-        animated->drawSubRect(SCALED(x * tileWidth + this->x),
-                              SCALED(y * tileHeight + this->y),
-                              0,
-                              0,
-                              SCALED(tileWidth),
-                              SCALED(tileHeight));
+        animated->drawSubRect(x * tileWidth + this->x,
+                              y * tileHeight + this->y,
+                              0, 0,
+                              tileWidth, tileHeight);
     }
     else {
         const Image *image = tile->getImage();
-        image->drawSubRect(SCALED(x * tileWidth + this->x),
-                           SCALED(y * tileHeight + this->y),
-                           0,
-                           SCALED(tileHeight * mapTile.frame),
-                           SCALED(tileWidth),
-                           SCALED(tileHeight));
+        image->drawSubRect(x * tileWidth + this->x,
+                           y * tileHeight + this->y,
+                           0, tileHeight * mapTile.frame,
+                           tileWidth, tileHeight);
     }
 }
 
@@ -109,7 +102,6 @@ void TileView::drawTile(vector<MapTile> &tiles, int x, int y) {
     ASSERT(x < columns, "x value of %d out of range", x);
     ASSERT(y < rows, "y value of %d out of range", y);
     int layer = 0;
-    SCALED_VAR
 
     for (vector<MapTile>::reverse_iterator t = tiles.rbegin();
             t != tiles.rend();
@@ -136,8 +128,8 @@ void TileView::drawTile(vector<MapTile> &tiles, int x, int y) {
 
             image->drawSubRectOn(animated,
                                 0, 0,
-                                0, SCALED(tileHeight * frontTile.frame),
-                                SCALED(tileWidth),  SCALED(tileHeight));
+                                0, tileHeight * frontTile.frame,
+                                tileWidth,  tileHeight);
         }
 
         // Enable blending after the first tile (assuming it's the ground).
@@ -148,9 +140,9 @@ void TileView::drawTile(vector<MapTile> &tiles, int x, int y) {
     Image::enableBlend(0);
 
     // Then draw it to the screen
-    animated->drawSubRect(SCALED(x * tileWidth + this->x),
-                          SCALED(y * tileHeight + this->y),
-                          0, 0, SCALED(tileWidth), SCALED(tileHeight));
+    animated->drawSubRect(x * tileWidth + this->x,
+                          y * tileHeight + this->y,
+                          0, 0, tileWidth, tileHeight);
 }
 
 /**
@@ -160,38 +152,33 @@ void TileView::drawFocus(int x, int y) {
     ASSERT(x < columns, "x value of %d out of range", x);
     ASSERT(y < rows, "y value of %d out of range", y);
     Image* screen = xu4.screenImage;
-    SCALED_VAR
 
     /*
      * draw the focus rectangle around the tile
      */
     if ((screenState()->currentCycle * 4 / SCR_CYCLE_PER_SECOND) % 2) {
         /* left edge */
-        screen->fillRect(SCALED(x * tileWidth + this->x),
-                         SCALED(y * tileHeight + this->y),
-                         SCALED(2),
-                         SCALED(tileHeight),
+        screen->fillRect(x * tileWidth + this->x,
+                         y * tileHeight + this->y,
+                         2, tileHeight,
                          0xff, 0xff, 0xff);
 
         /* top edge */
-        screen->fillRect(SCALED(x * tileWidth + this->x),
-                         SCALED(y * tileHeight + this->y),
-                         SCALED(tileWidth),
-                         SCALED(2),
+        screen->fillRect(x * tileWidth + this->x,
+                         y * tileHeight + this->y,
+                         tileWidth, 2,
                          0xff, 0xff, 0xff);
 
         /* right edge */
-        screen->fillRect(SCALED((x + 1) * tileWidth + this->x - 2),
-                         SCALED(y * tileHeight + this->y),
-                         SCALED(2),
-                         SCALED(tileHeight),
+        screen->fillRect((x + 1) * tileWidth + this->x - 2,
+                         y * tileHeight + this->y,
+                         2, tileHeight,
                          0xff, 0xff, 0xff);
 
         /* bottom edge */
-        screen->fillRect(SCALED(x * tileWidth + this->x),
-                         SCALED((y + 1) * tileHeight + this->y - 2),
-                         SCALED(tileWidth),
-                         SCALED(2),
+        screen->fillRect(x * tileWidth + this->x,
+                         (y + 1) * tileHeight + this->y - 2,
+                         tileWidth, 2,
                          0xff, 0xff, 0xff);
     }
 }
