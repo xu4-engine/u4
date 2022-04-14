@@ -200,7 +200,7 @@ public:
     ~ImageMgr();
 
     ImageInfo* imageInfo(Symbol name, const SubImage** subPtr);
-    ImageInfo* get(Symbol name, bool returnUnscaled=false);
+    ImageInfo* get(Symbol name);
 
     uint16_t setResourceGroup(uint16_t group);
     void freeResourceGroup(uint16_t group);
@@ -211,7 +211,7 @@ public:
 private:
     static void notice(int, void*, void*);
     const SubImage* getSubImage(Symbol name, ImageInfo** infoPtr);
-    ImageInfo* load(ImageInfo* info, bool returnUnscaled);
+    ImageInfo* load(ImageInfo* info);
     U4FILE * getImageFile(ImageInfo *info);
     ImageSet* scheme(Symbol setname);
     ImageInfo* getInfoFromSet(Symbol name, ImageSet *set);

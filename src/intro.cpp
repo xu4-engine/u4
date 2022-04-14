@@ -1730,7 +1730,7 @@ void IntroController::getTitleSourceData()
     // here, and elements of the image will be stored
     // individually.  Afterward, the BKGD_INTRO image
     // will be scaled appropriately.
-    ImageInfo *info = xu4.imageMgr->get(BKGD_INTRO, true);
+    ImageInfo *info = xu4.imageMgr->get(BKGD_INTRO);
     if (!info)
         errorLoadImage(BKGD_INTRO);
 

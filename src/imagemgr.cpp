@@ -138,13 +138,13 @@ void ImageMgr::fixupIntro(Image *im) {
      * ------------------------- */
     if (xu4.settings->videoType == "VGA")
     {
-        ImageInfo *borderInfo = ImageMgr::get(BKGD_BORDERS, true);
+        ImageInfo *borderInfo = ImageMgr::get(BKGD_BORDERS);
         if (! borderInfo)
             errorLoadImage(BKGD_BORDERS);
 
         delete borderInfo->image;
         borderInfo->image = NULL;
-        borderInfo = ImageMgr::get(BKGD_BORDERS, true);
+        borderInfo = ImageMgr::get(BKGD_BORDERS);
 
         //borderInfo->image->save("border.png");
 
@@ -420,7 +420,7 @@ ImageInfo* ImageMgr::imageInfo(Symbol name, const SubImage** subPtr) {
         subImg = getSubImage(name, &info);
         if (subImg) {
             if (! info->image)
-                info = load(info, false);
+                info = load(info);
         }
     }
     *subPtr = subImg;
@@ -430,7 +430,7 @@ ImageInfo* ImageMgr::imageInfo(Symbol name, const SubImage** subPtr) {
 /**
  * Load in a background image from a ".ega" file.
  */
-ImageInfo *ImageMgr::get(Symbol name, bool returnUnscaled) {
+ImageInfo *ImageMgr::get(Symbol name) {
     ImageInfo *info = getInfoFromSet(name, baseSet);
     if (! info)
         return NULL;
@@ -439,7 +439,7 @@ ImageInfo *ImageMgr::get(Symbol name, bool returnUnscaled) {
     if (info->image != NULL)
         return info;
 
-    return load(info, returnUnscaled);
+    return load(info);
 }
 
 #ifdef CONF_MODULE
@@ -471,7 +471,7 @@ static Image* buildAtlas(ImageMgr* mgr, ImageInfo* atlas) {
                     break;
             }
         } else {
-            subInfo[i] = info = mgr->get(asi->name, true);
+            subInfo[i] = info = mgr->get(asi->name);
             if (info && info->image) {
                 image32_blit(image, asi->x, asi->y, info->image, 0);
 
@@ -561,7 +561,7 @@ static Image* buildAtlas(ImageMgr* mgr, ImageInfo* atlas) {
 }
 #endif
 
-ImageInfo* ImageMgr::load(ImageInfo* info, bool returnUnscaled) {
+ImageInfo* ImageMgr::load(ImageInfo* info) {
 #ifdef CONF_MODULE
     if (info->filetype == FTYPE_ATLAS) {
         info->image = buildAtlas(this, info);
