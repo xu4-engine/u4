@@ -5,6 +5,7 @@ usage: {{
 Usage: pack-xu4 [<OPTIONS>] <module-path>
 
 Options:
+  -f           File package mode (skip config).
   -h           Print this help and exit.
   -o <module>  Output module file.
   -v <level>   Set verbose level. (0-2, default is 1)
@@ -13,15 +14,17 @@ Options:
 
 root-path: %module/Ultima-IV/
 module-file: none
+file-package: false
 verbose: 1
 
 forall args [
     switch first args [
         "-v" [verbose: to-int second ++ args]
+        "-f" [file-package: true]
         "-h" [print usage quit]
         "-o" [module-file: to-file second ++ args]
         "--version" [print "pack-xu4 0.1.1" quit]
-        [root-path: to-file first args]
+        [root-path: terminate to-file first args '/']
     ]
 ]
 
@@ -35,35 +38,8 @@ fatal: func ['code msg] [
     ] code
 ]
 
-config-file: join terminate root-path '/' %config.b
-ifn exists? config-file [
-    fatal noinput ["Cannot find config" config-file]
-]
-
 ifn module-file [
-    module-file: join last split root-path '/' %.mod
-]
-
-; Matches ConfigValues in config_boron.cpp.
-config: context [
-    author:
-    about:
-    version:
-    rules:
-    armors:
-    weapons:
-    creatures:
-    graphics:
-    layouts:
-    maps:
-    tile-rules:
-    tileset:
-    u4-save-ids:
-    music:
-    sound:
-    vendors:
-    ega-palette:
-        none
+    module-file: join last split root-path '/' either file-package %.pak %.mod
 ]
 
 apair: func [series a b] [append append series a b]
@@ -311,14 +287,90 @@ print-toc: does [
 ]
 
 ;---------------------------------------
+
+; Pull in shader files
+pack-shaders: does [
+    if exists? spath: join root-path %shader/ [
+        sout: make binary! 4096
+        code: complement charset "^//"
+        strip-shader: func [shader] [
+            clear sout
+            emit-span: [(append sout slice span end) span:]
+            parse span: shader [any[
+                end: some code
+              | "//" to '^/'   emit-span
+              | "/*" thru "*/" emit-span
+              | some '^/'      emit-span (append sout '^/')
+              | skip
+            ]]
+            append sout slice span end
+        ]
+
+        sl_id: "SL^0^0"
+        foreach file read spath [
+            switch file-ext file [
+                %.glsl [
+                    poke-id sl_id file-id file
+                    ifn file-id-seen [
+                        cdi-chunk 0x0001 sl_id
+                            strip-shader read/into join spath file file_buf
+                    ]
+                ]
+                %.png [
+                    pack-png spath file
+                ]
+            ]
+        ]
+    ]
+]
+
+if file-package [
+    cdi-begin "xu4^1"
+    pack-shaders
+
+    if ge? verbose 2 [probe file-dict]
+
+    cdi-chunk 0x0006 "FNAM" cdi-string-table1 file-dict
+    cdi-end
+
+    if ge? verbose 1 [print-toc]
+    quit
+]
+
+;---------------------------------------
 ; Load module configuration
+
+config-file: join root-path %config.b
+ifn exists? config-file [
+    fatal noinput ["Cannot find config" config-file]
+]
 
 module: func [blk] [do blk]
 
 includes: []
 include: func [file] [append includes file]
 
-cfg: make config load config-file
+; Matches ConfigValues in config_boron.cpp.
+cfg: make context [
+    author:
+    about:
+    version:
+    rules:
+    armors:
+    weapons:
+    creatures:
+    graphics:
+    layouts:
+    maps:
+    tile-rules:
+    tileset:
+    u4-save-ids:
+    music:
+    sound:
+    vendors:
+    ega-palette:
+        none
+] load config-file
 
 foreach file includes [
     do bind load join root-path file cfg
@@ -467,6 +519,7 @@ map-moongates: none
 map-roles: none
 
 cdi-begin "xu4^1"
+pack-shaders
 
 process-cfg [
     music: process-sound music "MU^0^0"
@@ -884,41 +937,6 @@ process-cfg [
         ega-palette: bin
     ]
 ]
-
-; Pull in shader files
-if exists? spath: join root-path %shader/ [
-    sout: make binary! 4096
-    code: complement charset "^//"
-    strip-shader: func [shader] [
-        clear sout
-        emit-span: [(append sout slice span end) span:]
-        parse span: shader [any[
-            end: some code
-          | "//" to '^/'   emit-span
-          | "/*" thru "*/" emit-span
-          | some '^/'      emit-span (append sout '^/')
-          | skip
-        ]]
-        append sout slice span end
-    ]
-
-    sl_id: "SL^0^0"
-    foreach file read spath [
-        switch file-ext file [
-            %.glsl [
-                poke-id sl_id file-id file
-                ifn file-id-seen [
-                    cdi-chunk 0x0001 sl_id
-                        strip-shader read/into join spath file file_buf
-                ]
-            ]
-            %.png [
-                pack-png spath file
-            ]
-        ]
-    ]
-]
-
 
 if ge? verbose 2 [
     probe cfg

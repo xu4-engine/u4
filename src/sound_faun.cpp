@@ -70,7 +70,7 @@ void soundPlay(Sound sound, bool onlyOnce, int limitMSec)
 #ifdef CONF_MODULE
         const CDIEntry* ent = config_soundFile(sound);
         if (ent)
-            faun_loadBuffer(sound, xu4.config->modulePath(),
+            faun_loadBuffer(sound, xu4.config->modulePath(ent),
                             ent->offset, ent->bytes);
 #else
         const char* pathname = config_soundFile(sound);
@@ -132,7 +132,7 @@ static bool music_start(int music, int mode) {
 #ifdef CONF_MODULE
     const CDIEntry* ent = config_musicFile(music);
     if (ent)
-        faun_playStream(SID_MUSIC, xu4.config->modulePath(),
+        faun_playStream(SID_MUSIC, xu4.config->modulePath(ent),
                         ent->offset, ent->bytes, mode);
 #else
     const char* pathname = config_musicFile(music);

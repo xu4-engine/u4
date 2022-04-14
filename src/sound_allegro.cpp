@@ -196,7 +196,7 @@ static bool sound_load(Sound sound) {
         const CDIEntry* ent = config_soundFile(sound);
         if (ent) {
             ALLEGRO_FILE* slice;
-            ALLEGRO_FILE* af = al_fopen(xu4.config->modulePath(), "rb");
+            ALLEGRO_FILE* af = al_fopen(xu4.config->modulePath(ent), "rb");
             if (af) {
                 al_fseek(af, ent->offset, ALLEGRO_SEEK_SET);
                 slice = al_fopen_slice(af, ent->bytes, "r");
@@ -301,7 +301,7 @@ static bool music_load(int music, float newGain) {
     const CDIEntry* ent = config_musicFile(music);
     if (ent) {
         if (! moduleFile)
-            moduleFile = al_fopen(xu4.config->modulePath(), "rb");
+            moduleFile = al_fopen(xu4.config->modulePath(ent), "rb");
 
         if (moduleFile) {
             ALLEGRO_FILE* slice;

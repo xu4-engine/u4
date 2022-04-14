@@ -394,7 +394,7 @@ U4FILE * ImageMgr::getImageFile(ImageInfo *info)
     } else if (fn[0] == 'I' && fn[2] < 0x20) {
         const CDIEntry* ent = xu4.config->imageFile(fn);
         if (ent) {
-            file = u4fopen_stdio(xu4.config->modulePath());
+            file = u4fopen_stdio(xu4.config->modulePath(ent));
             u4fseek(file, ent->offset, SEEK_SET);
         } else
             file = NULL;

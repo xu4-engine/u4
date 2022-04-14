@@ -485,7 +485,7 @@ bool loadMap(Map *map, FILE* sav) {
     } else {
         const CDIEntry* ent = xu4.config->mapFile(map->id);
         if (ent) {
-            uf = u4fopen_stdio(xu4.config->modulePath());
+            uf = u4fopen_stdio(xu4.config->modulePath(ent));
             u4fseek(uf, ent->offset, SEEK_SET);
         } else
             uf = NULL;

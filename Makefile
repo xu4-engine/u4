@@ -7,12 +7,15 @@ else
 MFILE_OS=Makefile
 endif
 
-all: src/xu4
+all: src/xu4 render.pak Ultima-IV.mod
 
 src/xu4:
 	make -C src -f $(MFILE_OS)
 
-Ultima-IV.mod: module/Ultima-IV/*.b module/Ultima-IV/shader/*.glsl
+render.pak: module/render/shader/*.glsl
+	boron -s tools/pack-xu4.b -f module/render -o $@
+
+Ultima-IV.mod: module/Ultima-IV/*.b
 	boron -s tools/pack-xu4.b -o $@
 
 .PHONY: clean download snapshot
@@ -29,7 +32,7 @@ ultima4.zip:
 u4upgrad.zip:
 	curl -sSL -o $@ http://sourceforge.net/projects/xu4/files/Ultima%204%20VGA%20Upgrade/1.3/u4upgrad.zip
 
-snapshot: Ultima-IV.mod
+snapshot: render.pak Ultima-IV.mod
 	@rm -f project.tar.gz
 	copr -c
 	tools/cbuild windows

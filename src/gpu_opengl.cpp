@@ -218,7 +218,7 @@ static char* readShader(const char* filename)
 
     char* buf = (char*) malloc(ent->bytes + 1);
     if (buf) {
-        FILE* fp = fopen(xu4.config->modulePath(), "rb");
+        FILE* fp = fopen(xu4.config->modulePath(ent), "rb");
         if (fp) {
             fseek(fp, ent->offset, SEEK_SET);
 
@@ -339,7 +339,7 @@ static GLuint loadTexture(const char* file, GLuint useTex)
     GLuint texId = 0;
     const CDIEntry* ent = xu4.config->fileEntry(file);
     if (ent) {
-        U4FILE* uf = u4fopen_stdio(xu4.config->modulePath());
+        U4FILE* uf = u4fopen_stdio(xu4.config->modulePath(ent));
         if (uf) {
             u4fseek(uf, ent->offset, SEEK_SET);
             Image* img = loadImage_png(uf);

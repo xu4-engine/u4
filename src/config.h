@@ -57,7 +57,7 @@ public:
     const void* scriptEvalArg(const char* fmt, ...);
     int32_t npcTalk(uint32_t appId);
 #endif
-    const char* modulePath() const;
+    const char* modulePath(const CDIEntry*) const;
     const CDIEntry* fileEntry( const char* sourceFilename ) const;
     const CDIEntry* imageFile( const char* id ) const;
     const CDIEntry* mapFile( uint32_t id ) const;

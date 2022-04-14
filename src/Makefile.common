@@ -75,7 +75,7 @@ CXXSRCS=\
         $(NULL)
 
 #ifeq ($(CONF),boron)
-	CSRCS+=support/cdi.c
+	CSRCS+=module.c support/cdi.c
 	CXXSRCS+=config_boron.cpp
 #endif
 

@@ -1,3 +1,5 @@
+#ifndef CDI_H
+#define CDI_H
 /*
   Concise Data Identifer
   Version 0.2
@@ -117,3 +119,5 @@ void cdi_swap32(uint32_t* vars, size_t count);
 #ifdef __cplusplus
 }
 #endif
+
+#endif  // CDI_H

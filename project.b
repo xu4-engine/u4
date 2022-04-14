@@ -79,6 +79,7 @@ exe %xu4 [
 		]
 		sources_from %src [
 			%config_boron.cpp
+			%module.c
 			%support/cdi.c
 		]
 	;]
