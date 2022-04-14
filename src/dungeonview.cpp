@@ -10,6 +10,7 @@
 #include "error.h"
 #include "imagemgr.h"
 #include "settings.h"
+#include "scale.h"
 #include "screen.h"
 #include "tileanim.h"
 #include "tileset.h"
@@ -187,9 +188,9 @@ void DungeonView::drawInDungeon(const MapTile& mt, int x_offset, int distance, D
     if (dscale[distance] == 0)
         return;
     else if (dscale[distance] == 1)
-        scaled = screenScaleDown(animated, 2);
+        scaled = scaleDown(animated, 2);
     else
-        scaled = screenScale(animated, dscale[distance] / 2, 1, 0);
+        scaled = scaleUp(animated, dscale[distance] / 2, 1, 0);
 
     if (tiledWall) {
         int i_x = ((VIEWPORT_W * tileWidth  / 2) + this->x) - (scaled->width() / 2);

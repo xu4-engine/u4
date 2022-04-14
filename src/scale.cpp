@@ -4,8 +4,6 @@
 
 #include "debug.h"
 #include "image.h"
-#include "screen.h"
-#include "scale.h"
 
 /**
  * A simple row and column duplicating scaler.
@@ -33,6 +31,7 @@ Image *scalePoint(Image *src, int scale, int n) {
     return dest;
 }
 
+#if 0
 /**
  * A scaler that interpolates each intervening pixel from it's two
  * neighbors.
@@ -90,6 +89,7 @@ Image *scale2xBilinear(Image *src, int scale, int n) {
 
     return dest;
 }
+#endif
 
 int colorEqual(RGBA a, RGBA b) {
     return
@@ -404,23 +404,53 @@ Image *scaleScale2x(Image *src, int scale, int n) {
     return dest;
 }
 
-Scaler scalerGet(int filter) {
-    switch (filter) {
-        case ScreenFilter_point:
-            return &scalePoint;
-        case ScreenFilter_2xBi:
-            return &scale2xBilinear;
-        case ScreenFilter_2xSaI:
-            return &scale2xSaI;
-        case ScreenFilter_Scale2x:
-            return &scaleScale2x;
+/**
+ * Scale an image up.  The resulting image will be scale * the
+ * original dimensions.  The original image is no longer deleted.
+ * n is the number of tiles in the image; each tile is filtered
+ * seperately. filter determines whether or not to filter the
+ * resulting image.
+ */
+Image *scaleUp(Image *src, int scale, int n, int filter) {
+    Image *dest = NULL;
+
+    if (n == 0)
+        n = 1;
+
+    while (filter && (scale % 2 == 0)) {
+        dest = scale2xSaI(src, 2, n);
+        src = dest;
+        scale /= 2;
     }
-    return NULL;
+
+    if (scale == 3)
+        return scaleScale2x(src, 3, n);
+
+    if (scale != 1)
+        return scalePoint(src, scale, n);
+
+    return dest ? dest : Image::duplicate(src);
 }
 
 /**
- * Returns true if the given scaler can scale by 3 (as well as by 2).
+ * Scale an image down.  The resulting image will be 1/scale * the
+ * original dimensions.  The original image is no longer deleted.
  */
-int scaler3x(int filter) {
-    return filter == ScreenFilter_Scale2x;
+Image *scaleDown(Image *src, int scale) {
+    int x, y;
+    Image *dest;
+
+    dest = Image::create(src->width() / scale, src->height() / scale);
+    if (!dest)
+        return NULL;
+
+    for (y = 0; y < src->height(); y+=scale) {
+        for (x = 0; x < src->width(); x+=scale) {
+            unsigned int index;
+            src->getPixelIndex(x, y, index);
+            dest->putPixelIndex(x / scale, y / scale, index);
+        }
+    }
+
+    return dest;
 }

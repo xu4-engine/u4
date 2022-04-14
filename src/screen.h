@@ -39,13 +39,6 @@ class Coords;
 #define PRINTF_LIKE(x,y)
 #endif
 
-enum ScreenFilter {
-    ScreenFilter_point,
-    ScreenFilter_2xBi,
-    ScreenFilter_2xSaI,
-    ScreenFilter_Scale2x
-};
-
 enum LayoutType {
     LAYOUT_STANDARD,
     LAYOUT_GEM,
@@ -150,8 +143,6 @@ void screenShowMouseCursor(bool visible);
 void screenPointToMouseArea(int* x, int* y);
 int  pointInMouseArea(int x, int y, MouseArea *area);
 
-Image *screenScale(Image *src, int scale, int n, int filter);
-Image *screenScaleDown(Image *src, int scale);
 ScreenState* screenState();
 
 #define SCR_CYCLE_MAX 16

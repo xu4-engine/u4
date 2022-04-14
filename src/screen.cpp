@@ -18,7 +18,6 @@
 #include "event.h"
 #include "game.h"
 #include "imagemgr.h"
-#include "scale.h"
 #include "settings.h"
 #include "textview.h"
 #include "tileanim.h"
@@ -44,7 +43,6 @@ struct Screen {
     ImageInfo* gemTilesInfo;
     char* msgBuffer;
     ScreenState state;
-    Scaler filterScaler;
     int dispWidth;      // Full display pixel dimensions.
     int dispHeight;
     int aspectW;        // Aspect-correct pixel dimensions.
@@ -141,10 +139,6 @@ static void screenInit_data(Screen* scr, Settings& settings) {
     scr->blockX = scr->blockY = -1;
     scr->blockingUpdate = NULL;
 #endif
-
-    scr->filterScaler = scalerGet(settings.filter);
-    if (! scr->filterScaler)
-        errorFatal("Invalid filter %d", settings.filter);
 
     /* If we can't use VGA graphics then reset to EGA. */
     if (! u4isUpgradeAvailable() && settings.videoType == "VGA")
@@ -1588,65 +1582,6 @@ void screenGemUpdate() {
     screenUpdateMoons();
     screenUpdateWind();
     screenUploadToGPU();
-}
-
-/**
- * Scale an image up.  The resulting image will be scale * the
- * original dimensions.  The original image is no longer deleted.
- * n is the number of tiles in the image; each tile is filtered
- * seperately. filter determines whether or not to filter the
- * resulting image.
- */
-Image *screenScale(Image *src, int scale, int n, int filter) {
-    Image *dest = NULL;
-
-    if (n == 0)
-        n = 1;
-
-    Scaler filterScaler = xu4.screen->filterScaler;
-    if (filterScaler) {
-        while (filter && (scale % 2 == 0)) {
-            dest = (*filterScaler)(src, 2, n);
-            src = dest;
-            scale /= 2;
-        }
-        if (scale == 3 && scaler3x(xu4.settings->filter)) {
-            dest = (*filterScaler)(src, 3, n);
-            src = dest;
-            scale /= 3;
-        }
-    }
-
-    if (scale != 1)
-        dest = (*scalerGet(ScreenFilter_point))(src, scale, n);
-
-    if (!dest)
-        dest = Image::duplicate(src);
-
-    return dest;
-}
-
-/**
- * Scale an image down.  The resulting image will be 1/scale * the
- * original dimensions.  The original image is no longer deleted.
- */
-Image *screenScaleDown(Image *src, int scale) {
-    int x, y;
-    Image *dest;
-
-    dest = Image::create(src->width() / scale, src->height() / scale);
-    if (!dest)
-        return NULL;
-
-    for (y = 0; y < src->height(); y+=scale) {
-        for (x = 0; x < src->width(); x+=scale) {
-            unsigned int index;
-            src->getPixelIndex(x, y, index);
-            dest->putPixelIndex(x / scale, y / scale, index);
-        }
-    }
-
-    return dest;
 }
 
 ScreenState* screenState() {

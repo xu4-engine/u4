@@ -1,15 +1,9 @@
-/*
- * $Id$
- */
-
 #ifndef SCALE_H
 #define SCALE_H
 
 class Image;
 
-typedef Image *(*Scaler)(Image *src, int scale, int n);
-
-Scaler scalerGet(int filter);
-int scaler3x(int filter);
+Image *scaleUp(Image *src, int scale, int n, int filter);
+Image *scaleDown(Image *src, int scale);
 
 #endif /* SCALE_H */
