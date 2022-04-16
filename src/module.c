@@ -6,6 +6,8 @@
 #include <string.h>
 #include "module.h"
 
+extern int u4find_pathc(const char*, const char*, char*, size_t);
+
 #include "murmurHash3.c"
 #define hashFunc(str,len)   murmurHash3_32((const uint8_t*)(str), len, 0x554956)
 
@@ -21,6 +23,17 @@ typedef struct
     uint32_t entry;
 }
 HashEntry;
+
+// Order matches modi context in pack-xu4.b.
+enum ModInfoValues
+{
+    MI_ABOUT,
+    MI_AUTHOR,
+    MI_RULES,
+    MI_VERSION,
+
+    MI_COUNT
+};
 
 void mod_init(Module* mod, int layers)
 {
@@ -58,18 +71,26 @@ static void mod_registerFile(Module* mod, uint32_t hash, int entryIndex)
 }
 
 /*
+ * \param mod       Pointer to initialized module.
+ * \param filename  Path to package.
+ * \param version   Required MODI version or NULL if not applicable.
+ * \param config    Callback function for CONF chunk or NULL to ignore.
+ * \param user      Callback user data.
+ *
  * Return error message or NULL if successful.
  */
-const char* mod_addLayer(Module* mod, const char* filename, FILE** pf)
+const char* mod_addLayer(Module* mod, const char* filename,
+                         const char* version,
+                         const char* (*config)(FILE*, const CDIEntry*, void*),
+                         void* user)
 {
     CDIEntry header;
     CDIEntry* toc;
-    CDIStringTable fnam;
+    CDIStringTable stab;
     const CDIEntry* ent;
     const char* error = NULL;
-    uint8_t* fnamBuf;
     FILE* fp;
-    int start = mod->entries.used;
+    int start;
     int tocLen;
 
     fp = cdi_openPak(filename, &header);
@@ -81,11 +102,59 @@ const char* mod_addLayer(Module* mod, const char* filename, FILE** pf)
         return "Invalid module id";
     }
 
-#define NO_PTR(ptr, msg)    if (! ptr) { error = msg; goto fail; }
-
     toc = cdi_loadPakTOC(fp, &header);
-    NO_PTR(toc, "No module TOC");
+    if (! toc) {
+        fclose(fp);
+        return "No module TOC";
+    }
     tocLen = header.bytes / sizeof(CDIEntry);
+
+#define NO_PTR(ptr, msg)    if (! ptr) { error = msg; goto fail_toc; }
+
+    ent = cdi_findAppId(toc, tocLen, CDI32('M','O','D','I'));
+    if (ent) {
+        char* vers;
+        const char* str;
+        uint8_t* modiBuf = cdi_loadPakChunk(fp, ent);
+        NO_PTR(modiBuf, "Read MODI failed");
+        cdi_initStringTable(&stab, modiBuf);
+
+        if (stab.form != 1 || stab.count < MI_COUNT) {
+            error = "Invalid MODI";
+            goto fail_toc;
+        }
+
+        if (version) {
+            str = stab.strings + stab.index.f1[MI_VERSION];
+            if (strcmp(version, str)) {
+                error = "Base module version mismatch";
+                goto fail_toc;
+            }
+        }
+
+        // Check if package is a game extension.
+        str = stab.strings + stab.index.f1[MI_RULES];
+        vers = strchr(str, '/');
+        if (vers) {
+            char bpath[512];
+            *vers = '\0';
+
+            if (! u4find_pathc(str, ".mod", bpath, sizeof(bpath))) {
+                error = "Base module not found";
+                goto fail_toc;
+            }
+
+            error = mod_addLayer(mod, bpath, vers+1, config, user);
+            if (error)
+                goto fail_toc;
+        }
+        free(modiBuf);
+    } else if (version) {
+        error = "Missing MODI";
+        goto fail_toc;
+    }
+
+    start = mod->entries.used;
 
     // Append TOC to entries.
     {
@@ -116,54 +185,54 @@ const char* mod_addLayer(Module* mod, const char* filename, FILE** pf)
 
     // Add fileIndex entries for FNAM strings.
     ent = cdi_findAppId(toc, tocLen, CDI32('F','N','A','M'));
-    NO_PTR(ent, "Module FNAM not found");
-    fnamBuf = cdi_loadPakChunk(fp, ent);
-    NO_PTR(fnamBuf, "Read FNAM failed");
-    cdi_initStringTable(&fnam, fnamBuf);
+    if (ent) {
+        uint8_t* fnamBuf = cdi_loadPakChunk(fp, ent);
+        NO_PTR(fnamBuf, "Read FNAM failed");
+        cdi_initStringTable(&stab, fnamBuf);
 
-    if (fnam.form == 1) {
-        const char* str;
-        uint16_t* it = fnam.index.f1;
-        uint32_t appId;
-        uint32_t hash;
-        size_t len;
-        int a, b;
-        uint32_t i;
+        if (stab.form == 1) {
+            const char* str;
+            uint16_t* it = stab.index.f1;
+            uint32_t appId;
+            uint32_t hash;
+            size_t len;
+            int a, b;
+            uint32_t i;
 
-        // Map source filenames to CDIEntry.
-        for (i = 0; i < fnam.count; ++it, ++i) {
-            str = fnam.strings + *it;
-            len = strlen(str);
-            if (len < 1)
-                continue;
-            hash = hashFunc(str, len);
+            // Map source filenames to CDIEntry.
+            for (i = 0; i < stab.count; ++it, ++i) {
+                str = stab.strings + *it;
+                len = strlen(str);
+                if (len < 1)
+                    continue;
+                hash = hashFunc(str, len);
 
-            if (str[len - 1] == 'l') {
-                a = 'S';    // .glsl
-                b = 'L';
-            } else {
-                a = 'I';    // .png
-                b = 'M';
+                if (str[len - 1] == 'l') {
+                    a = 'S';    // .glsl
+                    b = 'L';
+                } else {
+                    a = 'I';    // .png
+                    b = 'M';
+                }
+                appId = CDI32(a, b, (i >> 8), (i & 0xff));
+
+                ent = cdi_findAppId(toc, tocLen, appId);
+                if (ent)
+                    mod_registerFile(mod, hash, start + (ent - toc));
             }
-            appId = CDI32(a, b, (i >> 8), (i & 0xff));
-
-            ent = cdi_findAppId(toc, tocLen, appId);
-            if (ent)
-                mod_registerFile(mod, hash, start + (ent - toc));
         }
+        free(fnamBuf);
     }
 
-#undef NO_PTR
+    // Process CONF chunk.
+    if (config) {
+        ent = cdi_findAppId(toc, tocLen, CDI32('C','O','N','F'));
+        NO_PTR(ent, "Module CONF not found");
+        error = config(fp, ent, user);
+        //if (error) goto fail_toc;
+    }
 
-    free(fnamBuf);
-    free(toc);
-    if (pf)
-        *pf = fp;
-    else
-        fclose(fp);
-    return NULL;
-
-fail:
+fail_toc:
     free(toc);
     fclose(fp);
     return error;

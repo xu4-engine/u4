@@ -35,10 +35,6 @@
 // Order matches config context in pack-xu4.b.
 enum ConfigValues
 {
-    CI_AUTHOR,
-    CI_ABOUT,
-    CI_VERSION,
-    CI_RULES,
     CI_ARMORS,
     CI_WEAPONS,
     CI_CREATURES,
@@ -854,22 +850,55 @@ const void* Config::scriptEvalArg(const char* fmt, ...)
 
 //--------------------------------------
 
+// Load and merge config.
+static const char* confLoader(FILE* fp, const CDIEntry* ent, void* user)
+{
+    UCell* res;
+    ConfigBoron* cfg = (ConfigBoron*) user;
+    UThread* ut = cfg->ut;
+    uint8_t* confBuf = cdi_loadPakChunk(fp, ent);
+    if (! confBuf)
+        return "Read CONF failed";
+
+    res = ur_stackTop(ut);
+    if (ur_unserialize(ut, confBuf, confBuf + ent->bytes, res) == UR_OK) {
+        res = ur_buffer(res->series.buf)->ptr.cell;
+        if (ur_is(res, UT_CONTEXT)) {
+            if (cfg->configN == UR_INVALID_BUF) {
+                cfg->configN = res->series.buf;
+                ur_hold(cfg->configN);  // Keep forever.
+            } else {
+                UBuffer* cur = ur_buffer(cfg->configN);
+                UBuffer* ctx = ur_buffer(res->series.buf);
+                int i;
+
+                // Replace existing config context values (except for music).
+                for (i = 0; i < CI_COUNT; ++i) {
+                    if (i == CI_MUSIC)
+                        continue;
+                    res = ur_ctxCell(ctx, i);
+                    if (! ur_is(res, UT_NONE)) {
+                        cur->ptr.cell[i] = *res;
+                        //printf("KR config overlay %d\n", i);
+                    }
+                }
+            }
+        } else
+            return "Serialized CONF context not found";
+    } else
+        return "Unserialize CONF failed";
+
+    free(confBuf);
+    return NULL;
+}
+
 ConfigBoron::ConfigBoron(const char* renderPath, const char* modulePath)
 {
     UBlockIt bi;
     const char* error = NULL;
-    const CDIEntry* ent;
-    FILE* fp;
-
-#define NO_PTR(ptr, msg) \
-    if (! ptr) { \
-        error = msg; \
-        goto fail; \
-    }
 
 
     backend = &xcd;
-
     xcd.creatureTileIndex = NULL;
     xcd.tileset = NULL;
     memset(&xcd.usaveIds, 0, sizeof(xcd.usaveIds));
@@ -886,45 +915,17 @@ ConfigBoron::ConfigBoron(const char* renderPath, const char* modulePath)
                        " imageset tileanims _cel rect", &sym_hitFlash);
 
     mod_init(&mod, 3);
+    configN = UR_INVALID_BUF;
 
     if (renderPath) {
-        error = mod_addLayer(&mod, renderPath, NULL);
+        error = mod_addLayer(&mod, renderPath, NULL, NULL, NULL);
         if (error)
             errorFatal("%s (%s)", error, renderPath);
     }
 
-    error = mod_addLayer(&mod, modulePath, &fp);
+    error = mod_addLayer(&mod, modulePath, NULL, confLoader, this);
     if (error)
         errorFatal("%s (%s)", error, modulePath);
-
-    // Load config.
-    {
-    UCell* res;
-    uint8_t* confBuf;
-
-    ent = mod_findAppId(&mod, CDI32('C','O','N','F'));
-    NO_PTR(ent, "Module CONF not found");
-    confBuf = cdi_loadPakChunk(fp, ent);
-    NO_PTR(confBuf, "Read CONF failed");
-
-    res = ur_stackTop(ut);
-    if (ur_unserialize(ut, confBuf, confBuf + ent->bytes, res) == UR_OK) {
-        res = ur_buffer(res->series.buf)->ptr.cell;
-        if (ur_is(res, UT_CONTEXT)) {
-            configN = res->series.buf;
-            ur_hold(configN);   // Keep forever.
-        } else
-            error = "Serialized context not found";
-    } else
-        error = "Unserialize CONF failed";
-
-    free(confBuf);
-    }
-
-fail:
-    fclose(fp);
-    if (error)
-        errorFatal(error);
 
     npcTalk_init(&xcd.talk, ut);
 
@@ -1080,26 +1081,22 @@ ConfigBoron::~ConfigBoron()
 //--------------------------------------
 // Config Service API
 
+extern "C" int u4find_pathc(const char*, const char*, char*, size_t);
+
 // Create Config service.
 Config* configInit(const char* module) {
-    string render;
-    string path;
+    const char* ext;
+    char rpath[512];
+    char mpath[512];
+
+    int renderFound = u4find_pathc("render.pak", "", rpath, sizeof(rpath));
+
     int len = strlen(module) - 4;
-
-    render = u4find_path("render.pak");
-
-    if (len > 0 && strcmp(module + len, ".mod") == 0) {
-        path = u4find_path(module);
-    } else {
-        string mfile(module);
-        mfile += ".mod";
-        path = u4find_path(mfile.c_str());
-    }
-    if (path.empty())
+    ext = (len > 0 && strcmp(module + len, ".mod") == 0) ? "" : ".mod";
+    if (! u4find_pathc(module, ext, mpath, sizeof(mpath)))
         errorFatal("Cannot find module %s", module);
 
-    return new ConfigBoron(render.empty() ? NULL : render.c_str(),
-                           path.c_str());
+    return new ConfigBoron(renderFound ? rpath : NULL, mpath);
 }
 
 void configFree(Config* conf) {

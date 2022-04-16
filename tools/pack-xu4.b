@@ -345,17 +345,22 @@ ifn exists? config-file [
     fatal noinput ["Cannot find config" config-file]
 ]
 
-module: func [blk] [do blk]
+; Matches ModInfoValues in module.c.
+modi: context [
+    about:
+    author:
+    rules:
+    version:
+        none
+]
+
+module: func [blk] [do bind blk modi]
 
 includes: []
 include: func [file] [append includes file]
 
 ; Matches ConfigValues in config_boron.cpp.
 cfg: make context [
-    author:
-    about:
-    version:
-    rules:
     armors:
     weapons:
     creatures:
@@ -446,7 +451,7 @@ process-sound: func [blk app_id] [
     n: 0
     app_id: copy app_id
     parse blk [some[
-        tok: file!  (
+        tok: file! (
             fname: first tok
             fmt: select [
                 ".wav"  0x2006
@@ -461,6 +466,7 @@ process-sound: func [blk app_id] [
 
             cdi-chunk fmt app_id read join path first tok
         )
+      | int! (n: first tok)
       | 'path file! (path: terminate join root-path second tok '/')
     ]]
     n
@@ -939,12 +945,16 @@ process-cfg [
 ]
 
 if ge? verbose 2 [
+    probe modi
     probe cfg
     probe file-dict
 ]
 
+cdi-chunk 0x0006 "MODI" cdi-string-table1 values-of modi
 cdi-chunk 0x7FC0 "CONF" serialize reduce [cfg]
-cdi-chunk 0x0006 "FNAM" cdi-string-table1 file-dict
+ifn empty? file-dict [
+    cdi-chunk 0x0006 "FNAM" cdi-string-table1 file-dict
+]
 cdi-end
 
 if ge? verbose 1 [print-toc]

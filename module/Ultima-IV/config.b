@@ -3,7 +3,7 @@ module [
     about: {{
         Ultima IV with original graphics.
     }}
-    version: "1.0-beta"
+    version: "1.1"
     rules: 'Ultima-IV
 ]
 

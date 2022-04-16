@@ -643,6 +643,21 @@ vector<string> u4read_stringtable(U4FILE *f, long offset, int nstrings) {
     return strs;
 }
 
+extern "C" int u4find_pathc(const char* fname, const char* ext,
+                            char* path, size_t pathSize) {
+    std::list<string>& rootPaths = U4PATH::getInstance()->rootResourcePaths;
+    std::list<string>::iterator it;
+    for (it = rootPaths.begin(); it != rootPaths.end(); ++it) {
+        snprintf(path, pathSize, "%s/%s%s", it->c_str(), fname, ext);
+        path[pathSize-1] = '\0';
+        if (verbose)
+            printf("trying to open %s\n", path);
+        if (u4fexists(path))
+            return 1;
+    }
+    return 0;
+}
+
 string u4find_path(const char* fname, const std::list<string>* subPaths) {
     bool found;
     char path[2048];    // Sometimes paths get big.
