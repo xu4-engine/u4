@@ -78,7 +78,8 @@ https://www.gog.com/game/ultima_4.
 
 If you have the optional u4upgrad.zip, place it in the same directory as the
 u4 executable.  xu4 will read the Ultima IV data files straight out of the
-zipfile.
+zipfile.  To use it open the game browser with the Escape key and select
+the `U4-Upgrade` module.
 
 xu4 searches for the zipfiles, or the unpacked contents of the
 zipfiles in the following places:

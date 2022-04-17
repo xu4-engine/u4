@@ -1,5 +1,18 @@
 		XU4 Change Log
 
+v1.1 - 2022-07-13
+  - Implemented game module layering.
+    * A game browser can be opened using the Escape key.
+    * The VGA upgrade is now selected by running the U4-Upgrade module.
+    * Separate soundtrack modules can be selected.
+  - Added Fuan sound backend and support sfxr (rFX) sounds.
+  - Play sounds for ship cannons, storms, whirlpools, ranged attacks and
+    party damage.
+  - Fixed ship to stay afloat when the hull is at zero.
+  - Fixed pirate ships to not turn repeatedly in place.
+  - Fixed companions to not appear in towns after joining the party.
+  - Fixed crash bug when entering combat.
+
 v1.0 - 2022-03-08
   - Added pauses during card casting.
   - Tweaked death sequence to match DOS version.
