@@ -1851,16 +1851,18 @@ void fire() {
 
     screenMessage("Fire Cannon!\nDir: ");
     Direction dir = gameGetDirection();
-
     if (dir == DIR_NONE)
         return;
 
     // can only fire broadsides
     int broadsidesDirs = dirGetBroadsidesDirs(c->party->getDirection());
-    if (!DIR_IN_MASK(dir, broadsidesDirs)) {
+    if (! DIR_IN_MASK(dir, broadsidesDirs)) {
+        soundPlay(SOUND_BLOCKED);
         screenMessage("%cBroadsides Only!%c\n", FG_GREY, FG_WHITE);
         return;
     }
+
+    soundPlay(SOUND_CANNON);
 
     // nothing (not even mountains!) can block cannonballs
     vector<Coords> path = gameGetDirectionalActionPath(MASK_DIR(dir), broadsidesDirs, c->location->coords,

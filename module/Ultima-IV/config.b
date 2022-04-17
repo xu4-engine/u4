@@ -493,7 +493,7 @@ sound: [
     %reaper_sleeper.ogg     ; Level up
     %elevate.ogg            ; Gain virtue
     %moongate_dos.ogg
-    %enemy_magic_proj.ogg
+    %cannon.rfx
     %fx_tremor.ogg
     %spell_precast_dos.ogg
     %spell_flash_25.ogg

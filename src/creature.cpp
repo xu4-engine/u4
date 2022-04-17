@@ -153,6 +153,8 @@ bool Creature::specialAction() {
             int broadsidesDirs = dirGetBroadsidesDirs(tile.getDirection());
             int dir = map_getRelativeDirection(coords, loc->coords, loc->map);
             if ((broadsidesDirs & dir) > 0) {
+                soundPlay(SOUND_CANNON);
+
                 // Nothing (not even mountains!) can block cannonballs
                 vector<Coords> path =
                     gameGetDirectionalActionPath(dir, broadsidesDirs, coords,
