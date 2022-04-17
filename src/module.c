@@ -97,7 +97,7 @@ const char* mod_addLayer(Module* mod, const char* filename,
     if (! fp)
        return "Cannot open module";
 
-    if (header.appId != CDI32('x','u','4', 1)) {
+    if (header.appId != CDI32('x','u','B', 2)) {
         fclose(fp);
         return "Invalid module id";
     }

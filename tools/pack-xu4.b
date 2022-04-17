@@ -325,7 +325,7 @@ pack-shaders: does [
 ]
 
 if file-package [
-    cdi-begin "xu4^1"
+    cdi-begin "xuB^2"
     pack-shaders
 
     if ge? verbose 2 [probe file-dict]
@@ -524,7 +524,7 @@ map-portals: []
 map-moongates: none
 map-roles: none
 
-cdi-begin "xu4^1"
+cdi-begin "xuB^2"
 pack-shaders
 
 process-cfg [
