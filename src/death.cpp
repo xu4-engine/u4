@@ -41,13 +41,13 @@ void deathStart(int delaySeconds) {
 
     // stop playing music
     musicFadeOut(1000);
+    screenDisableCursor();
 
     if (delaySeconds > 0) {
         if(EventHandler::wait_msecs(delaySeconds * 1000))
             return;
     }
 
-    screenDisableCursor();
     eh->pushController(new DeathController);
 }
 

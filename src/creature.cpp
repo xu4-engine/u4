@@ -126,6 +126,8 @@ bool Creature::specialAction() {
            Note: Monsters in settlements in U3 do fire on party
         */
         if (mapdist <= 3 && xu4_random(2) == 0 && (loc->context & CTX_CITY) == 0) {
+            soundPlay(SOUND_NPC_ATTACK);
+
             /* find direction of the avatar in relation to the creature */
             int dir = map_getRelativeDirection(coords, loc->coords, loc->map);
             vector<Coords> path =
@@ -201,8 +203,15 @@ bool Creature::specialEffect() {
 
                 /* damage the ship */
                 if (c->transportContext == TRANSPORT_SHIP) {
-                    /* FIXME: Check actual damage from u4dos */
-                    gameDamageShip(10, 30);
+                    soundPlay(SOUND_STORM);
+                    EventHandler::wait_msecs(soundDuration(SOUND_STORM));
+
+                    for (int i = 0; i < 4; ++i) {
+                        // FIXME: Highlight all player stats.
+                        soundPlay(SOUND_PARTY_STRUCK);
+                        if (gameDamageShip(-1, 10))
+                            break;
+                    }
                 }
                 /* anything else but balloon damages the party */
                 else if (c->transportContext != TRANSPORT_BALLOON) {
@@ -223,6 +232,11 @@ bool Creature::specialEffect() {
                     retval = true;
                 }
                 else i++;
+            }
+            // Play storm effect once if any objects are destroyed.
+            if (retval) {
+                soundPlay(SOUND_STORM);
+                EventHandler::wait_msecs(soundDuration(SOUND_STORM));
             }
         }
         break;

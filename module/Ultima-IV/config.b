@@ -494,11 +494,12 @@ sound: [
     %elevate.ogg            ; Gain virtue
     %moongate_dos.ogg
     %cannon.rfx
+    %party_struck.rfx
     %fx_tremor.ogg
     %spell_precast_dos.ogg
     %spell_flash_25.ogg
     %fire_field_walking.ogg
-    %fire_field_walking.ogg
+    %cyclone.rfx
     %gate_open.ogg
     %stone_falling.ogg
     %wind_gust.ogg

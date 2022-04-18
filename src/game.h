@@ -150,7 +150,7 @@ Direction gameGetDirection();
 void readyWeapon(int player = -1);
 
 /* checking functions */
-void gameCheckHullIntegrity(void);
+bool gameCheckHullIntegrity();
 
 /* creature functions */
 bool creatureRangeAttack(const Coords &coords, Creature *m);
@@ -163,7 +163,7 @@ string gameGetInput(int maxlen = 32);
 int gameGetPlayer(bool canBeDisabled, bool canBeActivePlayer);
 void gameGetPlayerForCommand(bool (*commandFn)(int player), bool canBeDisabled, bool canBeActivePlayer);
 void gameDamageParty(int minDamage, int maxDamage);
-void gameDamageShip(int minDamage, int maxDamage);
+bool gameDamageShip(int minDamage, int maxDamage);
 void gameSetActivePlayer(int player);
 vector<Coords> gameGetDirectionalActionPath(int dirmask, int validDirections, const Coords &origin, int minDistance, int maxDistance, bool (*blockedPredicate)(const Tile *tile), bool includeBlocked);
 

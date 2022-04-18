@@ -1873,6 +1873,19 @@ void fire() {
     }
 }
 
+static void hitPartyAtRange(const Coords& coords, int hitFrames) {
+    soundPlay(SOUND_PARTY_STRUCK);
+
+    /* FIXME: In u4dos this graphic remains on screen if the player's
+       ship is sunk. */
+    GameController::flashTile(coords, Tile::sym.hitFlash, hitFrames);
+
+    if (c->transportContext == TRANSPORT_SHIP)
+        gameDamageShip(-1, 10);
+    else
+        gameDamageParty(10, 25); /* party gets hurt between 10-25 damage */
+}
+
 bool fireAt(const Coords &coords, bool originAvatar) {
     bool validObject = false;
     bool hitsAvatar = false;
@@ -1905,11 +1918,7 @@ bool fireAt(const Coords &coords, bool originAvatar) {
 
         /* Is is a pirate ship firing at US? */
         if (hitsAvatar) {
-            GameController::flashTile(coords, Tile::sym.hitFlash, 4);
-
-            if (c->transportContext == TRANSPORT_SHIP)
-                gameDamageShip(-1, 10);
-            else gameDamageParty(10, 25); /* party gets hurt between 10-25 damage */
+            hitPartyAtRange(coords, 4);
         }
         /* inanimate objects get destroyed instantly, while creatures get a chance */
         else if (obj->objType == Object::UNKNOWN) {
@@ -1919,6 +1928,7 @@ bool fireAt(const Coords &coords, bool originAvatar) {
 
         /* only the avatar can hurt other creatures with cannon fire */
         else if (originAvatar) {
+            soundPlay(SOUND_NPC_STRUCK);
             GameController::flashTile(coords, Tile::sym.hitFlash, 4);
             if (xu4_random(4) == 0) /* reverse-engineered from u4dos */
                 c->location->map->removeObject(obj);
@@ -2912,12 +2922,15 @@ void GameController::timerFired() {
 
 /**
  * Checks the hull integrity of the ship and handles
- * the ship sinking, if necessary
+ * the ship sinking, if necessary.
+ *
+ * Return true if the ship sinks and the party perishes.
  */
-void gameCheckHullIntegrity() {
+bool gameCheckHullIntegrity() {
     bool killAll = false;
 
     /* see if the ship has sunk */
+    // FIXME: Do not sink until the hull goes below zero.
     if ((c->transportContext == TRANSPORT_SHIP) && c->saveGame->shiphull <= 0)
     {
         screenMessage("\nThy ship sinks!\n\n");
@@ -2944,6 +2957,7 @@ void gameCheckHullIntegrity() {
 
         deathStart(5);
     }
+    return killAll;
 }
 
 /**
@@ -3132,14 +3146,7 @@ bool creatureRangeAttack(const Coords &coords, Creature *m) {
 
     // Does the attack hit the avatar?
     if (coords == c->location->coords) {
-        /* always displays as a 'hit' */
-        GameController::flashTile(coords, tile, 3);
-
-        /* FIXME: check actual damage from u4dos -- values here are guessed */
-        if (c->transportContext == TRANSPORT_SHIP)
-            gameDamageShip(-1, 10);
-        else gameDamageParty(10, 25);
-
+        hitPartyAtRange(coords, 3);
         return true;
     }
     // Destroy objects that were hit
@@ -3251,8 +3258,10 @@ void gameDamageParty(int minDamage, int maxDamage) {
  * Deals an amount of damage between 'minDamage' and 'maxDamage'
  * to the ship.  If (minDamage == -1) or (minDamage >= maxDamage),
  * deals 'maxDamage' damage to the ship.
+ *
+ * Return true if the ship sinks and the party perishes.
  */
-void gameDamageShip(int minDamage, int maxDamage) {
+bool gameDamageShip(int minDamage, int maxDamage) {
     int damage;
 
     if (c->transportContext == TRANSPORT_SHIP) {
@@ -3263,8 +3272,9 @@ void gameDamageShip(int minDamage, int maxDamage) {
         screenShake(1);
 
         c->party->damageShip(damage);
-        gameCheckHullIntegrity();
+        return gameCheckHullIntegrity();
     }
+    return false;
 }
 
 /**
