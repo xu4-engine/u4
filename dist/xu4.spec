@@ -1,66 +1,68 @@
 Name:      xu4
-Version:   1.0beta3
-Release:   1
-Epoch:     0
-Summary:   xu4 - Ultima IV Recreated
+Version:   1.3
+Release:   %autorelease
+Summary:   Ultima IV Recreated
+License:   GPL-2.0-or-later
+URL:       https://xu4.sourceforge.net/
+Source0:   https://downloads.sourceforge.net/xu4/1.3/xu4-%{version}.tar.gz
+Source1:   https://downloads.sourceforge.net/urlan/Boron/boron-2.0.8.tar.gz
+Source2:   https://downloads.sourceforge.net/xu4/Ultima%204%20VGA%20Upgrade/1.3/u4upgrad.zip
+BuildRequires: g++, make, libpng-devel, libXcursor-devel, mesa-libGL-devel, zlib-devel, faun-devel
 
-Group:     Amusements/Games
-License:   GPL
-URL:       http://xu4.sourceforge.net/
-Source0:   http://download.sourceforge.net/xu4/xu4-%{version}.tar.gz
-BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-Prefix:    /usr
-
-BuildRequires: SDL-devel SDL_mixer-devel libxml2-devel zlib-devel
+%global debug_package %{nil}
 
 %description
-XU4 is a recreation of the classic computer game Ultima IV. The
-purpose of the project is to make it easy and convenient to play on
-modern operating systems.  xu4 is primarily inspired by the much more
-ambitious project Exult.  Linux is the primary development platform,
-but it should be trivial to port to any system with SDL support.
+XU4 is a recreation of the classic computer game Ultima IV. The purpose of
+the project is to make it easy and convenient to play on modern operating
+systems. Graphics, sounds & music can be customized via separate module files.
 
-XU4 isn't a new game based on the Ultima IV story -- it is a faithful
-recreation of the old game, right up to the crappy graphics.  If you
-are looking for a game with modern gameplay and graphics, this is not
-it -- yet.  New features that improve the gameplay and keep with the
-spirit of the original game will be added.
+NOTE: The ultima4.zip (or ultima4-1.01.zip) must be installed manually.
 
 %prep
-%setup -n u4
+%setup -q -n xu4-%{version}
+%setup -T -D -a 1
+mv boron-2.0.8 boron
+mkdir boron/include/boron
+cp boron/include/*.h boron/include/boron
+sed -i s~DR-1.0~%{version}~ src/Makefile.common
+sed -i -e 's~-Isupp~-I../boron/include -Isupp~' -e 's~-lboron~-L../boron -lboron~' -e 's~-O3~-fPIE -O3~' src/Makefile
 
 %build
-cd src && make bindir=%{_bindir} datadir=%{_datadir} libdir=%{_libdir} all.static_gcc_libs
+cd boron && ./configure --no-execute --no-socket --static --thread && make
+cd ..
+make src/xu4
+boron/boron -s tools/pack-xu4.b -f module/render -o render.pak
+boron/boron -s tools/pack-xu4.b module/Ultima-IV
+boron/boron -s tools/pack-xu4.b module/U4-Upgrade
 
 %install
-cd src && %{makeinstall}
-wget http://easynews.dl.sourceforge.net/sourceforge/xu4/ultima4-1.01.zip -O %{buildroot}/%{_libdir}/u4/ultima4-1.01.zip
-wget http://easynews.dl.sourceforge.net/sourceforge/xu4/u4upgrad.zip -O %{buildroot}/%{_libdir}/u4/u4upgrad.zip
+%__mkdir_p %{buildroot}%{_bindir} %{buildroot}%{_datadir}/xu4
+install -s -m 755 src/xu4 %{buildroot}%{_bindir}
+install -D -m 644 icons/xu4.png %{buildroot}%{_datadir}/icons/hicolor/48x48/apps/xu4.png
+install -D -m 644 dist/xu4.desktop %{buildroot}%{_datadir}/applications/xu4.desktop
+install -m 644 Ultima-IV.mod U4-Upgrade.mod render.pak %{buildroot}%{_datadir}/xu4
+install -m 644 %{SOURCE2} %{buildroot}%{_datadir}/xu4
 
 %clean
 rm -rf %{buildroot}
 
 %files
 %defattr(-,root,root)
-%doc README AUTHORS COPYING doc/FileFormats.txt doc/tools.txt
+%doc README.md ChangeLog
+%license COPYING
+%dir %{_datadir}/xu4
 %{_bindir}/xu4
-%{_datadir}/pixmaps/xu4.png
+%{_datadir}/icons/hicolor/48x48/apps/xu4.png
 %{_datadir}/applications/xu4.desktop
-%{_libdir}/u4/music/*.mid
-%{_libdir}/u4/sound/*.wav
-%{_libdir}/u4/sound/*.ogg
-%{_libdir}/u4/dumpsavegame
-%{_libdir}/u4/u4enc
-%{_libdir}/u4/u4dec
-%{_libdir}/u4/tlkconv
-%{_libdir}/u4/*.xml
-%{_libdir}/u4/dtd/*.dtd
-%{_libdir}/u4/graphics/ega/*.png
-%{_libdir}/u4/graphics/vga/*.png
-%{_libdir}/u4/ultima4-1.01.zip
-%{_libdir}/u4/u4upgrad.zip
+%{_datadir}/xu4/render.pak
+%{_datadir}/xu4/Ultima-IV.mod
+%{_datadir}/xu4/U4-Upgrade.mod
+%{_datadir}/xu4/u4upgrad.zip
 
 %changelog
+* Wed Jul 05 2023 Karl Robillard <wickedsmoke@users.sourceforge.net>
+- Update for v1.3
+
 * Mon Oct 31 2005 Andrew Taylor <andrewtaylor@users.sourceforge.net> 
 - changed sourceforge mirror from aleron (defunct?) to easynews
 
