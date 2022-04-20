@@ -150,6 +150,16 @@ void soundPlay(Sound sound, bool onlyOnce, int specificDurationInTicks) {
 }
 
 /*
+ * Return duration in milliseconds.
+ */
+int soundDuration(Sound sound) {
+    (void) sound;
+    if (!audioFunctional)
+        return 0;
+    return 200;     // TODO: Implement this.
+}
+
+/*
  * Stop all sound effects.  Use musicStop() to halt music playback.
  */
 void soundStop() {

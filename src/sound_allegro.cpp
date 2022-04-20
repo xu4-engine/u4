@@ -255,6 +255,20 @@ void soundPlay(Sound sound, bool onlyOnce, int durationLimitMSec) {
 }
 
 /*
+ * Return duration in milliseconds.
+ */
+int soundDuration(Sound sound) {
+    if (! audioFunctional)
+        return 0;
+    if (sa_samples[sound] == NULL) {
+        if (! sound_load(sound))
+            return 0;
+    }
+    const ALLEGRO_SAMPLE* spl = sa_samples[sound];
+    return al_get_sample_length(spl) * 1000 / al_get_sample_frequency(spl);
+}
+
+/*
  * Stop all sound effects.  Use musicStop() to halt music playback.
  */
 void soundStop() {

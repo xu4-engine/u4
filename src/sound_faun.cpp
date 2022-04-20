@@ -3,6 +3,7 @@
  */
 
 #include <faun.h>
+#include <string.h>
 #include "sound.h"
 
 #include "config.h"
@@ -15,17 +16,19 @@
 
 #define config_soundFile(id)    xu4.config->soundFile(id)
 #define config_musicFile(id)    xu4.config->musicFile(id)
+#define BUFFER_LIMIT    32
 #define SOURCE_LIMIT    8
 #define SID_MUSIC   SOURCE_LIMIT
 #define SID_SPEECH  SOURCE_LIMIT+1
+#define BUFFER_MS_FAILED    1
 
 static int currentTrack;
 static int musicEnabled;
 static int nextSource;              // Use sources in round-robin order.
 static int musicFadeMs;             // Minimizes calls to faun_setParameter.
-static uint32_t soundLoaded;        // Bit mask. LIMIT 32 sounds.
 static float soundVolume = 0.0f;
 static float musicVolume = 0.0f;
+static uint16_t bufferMs[BUFFER_LIMIT];
 
 /*
  * Initialize sound & music service.
@@ -36,10 +39,10 @@ int soundInit()
 
     currentTrack = MUSIC_NONE;
     nextSource = 0;
-    soundLoaded = 0;
     musicFadeMs = 0;
+    memset(bufferMs, 0, sizeof(bufferMs));
 
-    error = faun_startup(32, SOURCE_LIMIT, 2, "xu4");
+    error = faun_startup(BUFFER_LIMIT, SOURCE_LIMIT, 2, "xu4");
     if (error) {
         errorWarning("Faun: %s", error);
         soundVolume = musicVolume = 0.0f;
@@ -57,6 +60,34 @@ void soundDelete()
     faun_shutdown();
 }
 
+static int loadSoundBuffer(int sound)
+{
+    float duration;
+    uint16_t ms;
+
+#ifdef CONF_MODULE
+    const CDIEntry* ent = config_soundFile(sound);
+    if (ent)
+        duration = faun_loadBuffer(sound, xu4.config->modulePath(ent),
+                                   ent->offset, ent->bytes);
+#else
+    const char* pathname = config_soundFile(sound);
+    if (pathname)
+        duration = faun_loadBuffer(sound, pathname, 0, 0);
+#endif
+
+    if (duration)
+        ms = (uint16_t) (duration * 1000.0f);
+    else {
+        // Mark buffer as loaded even upon failure so we don't keep trying
+        // to load bad or nonexistent data.
+        ms = BUFFER_MS_FAILED;
+    }
+
+    bufferMs[sound] = ms;
+    return ms;
+}
+
 void soundPlay(Sound sound, bool onlyOnce, int limitMSec)
 {
     (void) onlyOnce;
@@ -66,19 +97,8 @@ void soundPlay(Sound sound, bool onlyOnce, int limitMSec)
     if (soundVolume <= 0.0f)
         return;
 
-    if ((soundLoaded & (1<<sound)) == 0) {
-#ifdef CONF_MODULE
-        const CDIEntry* ent = config_soundFile(sound);
-        if (ent)
-            faun_loadBuffer(sound, xu4.config->modulePath(ent),
-                            ent->offset, ent->bytes);
-#else
-        const char* pathname = config_soundFile(sound);
-        if (pathname)
-            faun_loadBuffer(sound, pathname, 0, 0);
-#endif
-        soundLoaded |= 1<<sound;
-    }
+    if (bufferMs[sound] == 0)
+        loadSoundBuffer(sound);
 
     // This assumes the source is not currently playing.
     // Need faun_sourceSetBuffer()?
@@ -91,6 +111,19 @@ void soundPlay(Sound sound, bool onlyOnce, int limitMSec)
 
     if (++nextSource >= SOURCE_LIMIT)
         nextSource = 0;
+}
+
+/*
+ * Return duration in milliseconds.
+ */
+int soundDuration(Sound sound)
+{
+    int ms = bufferMs[sound];
+    if (ms == 0)
+        ms = loadSoundBuffer(sound);
+    if (ms == BUFFER_MS_FAILED)
+        return 0;
+    return ms;
 }
 
 /*

@@ -64,6 +64,7 @@ void soundDelete(void);
 
 void soundPlay(Sound sound, bool onlyOnce = true, int specificDurationInTicks = -1);
 
+int  soundDuration(Sound sound);
 void soundStop();
 void soundSetVolume(int);
 int  soundVolumeDec();
