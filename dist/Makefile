@@ -9,8 +9,8 @@ cbuild-images:
 	$(DBUILD) -f Dockerfile.mingw -t xu4/f33-mingw .
 
 XU4_DL=http://xu4.sourceforge.net/download
-BORON_SDK_LINUX=boron-x86_64-static-2.0.7.tar.bz2
-BORON_SDK_MINGW=boron-x86_64-w64-mingw32-static-2.0.7.zip
+BORON_SDK_LINUX=boron-x86_64-static-2.0.8.tar.bz2
+BORON_SDK_MINGW=boron-x86_64-w64-mingw32-static-2.0.8.zip
 DLL_MINGW=allegro-faun-dll.tar.bz2
 
 ALLEGRO_DL=https://github.com/liballeg/allegro5/releases/download/5.2.7.0
@@ -36,7 +36,7 @@ clean-sdks:
 
 boron:
 	git clone git://git.code.sf.net/p/urlan/boron/code boron
-	cd boron && git checkout d84cb774 && ./configure --no-execute --no-socket --static --thread
+	cd boron && git checkout v2.0.8 && ./configure --no-execute --no-socket --static --thread
 
 sdk/$(BORON_SDK_LINUX): sdk boron
 	rm -rf /tmp/boron
