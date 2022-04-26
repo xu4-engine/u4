@@ -56,7 +56,6 @@ static bool jimmyAt(const Coords &coords);
 static bool openAt(const Coords &coords);
 static void wearArmor(int player = -1);
 static void ztatsFor(int player = -1);
-static bool gameCheckHullIntegrity();
 
 /* creature functions */
 static void gameFixupObjects(Map *map, const SaveGameMonsterRecord* table);
@@ -548,6 +547,33 @@ int GameController::exitToParentMap() {
     return 0;
 }
 
+static void gameKillParty() {
+    for (int i = 0; i < c->party->size(); i++) {
+        PartyMember* pc = c->party->member(i);
+        pc->setHp(0);
+        pc->setStatus(STAT_DEAD);
+    }
+    deathStart(5);
+}
+
+/**
+ * Return true if the party perishes at sea without a vessel.
+ */
+static void gameCheckDrowning() {
+    if (collisionOverride)
+        return;
+
+    const Location* loc = c->location;
+    if (c->transportContext == TRANSPORT_FOOT &&
+          loc->map->tileTypeAt(loc->coords, WITHOUT_OBJECTS)->isSailable() &&
+        ! loc->map->tileTypeAt(loc->coords, WITH_GROUND_OBJECTS)->isShip() &&
+        ! loc->map->getValidMoves(loc->coords, c->party->getTransport()))
+    {
+        screenMessage("\nTrapped at sea without thy ship, thou dost drown!\n\n");
+        gameKillParty();
+    }
+}
+
 /**
  * Terminates a game turn.  This performs the post-turn housekeeping
  * tasks like adjusting the party's food, incrementing the number of
@@ -565,7 +591,7 @@ void GameController::finishTurn() {
         /* count down the aura, if there is one */
         c->aura.passTurn();
 
-        gameCheckHullIntegrity();
+        gameCheckDrowning();
 
         /* update party stats */
         //c->stats->setView(STATS_PARTY_OVERVIEW);
@@ -2921,46 +2947,6 @@ void GameController::timerFired() {
 }
 
 /**
- * Checks the hull integrity of the ship and handles
- * the ship sinking, if necessary.
- *
- * Return true if the ship sinks and the party perishes.
- */
-static bool gameCheckHullIntegrity() {
-    bool killAll = false;
-
-    /* see if the ship has sunk */
-    // FIXME: Do not sink until the hull goes below zero.
-    if ((c->transportContext == TRANSPORT_SHIP) && c->saveGame->shiphull <= 0)
-    {
-        screenMessage("\nThy ship sinks!\n\n");
-        killAll = true;
-    }
-
-    Location* loc = c->location;
-    if (! collisionOverride && c->transportContext == TRANSPORT_FOOT &&
-        loc->map->tileTypeAt(loc->coords, WITHOUT_OBJECTS)->isSailable() &&
-        ! loc->map->tileTypeAt(loc->coords, WITH_GROUND_OBJECTS)->isShip() &&
-        ! loc->map->getValidMoves(loc->coords, c->party->getTransport()))
-    {
-        screenMessage("\nTrapped at sea without thy ship, thou dost drown!\n\n");
-        killAll = true;
-    }
-
-    if (killAll)
-    {
-        for (int i = 0; i < c->party->size(); i++)
-        {
-            c->party->member(i)->setHp(0);
-            c->party->member(i)->setStatus(STAT_DEAD);
-        }
-
-        deathStart(5);
-    }
-    return killAll;
-}
-
-/**
  * Checks for valid conditions and handles
  * special creatures guarding the entrance to the
  * abyss and to the shrine of spirituality
@@ -3262,17 +3248,18 @@ void gameDamageParty(int minDamage, int maxDamage) {
  * Return true if the ship sinks and the party perishes.
  */
 bool gameDamageShip(int minDamage, int maxDamage) {
-    int damage;
-
     if (c->transportContext == TRANSPORT_SHIP) {
-        damage = ((minDamage >= 0) && (minDamage < maxDamage)) ?
+        screenShake(1);
+
+        int damage = ((minDamage >= 0) && (minDamage < maxDamage)) ?
             xu4_random((maxDamage + 1) - minDamage) + minDamage :
             maxDamage;
 
-        screenShake(1);
-
-        c->party->damageShip(damage);
-        return gameCheckHullIntegrity();
+        if (c->party->damageShip(damage)) {
+            screenMessage("\nThy ship sinks!\n\n");
+            gameKillParty();
+            return true;
+        }
     }
     return false;
 }

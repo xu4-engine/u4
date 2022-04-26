@@ -180,11 +180,11 @@ public:
     bool burnTorch(int turns = 1);
     bool canEnterShrine(Virtue virtue);
     bool canPersonJoin(string name, Virtue *v);
-    void damageShip(unsigned int pts);
     bool donate(int quantity);
     void endTurn();
     int  getChest();
     int  getTorchDuration() const;
+    bool damageShip(unsigned int pts);
     void healShip(unsigned int pts);
     bool isFlying() const;
     bool isImmobilized();
