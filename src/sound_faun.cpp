@@ -42,7 +42,7 @@ int soundInit()
     musicFadeMs = 0;
     memset(bufferMs, 0, sizeof(bufferMs));
 
-    error = faun_startup(BUFFER_LIMIT, SOURCE_LIMIT, 2, "xu4");
+    error = faun_startup(BUFFER_LIMIT, SOURCE_LIMIT, 2, 0, "xu4");
     if (error) {
         errorWarning("Faun: %s", error);
         soundVolume = musicVolume = 0.0f;
