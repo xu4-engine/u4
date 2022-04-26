@@ -895,14 +895,11 @@ bool CombatController::keyPressed(int key) {
         break;
 
     case U4_FKEY:
-        {
-            extern void gameDestroyAllCreatures();
-
-            if (settings.debug)
-                gameDestroyAllCreatures();
-            else valid = false;
-            break;
-        }
+        if (settings.debug)
+            gameDestroyAllCreatures();
+        else
+            valid = false;
+        break;
 
     // Change the speed of battle
     case '+':

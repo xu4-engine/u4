@@ -127,7 +127,7 @@ private:
 
 /* map and screen functions */
 void gameSetViewMode(ViewMode newMode);
-void gameUpdateScreen(void);
+void gameUpdateScreen();
 
 /* spell functions */
 void castSpell(int player = -1);
@@ -149,13 +149,10 @@ bool fireAt(const Coords &coords, bool originAvatar);
 Direction gameGetDirection();
 void readyWeapon(int player = -1);
 
-/* checking functions */
-bool gameCheckHullIntegrity();
-
 /* creature functions */
 bool creatureRangeAttack(const Coords &coords, Creature *m);
-void gameCreatureCleanup(void);
 bool gameSpawnCreature(const class Creature *m);
+void gameDestroyAllCreatures();
 
 /* etc */
 void gameBadCommand();

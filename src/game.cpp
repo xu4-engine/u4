@@ -39,28 +39,28 @@
 /* Functions BEGIN */
 
 /* spell functions */
-void mixReagents();
-bool mixReagentsForSpellU4(int spell);
-bool mixReagentsForSpellU5(int spell);
-void mixReagentsSuper();
-void newOrder();
+static void mixReagents();
+static bool mixReagentsForSpellU4(int spell);
+static bool mixReagentsForSpellU5(int spell);
+//static void mixReagentsSuper();
+static void newOrder();
 
 /* conversation functions */
 static bool talkAt(const Coords &coords, int distance);
 
 /* action functions */
-bool attackAt(const Coords &coords);
-bool destroyAt(const Coords &coords);
-bool getChestTrapHandler(int player);
-bool jimmyAt(const Coords &coords);
-bool openAt(const Coords &coords);
-void wearArmor(int player = -1);
-void ztatsFor(int player = -1);
+static bool attackAt(const Coords &coords);
+static bool destroyAt(const Coords &coords);
+static bool getChestTrapHandler(int player);
+static bool jimmyAt(const Coords &coords);
+static bool openAt(const Coords &coords);
+static void wearArmor(int player = -1);
+static void ztatsFor(int player = -1);
+static bool gameCheckHullIntegrity();
 
 /* creature functions */
-void gameDestroyAllCreatures(void);
-void gameFixupObjects(Map *map, const SaveGameMonsterRecord* table);
-void gameCreatureAttack(Creature *obj);
+static void gameFixupObjects(Map *map, const SaveGameMonsterRecord* table);
+static void gameCreatureAttack(Creature *obj);
 
 /* Functions END */
 /*---------------*/
@@ -1587,7 +1587,7 @@ void destroy() {
     screenMessage("%cNothing there!%c\n", FG_GREY, FG_WHITE);
 }
 
-bool destroyAt(const Coords &coords) {
+static bool destroyAt(const Coords &coords) {
     Object *obj = c->location->map->objectAt(coords);
 
     if (obj) {
@@ -1654,7 +1654,7 @@ static const Tile* battleGround(const Map* map, const Coords& coord) {
  * Attempts to attack a creature at map coordinates x,y.  If no
  * creature is present at that point, zero is returned.
  */
-bool attackAt(const Coords &coords) {
+static bool attackAt(const Coords &coords) {
     const Tile *ground;
     Creature *m;
     Map* map = c->location->map;
@@ -2006,7 +2006,7 @@ void getChest(int player)
 /**
  * Called by getChest() to handle possible traps on chests
  **/
-bool getChestTrapHandler(int player) {
+static bool getChestTrapHandler(int player) {
     TileEffect trapType;
     int randNum = xu4_random(4);
 
@@ -2394,7 +2394,7 @@ void jimmy() {
  * door is replaced by a permanent annotation of an unlocked door
  * tile.
  */
-bool jimmyAt(const Coords &coords) {
+static bool jimmyAt(const Coords &coords) {
     Map* map = c->location->map;
     const Tile* tile = map->tileTypeAt(coords, WITH_OBJECTS);
 
@@ -2442,7 +2442,7 @@ void opendoor() {
  * Attempts to open a door at map coordinates x,y.  The door is
  * replaced by a temporary annotation of a floor tile for 4 turns.
  */
-bool openAt(const Coords &coords) {
+static bool openAt(const Coords &coords) {
     const Tile *tile = c->location->map->tileTypeAt(coords, WITH_OBJECTS);
 
     if (!tile->isDoor() &&
@@ -2549,7 +2549,7 @@ void talk() {
  * Mixes reagents.  Prompts for a spell, then which reagents to
  * include in the mix.
  */
-void mixReagents() {
+static void mixReagents() {
 
     /*  uncomment this line to activate new spell mixing code */
     //   return mixReagentsSuper();
@@ -2616,7 +2616,7 @@ void mixReagents() {
  * Prompts for spell reagents to mix in the traditional Ultima IV
  * style.
  */
-bool mixReagentsForSpellU4(int spell) {
+static bool mixReagentsForSpellU4(int spell) {
     Ingredients ingredients;
 
     screenMessage("Reagent: ");
@@ -2654,7 +2654,7 @@ bool mixReagentsForSpellU4(int spell) {
 /**
  * Prompts for spell reagents to mix with an Ultima V-like menu.
  */
-bool mixReagentsForSpellU5(int spell) {
+static bool mixReagentsForSpellU5(int spell) {
     Ingredients ingredients;
 
     screenDisableCursor();
@@ -2679,7 +2679,7 @@ bool mixReagentsForSpellU5(int spell) {
  * Exchanges the position of two players in the party.  Prompts the
  * user for the player numbers.
  */
-void newOrder() {
+static void newOrder() {
     screenMessage("New Order!\nExchange # ");
 
     int player1 = gameGetPlayer(true, false);
@@ -2818,7 +2818,7 @@ static bool talkAt(const Coords &coords, int distance) {
  * Changes a player's armor.  Prompts for the player and/or the armor
  * type if not provided.
  */
-void wearArmor(int player) {
+static void wearArmor(int player) {
 
     // get the player if not provided
     if (player == -1) {
@@ -2858,7 +2858,7 @@ void wearArmor(int player) {
 /**
  * Called when the player selects a party member for ztats
  */
-void ztatsFor(int player) {
+static void ztatsFor(int player) {
     // get the player if not provided
     if (player == -1) {
         screenMessage("Ztats for: ");
@@ -2926,7 +2926,7 @@ void GameController::timerFired() {
  *
  * Return true if the ship sinks and the party perishes.
  */
-bool gameCheckHullIntegrity() {
+static bool gameCheckHullIntegrity() {
     bool killAll = false;
 
     /* see if the ship has sunk */
@@ -3059,7 +3059,7 @@ bool GameController::checkMoongates() {
  * Fixes objects initially loaded by saveGameMonstersRead,
  * and alters movement behavior accordingly to match the creature
  */
-void gameFixupObjects(Map *map, const SaveGameMonsterRecord* table) {
+static void gameFixupObjects(Map *map, const SaveGameMonsterRecord* table) {
     int i;
     const SaveGameMonsterRecord *it;
     Object* obj;
@@ -3115,7 +3115,7 @@ void gameFixupObjects(Map *map, const SaveGameMonsterRecord* table) {
 /**
  * Handles what happens when a creature attacks you
  */
-void gameCreatureAttack(Creature *m) {
+static void gameCreatureAttack(Creature *m) {
     const Tile *ground;
 
     screenMessage("\nAttacked by %s\n", m->getName().c_str());
@@ -3450,7 +3450,7 @@ bool gameSpawnCreature(const Creature *m) {
 /**
  * Destroys all creatures on the current map.
  */
-void gameDestroyAllCreatures(void) {
+void gameDestroyAllCreatures() {
     int i;
 
     gameSpellEffect('t', -1, SOUND_MAGIC); /* same effect as tremor */
@@ -3546,8 +3546,8 @@ showMixturesSuper(int page = 0) {
   }
 }
 
-void
-mixReagentsSuper() {
+#if 0
+static void mixReagentsSuper() {
 
   screenMessage("Mix reagents\n");
 
@@ -3645,3 +3645,4 @@ mixReagentsSuper() {
   c->location->viewMode = oldlocation;
   return;
 }
+#endif
