@@ -42,8 +42,6 @@ ifn module-file [
     module-file: join last split root-path '/' either file-package %.pak %.mod
 ]
 
-apair: func [series a b] [append append series a b]
-
 enum-value: func [list val] [
     either pos: find list val [sub index? pos 1] 0
 ]
@@ -205,7 +203,7 @@ cdi-string-table1: func [dict] [
     foreach str dict [
         append v16 size? store
         ifn string? str [str: to-string str]
-        apair store str '^0'
+        appair store str '^0'
     ]
     construct binary! reduce [
         'u8 1 0 'u16 'big-endian size? v16
@@ -533,7 +531,7 @@ process-cfg [
 
     process-blk armors [
         tok: string! int! opt [word! block!] (
-            apair blk first tok to-coord reduce [
+            appair blk first tok to-coord reduce [
                 second tok
                 make-constraint skip tok 2
             ]
@@ -569,7 +567,7 @@ process-cfg [
                 none-zero at/exp
                 none-zero at/encounterSize
             ]
-            apair blk at/name at/tile
+            appair blk at/name at/tile
 
             amask: or none-zero select [food 0x01  gold 0x02] at/steals
                       none-zero select [sleep 0x04  negate 0x80] at/casts
@@ -654,7 +652,7 @@ process-cfg [
               do emit-name append out to-coord [pos size frames]
               do next-tile
               loop sub frames 1 [
-                  apair out mark-sol '_cel to-coord [pos size]
+                  appair out mark-sol '_cel to-coord [pos size]
                   do next-tile
               ]
             )
@@ -676,7 +674,7 @@ process-cfg [
                 extends: first name
                 name: second name
             ]
-            apair blk mark-sol 'imageset name
+            appair blk mark-sol 'imageset name
             append blk extends
             append/block blk img-blk: make block! 0
         ) into [some [
@@ -689,8 +687,8 @@ process-cfg [
                     ftype: at/filetype
                 ]
 
-                apair img-blk mark-sol at/name fname
-                apair img-blk to-coord reduce [
+                appair img-blk mark-sol at/name fname
+                appair img-blk to-coord reduce [
                     none-neg1 at/width
                     none-neg1 at/height
                     none-neg1 at/depth
@@ -713,13 +711,13 @@ process-cfg [
                 ]
             )
           | tok: set-word! 'atlas coord! block! (
-                apair img-blk mark-sol to-word first tok 'atlas
+                appair img-blk mark-sol to-word first tok 'atlas
                 append img-blk third tok
                 append/block img-blk pick tok 4
             )
         ]]
       | 'tileanimset set name word! (
-            apair blk mark-sol 'tileanims name
+            appair blk mark-sol 'tileanims name
             anim-dict: make block! 8
             transforms: make binary! 512
         ) into [some [
@@ -728,7 +726,7 @@ process-cfg [
                 anim-chance: 0
                 if eq? 'random first aspec [anim-chance: second aspec]
 
-                apair anim-dict
+                appair anim-dict
                     to-word first tok
                     to-coord reduce [
                         div size? transforms 20     ; sizeof(TileAnimTransform)
@@ -764,7 +762,7 @@ process-cfg [
 
     process-blk tile-rules [
         set at paren! (
-            apair blk mark-sol at/name to-coord reduce [
+            appair blk mark-sol at/name to-coord reduce [
                 enum-value [fast slow vslow vvslow]
                     at/speed
                 enum-value [none fire sleep poison poisonfield electricity lava]
@@ -799,9 +797,9 @@ process-cfg [
 
     process-blk tileset [
         set at paren! (
-            apair blk mark-sol at/name at/rule
-            apair blk at/image at/animation
-            apair blk at/directions to-coord reduce [
+            appair blk mark-sol at/name at/rule
+            appair blk at/image at/animation
+            appair blk at/directions to-coord reduce [
                 none-zero at/frames
                 none-zero select [square 1 round 2] at/opaque
                 attribute-flags at [
@@ -824,7 +822,7 @@ process-cfg [
                 fname: to-file fname
             ]
 
-            apair blk mark-sol fname to-coord reduce [
+            appair blk mark-sol fname to-coord reduce [
                 at/id
                 enum-value [world city shrine combat dungeon] at/type
                 enum-value [wrap exit fixed] at/borderbehavior
@@ -853,7 +851,7 @@ process-cfg [
                 if block? first content [
                     ; Merge retroActiveDest into attributes to be used below.
                     if it: content/1/retroActiveDest [
-                        apair at2 to-set-word 'retroActiveDest
+                        appair at2 to-set-word 'retroActiveDest
                             to-coord reduce [it/x it/y none-zero it/z it/mapid]
                     ]
                 ]
@@ -886,9 +884,9 @@ process-cfg [
                     dest
                 ] none
             )
-          | 'dungeon  set at2 paren! (apair blk at2/name at2/rooms)
+          | 'dungeon  set at2 paren! (appair blk at2/name at2/rooms)
           | 'shrine   set at2 paren! (
-                apair blk at2/mantra enum-value [
+                appair blk at2/mantra enum-value [
                     "honesty" "compassion" "valor" "justice"
                     "sacrifice" "honor" "spirituality" "humility"
                 ] at2/virtue
@@ -898,7 +896,7 @@ process-cfg [
             append/block blk map-labels
 
             emit-attr-block blk map-portals [
-                apair dest mark-sol it/message it/condition
+                appair dest mark-sol it/message it/condition
                 append dest to-coord reduce [
                     none-zero it/x
                     none-zero it/y
@@ -937,8 +935,8 @@ process-cfg [
     if ega-palette [
         bin: make binary! mul 16 4
         foreach it ega-palette [
-            apair bin first it second it
-            apair bin third it 255
+            appair bin first it second it
+            appair bin third it 255
         ]
         ega-palette: bin
     ]
