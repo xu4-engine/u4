@@ -150,6 +150,8 @@ Direction map_pathTo(const Coords &a, const Coords &b,
                      const Map *map = NULL);
 Direction map_pathAway(const Coords &a, const Coords &b,
                        int valid_dirs = MASK_DIR_ALL);
+Direction map_pathForward(const Coords& a, const Coords &b, int validDir,
+                          Direction preferred, const Map *map = NULL);
 void map_wrap(Coords&, const Map *map);
 void map_move(Coords&, Direction d, const Map *map = NULL);
 void map_move(Coords&, int dx, int dy, const Map *map = NULL);

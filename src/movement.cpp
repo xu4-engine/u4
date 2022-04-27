@@ -187,23 +187,17 @@ int moveObject(Map *map, Creature *obj, const Coords& avatar) {
     case MOVEMENT_ATTACK_AVATAR:
         dirmask = map->getValidMoves(new_coords, obj->tile);
 
-        /* If the pirate ship turned last move instead of moving, this time it must
-           try to move, not turn again */
-        if (obj->tile.getTileType()->isPirateShip() &&
-            DIR_IN_MASK(obj->tile.getDirection(), dirmask) &&
-            (obj->tile != obj->prevTile) &&
-            (obj->prevCoords == obj->coords)) {
-            dir = obj->tile.getDirection();
-            break;
-        }
-
-        dir = map_pathTo(new_coords, avatar, dirmask, true, c->location->map);
+        if (obj->tile.getTileType()->isPirateShip())
+            dir = map_pathForward(new_coords, avatar, dirmask,
+                                  obj->tile.getDirection(), map);
+        else
+            dir = map_pathTo(new_coords, avatar, dirmask, true, map);
         break;
     }
 
     /* now, get a new x and y for the object */
     if (dir)
-        map_move(new_coords, dir, c->location->map);
+        map_move(new_coords, dir, map);
     else
         return 0;
 

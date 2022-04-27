@@ -135,6 +135,25 @@ Direction map_pathAway(const Coords& a, const Coords &b, int valid_directions) {
     return map_pathTo(a, b, valid_directions, false);
 }
 
+/*
+ * Find direction towards point b, but stay on preferred course if possible.
+ */
+Direction map_pathForward(const Coords& a, const Coords &b, int validDirs,
+                          Direction preferred, const Map *map) {
+    // Find the valid directions that lead towards our target.
+    int directionsTo = map_getRelativeDirection(a, b, map) & validDirs;
+    if (directionsTo) {
+        // Use the preferred direction if it moves us closer.
+        if (directionsTo & MASK_DIR(preferred))
+            return preferred;
+
+        validDirs = directionsTo;
+    }
+
+    // If we cannot get closer then just move wherever we can!
+    return dirRandomDir(validDirs);
+}
+
 /**
  * Finds the movement distance (not using diagonals) from point a to point b
  * on a map, taking into account map boundaries and such.  If the two coords
