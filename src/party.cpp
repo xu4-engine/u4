@@ -911,16 +911,11 @@ bool Party::isImmobilized() {
  * Whether or not all the party members are dead.
  */
 bool Party::isDead() {
-    int i;
-    bool dead = true;
-
-    for (i = 0; i < saveGame->members; i++) {
-        if (!members[i]->isDead()) {
-            dead = false;
-        }
+    for (int i = 0; i < saveGame->members; i++) {
+        if (! members[i]->isDead())
+            return false;
     }
-
-    return dead;
+    return true;
 }
 
 /**

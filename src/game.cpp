@@ -609,7 +609,7 @@ void GameController::finishTurn() {
             Creature* attacker = map->moveObjects(c->location->coords);
 
             // Something's attacking!  Start combat!
-            if (attacker) {
+            if (attacker && ! c->party->isDead()) {
                 gameCreatureAttack(attacker);
                 return;
             }
