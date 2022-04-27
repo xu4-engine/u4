@@ -15,6 +15,35 @@
 #include "xu4.h"
 
 
+/**
+ * Trims whitespace from a std::string
+ * @param val The string you are trimming
+ * @param chars_to_trim A list of characters that will be trimmed
+ */
+static string& trim(string &val, const string &chars_to_trim) {
+    using namespace std;
+    string::iterator i;
+    if (val.size()) {
+        string::size_type pos;
+        for (i = val.begin(); (i != val.end()) && (pos = chars_to_trim.find(*i)) != string::npos; )
+            i = val.erase(i);
+        for (i = val.end()-1; (i != val.begin()) && (pos = chars_to_trim.find(*i)) != string::npos; )
+            i = val.erase(i)-1;
+    }
+    return val;
+}
+
+/**
+ * Converts the string to lowercase
+ */
+static string& lowercase(string &val) {
+    using namespace std;
+    string::iterator i;
+    for (i = val.begin(); i != val.end(); i++)
+        *i = tolower(*i);
+    return val;
+}
+
 CheatMenuController::CheatMenuController(GameController *game) : game(game) {
 }
 
@@ -377,7 +406,7 @@ void CheatMenuController::summonCreature(const string &name) {
     const Creature *m = NULL;
     string tname( name );
 
-    trim(tname);
+    trim(tname, "\t\013\014 \n\r");
     if (tname.empty()) {
         screenMessage("\n");
         return;

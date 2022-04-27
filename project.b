@@ -161,7 +161,6 @@ exe %xu4 [
 		%tileset.cpp
 		%tileview.cpp
 		%u4file.cpp
-		%utils.cpp
 		%unzip.c
 		%view.cpp
 		%xu4.cpp

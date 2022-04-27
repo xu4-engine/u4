@@ -107,8 +107,11 @@ bool IntroBinData::load() {
     introGypsy = u4read_stringtable(title, -1, 15);
 
     /* clean up stray newlines at end of strings */
-    for (i = 0; i < 15; i++)
-        trim(introGypsy[i]);
+    for (i = 0; i < 15; i++) {
+        string& str = introGypsy[i];
+        if (! str.empty() && str.back() == '\n')
+           str.pop_back();
+    }
 
     if (sigData)
         delete sigData;

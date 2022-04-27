@@ -6,7 +6,7 @@
 
 #include "debug.h"
 #include "event.h"
-#include "utils.h"
+#include "xu4.h"
 
 /**
  * Returns the opposite direction.

@@ -67,7 +67,6 @@ CXXSRCS=\
         tileset.cpp \
         tileview.cpp \
         u4file.cpp \
-        utils.cpp \
         view.cpp \
         xu4.cpp \
         lzw/u4decode.cpp \

@@ -230,6 +230,29 @@ void Debug::trace(const string &msg, const string &fn, const string &func, const
 }
 
 /**
+ * Splits a string into substrings, divided by the charactars in
+ * separators.  Multiple adjacent seperators are treated as one.
+ */
+static std::vector<string> split(const string &s, const string &separators) {
+    std::vector<string> result;
+    string current;
+
+    for (unsigned i = 0; i < s.length(); i++) {
+        if (separators.find(s[i]) != string::npos) {
+            if (current.length() > 0)
+                result.push_back(current);
+            current.erase();
+        } else
+            current += s[i];
+    }
+
+    if (current.length() > 0)
+        result.push_back(current);
+
+    return result;
+}
+
+/**
  * Determines whether or not this debug element is enabled in our game settings.
  */
 bool Debug::loggingEnabled(const string &name) {

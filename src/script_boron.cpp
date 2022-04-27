@@ -396,8 +396,8 @@ CFUNC(cf_inputText)
     } else {
         // TODO: Reuse a single string! buffer.
         UBuffer* buf = ur_makeStringCell(ut, UR_ENC_LATIN1, str.size(), res);
-        lowercase(str);
         ur_strAppendCStr(buf, str.c_str());
+        ur_strLowercase(buf, 0, buf->used);
     }
     return UR_OK;
 }

@@ -51,3 +51,6 @@ extern XU4GameServices xu4;
 #define gs_listen(msk,func,user)    notify_listen(&xu4.notifyBus,msk,func,user)
 #define gs_unplug(id)               notify_unplug(&xu4.notifyBus,id)
 #define gs_emitMessage(sid,data)    notify_emit(&xu4.notifyBus,sid,data);
+
+extern "C" void xu4_srandom(uint32_t);
+extern "C" int  xu4_random(int upperval);

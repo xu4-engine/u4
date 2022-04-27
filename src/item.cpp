@@ -11,8 +11,8 @@
 #include "portal.h"
 #include "screen.h"
 #include "tileset.h"
-#include "utils.h"
 #include "weapon.h"
+#include "xu4.h"
 #ifdef IOS
 #include "ios_helpers.h"
 #endif
