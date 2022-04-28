@@ -38,6 +38,21 @@ extern int gameSave(const char*);
 bool verbose = false;
 
 
+#ifdef USE_BORON
+#include <boron/boron.h>
+
+// Using the Boron internal RNG functions for xu4.randomFx.
+extern "C" {
+void     well512_init(void* ws, uint32_t seed);
+uint32_t well512_genU32(void* ws);
+}
+#else
+#include "well512.h"
+#endif
+
+static void xu4_srandom(uint32_t);
+
+
 enum OptionsFlag {
     OPT_FULLSCREEN = 1,
     OPT_NO_INTRO   = 2,
@@ -220,16 +235,19 @@ void servicesInit(XU4GameServices* gs, Options* opt) {
     gs->eventHandler = new EventHandler(1000/gs->settings->gameCyclesPerSecond,
                             1000/gs->settings->screenAnimationFramesPerSecond);
 
+    {
+    uint32_t seed;
+
 #ifdef DEBUG
     if (opt->flags & OPT_REPLAY) {
-        uint32_t seed = gs->eventHandler->replay(opt->recordFile);
+        seed = gs->eventHandler->replay(opt->recordFile);
         if (! seed) {
             servicesFree(gs);
             errorFatal("Cannot open recorded input from %s", opt->recordFile);
         }
         xu4_srandom(seed);
     } else if (opt->flags & OPT_RECORD) {
-        uint32_t seed = time(NULL);
+        seed = time(NULL);
         if (! gs->eventHandler->beginRecording(opt->recordFile, seed)) {
             servicesFree(gs);
             errorFatal("Cannot open recording file %s", opt->recordFile);
@@ -237,7 +255,11 @@ void servicesInit(XU4GameServices* gs, Options* opt) {
         xu4_srandom(seed);
     } else
 #endif
-        xu4_srandom(time(NULL));
+        seed = time(NULL);
+
+    xu4_srandom(seed);
+    well512_init(gs->randomFx, seed);
+    }
 
     gs->stage = (opt->flags & OPT_NO_INTRO) ? StagePlay : StageIntro;
 }
@@ -332,15 +354,12 @@ int main(int argc, char *argv[]) {
 //----------------------------------------------------------------------------
 
 
-#ifdef USE_BORON
-#include <boron/boron.h>
-#endif
-
-/**
+/*
  * Seed the random number generator.
  */
-extern "C" void xu4_srandom(uint32_t seed) {
+static void xu4_srandom(uint32_t seed) {
 #ifdef USE_BORON
+    // Compiled code and module scripts share this generator.
     boron_randomSeed(xu4.config->boronThread(), seed);
 #elif (defined(BSD) && (BSD >= 199103)) || (defined (MACOSX) || defined (IOS))
     srandom(seed);
@@ -353,11 +372,8 @@ extern "C" void xu4_srandom(uint32_t seed) {
 char rpos = '-';
 #endif
 
-/**
- * Generate a random number between 0 and (upperRange - 1).  This
- * routine uses the upper bits of the random number provided by rand()
- * to compensate for older generators that have low entropy in the
- * lower bits (e.g. MacOS X).
+/*
+ * Generate a random number between 0 and (upperRange - 1).
  */
 extern "C" int xu4_random(int upperRange) {
 #ifdef USE_BORON
@@ -379,4 +395,16 @@ extern "C" int xu4_random(int upperRange) {
 #endif
     return (int) ((((double)upperRange) * r) / (RAND_MAX+1.0));
 #endif
+}
+
+/*
+ * Generate a random number between 0 and (upperRange - 1).
+ *
+ * This function is used by audio & visual effects that do not alter the
+ * game simulation state in any way.  Having a separate generator allows for
+ * a reproducibile game state (i.e. recording playback to work) even if sound
+ * or graphics elements change between runs.
+ */
+extern "C" int xu4_randomFx(int n) {
+    return (n < 2) ? 0 : well512_genU32(xu4.randomFx) % n;
 }

@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include "anim.h"
 
-extern int xu4_random(int);
+extern int xu4_randomFx(int);
 
 enum AnimType {
     ANIM_CYCLE_I,
@@ -162,7 +162,7 @@ void anim_advance(Animator* an, float seconds)
                 }
 
                 if (it->animType == ANIM_CYCLE_RANDOM_I) {
-                    if (it->var.i.chance > xu4_random(100)) {
+                    if (it->var.i.chance > xu4_randomFx(100)) {
                         int n = it->var.i.current + 1;
                         it->var.i.current =
                             (n < it->var.i.end) ? n : it->var.i.start;

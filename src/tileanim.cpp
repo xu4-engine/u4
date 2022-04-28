@@ -74,7 +74,7 @@ void TileAnimTransform::draw(Image* dest, const Tile* tile,
 #if 0
     case ATYPE_PIXEL:
     {
-        RGBA color = var.pixel.colors[ xu4_random(colors.size()) ];
+        RGBA color = var.pixel.colors[ xu4_randomFx(colors.size()) ];
         dest->fillRect(x, y, 1, 1,
                        color.r, color.g, color.b, color.a);
     }
@@ -107,9 +107,9 @@ void TileAnimTransform::draw(Image* dest, const Tile* tile,
                 if (pixelAt.r >= start.r && pixelAt.r <= end.r &&
                     pixelAt.g >= start.g && pixelAt.g <= end.g &&
                     pixelAt.b >= start.b && pixelAt.b <= end.b) {
-                    dest->putPixel(i, j, start.r + xu4_random(diff.r),
-                                         start.g + xu4_random(diff.g),
-                                         start.b + xu4_random(diff.b),
+                    dest->putPixel(i, j, start.r + xu4_randomFx(diff.r),
+                                         start.g + xu4_randomFx(diff.g),
+                                         start.b + xu4_randomFx(diff.b),
                                          pixelAt.a);
                 }
             }

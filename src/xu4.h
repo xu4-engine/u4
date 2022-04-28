@@ -44,6 +44,7 @@ struct XU4GameServices {
     GameController* game;
     const char* errorMessage;
     int stage;
+    uint32_t randomFx[17];      // Effects random number generator state.
 };
 
 extern XU4GameServices xu4;
@@ -52,5 +53,5 @@ extern XU4GameServices xu4;
 #define gs_unplug(id)               notify_unplug(&xu4.notifyBus,id)
 #define gs_emitMessage(sid,data)    notify_emit(&xu4.notifyBus,sid,data);
 
-extern "C" void xu4_srandom(uint32_t);
-extern "C" int  xu4_random(int upperval);
+extern "C" int xu4_random(int upperval);
+extern "C" int xu4_randomFx(int upperval);
