@@ -372,10 +372,12 @@ static void xu4_srandom(uint32_t seed) {
 char rpos = '-';
 #endif
 
+extern "C" {
+
 /*
  * Generate a random number between 0 and (upperRange - 1).
  */
-extern "C" int xu4_random(int upperRange) {
+int xu4_random(int upperRange) {
 #ifdef USE_BORON
     if (upperRange < 2)
         return 0;
@@ -405,6 +407,13 @@ extern "C" int xu4_random(int upperRange) {
  * a reproducibile game state (i.e. recording playback to work) even if sound
  * or graphics elements change between runs.
  */
-extern "C" int xu4_randomFx(int n) {
+int xu4_randomFx(int n) {
     return (n < 2) ? 0 : well512_genU32(xu4.randomFx) % n;
+}
+
+// Using randomFx for tile frame animation.
+#define CONFIG_ANIM_RANDOM
+#define anim_random xu4_randomFx
+#include "anim.c"
+
 }

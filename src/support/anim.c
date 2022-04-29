@@ -2,7 +2,11 @@
 #include <stdlib.h>
 #include "anim.h"
 
-extern int xu4_randomFx(int);
+#ifdef CONFIG_ANIM_RANDOM
+// This function provided by the user returns an integer between
+// 0 (inclusive) and range (exclusive).
+extern int anim_random(int range);
+#endif
 
 enum AnimType {
     ANIM_CYCLE_I,
@@ -161,14 +165,16 @@ void anim_advance(Animator* an, float seconds)
                     }
                 }
 
+#ifdef CONFIG_ANIM_RANDOM
                 if (it->animType == ANIM_CYCLE_RANDOM_I) {
-                    if (it->var.i.chance > xu4_randomFx(100)) {
+                    if (it->var.i.chance > anim_random(100)) {
                         int n = it->var.i.current + 1;
                         it->var.i.current =
                             (n < it->var.i.end) ? n : it->var.i.start;
                     }
                     continue;
                 }
+#endif
             }
 
             // Update value.
@@ -214,6 +220,7 @@ static void anim_stdInit(AnimatedValue* it, float dur, int loops, uint32_t fid)
     it->ctime    = 0.0f;
 }
 
+#ifdef CONFIG_ANIM_RANDOM
 AnimId anim_startCycleRandomI(Animator* an, float dur, int loops, uint32_t fid,
                               int start, int end, int chance)
 {
@@ -231,6 +238,7 @@ AnimId anim_startCycleRandomI(Animator* an, float dur, int loops, uint32_t fid,
     }
     return id;
 }
+#endif
 
 AnimId anim_startLinearF2(Animator* an, float dur, uint32_t fid,
                           float* start, float* end)

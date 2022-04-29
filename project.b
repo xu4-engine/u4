@@ -108,7 +108,6 @@ exe %xu4 [
 	cflags {-DVERSION=\"DR-1.0\"}
 
 	sources_from %src [
-		%anim.c
 		%annotation.cpp
 		%aura.cpp
 		%camp.cpp

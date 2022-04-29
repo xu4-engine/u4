@@ -4,7 +4,6 @@ MAIN=xu4$(EXEEXT)
 VERSION=DR-1.0
 
 CSRCS=\
-        anim.c \
         lzw/hash.c \
         lzw/lzw.c \
         support/notify.c \
