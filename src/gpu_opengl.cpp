@@ -334,7 +334,7 @@ extern Image* loadImage_png(U4FILE *file);
  *
  * \return Texture name or zero if loading failed.
  */
-static GLuint loadTexture(const char* file, GLuint useTex)
+static GLuint loadTexture(const char* file, GLuint useTex, GLenum filter)
 {
     GLuint texId = 0;
     const CDIEntry* ent = xu4.config->fileEntry(file);
@@ -348,7 +348,7 @@ static GLuint loadTexture(const char* file, GLuint useTex)
                 if (! useTex)
                     glGenTextures(1, &useTex);
                 gpu_defineTex(useTex, img->w, img->h, img->pixels,
-                              GL_RGBA, GL_NEAREST);
+                              GL_RGBA, filter);
                 texId = useTex;
                 delete img;
             }
@@ -368,10 +368,9 @@ static GLuint loadHQXTableImage(int scale)
     strcpy(lutFile, "graphics/shader/hq2x.png");
     lutFile[18] = '0' + scale;
 #endif
-    return loadTexture(lutFile, 0);
+    return loadTexture(lutFile, 0, GL_NEAREST);
 }
 
-#ifdef GPU_RENDER
 static void reserveDrawList(const GLuint* vbo, int byteSize)
 {
     int i;
@@ -380,7 +379,6 @@ static void reserveDrawList(const GLuint* vbo, int byteSize)
         glBufferData(GL_ARRAY_BUFFER, byteSize, NULL, GL_DYNAMIC_DRAW);
     }
 }
-#endif
 
 const char* gpu_init(void* res, int w, int h, int scale, int filter)
 {
@@ -400,13 +398,16 @@ const char* gpu_init(void* res, int w, int h, int scale, int filter)
     gr->blockCount = 0;
     gr->tilesTex = 0;
     */
-#ifdef GPU_RENDER
-    gr->dl[0].buf = GLOB_DRAW_LIST0;
+
+    gr->dl[0].buf = GLOB_GUI_LIST0;
     gr->dl[0].byteSize = ATTR_STRIDE * 6 * 400;
-    gr->dl[1].buf = GLOB_FX_LIST0;
-    gr->dl[1].byteSize = ATTR_STRIDE * 6 * 20;
-    gr->dl[2].buf = GLOB_MAPFX_LIST0;
-    gr->dl[2].byteSize = ATTR_STRIDE * 6 * 8;
+#ifdef GPU_RENDER
+    gr->dl[1].buf = GLOB_DRAW_LIST0;
+    gr->dl[1].byteSize = ATTR_STRIDE * 6 * 400;
+    gr->dl[2].buf = GLOB_FX_LIST0;
+    gr->dl[2].byteSize = ATTR_STRIDE * 6 * 20;
+    gr->dl[3].buf = GLOB_MAPFX_LIST0;
+    gr->dl[3].byteSize = ATTR_STRIDE * 6 * 8;
 #endif
 
 #ifdef DEBUG_GL
@@ -421,7 +422,7 @@ const char* gpu_init(void* res, int w, int h, int scale, int filter)
                   GL_RGBA, GL_LINEAR);
 
 #ifdef GPU_RENDER
-    if (! loadTexture("noise_2d.png", gr->noiseTex))
+    if (! loadTexture("noise_2d.png", gr->noiseTex, GL_NEAREST))
         return "noise_2d.png";
 
     gr->shadowFbo = _makeFramebuffer(gr->shadowTex);
@@ -494,7 +495,6 @@ const char* gpu_init(void* res, int w, int h, int scale, int filter)
     glUniform4f(gr->slocTint, 1.0, 1.0, 1.0, 1.0);
 
 
-#ifdef GPU_RENDER
     // Create solid shader.
     gr->shadeSolid = sh = glCreateProgram();
     if (compileShaders(sh, solid_vertShader, solid_fragShader))
@@ -508,6 +508,26 @@ const char* gpu_init(void* res, int w, int h, int scale, int filter)
     glUniform4f(gr->solidColor, 1.0, 1.0, 1.0, 1.0);
 
 
+    // Create glyph (text) shader.
+    gr->shadeGlyph = sh = glCreateProgram();
+    if (compileSLFile(sh, "msdf.glsl", 0))
+        return "msdf.glsl";
+
+    gr->glyphTrans  = glGetUniformLocation(sh, "transform");
+    cmap            = glGetUniformLocation(sh, "msdf");
+    //gr->glyphRange  = glGetUniformLocation(sh, "screenPxRange");
+    gr->glyphBg     = glGetUniformLocation(sh, "bgColor");
+    gr->glyphFg     = glGetUniformLocation(sh, "fgColor");
+
+    glUseProgram(sh);
+    glUniformMatrix4fv(gr->glyphTrans, 1, GL_FALSE, unitMatrix);
+    glUniform1i(cmap, GTU_CMAP);
+    glUniform4f(gr->glyphBg, 0.0, 0.0, 0.0, 0.0);
+    glUniform4f(gr->glyphFg, 1.0, 1.0, 1.0, 1.0);
+    //glUniform1f(gr->glyphRange, 2.0);
+
+
+#ifdef GPU_RENDER
     // Create shadowcast shader.
     gr->shadow = sh = glCreateProgram();
     if (compileSLFile(sh, "shadowcast.glsl", 0))
@@ -544,11 +564,12 @@ const char* gpu_init(void* res, int w, int h, int scale, int filter)
     // Create our vertex buffers.
     glGenBuffers(GLOB_COUNT, gr->vbo);
 
-#ifdef GPU_RENDER
     // Reserve space in the double-buffered draw lists.
-    reserveDrawList(gr->vbo + GLOB_DRAW_LIST0, gr->dl[0].byteSize);
-    reserveDrawList(gr->vbo + GLOB_FX_LIST0,   gr->dl[1].byteSize);
-    reserveDrawList(gr->vbo + GLOB_MAPFX_LIST0,gr->dl[2].byteSize);
+    reserveDrawList(gr->vbo + GLOB_GUI_LIST0, gr->dl[0].byteSize);
+#ifdef GPU_RENDER
+    reserveDrawList(gr->vbo + GLOB_DRAW_LIST0, gr->dl[1].byteSize);
+    reserveDrawList(gr->vbo + GLOB_FX_LIST0,   gr->dl[2].byteSize);
+    reserveDrawList(gr->vbo + GLOB_MAPFX_LIST0,gr->dl[3].byteSize);
 #endif
 
     // Create quad geometry.
@@ -576,8 +597,9 @@ void gpu_free(void* res)
     glDeleteVertexArrays(GLOB_COUNT, gr->vao);
     glDeleteBuffers(GLOB_COUNT, gr->vbo);
     glDeleteProgram(gr->shadeColor);
-#ifdef GPU_RENDER
     glDeleteProgram(gr->shadeSolid);
+    glDeleteProgram(gr->shadeGlyph);
+#ifdef GPU_RENDER
     glDeleteProgram(gr->shadeWorld);
     glDeleteProgram(gr->shadow);
     glDeleteFramebuffers(1, &gr->shadowFbo);
@@ -588,6 +610,18 @@ void gpu_free(void* res)
 void gpu_viewport(int x, int y, int w, int h)
 {
     glViewport(x, y, w, h);
+}
+
+/*
+ * Load a texture from a module file.
+ *
+ * \param linear    Non-zero to enable linear filtering.
+ *
+ * Return the identifier of the new texture.
+ */
+uint32_t gpu_loadTexture(const char* file, int linear)
+{
+    return loadTexture(file, 0, linear ? GL_LINEAR : GL_NEAREST);
 }
 
 uint32_t gpu_makeTexture(const Image32* img)
@@ -605,6 +639,9 @@ void gpu_blitTexture(uint32_t tex, int x, int y, const Image32* img)
                     GL_RGBA, GL_UNSIGNED_BYTE, img->pixels);
 }
 
+/*
+ * Release texture created with gpu_makeTexture() or gpu_loadTexture().
+ */
 void gpu_freeTexture(uint32_t tex)
 {
     glDeleteTextures(1, &tex);
@@ -662,7 +699,6 @@ void gpu_clear(void* res, const float* color)
     glClear(GL_COLOR_BUFFER_BIT);
 }
 
-#ifdef GPU_RENDER
 /*
  * Invert the colors of all pixels in the current viewport.
  */
@@ -750,11 +786,34 @@ void gpu_drawTris(void* res, int list)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glBlendEquation(GL_FUNC_ADD);
 
-    glUniformMatrix4fv(gr->worldTrans, 1, GL_FALSE, unitMatrix);
+    if (list <= GLOB_GUI_LIST1)
+        glUniformMatrix4fv(gr->glyphTrans, 1, GL_FALSE, unitMatrix);
+#ifdef GPU_RENDER
+    else
+        glUniformMatrix4fv(gr->worldTrans, 1, GL_FALSE, unitMatrix);
+#endif
     glBindVertexArray(gr->vao[ dl->buf ]);
     glDrawArrays(GL_TRIANGLES, 0, dl->count / ATTR_COUNT);
 }
 
+void gpu_drawGui(void* res, int list, uint32_t tex)
+{
+    OpenGLResources* gr = (OpenGLResources*) res;
+
+    glUseProgram(gr->shadeGlyph);
+    /*
+    glUniform4f(gr->glyphBg, 0.0, 0.0, 0.0, 1.0);
+    glUniform4f(gr->glyphFg, 1.0, 1.0, 1.0, 1.0);
+    */
+    glActiveTexture(GL_TEXTURE0 + GTU_CMAP);
+    glBindTexture(GL_TEXTURE_2D, tex);
+
+    glEnable(GL_BLEND);
+
+    gpu_drawTris(gr, list);
+}
+
+#ifdef GPU_RENDER
 float* gpu_emitQuad(float* attr, const float* drawRect, const float* uvRect)
 {
     float w = drawRect[2];

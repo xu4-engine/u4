@@ -13,7 +13,8 @@
 #include "tile.h"
 
 enum GLObject {
-    GLOB_QUAD,
+    GLOB_GUI_LIST0,
+    GLOB_GUI_LIST1,
 #ifdef GPU_RENDER
     GLOB_DRAW_LIST0,
     GLOB_DRAW_LIST1,
@@ -26,6 +27,7 @@ enum GLObject {
     GLOB_MAP_CHUNK2,
     GLOB_MAP_CHUNK3,
 #endif
+    GLOB_QUAD,
     GLOB_COUNT
 };
 
@@ -71,11 +73,16 @@ struct OpenGLResources {
     GLint  slocTrans;
     GLint  slocTint;
 
-#ifdef GPU_RENDER
     GLuint shadeSolid;
     GLint  solidTrans;
     GLint  solidColor;
 
+    GLuint shadeGlyph;
+    GLint  glyphTrans;
+    GLint  glyphBg;
+    GLint  glyphFg;
+
+#ifdef GPU_RENDER
     GLuint shadow;
     GLint  shadowTrans;
     GLint  shadowVport;
@@ -92,7 +99,7 @@ struct OpenGLResources {
     GLuint tilesMat;            // Managed by user.
     float  tilesVDim;
     float  time;
-    DrawList dl[3];
+    DrawList dl[4];
     float* dptr;
     const TileId* mapData;
     const TileRenderData* renderData;
@@ -104,5 +111,8 @@ struct OpenGLResources {
     uint16_t mapChunkId[4];     // Chunk X,Y of associated GLOB_MAP_CHUNK.
     uint16_t mapChunkFxUsed[4];
     MapFx mapChunkFx[4*CHUNK_FX_LIMIT];
+#else
+    DrawList dl[1];
+    float* dptr;
 #endif
 };

@@ -286,9 +286,16 @@ print-toc: does [
 
 ;---------------------------------------
 
-; Pull in shader files
-pack-shaders: does [
-    if exists? spath: join root-path %shader/ [
+; Pull in font & shader files
+pack-files: does [
+    pack-dirs: []
+    foreach it [%shader/ %font/] [
+        if exists? spath: join root-path it [
+            append pack-dirs spath
+        ]
+    ]
+
+    ifn empty? pack-dirs [
         sout: make binary! 4096
         code: complement charset "^//"
         strip-shader: func [shader] [
@@ -304,18 +311,29 @@ pack-shaders: does [
             append sout slice span end
         ]
 
-        sl_id: "SL^0^0"
-        foreach file read spath [
-            switch file-ext file [
-                %.glsl [
-                    poke-id sl_id file-id file
-                    ifn file-id-seen [
-                        cdi-chunk 0x0001 sl_id
-                            strip-shader read/into join spath file file_buf
+        sl_id:  "SL^0^0"
+        txf_id: "TF^0^0"
+
+        foreach spath pack-dirs [
+            foreach file read spath [
+                switch file-ext file [
+                    %.glsl [
+                        poke-id sl_id file-id file
+                        ifn file-id-seen [
+                            cdi-chunk 0x0001 sl_id
+                                strip-shader read/into join spath file file_buf
+                        ]
                     ]
-                ]
-                %.png [
-                    pack-png spath file
+                    %.png [
+                        pack-png spath file
+                    ]
+                    %.txf [
+                        poke-id txf_id file-id file
+                        ifn file-id-seen [
+                            cdi-chunk 0x5FC0 txf_id
+                                read/into join spath file file_buf
+                        ]
+                    ]
                 ]
             ]
         ]
@@ -324,7 +342,7 @@ pack-shaders: does [
 
 if file-package [
     cdi-begin "xuB^2"
-    pack-shaders
+    pack-files
 
     if ge? verbose 2 [probe file-dict]
 
@@ -523,7 +541,7 @@ map-moongates: none
 map-roles: none
 
 cdi-begin "xuB^2"
-pack-shaders
+pack-files
 
 process-cfg [
     music: process-sound music "MU^0^0"

@@ -210,6 +210,9 @@ const char* mod_addLayer(Module* mod, const char* filename,
                 if (str[len - 1] == 'l') {
                     a = 'S';    // .glsl
                     b = 'L';
+                } else if (str[len - 1] == 'f') {
+                    a = 'T';    // .txf
+                    b = 'F';
                 } else {
                     a = 'I';    // .png
                     b = 'M';
