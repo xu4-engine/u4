@@ -33,7 +33,13 @@ using std::vector;
 
 static const int MsgBufferSize = 1024;
 
+struct RenderLayer {
+    void (*func)(ScreenState*, void*);
+    void* data;
+};
+
 struct Screen {
+    RenderLayer* layers;
     vector<string> gemLayoutNames;
     const Layout* gemLayout;
     const Layout* dungeonGemLayout;
@@ -53,6 +59,7 @@ struct Screen {
     int cursorEnabled;
     short needPrompt;
     short colorFG;
+    uint8_t layersAvail;
 #ifdef GPU_RENDER
     ImageInfo* textureInfo;
     TileView* renderMapView;
@@ -67,7 +74,11 @@ struct Screen {
     uint8_t screenLos[VIEWPORT_W * VIEWPORT_H];
 #endif
 
-    Screen() {
+    Screen(uint8_t layerCount) {
+        layers = new RenderLayer[layerCount];
+        memset(layers, 0, sizeof(RenderLayer) * layerCount);
+        layersAvail = layerCount;
+
         gemLayout = NULL;
         dungeonGemLayout = NULL;
         dungeonView = NULL;
@@ -93,6 +104,7 @@ struct Screen {
     ~Screen() {
         delete dungeonView;
         delete[] msgBuffer;
+        delete[] layers;
     }
 };
 
@@ -218,8 +230,8 @@ enum ScreenSystemStage {
 /*
  * Sets xu4.screen, xu4.screenSys, xu4.screenImage & xu4.gpu pointers.
  */
-void screenInit() {
-    xu4.screen = new Screen;
+void screenInit(int layerCount) {
+    xu4.screen = new Screen(layerCount);
     screenInit_sys(xu4.settings, &xu4.screen->dispWidth, SYS_CLEAN);
     screenInit_data(xu4.screen, *xu4.settings);
 }
@@ -240,6 +252,15 @@ void screenReInit() {
     screenDelete_data(xu4.screen);
     screenInit_sys(xu4.settings, &xu4.screen->dispWidth, SYS_RESET);
     screenInit_data(xu4.screen, *xu4.settings); // Load new backgrounds, etc.
+}
+
+void screenSetLayer(int layer, void (*renderFunc)(ScreenState*, void*),
+                    void* data) {
+    assert(layer < xu4.screen->layersAvail);
+
+    RenderLayer* rl = xu4.screen->layers + layer;
+    rl->func = renderFunc;
+    rl->data = data;
 }
 
 void screenTextAt(int x, int y, const char *fmt, ...) {
@@ -720,6 +741,7 @@ void screenRender() {
     gpu_drawTextureScaled(gpu, gpu_screenTexture(gpu));
 
 #ifdef GPU_RENDER
+    // TODO: Make this a RenderLayer.
     TileView* view = sp->renderMapView;
     if (view) {
         if (view->scissor)
@@ -744,6 +766,15 @@ void screenRender() {
             gpu_setScissor(NULL);
     }
 #endif
+
+    {
+    RenderLayer* rl  = sp->layers;
+    RenderLayer* end = rl + sp->layersAvail;
+    for (; rl != end; ++rl) {
+        if (rl->func)
+            rl->func(&sp->state, rl->data);
+    }
+    }
 }
 
 void screenDrawImageInMapArea(Symbol name) {

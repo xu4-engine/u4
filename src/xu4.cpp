@@ -226,7 +226,7 @@ void servicesInit(XU4GameServices* gs, Options* opt) {
     Debug::initGlobal("debug/global.txt");
 
     gs->config = configInit(opt->module ? opt->module : "Ultima-IV.mod");
-    screenInit();
+    screenInit(4);
     Tile::initSymbols(gs->config);
 
     if (! (opt->flags & OPT_NO_AUDIO))

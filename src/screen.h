@@ -85,10 +85,12 @@ struct ScreenState {
 
 #define SCR_CYCLE_PER_SECOND 4
 
-void screenInit(void);
+void screenInit(int layerCount);
 void screenRefreshTimerInit(void);
 void screenDelete(void);
 void screenReInit(void);
+void screenSetLayer(int layer, void (*renderFunc)(ScreenState*, void*),
+                    void* data);
 void screenSwapBuffers();
 void screenWait(int numberOfAnimationFrames);
 void screenUploadToGPU();
