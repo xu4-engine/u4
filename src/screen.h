@@ -81,6 +81,10 @@ struct ScreenState {
     const TileAnimSet* tileanims;
     int currentCycle;
     int vertOffset;
+    int displayW;       // Full display pixel dimensions.
+    int displayH;
+    int aspectW;        // Aspect-correct pixel dimensions.
+    int aspectH;
 };
 
 #define SCR_CYCLE_PER_SECOND 4
@@ -144,7 +148,7 @@ void screenShowMouseCursor(bool visible);
 void screenPointToMouseArea(int* x, int* y);
 int  pointInMouseArea(int x, int y, MouseArea *area);
 
-ScreenState* screenState();
+const ScreenState* screenState();
 
 #define SCR_CYCLE_MAX 16
 
