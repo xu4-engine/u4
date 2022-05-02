@@ -97,7 +97,7 @@ void screenInit_sys(const Settings* settings, int* dim, int reset) {
     }
 
     {
-    ScreenState* state = screenState();
+    //ScreenState* state = screenState();
     SDL_Surface* ss = SDL_GetVideoSurface();
 
     dim[0] = ss->w;
@@ -108,6 +108,7 @@ void screenInit_sys(const Settings* settings, int* dim, int reset) {
             ss->format->Rmask, ss->format->Gmask,
             ss->format->Bmask, ss->format->Amask );
 #endif
+#if 0
     switch (ss->format->Rmask) {
         default:
             errorWarning("Unsupported SDL pixel format: %d:%08x",
@@ -120,6 +121,7 @@ void screenInit_sys(const Settings* settings, int* dim, int reset) {
             state->formatIsABGR = true;
             break;
     }
+#endif
     }
 
     sd->frameDuration = 1000 / settings->screenAnimationFramesPerSecond;

@@ -42,12 +42,13 @@ static void setFromRawData(Image *image, int width, int height, int bpp, unsigne
     uint32_t* cpix;
     int rowAdvance;
     int y, i;
-    bool screenFormatIsABGR = screenState()->formatIsABGR;
 
+/*
 // SDL format->Rmask = 0x00ff0000
 #define PIXEL_ARGB_4B(bp)   ((bp[3]<< 24) | (bp[0]<< 16) | (bp[1]<< 8) | bp[2])
 #define PIXEL_ARGB_3B(bp)   (0xff000000   | (bp[0]<< 16) | (bp[1]<< 8) | bp[2])
 #define PIXEL_ARGB_U32(c)   ((c->a << 24) | (c->r << 16) | (c->g << 8) | c->b)
+*/
 
 // ALLEGRO_PIXEL_FORMAT_ABGR_8888
 #define PIXEL_ABGR_4B(bp)   ((bp[3]<< 24) | (bp[2]<< 16) | (bp[1]<< 8) | bp[0])
@@ -61,111 +62,57 @@ static void setFromRawData(Image *image, int width, int height, int bpp, unsigne
 
     switch (bpp) {
     case 32:
-        if (screenFormatIsABGR) {
-            for (y = 0; y < height; ++y) {
-                cpix = row;
-                rowEnd = row + width;
-                while (cpix != rowEnd) {
-                    *cpix++ = PIXEL_ABGR_4B(rawData);
-                    rawData += 4;
-                }
-                row += rowAdvance;
+        for (y = 0; y < height; ++y) {
+            cpix = row;
+            rowEnd = row + width;
+            while (cpix != rowEnd) {
+                *cpix++ = PIXEL_ABGR_4B(rawData);
+                rawData += 4;
             }
-        } else {
-            for (y = 0; y < height; ++y) {
-                cpix = row;
-                rowEnd = row + width;
-                while (cpix != rowEnd) {
-                    *cpix++ = PIXEL_ARGB_4B(rawData);
-                    rawData += 4;
-                }
-                row += rowAdvance;
-            }
+            row += rowAdvance;
         }
         break;
 
     case 24:
-        if (screenFormatIsABGR) {
-            for (y = 0; y < height; ++y) {
-                cpix = row;
-                rowEnd = row + width;
-                while (cpix != rowEnd) {
-                    *cpix++ = PIXEL_ABGR_3B(rawData);
-                    rawData += 3;
-                }
-                row += rowAdvance;
+        for (y = 0; y < height; ++y) {
+            cpix = row;
+            rowEnd = row + width;
+            while (cpix != rowEnd) {
+                *cpix++ = PIXEL_ABGR_3B(rawData);
+                rawData += 3;
             }
-        } else {
-            for (y = 0; y < height; ++y) {
-                cpix = row;
-                rowEnd = row + width;
-                while (cpix != rowEnd) {
-                    *cpix++ = PIXEL_ARGB_3B(rawData);
-                    rawData += 3;
-                }
-                row += rowAdvance;
-            }
+            row += rowAdvance;
         }
         break;
 
     case 8:
-        if (screenFormatIsABGR) {
-            for (y = 0; y < height; ++y) {
-                cpix = row;
-                rowEnd = row + width;
-                while (cpix != rowEnd) {
-                    i = *rawData++;
-                    col = palette + i;
-                    *cpix++ = PIXEL_ABGR_U32(col);
-                }
-                row += rowAdvance;
+        for (y = 0; y < height; ++y) {
+            cpix = row;
+            rowEnd = row + width;
+            while (cpix != rowEnd) {
+                i = *rawData++;
+                col = palette + i;
+                *cpix++ = PIXEL_ABGR_U32(col);
             }
-        } else {
-            for (y = 0; y < height; ++y) {
-                cpix = row;
-                rowEnd = row + width;
-                while (cpix != rowEnd) {
-                    i = *rawData++;
-                    col = palette + i;
-                    *cpix++ = PIXEL_ARGB_U32(col);
-                }
-                row += rowAdvance;
-            }
+            row += rowAdvance;
         }
         break;
 
     case 4:
         assert((width & 1) == 0);
-        if (screenFormatIsABGR) {
-            for (y = 0; y < height; ++y) {
-                cpix = row;
-                rowEnd = row + width;
-                while (cpix != rowEnd) {
-                    i = *rawData++;
+        for (y = 0; y < height; ++y) {
+            cpix = row;
+            rowEnd = row + width;
+            while (cpix != rowEnd) {
+                i = *rawData++;
 
-                    col = palette + (i >> 4);
-                    *cpix++ = PIXEL_ABGR_U32(col);
+                col = palette + (i >> 4);
+                *cpix++ = PIXEL_ABGR_U32(col);
 
-                    col = palette + (i & 15);
-                    *cpix++ = PIXEL_ABGR_U32(col);
-                }
-                row += rowAdvance;
+                col = palette + (i & 15);
+                *cpix++ = PIXEL_ABGR_U32(col);
             }
-        } else {
-            for (y = 0; y < height; ++y) {
-                cpix = row;
-                rowEnd = row + width;
-                while (cpix != rowEnd) {
-                    i = *rawData++;
-
-                    col = palette + (i >> 4);
-                    *cpix++ = PIXEL_ARGB_U32(col);
-
-                    col = palette + (i & 15);
-                    *cpix++ = PIXEL_ARGB_U32(col);
-                }
-                row += rowAdvance;
-            }
+            row += rowAdvance;
         }
         break;
 
@@ -175,15 +122,9 @@ static void setFromRawData(Image *image, int width, int height, int bpp, unsigne
         int mask;
 
         col = palette;
-        if (screenFormatIsABGR) {
-            black = PIXEL_ABGR_U32(col);
-            ++col;
-            white = PIXEL_ABGR_U32(col);
-        } else {
-            black = PIXEL_ARGB_U32(col);
-            ++col;
-            white = PIXEL_ARGB_U32(col);
-        }
+        black = PIXEL_ABGR_U32(col);
+        ++col;
+        white = PIXEL_ABGR_U32(col);
 
         assert((width & 7) == 0);
         for (y = 0; y < height; ++y) {

@@ -81,7 +81,6 @@ struct ScreenState {
     const TileAnimSet* tileanims;
     int currentCycle;
     int vertOffset;
-    bool formatIsABGR;
 };
 
 #define SCR_CYCLE_PER_SECOND 4

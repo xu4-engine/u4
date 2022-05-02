@@ -9,21 +9,6 @@
 
 #include "support/image32.c"
 
-#define CHANNEL_REMAP
-#ifdef CHANNEL_REMAP
-static void screenColor(RGBA* col, int r, int g, int b, int a) {
-    if (screenState()->formatIsABGR) {
-        col->r = r;
-        col->b = b;
-    } else {
-        col->r = b;
-        col->b = r;
-    }
-    col->g = g;
-    col->a = a;
-}
-#endif
-
 RGBA Image::black = {0, 0, 0, 255};
 int Image::blending = 0;
 
@@ -145,13 +130,7 @@ void Image::putPixelIndex(int x, int y, uint32_t index) {
  * Fills entire image with a given color.
  */
 void Image::fill(const RGBA& col) {
-#ifdef CHANNEL_REMAP
-    RGBA swap;
-    screenColor(&swap, col.r, col.g, col.b, col.a);
-    image32_fill(this, &swap);
-#else
     image32_fill(this, &col);
-#endif
 }
 
 /**
@@ -165,14 +144,10 @@ void Image::fillRect(int x, int y, int rw, int rh, int r, int g, int b, int a) {
     uint32_t* drow = pixels + w * y + x;
     int blitW, blitH;
 
-#ifdef CHANNEL_REMAP
-    screenColor(&col, r, g, b, a);
-#else
     col.r = r;
     col.g = g;
     col.b = b;
     col.a = a;
-#endif
     icol = *((uint32_t*) &col);
 
     blitW = rw;

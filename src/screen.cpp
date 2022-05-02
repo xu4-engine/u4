@@ -77,7 +77,6 @@ struct Screen {
         state.tileanims = NULL;
         state.currentCycle = 0;
         state.vertOffset = 0;
-        state.formatIsABGR = true;
         dispWidth = dispHeight = 0;
         aspectW = aspectH = 0;
         cursorX = cursorY = 0;
