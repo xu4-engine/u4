@@ -128,6 +128,7 @@ exe %xu4 [
 		%event.cpp
 		%filesystem.cpp
 		%game.cpp
+		%gamebrowser.cpp
 		%image.cpp
 		%imageloader.cpp
 		%imagemgr.cpp

@@ -14,6 +14,14 @@ enum NotifySender {
     SENDER_SETTINGS     // Settings*
 };
 
+enum DrawLayer {
+    LAYER_CPU_BLIT,     // For legacy screenImage rendering.
+    LAYER_MAP,          // When GPU_RENDER defined.
+    LAYER_TOP_MENU,     // GameBrowser
+
+    LAYER_COUNT
+};
+
 class Settings;
 class Config;
 class ImageMgr;
@@ -21,6 +29,7 @@ struct Screen;
 class Image;
 class EventHandler;
 struct SaveGame;
+class GameBrowser;
 class IntroController;
 class GameController;
 
@@ -42,6 +51,7 @@ struct XU4GameServices {
     Image* screenImage;
     EventHandler* eventHandler;
     SaveGame* saveGame;
+    GameBrowser* gameBrowser;
     IntroController* intro;
     GameController* game;
     const char* errorMessage;
@@ -55,5 +65,6 @@ extern XU4GameServices xu4;
 #define gs_unplug(id)               notify_unplug(&xu4.notifyBus,id)
 #define gs_emitMessage(sid,data)    notify_emit(&xu4.notifyBus,sid,data);
 
+void xu4_selectGame();
 extern "C" int xu4_random(int upperval);
 extern "C" int xu4_randomFx(int upperval);

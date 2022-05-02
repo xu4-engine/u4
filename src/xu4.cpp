@@ -16,6 +16,7 @@
 #include "debug.h"
 #include "error.h"
 #include "game.h"
+#include "gamebrowser.h"
 #include "intro.h"
 #include "progress_bar.h"
 #include "screen.h"
@@ -255,7 +256,7 @@ void servicesInit(XU4GameServices* gs, Options* opt) {
     Debug::initGlobal("debug/global.txt");
 
     gs->config = configInit(opt->module ? opt->module : "Ultima-IV.mod");
-    screenInit(4);
+    screenInit(LAYER_COUNT);
     Tile::initSymbols(gs->config);
 
     if (! (opt->flags & OPT_NO_AUDIO))
@@ -296,6 +297,7 @@ void servicesInit(XU4GameServices* gs, Options* opt) {
 void servicesFree(XU4GameServices* gs) {
     delete gs->game;
     delete gs->intro;
+    delete gs->gameBrowser;
     delete gs->saveGame;
     delete gs->eventHandler;
     soundDelete();
@@ -378,6 +380,12 @@ int main(int argc, char *argv[]) {
 
     servicesFree(&xu4);
     return 0;
+}
+
+void xu4_selectGame() {
+    if (! xu4.gameBrowser)
+        xu4.gameBrowser = new GameBrowser;
+    xu4.eventHandler->runController(xu4.gameBrowser);
 }
 
 //----------------------------------------------------------------------------

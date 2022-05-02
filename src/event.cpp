@@ -815,7 +815,9 @@ bool EventHandler::globalKeyHandler(int key) {
 #endif
         xu4.eventHandler->quitGame();
         return true;
-    default: return false;
+
+    default:
+        return false;
     }
 }
 
@@ -823,9 +825,8 @@ bool EventHandler::globalKeyHandler(int key) {
  * A default key handler that should be valid everywhere
  */
 bool KeyHandler::defaultHandler(int key, void *data) {
-    bool valid = true;
-
     switch (key) {
+#ifdef DEBUG
     case '`':
         if (c && c->location) {
             const Location* loc = c->location;
@@ -836,12 +837,17 @@ bool KeyHandler::defaultHandler(int key, void *data) {
                     tile->nameStr());
         }
         break;
-    default:
-        valid = false;
+#endif
+
+    case U4_ESC:
+        xu4_selectGame();
         break;
+
+    default:
+        return false;
     }
 
-    return valid;
+    return true;
 }
 
 /**

@@ -1203,6 +1203,29 @@ int32_t Config::npcTalk(uint32_t appId) {
     return UR_INVALID_BUF;
 }
 
+/*
+ * Return the data from a given source filename.
+ * The caller must free() this buffer when finished with it.
+ */
+void* Config::loadFile(const char* sourceFilename) const {
+    const CDIEntry* ent = mod_fileEntry(&CX->mod, sourceFilename);
+    if (ent) {
+        void* data = malloc(ent->bytes);
+        if (data) {
+            FILE* fp = fopen(mod_path(&CX->mod, ent), "rb");
+            if (fp) {
+                fseek(fp, ent->offset, SEEK_SET);
+                size_t len = fread(data, 1, ent->bytes, fp);
+                fclose(fp);
+                if (len == ent->bytes)
+                    return data;
+            }
+            free(data);
+        }
+    }
+    return NULL;
+}
+
 const char* Config::modulePath(const CDIEntry* ent) const {
     return mod_path(&CX->mod, ent);
 }
