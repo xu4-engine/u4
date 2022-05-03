@@ -27,6 +27,10 @@
 
 //#include "gpu_opengl.h"
 
+extern "C" {
+#include "math3d.c"
+}
+
 extern uint32_t getTicks();
 
 #ifdef EMULATE_U4
@@ -73,15 +77,6 @@ const char* cmap_fragShader =
     "void main() {\n"
     "  fragColor = tint * texture(cmap, texCoord.st);\n"
     "}\n";
-
-#define MAT_X 12
-#define MAT_Y 13
-static const float unitMatrix[16] = {
-    1.0, 0.0, 0.0, 0.0,
-    0.0, 1.0, 0.0, 0.0,
-    0.0, 0.0, 1.0, 0.0,
-    0.0, 0.0, 0.0, 1.0
-};
 
 #define ATTR_COUNT      7
 #define ATTR_STRIDE     (sizeof(float) * ATTR_COUNT)
@@ -459,7 +454,7 @@ const char* gpu_init(void* res, int w, int h, int scale, int filter)
         gr->slocScLut = glGetUniformLocation(sh, "LUT");
 
         glUseProgram(sh);
-        glUniformMatrix4fv(gr->slocScMat, 1, GL_FALSE, unitMatrix);
+        glUniformMatrix4fv(gr->slocScMat, 1, GL_FALSE, m4_identity);
         glUniform2f(gr->slocScDim, (float) (w / scale), (float) (h / scale));
         glUniform1i(gr->slocScTex, GTU_CMAP);
         glUniform1i(gr->slocScLut, GTU_SCALER_LUT);
@@ -490,7 +485,7 @@ const char* gpu_init(void* res, int w, int h, int scale, int filter)
     gr->slocTint    = glGetUniformLocation(sh, "tint");
 
     glUseProgram(sh);
-    glUniformMatrix4fv(gr->slocTrans, 1, GL_FALSE, unitMatrix);
+    glUniformMatrix4fv(gr->slocTrans, 1, GL_FALSE, m4_identity);
     glUniform1i(cmap, GTU_CMAP);
     glUniform4f(gr->slocTint, 1.0, 1.0, 1.0, 1.0);
 
@@ -504,7 +499,7 @@ const char* gpu_init(void* res, int w, int h, int scale, int filter)
     gr->solidColor  = glGetUniformLocation(sh, "color");
 
     glUseProgram(sh);
-    glUniformMatrix4fv(gr->solidTrans, 1, GL_FALSE, unitMatrix);
+    glUniformMatrix4fv(gr->solidTrans, 1, GL_FALSE, m4_identity);
     glUniform4f(gr->solidColor, 1.0, 1.0, 1.0, 1.0);
 
 
@@ -520,11 +515,15 @@ const char* gpu_init(void* res, int w, int h, int scale, int filter)
     gr->glyphFg     = glGetUniformLocation(sh, "fgColor");
 
     glUseProgram(sh);
-    glUniformMatrix4fv(gr->glyphTrans, 1, GL_FALSE, unitMatrix);
+    {
+    float ortho[16];
+    m4_ortho(ortho, 0.0f, (float) w, 0.0f, (float) h, -1.0f, 1.0f);
+    glUniformMatrix4fv(gr->glyphTrans, 1, GL_FALSE, ortho);
     glUniform1i(cmap, GTU_CMAP);
     glUniform4f(gr->glyphBg, 0.0, 0.0, 0.0, 0.0);
     glUniform4f(gr->glyphFg, 1.0, 1.0, 1.0, 1.0);
     //glUniform1f(gr->glyphRange, 2.0);
+    }
 
 
 #ifdef GPU_RENDER
@@ -553,7 +552,7 @@ const char* gpu_init(void* res, int w, int h, int scale, int filter)
     gr->worldScroll    = glGetUniformLocation(sh, "scroll");
 
     glUseProgram(sh);
-    glUniformMatrix4fv(gr->worldTrans, 1, GL_FALSE, unitMatrix);
+    glUniformMatrix4fv(gr->worldTrans, 1, GL_FALSE, m4_identity);
     glUniform1i(cmap, GTU_CMAP);
     glUniform1i(mmap, GTU_MATERIAL);
     glUniform1i(noise, GTU_NOISE);
@@ -682,7 +681,7 @@ void gpu_drawTextureScaled(void* res, uint32_t tex)
         glBindTexture(GL_TEXTURE_2D, gr->scalerLut);
     } else {
         glUseProgram(gr->shadeColor);
-        glUniformMatrix4fv(gr->slocTrans, 1, GL_FALSE, unitMatrix);
+        glUniformMatrix4fv(gr->slocTrans, 1, GL_FALSE, m4_identity);
     }
 
     glDisable(GL_BLEND);
@@ -786,11 +785,9 @@ void gpu_drawTris(void* res, int list)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glBlendEquation(GL_FUNC_ADD);
 
-    if (list <= GLOB_GUI_LIST1)
-        glUniformMatrix4fv(gr->glyphTrans, 1, GL_FALSE, unitMatrix);
 #ifdef GPU_RENDER
-    else
-        glUniformMatrix4fv(gr->worldTrans, 1, GL_FALSE, unitMatrix);
+    if (list > GLOB_GUI_LIST1)
+        glUniformMatrix4fv(gr->worldTrans, 1, GL_FALSE, m4_identity);
 #endif
     glBindVertexArray(gr->vao[ dl->buf ]);
     glDrawArrays(GL_TRIANGLES, 0, dl->count / ATTR_COUNT);
@@ -1272,7 +1269,7 @@ void gpu_drawMap(void* res, const TileView* view, const float* tileUVs,
         gr->blockCount = blocks->left + blocks->center + blocks->right;
         if (gr->blockCount) {
             glUseProgram(gr->shadow);
-            glUniformMatrix4fv(gr->shadowTrans, 1, GL_FALSE, unitMatrix);
+            glUniformMatrix4fv(gr->shadowTrans, 1, GL_FALSE, m4_identity);
             glUniform4f(gr->shadowVport, 0.0f, 0.0f, SHADOW_DIM, SHADOW_DIM);
             glUniform3f(gr->shadowViewer, 0.0f, 0.0f, 11.0f);
             glUniform3i(gr->shadowCounts, blocks->left, blocks->center,
@@ -1341,7 +1338,7 @@ void gpu_drawMap(void* res, const TileView* view, const float* tileUVs,
     int fxUsed = 0;
 
     gr->time = ((float) getTicks()) * 0.001;
-    memcpy(matrix, unitMatrix, sizeof(matrix));
+    m4_loadIdentity(matrix);
     matrix[0] = matrix[10] = scale;
     matrix[5] = scaleY;
 
@@ -1365,8 +1362,8 @@ void gpu_drawMap(void* res, const TileView* view, const float* tileUVs,
     for (i = 0; i < 4; ++i) {
         if (usedMask & (1 << i)) {
             // Position chunk in viewport.
-            matrix[ MAT_X ] = (float) (cloc[i].x - cx) * scale;
-            matrix[ MAT_Y ] = (float) (cy - cloc[i].y) * scaleY;
+            matrix[ kX ] = (float) (cloc[i].x - cx) * scale;
+            matrix[ kY ] = (float) (cy - cloc[i].y) * scaleY;
             glUniformMatrix4fv(gr->worldTrans, 1, GL_FALSE, matrix);
 
             glBindVertexArray(gr->vao[ GLOB_MAP_CHUNK0 + i ]);
