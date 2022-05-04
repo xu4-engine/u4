@@ -170,6 +170,7 @@ exe %xu4 [
 		%lzw/u4decode.cpp
 
 		%support/notify.c
+		%support/stringTable.c
         %support/txf_draw.c
 	]
 ]

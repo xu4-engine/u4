@@ -3,6 +3,7 @@
  */
 
 #include "notify.h"
+#include "stringTable.h"
 
 enum NotifySender {
     // Sender Id           Message
@@ -30,6 +31,7 @@ enum XU4GameStage {
 };
 
 struct XU4GameServices {
+    StringTable resourcePaths;
     NotifyBus notifyBus;
     Settings* settings;
     Config* config;

@@ -64,7 +64,6 @@ public:
 
     static U4PATH * getInstance();
 
-    std::list<std::string> rootResourcePaths;
     std::list<std::string> u4ForDOSPaths;
     std::list<std::string> u4ZipPaths;
 #ifndef CONF_MODULE

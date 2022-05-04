@@ -191,6 +191,33 @@ missing_value:
     return 0;
 }
 
+//----------------------------------------------------------------------------
+
+static void initResourcePaths(StringTable* st) {
+    char* home;
+
+    sst_init(st, 4, 32);
+
+    sst_append(st, ".", 1);
+#ifdef _WIN32
+    home = getenv("LOCALAPPDATA");
+    if (home && home[0])
+        sst_appendCon(st, home, "\\xu4");
+#else
+    home = getenv("HOME");
+    if (home && home[0]) {
+#ifdef __APPLE__
+        sst_appendCon(st, home, "/Library/Application Support/xu4");
+#else
+        sst_appendCon(st, home, "/.local/share/xu4");
+#endif
+    }
+    sst_append(st, "/usr/share/xu4", -1);
+    sst_append(st, "/usr/local/share/xu4", -1);
+#endif
+}
+
+//----------------------------------------------------------------------------
 
 #ifdef DEBUG
 void servicesFree(XU4GameServices*);
@@ -199,6 +226,8 @@ void servicesFree(XU4GameServices*);
 void servicesInit(XU4GameServices* gs, Options* opt) {
     if (opt->flags & OPT_VERBOSE)
         verbose = true;
+
+    initResourcePaths(&gs->resourcePaths);
 
     if (!u4fsetup())
     {
@@ -275,6 +304,7 @@ void servicesFree(XU4GameServices* gs) {
     delete gs->settings;
     notify_free(&gs->notifyBus);
     u4fcleanup();
+    sst_free(&gs->resourcePaths);
 }
 
 XU4GameServices xu4;
@@ -350,9 +380,7 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
-
 //----------------------------------------------------------------------------
-
 
 /*
  * Seed the random number generator.

@@ -84,8 +84,10 @@ xu4 searches for the zipfiles, or the unpacked contents of the
 zipfiles in the following places:
  - The current directory when xu4 is run
  - A subdirectory named `ultima4` of the current directory
+ - On Linux: `$HOME/.local/share/xu4`
+ - On macOS: `$HOME/Library/Application Support/xu4`
  - On UNIX systems: `/usr/share/xu4` & `/usr/local/share/xu4`
- - On Linux `$HOME/.local/share/xu4` may also be used
+ - On Windows: `%LOCALAPPDATA%\xu4`
 
 The zipfile doesn't need to be unpacked, but if it is, xu4 can handle
 uppercase or lowercase filenames even on case-sensitive filesystems,
