@@ -3,6 +3,7 @@
 #include "event.h"
 #include "image32.h"
 #include "gpu.h"
+#include "gui.h"
 #include "screen.h"
 #include "txf_draw.h"
 #include "u4file.h"
@@ -16,7 +17,7 @@ extern "C" {
 
 
 #define GUI_LIST    0
-#define ATTR_COUNT  7
+#define PSIZE_LIST  20
 
 void GameBrowser::renderBrowser(ScreenState* ss, void* data)
 {
@@ -27,11 +28,11 @@ void GameBrowser::renderBrowser(ScreenState* ss, void* data)
 
     if (gb->modList.used) {
         int box[4];
-        box[0] = 40;
-        box[1] = 320 - int(gb->txf->lineHeight * 20.0f) * (gb->sel + 1)
-                     + int(gb->txf->descender * 20.0f);
-        box[2] = 240;
-        box[3] = 20;
+        box[0] = gb->listArea[0];
+        box[1] = gb->listArea[1] + gb->listArea[3] - 1
+                    - int(gb->txf->lineHeight * PSIZE_LIST * (gb->sel + 1.0f));
+        box[2] = gb->listArea[2];
+        box[3] = PSIZE_LIST + 2;
         gpu_setScissor(box);
         gpu_invertColors(xu4.gpu);
         gpu_setScissor(NULL);
@@ -41,9 +42,25 @@ void GameBrowser::renderBrowser(ScreenState* ss, void* data)
 GameBrowser::GameBrowser()
 {
     txf = (TxfHeader*) xu4.config->loadFile("cfont-comfortaa.txf");
-    if (txf)
+    if (txf) {
         fontTexture = gpu_loadTexture("cfont.png", 1);
-    else
+
+        static const uint8_t clut[6*4*2] = {
+            // black  white  chocolate4  burlywoord4
+            0,0,0,255, 255,255,255,255, 139,69,19,255, 139,115,85,255,
+            // royal-blue1  dodger-blue1
+            72,118,255,255, 24,116,205,255,
+
+            // semi-transparent
+            0,0,0,128, 255,255,255,128, 139,69,19,128, 139,115,85,128,
+            72,118,255,128, 24,116,205,128
+        };
+        Image32 cimg;
+        cimg.pixels = (uint32_t*) clut;
+        cimg.w = 6*2;
+        cimg.h = 1;
+        gpu_blitTexture(fontTexture, 0, 0, &cimg);
+    } else
         fontTexture = 0;
     sel = 0;
 }
@@ -76,45 +93,37 @@ static void readModuleList(StringTable* modList)
 
 bool GameBrowser::present()
 {
+    static const uint8_t browserGui[] = {
+        LAYOUT_V, BG_COLOR_CI, 6,
+        MARGIN_V_PER, 10, MARGIN_H_PER, 16, SPACING_PER, 12,
+        BG_COLOR_CI, 2,
+            FONT_SIZE, 40, LABEL_DT_S,
+            FONT_SIZE, PSIZE_LIST, LIST_DT_ST, STORE_DT_AREA,
+            LAYOUT_H, MARGIN_H_PER, 25, FIX_WIDTH_PER, 36,
+                FONT_SIZE, 24,
+                BUTTON_DT_S, STORE_DT_AREA,
+                FROM_RIGHT,
+                BUTTON_DT_S, STORE_DT_AREA,
+            LAYOUT_END,
+        LAYOUT_END
+    };
+    const void* guiData[8];
+    const void** data = guiData;
+
     if (! txf)
         return false;
 
     sst_init(&modList, 8, 128);
     readModuleList(&modList);
 
-    TxfDrawState ds;
-    float* attr;
-    int quadCount;
-
-    attr = gpu_beginTris(xu4.gpu, GUI_LIST);
-
-    txf_begin(&ds, txf, 60.0f, 20.0f, 20.0f);
-    quadCount = txf_genText(&ds, attr + 3, attr, ATTR_COUNT,
-                            (const uint8_t*) "xu4 | Ultima 4", 14);
-    attr += quadCount * 6 * ATTR_COUNT;
-
-    ds.x = 20.0f;
-    ds.y = 340.0f;
-    ds.psize = 32.0f;
-    quadCount = txf_genText(&ds, attr + 3, attr, ATTR_COUNT,
-                            (const uint8_t*) "Game Modules", 12);
-    attr += quadCount * 6 * ATTR_COUNT;
-
-    ds.y = 320.0f;
-    ds.psize = 20.0f;
-    const char* modStrings = sst_strings(&modList);
-    StringEntry* it  = modList.table;
-    StringEntry* end = it + modList.used;
-    for (; it != end; ++it) {
-        ds.x = 40.0f;
-        ds.y -= txf->lineHeight * ds.psize;
-        quadCount = txf_genText(&ds, attr + 3, attr, ATTR_COUNT,
-                                (const uint8_t*) modStrings + it->start,
-                                it->len);
-        attr += quadCount * 6 * ATTR_COUNT;
-    }
-
-    gpu_endTris(xu4.gpu, GUI_LIST, attr);
+    *data++ = "xu4 | Game Modules";
+    *data++ = &modList;
+    *data++ = listArea;
+    *data++ = "Play";
+    *data++ = okArea;
+    *data++ = "Cancel";
+    *data   = cancelArea;
+    gui_layout(GUI_LIST, NULL, txf, browserGui, guiData);
 
     screenSetLayer(LAYER_TOP_MENU, renderBrowser, this);
     return true;

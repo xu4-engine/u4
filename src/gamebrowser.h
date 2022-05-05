@@ -19,6 +19,9 @@ private:
     TxfHeader* txf;
     uint32_t   fontTexture;
     uint32_t   sel;
+    int16_t    listArea[4];
+    int16_t    okArea[4];
+    int16_t    cancelArea[4];
 
     static void renderBrowser(ScreenState* ss, void* data);
 };

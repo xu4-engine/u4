@@ -810,7 +810,6 @@ void gpu_drawGui(void* res, int list, uint32_t tex)
     gpu_drawTris(gr, list);
 }
 
-#ifdef GPU_RENDER
 float* gpu_emitQuad(float* attr, const float* drawRect, const float* uvRect)
 {
     float w = drawRect[2];
@@ -870,6 +869,7 @@ float* gpu_emitQuad(float* attr, const float* drawRect, const float* uvRect)
     return attr;
 }
 
+#ifdef GPU_RENDER
 float* gpu_emitQuadScroll(float* attr, const float* drawRect,
                           const float* uvRect, float scrollSourceV)
 {
