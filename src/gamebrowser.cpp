@@ -40,7 +40,7 @@ void GameBrowser::renderBrowser(ScreenState* ss, void* data)
 
 GameBrowser::GameBrowser()
 {
-    txf = (TxfHeader*) xu4.config->loadFile("cfont.txf");
+    txf = (TxfHeader*) xu4.config->loadFile("cfont-comfortaa.txf");
     if (txf)
         fontTexture = gpu_loadTexture("cfont.png", 1);
     else
