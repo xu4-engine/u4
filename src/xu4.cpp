@@ -221,7 +221,7 @@ static void initResourcePaths(StringTable* st) {
 //----------------------------------------------------------------------------
 
 #ifdef DEBUG
-void servicesFree(XU4GameServices*);
+static void servicesFree(XU4GameServices*);
 #endif
 
 void servicesInit(XU4GameServices* gs, Options* opt) {
@@ -255,7 +255,8 @@ void servicesInit(XU4GameServices* gs, Options* opt) {
 
     Debug::initGlobal("debug/global.txt");
 
-    gs->config = configInit(opt->module ? opt->module : "Ultima-IV.mod");
+    gs->config = configInit(opt->module ? opt->module
+                                        : gs->settings->game.c_str());
     screenInit(LAYER_COUNT);
     Tile::initSymbols(gs->config);
 
@@ -294,19 +295,51 @@ void servicesInit(XU4GameServices* gs, Options* opt) {
     gs->stage = (opt->flags & OPT_NO_INTRO) ? StagePlay : StageIntro;
 }
 
-void servicesFree(XU4GameServices* gs) {
+static void servicesFreeGame(XU4GameServices* gs) {
     delete gs->game;
     delete gs->intro;
     delete gs->gameBrowser;
     delete gs->saveGame;
     delete gs->eventHandler;
+
+    gs->game = NULL;
+    gs->intro = NULL;
+    gs->gameBrowser = NULL;
+    gs->saveGame = NULL;
+    gs->eventHandler = NULL;
+
     soundDelete();
     screenDelete();
     configFree(gs->config);
+}
+
+static void servicesFree(XU4GameServices* gs) {
+    servicesFreeGame(gs);
+
     delete gs->settings;
     notify_free(&gs->notifyBus);
     u4fcleanup();
     sst_free(&gs->resourcePaths);
+}
+
+static void servicesReset(XU4GameServices* gs) {
+    servicesFreeGame(gs);
+
+    gs->config = configInit(gs->settings->game.c_str());
+    screenInit(LAYER_COUNT);
+    Tile::initSymbols(gs->config);
+
+    soundInit();
+
+    gs->eventHandler = new EventHandler(
+                        1000/gs->settings->gameCyclesPerSecond,
+                        1000/gs->settings->screenAnimationFramesPerSecond);
+
+    uint32_t seed = time(NULL);
+    xu4_srandom(seed);
+    well512_init(gs->randomFx, seed);
+
+    gs->stage = StageIntro;
 }
 
 XU4GameServices xu4;
@@ -363,6 +396,7 @@ int main(int argc, char *argv[]) {
     ++pb;
 #endif
 
+begin_game:
     while( xu4.stage != StageExitGame )
     {
         if( xu4.stage == StageIntro ) {
@@ -376,6 +410,12 @@ int main(int argc, char *argv[]) {
                 xu4.game = new GameController();
             xu4.eventHandler->runController(xu4.game);
         }
+    }
+
+    if (xu4.gameReset) {
+        xu4.gameReset = 0;
+        servicesReset(&xu4);
+        goto begin_game;
     }
 
     servicesFree(&xu4);

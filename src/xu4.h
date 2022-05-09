@@ -55,7 +55,8 @@ struct XU4GameServices {
     IntroController* intro;
     GameController* game;
     const char* errorMessage;
-    int stage;
+    uint16_t stage;
+    uint16_t gameReset;         // Load another game.
     uint32_t randomFx[17];      // Effects random number generator state.
 };
 

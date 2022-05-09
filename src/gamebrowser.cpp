@@ -4,6 +4,7 @@
 #include "image32.h"
 #include "gpu.h"
 #include "gui.h"
+#include "settings.h"
 #include "screen.h"
 #include "txf_draw.h"
 #include "u4file.h"
@@ -73,11 +74,21 @@ GameBrowser::~GameBrowser()
     }
 }
 
+// Return position of ".mod" extension or 0 if none.
+static int modExtension(const char* name, int* slen)
+{
+    int len = strlen(name);
+    *slen = len;
+    if (len > 4 && strcmp(name + len - 4, ".mod") == 0)
+        return len - 4;
+    return 0;
+}
+
 static int collectModFiles(const char* name, int type, void* user)
 {
     if (type == PDIR_FILE || type == PDIR_LINK) {
-        int len = strlen(name);
-        if (len > 4 && strcmp(name + len - 4, ".mod") == 0)
+        int len;
+        if (modExtension(name, &len))
             sst_append((StringTable*) user, name, -1);
     }
     return PDIR_CONTINUE;
@@ -135,10 +146,35 @@ void GameBrowser::conclude()
     sst_free(&modList);
 }
 
+// Compare names ignoring any ".mod" extension.
+static bool equalGameName(const char* a, const char* b)
+{
+    int lenA, lenB;
+    int modA = modExtension(a, &lenA);
+    int modB = modExtension(b, &lenB);
+    if (modA)
+        lenA = modA;
+    if (modB)
+        lenB = modB;
+    return ((lenA == lenB) && strncmp(a, b, lenA) == 0);
+}
+
 bool GameBrowser::keyPressed(int key)
 {
     switch (key) {
         case U4_ENTER:
+        {
+            int len;
+            const char* game = sst_stringL(&modList, sel, &len);
+            if (equalGameName(xu4.settings->game.c_str(), game)) {
+                xu4.eventHandler->setControllerDone(true);
+            } else {
+                xu4.settings->game = game;
+                xu4.settings->write();
+                xu4.eventHandler->quitGame();
+                xu4.gameReset = 1;
+            }
+        }
             return true;
 
         case U4_UP:
