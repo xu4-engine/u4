@@ -260,10 +260,11 @@ static void gui_align(GuiRect* wbox, LayoutBox* lo, const SizeCon* cons)
   \param primList   The list identifier used with gpu_beginTris()/gpu_endTris().
   \param root       A rectangular pixel area for this layout, or NULL to
                     use screen size.
+  \param txfArr     Font list.
   \param bytecode   A program of GuiOpcode instructions.
   \param data       A pointer array of data referenced by bytecode program.
 */
-void gui_layout(int primList, const GuiRect* root, const TxfHeader* txf,
+void gui_layout(int primList, const GuiRect* root, TxfHeader* const* txfArr,
                 const uint8_t* bytecode, const void** data)
 {
     TxfDrawState ds;
@@ -276,7 +277,7 @@ void gui_layout(int primList, const GuiRect* root, const TxfHeader* txf,
     const uint8_t* pc = bytecode;
 
     // Default to 'natural' size of font.
-    txf_begin(&ds, txf, txf->fontSize, 0.0f, 0.0f);
+    txf_begin(&ds, txfArr[0], txfArr[0]->fontSize, 0.0f, 0.0f);
 
     attr = gpu_beginTris(xu4.gpu, primList);
 
@@ -448,11 +449,16 @@ void gui_layout(int primList, const GuiRect* root, const TxfHeader* txf,
                 lo->nextPos += arg;
             break;
 
+        // Drawing
+        case FONT_N:         // font-index
+            arg = *pc++;
+            ds.tf = txfArr[arg];
+            break;
+
         case FONT_SIZE:      // point-size
             txf_setFontSize(&ds, (float) *pc++);
             break;
 
-        // Drawing
         case BG_COLOR_CI:   // color-index
             attr = gui_drawRect(attr, &lo->x, ds.tf, *pc++);
             break;

@@ -29,9 +29,10 @@ void GameBrowser::renderBrowser(ScreenState* ss, void* data)
 
     if (gb->modList.used) {
         int box[4];
+        float selY = gb->txf[0]->lineHeight * PSIZE_LIST * (gb->sel + 1.0f);
+
         box[0] = gb->listArea[0];
-        box[1] = gb->listArea[1] + gb->listArea[3] - 1
-                    - int(gb->txf->lineHeight * PSIZE_LIST * (gb->sel + 1.0f));
+        box[1] = gb->listArea[1] + gb->listArea[3] - 1 - int(selY);
         box[2] = gb->listArea[2];
         box[3] = PSIZE_LIST + 2;
         gpu_setScissor(box);
@@ -40,36 +41,67 @@ void GameBrowser::renderBrowser(ScreenState* ss, void* data)
     }
 }
 
+/*
+ * Load fonts texture atlas and metrics.
+ *
+ * The first filename is the image and the other are TXF files.
+ *
+ * Return texture id or zero if any files failed to load.
+ */
+static uint32_t loadFonts(const char** files, int txfCount, TxfHeader** txfArr)
+{
+    int i;
+    uint32_t tex = gpu_loadTexture(*files++, 1);
+    if (tex) {
+        for (i = 0; i < txfCount; ++i) {
+            txfArr[i] = (TxfHeader*) xu4.config->loadFile(*files++);
+            if (! txfArr[i]) {
+                int fn;
+                for (fn = 0; fn < i; ++fn)
+                    free(txfArr[fn]);
+                gpu_freeTexture(tex);
+                return 0;
+            }
+        }
+    }
+    return tex;
+}
+
 GameBrowser::GameBrowser()
 {
-    txf = (TxfHeader*) xu4.config->loadFile("cfont-comfortaa.txf");
-    if (txf) {
-        fontTexture = gpu_loadTexture("cfont.png", 1);
+    static const char* fontFiles[] = {
+        "cfont.png",
+        "cfont-comfortaa.txf",
+        "cfont-avatar.txf"
+    };
 
-        static const uint8_t clut[6*4*2] = {
-            // black  white  chocolate4  burlywoord4
-            0,0,0,255, 255,255,255,255, 139,69,19,255, 139,115,85,255,
-            // royal-blue1  dodger-blue1
-            72,118,255,255, 24,116,205,255,
-
-            // semi-transparent
-            0,0,0,128, 255,255,255,128, 139,69,19,128, 139,115,85,128,
-            72,118,255,128, 24,116,205,128
-        };
-        Image32 cimg;
-        cimg.pixels = (uint32_t*) clut;
-        cimg.w = 6*2;
-        cimg.h = 1;
-        gpu_blitTexture(fontTexture, 0, 0, &cimg);
-    } else
-        fontTexture = 0;
     sel = 0;
+    fontTexture = loadFonts(fontFiles, 2, txf);
+    if (! fontTexture)
+        return;
+
+    static const uint8_t clut[6*4*2] = {
+        // black  white  chocolate4  burlywoord4
+        0,0,0,255, 255,255,255,255, 139,69,19,255, 139,115,85,255,
+        // royal-blue1  dodger-blue1
+        72,118,255,255, 24,116,205,255,
+
+        // semi-transparent
+        0,0,0,128, 255,255,255,128, 139,69,19,128, 139,115,85,128,
+        72,118,255,128, 24,116,205,128
+    };
+    Image32 cimg;
+    cimg.pixels = (uint32_t*) clut;
+    cimg.w = 6*2;
+    cimg.h = 1;
+    gpu_blitTexture(fontTexture, 0, 0, &cimg);
 }
 
 GameBrowser::~GameBrowser()
 {
-    if (txf) {
-        free(txf);
+    if (fontTexture) {
+        free(txf[0]);
+        free(txf[1]);
         gpu_freeTexture(fontTexture);
     }
 }
@@ -104,13 +136,14 @@ static void readModuleList(StringTable* modList)
 
 bool GameBrowser::present()
 {
-    static const uint8_t browserGui[] = {
+    static uint8_t browserGui[] = {
         LAYOUT_V, BG_COLOR_CI, 6,
         MARGIN_V_PER, 10, MARGIN_H_PER, 16, SPACING_PER, 12,
         BG_COLOR_CI, 2,
-            FONT_SIZE, 40, LABEL_DT_S,
-            FONT_SIZE, PSIZE_LIST, LIST_DT_ST, STORE_DT_AREA,
+            FONT_N, 1, FONT_SIZE, 40, LABEL_DT_S,
+            FONT_N, 0, FONT_SIZE, PSIZE_LIST, LIST_DT_ST, STORE_DT_AREA,
             LAYOUT_H, MARGIN_H_PER, 25, FIX_WIDTH_PER, 36,
+            FONT_N, 1,
                 FONT_SIZE, 24,
                 BUTTON_DT_S, STORE_DT_AREA,
                 FROM_RIGHT,
@@ -121,11 +154,13 @@ bool GameBrowser::present()
     const void* guiData[8];
     const void** data = guiData;
 
-    if (! txf)
+    if (! fontTexture)
         return false;
 
     sst_init(&modList, 8, 128);
     readModuleList(&modList);
+
+    browserGui[14] = 16 * xu4.settings->scale;
 
     *data++ = "xu4 | Game Modules";
     *data++ = &modList;

@@ -34,9 +34,10 @@ enum GuiOpcode {
     ALIGN_V_CENTER,
     ALIGN_CENTER,
     GAP_PER,        // percent
-    FONT_SIZE,      // point-size
 
     // Drawing
+    FONT_N,         // font-index
+    FONT_SIZE,      // point-size
     BG_COLOR_CI,    // color-index
 
     // Widgets
@@ -52,5 +53,5 @@ typedef struct {
 
 struct TxfHeader;
 
-void gui_layout(int primList, const GuiRect* root, const TxfHeader*,
+void gui_layout(int primList, const GuiRect* root, TxfHeader* const*,
                 const uint8_t* bytecode, const void** data);

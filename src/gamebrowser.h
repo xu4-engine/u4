@@ -16,7 +16,7 @@ public:
 
 private:
     StringTable modList;
-    TxfHeader* txf;
+    TxfHeader* txf[2];
     uint32_t   fontTexture;
     uint32_t   sel;
     int16_t    listArea[4];
