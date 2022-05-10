@@ -42,67 +42,89 @@ void GameBrowser::renderBrowser(ScreenState* ss, void* data)
 }
 
 /*
- * Load fonts texture atlas and metrics.
+ * Load textured font metrics.
  *
- * The first filename is the image and the other are TXF files.
- *
- * Return texture id or zero if any files failed to load.
+ * Return zero if any files failed to load.
  */
-static uint32_t loadFonts(const char** files, int txfCount, TxfHeader** txfArr)
+static int loadFonts(const char** files, int txfCount, TxfHeader** txfArr)
 {
     int i;
-    uint32_t tex = gpu_loadTexture(*files++, 1);
-    if (tex) {
-        for (i = 0; i < txfCount; ++i) {
-            txfArr[i] = (TxfHeader*) xu4.config->loadFile(*files++);
-            if (! txfArr[i]) {
-                int fn;
-                for (fn = 0; fn < i; ++fn)
-                    free(txfArr[fn]);
-                gpu_freeTexture(tex);
-                return 0;
+    for (i = 0; i < txfCount; ++i) {
+        txfArr[i] = (TxfHeader*) xu4.config->loadFile(*files++);
+        if (! txfArr[i]) {
+            int fn;
+            for (fn = 0; fn < i; ++fn) {
+                free(txfArr[fn]);
+                txfArr[fn] = NULL;
             }
+            return 0;
         }
     }
-    return tex;
+    return txfCount;
+}
+
+static const uint8_t clut[6*4*2] = {
+    // black  white  chocolate4  burlywoord4
+    0,0,0,255, 255,255,255,255, 139,69,19,255, 139,115,85,255,
+    // royal-blue1  dodger-blue1
+    72,118,255,255, 24,116,205,255,
+
+    // semi-transparent
+    0,0,0,128, 255,255,255,128, 139,69,19,128, 139,115,85,128,
+    72,118,255,128, 24,116,205,128
+};
+
+static const char* fontFiles[] = {
+    "cfont.png",
+    "cfont-comfortaa.txf",
+    "cfont-avatar.txf"
+};
+
+/*
+ * Reload any GPU data.  As this notification should not occur when the
+ * browser is open, we don't handle GUI layout here.
+ */
+void GameBrowser::displayReset(int sender, void* eventData, void* user)
+{
+    GameBrowser* gb = (GameBrowser*) user;
+    //ScreenState* ss = (ScreenState*) eventData;
+
+    if (eventData) {
+        gb->fontTexture = gpu_loadTexture(fontFiles[0], 1);
+        if (gb->fontTexture) {
+            Image32 cimg;
+            cimg.pixels = (uint32_t*) clut;
+            cimg.w = 6*2;
+            cimg.h = 1;
+            gpu_blitTexture(gb->fontTexture, 0, 0, &cimg);
+        }
+    } else {
+        gpu_freeTexture(gb->fontTexture);
+    }
 }
 
 GameBrowser::GameBrowser()
 {
-    static const char* fontFiles[] = {
-        "cfont.png",
-        "cfont-comfortaa.txf",
-        "cfont-avatar.txf"
-    };
-
+    txf[0] = NULL;
+    fontTexture = 0;
     sel = 0;
-    fontTexture = loadFonts(fontFiles, 2, txf);
-    if (! fontTexture)
+
+    if (! loadFonts(fontFiles+1, 2, txf))
         return;
 
-    static const uint8_t clut[6*4*2] = {
-        // black  white  chocolate4  burlywoord4
-        0,0,0,255, 255,255,255,255, 139,69,19,255, 139,115,85,255,
-        // royal-blue1  dodger-blue1
-        72,118,255,255, 24,116,205,255,
-
-        // semi-transparent
-        0,0,0,128, 255,255,255,128, 139,69,19,128, 139,115,85,128,
-        72,118,255,128, 24,116,205,128
-    };
-    Image32 cimg;
-    cimg.pixels = (uint32_t*) clut;
-    cimg.w = 6*2;
-    cimg.h = 1;
-    gpu_blitTexture(fontTexture, 0, 0, &cimg);
+    displayReset(SENDER_DISPLAY, (void*) screenState(), this);
+    listenerId = gs_listen(1<<SENDER_DISPLAY, displayReset, this);
 }
 
 GameBrowser::~GameBrowser()
 {
-    if (fontTexture) {
+    if (fontTexture)
+        gpu_freeTexture(fontTexture);
+
+    if (txf[0]) {
+        gs_unplug(listenerId);
         free(txf[0]);
         free(txf[1]);
-        gpu_freeTexture(fontTexture);
     }
 }
 

@@ -247,9 +247,13 @@ void screenDelete() {
  * Re-initializes the screen and implements any changes made in settings
  */
 void screenReInit() {
+    gs_emitMessage(SENDER_DISPLAY, NULL);
+
     screenDelete_data(xu4.screen);
     screenInit_sys(xu4.settings, &xu4.screen->state.displayW, SYS_RESET);
     screenInit_data(xu4.screen, *xu4.settings); // Load new backgrounds, etc.
+
+    gs_emitMessage(SENDER_DISPLAY, &xu4.screen->state);
 }
 
 void screenSetLayer(int layer, void (*renderFunc)(ScreenState*, void*),
