@@ -24,6 +24,8 @@ enum GuiOpcode {
     SPACING_EM,     // font-em-tenth
     FIX_WIDTH_PER,  // percent
     FIX_HEIGHT_PER, // percent
+    FIX_WIDTH_EM,   // font-em-tenth
+    FIX_HEIGHT_EM,  // font-em-tenth
     FROM_BOTTOM,
     FROM_RIGHT,
     ALIGN_LEFT,

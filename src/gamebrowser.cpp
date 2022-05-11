@@ -162,13 +162,16 @@ bool GameBrowser::present()
         LAYOUT_V, BG_COLOR_CI, 6,
         MARGIN_V_PER, 10, MARGIN_H_PER, 16, SPACING_PER, 12,
         BG_COLOR_CI, 2,
-            FONT_N, 1, FONT_SIZE, 40, LABEL_DT_S,
+        MARGIN_V_PER, 6,
+            LAYOUT_H,
+                FONT_SIZE, 40, LABEL_DT_S,
+                FONT_N, 1,     LABEL_DT_S,
+            LAYOUT_END,
             FONT_N, 0, FONT_SIZE, PSIZE_LIST, LIST_DT_ST, STORE_DT_AREA,
-            LAYOUT_H, MARGIN_H_PER, 25, FIX_WIDTH_PER, 36,
-            FONT_N, 1,
-                FONT_SIZE, 24,
+            FROM_BOTTOM,
+            FONT_N, 1, FONT_SIZE, 24,
+            LAYOUT_H, SPACING_PER, 20, FIX_WIDTH_EM, 50,
                 BUTTON_DT_S, STORE_DT_AREA,
-                FROM_RIGHT,
                 BUTTON_DT_S, STORE_DT_AREA,
             LAYOUT_END,
         LAYOUT_END
@@ -182,9 +185,10 @@ bool GameBrowser::present()
     sst_init(&modList, 8, 128);
     readModuleList(&modList);
 
-    browserGui[14] = 16 * xu4.settings->scale;
+    browserGui[15] = 16 * xu4.settings->scale;
 
-    *data++ = "xu4 | Game Modules";
+    *data++ = "xu4 | ";
+    *data++ = "Game Modules";
     *data++ = &modList;
     *data++ = listArea;
     *data++ = "Play";

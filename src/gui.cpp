@@ -29,6 +29,7 @@
 
 #define ATTR_COUNT  7
 #define LO_DEPTH    6
+#define MAX_SIZECON 24
 
 enum AlignBits {
     ALIGN_L = 1,
@@ -50,7 +51,6 @@ enum SizePolicy {
 
 typedef struct {
     int16_t minW, minH;
-    int16_t maxW, maxH;
     int16_t prefW, prefH;
 } SizeCon;
 
@@ -81,11 +81,9 @@ static void button_size(SizeCon* size, TxfDrawState* ds, const uint8_t* text)
     txf_emSize(ds->tf, text, strlen((const char*) text), fsize);
 
     size->minW =
-    size->maxW =
     size->prefW = (int16_t) (fsize[0] * ds->psize + 1.2f * ds->psize);
 
     size->minH =
-    size->maxH =
     size->prefH = (int16_t) (fsize[1] * ds->psize * 1.6f);
 }
 
@@ -110,8 +108,8 @@ static void label_size(SizeCon* size, TxfDrawState* ds, const uint8_t* text)
 {
     float fsize[2];
     txf_emSize(ds->tf, text, strlen((const char*) text), fsize);
-    size->minW = size->maxW = size->prefW = (int16_t) (fsize[0] * ds->psize);
-    size->minH = size->maxH = size->prefH = (int16_t) (fsize[1] * ds->psize);
+    size->minW = size->prefW = (int16_t) (fsize[0] * ds->psize);
+    size->minH = size->prefH = (int16_t) (fsize[1] * ds->psize);
 }
 
 static float* widget_label(float* attr, const GuiRect* wbox, TxfDrawState* ds,
@@ -120,7 +118,7 @@ static float* widget_label(float* attr, const GuiRect* wbox, TxfDrawState* ds,
     int quadCount;
 
     ds->x = (float) wbox->x;
-    ds->y = (float) wbox->y + ds->tf->descender * ds->psize;
+    ds->y = (float) wbox->y - ds->tf->descender * ds->psize;
     quadCount = txf_genText(ds, attr + 3, attr, ATTR_COUNT,
                             text, strlen((const char*) text));
     return attr + (quadCount * 6 * ATTR_COUNT);
@@ -155,8 +153,6 @@ static void list_size(SizeCon* size, TxfDrawState* ds, StringTable* st)
 
     size->minW = (int16_t) (ds->psize * 4.0f);
     size->minH = 3 * (int16_t) fsize[1];
-    size->maxW = 512;
-    size->maxH = 9000;
     size->prefW = (int16_t) fsize[0];
     size->prefH = (int16_t) (fsize[1] * rows);
 }
@@ -190,19 +186,62 @@ static float* widget_list(float* attr, const GuiRect* wbox, TxfDrawState* ds,
 struct LayoutBox {
     int16_t x, y, w, h;         // Pixel units.  X,Y is the bottom left.
     int16_t nextPos;            // X or Y position for the next widget.
+    uint16_t fixedW;            // Assign fixed width to children.
+    uint16_t fixedH;            // Assign fixed height to children.
+    uint16_t spacing;           // Pixel gap between widgets.
     uint8_t form;               // LAYOUT_H, LAYOUT_V, LAYOUT_GRID
     uint8_t align;              // AlignBits
-    uint8_t fixedW;             // Assign fixed width to children.
-    uint8_t fixedH;             // Assign fixed height to children.
-    uint8_t spacing;            // Pixel gap between widgets.
     uint8_t columns;            // For LAYOUT_GRID.
+    uint8_t _pad;
 };
+
+#define loCount align
+
+// Accumulate widget size constraints.
+static void layout_size(LayoutBox* lo, SizeCon* sc, const SizeCon* widget)
+{
+    int adv = lo->loCount ? lo->spacing : 0;
+
+    ++lo->loCount;
+
+    if (lo->form == LAYOUT_H) {
+        if (lo->fixedW && widget->prefW < lo->fixedW) {
+            adv += lo->fixedW;
+            sc->minW  += adv;
+            sc->prefW += adv;
+        } else {
+            sc->minW  += adv + widget->minW;
+            sc->prefW += adv + widget->prefW;
+        }
+
+        if (sc->minH < widget->minH)
+            sc->minH = widget->minH;
+        if (sc->prefH < widget->prefH)
+            sc->prefH = widget->prefH;
+    } else {
+        if (lo->fixedH && widget->prefH < lo->fixedH) {
+            adv += lo->fixedH;
+            sc->minH  += adv;
+            sc->prefH += adv;
+        } else {
+            sc->minH  += adv + widget->minH;
+            sc->prefH += adv + widget->prefH;
+        }
+
+        if (sc->minW < widget->minW)
+            sc->minW = widget->minW;
+        if (sc->prefW < widget->prefW)
+            sc->prefW = widget->prefW;
+    }
+}
 
 static void gui_align(GuiRect* wbox, LayoutBox* lo, const SizeCon* cons)
 {
 #if 0
-    printf("KR lo:%d,%d fw:%d,%d cons:%d,%d\n",
-           lo->w, lo->h, lo->fixedW, lo->fixedH, cons->prefW, cons->prefH);
+    printf("KR lo:%p %d,%d,%d,%d fix:%d,%d cons:%d,%d,%d,%d\n",
+           lo, lo->x, lo->y, lo->w, lo->h,
+           lo->fixedW, lo->fixedH,
+           cons->minW, cons->minH, cons->prefW, cons->prefH);
 #endif
 
     wbox->w = cons->prefW;
@@ -250,9 +289,21 @@ static void gui_align(GuiRect* wbox, LayoutBox* lo, const SizeCon* cons)
     }
 }
 
+static void gui_setRootArea(LayoutBox* lo, const GuiRect* root)
+{
+    if (root) {
+        memcpy(&lo->x, root, sizeof(GuiRect));
+    } else {
+        const ScreenState* ss = screenState();
+        lo->x = lo->y = 0;
+        lo->w = ss->displayW;
+        lo->h = ss->displayH;
+    }
+}
+
 /*
   Create a GPU draw list for widgets using a bytecode language and a
-  single-pass layout algorithm.
+  two-pass layout algorithm.
 
   The layout program must begin with a LAYOUT_* instruction and ends with a
   paired LAYOUT_END instruction.
@@ -268,20 +319,203 @@ void gui_layout(int primList, const GuiRect* root, TxfHeader* const* txfArr,
                 const uint8_t* bytecode, const void** data)
 {
     TxfDrawState ds;
-    SizeCon cons;
+    SizeCon sconStack[MAX_SIZECON];
     LayoutBox loStack[LO_DEPTH];
-    LayoutBox* lo = NULL;
+    LayoutBox* lo;
+    SizeCon* scon;
     GuiRect wbox;
     float* attr;
     int arg;
-    const uint8_t* pc = bytecode;
+    const uint8_t* pc;
+    const void** dp;
 
-    // Default to 'natural' size of font.
-    txf_begin(&ds, txfArr[0], txfArr[0]->fontSize, 0.0f, 0.0f);
+#define RESET_LAYOUT \
+    lo = NULL; \
+    scon = sconStack; \
+    pc = bytecode; \
+    dp = data; \
+    txf_begin(&ds, txfArr[0], txfArr[0]->fontSize, 0.0f, 0.0f)
+
+
+    // First pass to gather widget size information.
+    RESET_LAYOUT;
+
+    for(;;) {
+        switch (*pc++) {
+        default:
+        case GUI_END:
+            goto layout_done;
+
+        // Position Pen
+        case PEN_PER:           // percent x, percent y
+            pc += 2;
+            break;
+
+        // Layout
+        case LAYOUT_V:
+        case LAYOUT_H:
+            if (lo == NULL) {
+                lo = loStack;
+                gui_setRootArea(lo, root);
+            } else {
+                assert(lo != loStack+LO_DEPTH-1);
+                // Bootstrap size so *_PER instructions work.
+                lo[1].w = loStack[0].w;
+                lo[1].h = loStack[0].h;
+                ++lo;
+            }
+            lo->form = pc[-1];
+            lo->nextPos = scon - sconStack;
+            lo->loCount = 0;
+            lo->fixedW = lo->fixedH = lo->spacing = 0;
+
+            scon->minW = scon->minH = 0;
+            scon->prefW = scon->prefH = 0;
+            ++scon;
+            break;
+
+        case LAYOUT_GRID:    // columns
+            pc++;
+            break;
+
+        case LAYOUT_END:
+            if (lo == loStack)
+                goto layout_done;
+            --lo;
+            break;
+
+        case MARGIN_PER:     // percent
+        case MARGIN_V_PER:   // percent
+            arg = *pc++;
+            if (lo == loStack) {
+                arg = arg * lo->h / 100;
+                lo->y += arg;
+                lo->h -= arg + arg;
+                if (lo->form == LAYOUT_V) {
+                    if (lo->align & BACKWARDS)
+                        lo->nextPos = lo->y;
+                    else
+                        lo->nextPos = lo->y + lo->h;
+                }
+            }
+            if (pc[-2] == MARGIN_V_PER)
+                break;
+            // Fall through...
+
+        case MARGIN_H_PER:   // percent
+            arg = *pc++;
+            if (lo == loStack) {
+                arg = arg * lo->w / 100;
+                lo->x += arg;
+                lo->w -= arg + arg;
+                if (lo->form == LAYOUT_H) {
+                    lo->nextPos = lo->x;
+                    if (lo->align & BACKWARDS)
+                        lo->nextPos += lo->w;
+                }
+            }
+            break;
+
+        case SPACING_PER:    // percent
+            arg = *pc++;
+            lo->spacing = arg *
+                ((lo->form == LAYOUT_H) ? loStack[0].w : loStack[0].h) / 100;
+            break;
+
+        case SPACING_EM:     // font-em-tenth
+            arg = *pc++;
+            lo->spacing = arg * ds.psize / 10;
+            break;
+
+        case FIX_WIDTH_PER:  // percent
+            arg = *pc++;
+            lo->fixedW = arg * loStack[0].w / 100;
+            break;
+
+        case FIX_HEIGHT_PER: // percent
+            arg = *pc++;
+            lo->fixedH = arg * loStack[0].h / 100;
+            break;
+
+        case FIX_WIDTH_EM:   // font-em-tenth
+            arg = *pc++;
+            lo->fixedW = arg * ds.psize / 10;
+            break;
+
+        case FIX_HEIGHT_EM:  // font-em-tenth
+            arg = *pc++;
+            lo->fixedH = arg * ds.psize / 10;
+            break;
+
+        case FROM_BOTTOM:
+        case FROM_RIGHT:
+        case ALIGN_LEFT:
+        case ALIGN_RIGHT:
+        case ALIGN_TOP:
+        case ALIGN_BOTTOM:
+        case ALIGN_H_CENTER:
+        case ALIGN_V_CENTER:
+        case ALIGN_CENTER:
+            break;
+
+        case GAP_PER:        // percent
+            arg = *pc++;
+        {
+            SizeCon* sc = sconStack + lo->nextPos;
+            if (lo->form == LAYOUT_H) {
+                arg = arg * loStack[0].w / 100;
+                sc->minW  += arg;
+                sc->prefW += arg;
+            } else {
+                arg = arg * loStack[0].h / 100;
+                sc->minH  += arg;
+                sc->prefH += arg;
+            }
+        }
+            break;
+
+        // Drawing
+        case FONT_N:         // font-index
+            arg = *pc++;
+            ds.tf = txfArr[arg];
+            break;
+
+        case FONT_SIZE:      // point-size
+            txf_setFontSize(&ds, (float) *pc++);
+            break;
+
+        case BG_COLOR_CI:   // color-index
+            pc++;
+            break;
+
+        // Widgets
+        case BUTTON_DT_S:
+            button_size(scon, &ds, (const uint8_t*) *dp++);
+layout_inc:
+            layout_size(lo, sconStack + lo->nextPos, scon);
+            scon++;
+            break;
+
+        case LABEL_DT_S:
+            label_size(scon, &ds, (const uint8_t*) *dp++);
+            goto layout_inc;
+
+        case LIST_DT_ST:
+            list_size(scon, &ds, (StringTable*) *dp++);
+            goto layout_inc;
+
+        case STORE_DT_AREA:
+            dp++;
+            break;
+        }
+    }
+layout_done:
+
+
+    // Second pass to create widget draw list.
+    RESET_LAYOUT;
 
     attr = gpu_beginTris(xu4.gpu, primList);
-
-#define INIT_LO(lo,type) \
 
     for(;;) {
         switch (*pc++) {
@@ -302,29 +536,12 @@ void gui_layout(int primList, const GuiRect* root, TxfHeader* const* txfArr,
         case LAYOUT_H:
             if (lo == NULL) {
                 lo = loStack;
-                if (root) {
-                    memcpy(&lo->x, root, sizeof(GuiRect));
-                } else {
-                    const ScreenState* ss = screenState();
-                    lo->x = lo->y = 0;
-                    lo->w = ss->displayW;
-                    lo->h = ss->displayH;
-                }
+                gui_setRootArea(lo, root);
             } else {
-                assert(lo != loStack+LO_DEPTH-1);
-                if (lo->form == LAYOUT_H) {
-                    lo[1].x = lo->nextPos;
-                    lo[1].y = lo->y;
-                    lo[1].w = lo->w - lo->nextPos;
-                    lo[1].h = lo->h;
-                } else {
-                    lo[1].x = lo->x;
-                    lo[1].y = lo->y;
-                    lo[1].w = lo->w;
-                    lo[1].h = lo->nextPos - lo->y;
-                }
+                gui_align((GuiRect*) &lo[1].x, lo, scon);
                 ++lo;
             }
+            ++scon;
 
             lo->form = pc[-1];
             lo->nextPos = (lo->form == LAYOUT_H) ? lo->x : lo->y + lo->h;
@@ -384,7 +601,8 @@ void gui_layout(int primList, const GuiRect* root, TxfHeader* const* txfArr,
 
         case SPACING_PER:    // percent
             arg = *pc++;
-            lo->spacing = arg * ((lo->form == LAYOUT_H) ? lo->w : lo->h) / 100;
+            lo->spacing = arg *
+                ((lo->form == LAYOUT_H) ? loStack[0].w : loStack[0].h) / 100;
             break;
 
         case SPACING_EM:     // font-em-tenth
@@ -394,12 +612,22 @@ void gui_layout(int primList, const GuiRect* root, TxfHeader* const* txfArr,
 
         case FIX_WIDTH_PER:  // percent
             arg = *pc++;
-            lo->fixedW = arg * lo->w / 100;
+            lo->fixedW = arg * loStack[0].w / 100;
             break;
 
         case FIX_HEIGHT_PER: // percent
             arg = *pc++;
-            lo->fixedH = arg * lo->h / 100;
+            lo->fixedH = arg * loStack[0].h / 100;
+            break;
+
+        case FIX_WIDTH_EM:   // font-em-tenth
+            arg = *pc++;
+            lo->fixedW = arg * ds.psize / 10;
+            break;
+
+        case FIX_HEIGHT_EM:  // font-em-tenth
+            arg = *pc++;
+            lo->fixedH = arg * ds.psize / 10;
             break;
 
         case FROM_BOTTOM:
@@ -436,13 +664,14 @@ void gui_layout(int primList, const GuiRect* root, TxfHeader* const* txfArr,
             lo->align &= H_MASK;
             break;
 
-        case ALIGN_CENTER: 
+        case ALIGN_CENTER:
             lo->align = 0;
             break;
 
-        case GAP_PER:
+        case GAP_PER:        // percent
             arg = *pc++;
-            arg = arg * ((lo->form == LAYOUT_H) ? lo->w : lo->h) / 100;
+            arg = arg *
+                ((lo->form == LAYOUT_H) ? loStack[0].w : loStack[0].h) / 100;
             if (lo->align & BACKWARDS)
                 lo->nextPos -= arg;
             else
@@ -465,27 +694,27 @@ void gui_layout(int primList, const GuiRect* root, TxfHeader* const* txfArr,
 
         // Widgets
         case BUTTON_DT_S:
-            button_size(&cons, &ds, (const uint8_t*) *data);
-            gui_align(&wbox, lo, &cons);
-            attr = widget_button(attr, &wbox, &cons, &ds,
-                                 (const uint8_t*) *data++);
+            gui_align(&wbox, lo, scon);
+            attr = widget_button(attr, &wbox, scon, &ds,
+                                 (const uint8_t*) *dp++);
+            ++scon;
             break;
 
         case LABEL_DT_S:
-            label_size(&cons, &ds, (const uint8_t*) *data);
-            gui_align(&wbox, lo, &cons);
-            attr = widget_label(attr, &wbox, &ds, (const uint8_t*) *data++);
+            gui_align(&wbox, lo, scon);
+            attr = widget_label(attr, &wbox, &ds, (const uint8_t*) *dp++);
+            ++scon;
             break;
 
         case LIST_DT_ST:
-            list_size(&cons, &ds, (StringTable*) *data);
-            gui_align(&wbox, lo, &cons);
-            attr = widget_list(attr, &wbox, &ds, (StringTable*) *data++);
+            gui_align(&wbox, lo, scon);
+            attr = widget_list(attr, &wbox, &ds, (StringTable*) *dp++);
+            ++scon;
             break;
 
         case STORE_DT_AREA:
             {
-            GuiRect* dst = (GuiRect*) *data++;
+            GuiRect* dst = (GuiRect*) *dp++;
             memcpy(dst, &wbox, sizeof(GuiRect));
             }
             break;
