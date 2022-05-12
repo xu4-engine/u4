@@ -1402,7 +1402,7 @@ void screenPointToMouseArea(int* x, int* y) {
  * The point is in MouseArea coordinates so use screenPointToMouseArea() to
  * map window coordinates.
  */
-int pointInMouseArea(int x, int y, MouseArea *area) {
+int pointInMouseArea(int x, int y, const MouseArea *area) {
     ASSERT(area->npoints == 2 || area->npoints == 3, "unsupported number of points in area: %d", area->npoints);
 
     /* two points define a rectangle */

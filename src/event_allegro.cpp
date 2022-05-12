@@ -15,7 +15,7 @@ static void handleMouseMotionEvent(int x, int y) {
     if (! xu4.settings->mouseOptions.enabled)
         return;
 
-    MouseArea* area = xu4.eventHandler->mouseAreaForPoint(x, y);
+    const MouseArea* area = xu4.eventHandler->mouseAreaForPoint(x, y);
     screenSetMouseCursor(area ? area->cursor : MC_DEFAULT);
 }
 
@@ -33,7 +33,7 @@ static void handleActiveEvent(const ALLEGRO_EVENT* event, updateScreenCallback u
 
 static void handleMouseButtonDownEvent(EventHandler* handler, const ALLEGRO_EVENT* event, Controller *controller, updateScreenCallback updateScreen) {
     static const uint8_t buttonMap[4] = { 0, 0, 2, 1 };
-    MouseArea* area;
+    const MouseArea* area;
     int xu4Button, keyCmd;
 
     if (! xu4.settings->mouseOptions.enabled)

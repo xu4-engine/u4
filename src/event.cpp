@@ -148,9 +148,9 @@ void EventHandler::popKeyHandler() {
     popController();
 }
 
-MouseArea* EventHandler::mouseAreaForPoint(int x, int y) {
+const MouseArea* EventHandler::mouseAreaForPoint(int x, int y) const {
     int i;
-    MouseArea *areas = getMouseAreaSet();
+    const MouseArea *areas = getMouseAreaSet();
 
     if (!areas)
         return NULL;
@@ -561,7 +561,7 @@ void TimedEventMgr::tick() {
         events.remove(*i);
 }
 
-void EventHandler::pushMouseAreaSet(MouseArea *mouseAreas) {
+void EventHandler::pushMouseAreaSet(const MouseArea *mouseAreas) {
     mouseAreaSets.push_front(mouseAreas);
 }
 
@@ -573,7 +573,7 @@ void EventHandler::popMouseAreaSet() {
 /**
  * Get the currently active mouse area set off the top of the stack.
  */
-MouseArea* EventHandler::getMouseAreaSet() const {
+const MouseArea* EventHandler::getMouseAreaSet() const {
     if (mouseAreaSets.size())
         return mouseAreaSets.front();
     else

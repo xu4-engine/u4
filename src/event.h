@@ -207,9 +207,6 @@ typedef void(*updateScreenCallback)(void);
  */
 class EventHandler {
 public:
-    /* Typedefs */
-    typedef std::list<_MouseArea*> MouseAreaList;
-
     /* Constructors */
     EventHandler(int gameCycleDuration, int frameDuration);
     ~EventHandler();
@@ -249,10 +246,10 @@ public:
     void popKeyHandler();
 
     /* Mouse area functions */
-    void pushMouseAreaSet(_MouseArea *mouseAreas);
+    void pushMouseAreaSet(const _MouseArea *mouseAreas);
     void popMouseAreaSet();
-    _MouseArea* getMouseAreaSet() const;
-    _MouseArea* mouseAreaForPoint(int x, int y);
+    const _MouseArea* getMouseAreaSet() const;
+    const _MouseArea* mouseAreaForPoint(int x, int y) const;
 
 #ifdef DEBUG
     bool beginRecording(const char* file, uint32_t seed);
@@ -288,7 +285,7 @@ protected:
     bool ended;
     TimedEventMgr timedEvents;
     std::vector<Controller *> controllers;
-    MouseAreaList mouseAreaSets;
+    std::list<const _MouseArea*> mouseAreaSets;
     updateScreenCallback updateScreen;
 };
 

@@ -146,7 +146,7 @@ void screenDetectDungeonTraps();
 void screenSetMouseCursor(MouseCursor cursor);
 void screenShowMouseCursor(bool visible);
 void screenPointToMouseArea(int* x, int* y);
-int  pointInMouseArea(int x, int y, MouseArea *area);
+int  pointInMouseArea(int x, int y, const MouseArea *area);
 
 const ScreenState* screenState();
 
