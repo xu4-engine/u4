@@ -12,6 +12,7 @@ public:
     virtual bool present();
     virtual void conclude();
     virtual bool keyPressed(int key);
+    virtual bool inputEvent(const InputEvent*);
     //virtual void timerFired();
 
 private:

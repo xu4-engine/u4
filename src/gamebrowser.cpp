@@ -254,3 +254,33 @@ bool GameBrowser::keyPressed(int key)
     }
     return false;
 }
+
+static bool insideArea(const int16_t* rect, int x, int y)
+{
+    if (x < rect[0] || y < rect[1])
+        return false;
+    return (x < (rect[0] + rect[2]) && y < (rect[1] + rect[3]));
+}
+
+bool GameBrowser::inputEvent(const InputEvent* ev)
+{
+    switch (ev->type) {
+        case CIE_MOUSE_PRESS:
+            if (ev->n == CMOUSE_LEFT) {
+                int y = screenState()->displayH - ev->y;
+                if (insideArea(cancelArea, ev->x, y))
+                    keyPressed(U4_ESC);
+                else if (insideArea(okArea, ev->x, y))
+                    keyPressed(U4_ENTER);
+            }
+            break;
+
+        case CIE_MOUSE_WHEEL:
+            if (ev->y < 0)
+                keyPressed(U4_DOWN);
+            else if (ev->y > 0)
+                keyPressed(U4_UP);
+            break;
+    }
+    return true;
+}

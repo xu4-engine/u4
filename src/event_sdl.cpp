@@ -8,48 +8,14 @@
 #include "event.h"
 
 #include "context.h"
-#include "screen.h"
-#include "settings.h"
 #include "xu4.h"
 
 extern bool verbose;
-
-static void handleMouseMotionEvent(const SDL_Event &event) {
-    if (! xu4.settings->mouseOptions.enabled)
-        return;
-
-    MouseArea *area;
-    area = xu4.eventHandler->mouseAreaForPoint(event.button.x, event.button.y);
-    screenSetMouseCursor(area ? area->cursor : MC_DEFAULT);
-}
 
 static void handleActiveEvent(const SDL_Event &event, updateScreenCallback updateScreen) {
     if (event.active.state & SDL_APPACTIVE) {
         // application was previously iconified and is now being restored
         if (event.active.gain) {
-            if (updateScreen)
-                (*updateScreen)();
-        }
-    }
-}
-
-static void handleMouseButtonDownEvent(const SDL_Event &event, Controller *controller, updateScreenCallback updateScreen) {
-    MouseArea* area;
-    int xu4Button, keyCmd;
-
-    if (! xu4.settings->mouseOptions.enabled)
-        return;
-
-    area = xu4.eventHandler->mouseAreaForPoint(event.button.x, event.button.y);
-    if (area) {
-        // Map SDL button to what MouseArea uses.
-        xu4Button = event.button.button - 1;
-        if (xu4Button > 2)
-            xu4Button = 0;
-
-        keyCmd = area->command[xu4Button];
-        if (keyCmd) {
-            controller->keyPressed(keyCmd);
             if (updateScreen)
                 (*updateScreen)();
         }
@@ -117,6 +83,7 @@ static void handleKeyDownEvent(const SDL_Event &event, Controller *controller, u
 void EventHandler::handleInputEvents(Controller* waitCon,
                                      updateScreenCallback update) {
     SDL_Event event;
+    InputEvent ie;
     Controller* controller = waitCon;
 
     while (SDL_PollEvent(&event)) {
@@ -124,18 +91,42 @@ void EventHandler::handleInputEvents(Controller* waitCon,
         default:
             break;
         case SDL_KEYDOWN:
-            if (! waitCon) controller = getController();
+            if (! waitCon)
+                controller = getController();
             handleKeyDownEvent(event, controller, update);
             break;
 
         case SDL_MOUSEBUTTONDOWN:
-            if (! waitCon) controller = getController();
-            handleMouseButtonDownEvent(event, controller, update);
+            ie.type = CIE_MOUSE_PRESS;
+mouse_button:
+            ie.n = event.button.button;
+            ie.x = event.button.x;
+            ie.y = event.button.y;
+mouse_event:
+            ie.state = 0;
+            if (! waitCon)
+                controller = getController();
+            controller->inputEvent(&ie);
+            break;
             break;
 
+        case SDL_MOUSEBUTTONUP:
+            ie.type = CIE_MOUSE_RELEASE;
+            goto mouse_button;
+
+        case SDL_MOUSEWHEEL:
+            ie.type = CIE_MOUSE_WHEEL;
+            ie.n = 0;
+            ie.x = event.wheel.x;
+            ie.y = event.wheel.y;
+            goto mouse_event;
+
         case SDL_MOUSEMOTION:
-            handleMouseMotionEvent(event);
-            break;
+            ie.type = CIE_MOUSE_MOVE;
+            ie.n = 0;
+            ie.x = event.motion.x;
+            ie.y = event.motion.y;
+            goto mouse_event;
 
         case SDL_ACTIVEEVENT:
             handleActiveEvent(event, updateScreen);

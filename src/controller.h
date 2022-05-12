@@ -1,9 +1,31 @@
 /*
- * $Id$
+ * controller.h
  */
 
 #ifndef CONTROLLER_H
 #define CONTROLLER_H
+
+#include <stdint.h>
+
+enum ControllerInputEvent {
+    CIE_MOUSE_MOVE,
+    CIE_MOUSE_PRESS,
+    CIE_MOUSE_RELEASE,
+    CIE_MOUSE_WHEEL
+};
+
+enum ControllerMouseButton {
+    CMOUSE_LEFT = 1,
+    CMOUSE_MIDDLE,
+    CMOUSE_RIGHT
+};
+
+struct InputEvent {
+    uint16_t type;      // ControllerInputEvent
+    uint16_t n;         // Button id
+    uint16_t state;     // Button mask
+    int16_t  x, y;      // Axis value
+};
 
 /**
  * A generic controller base class.  Controllers are classes that
@@ -25,6 +47,7 @@ public:
     virtual bool present();
     virtual void conclude();
     virtual bool keyPressed(int key);
+    virtual bool inputEvent(const InputEvent*);
     virtual void timerFired();
     virtual bool isCombatController() const { return false; }
 

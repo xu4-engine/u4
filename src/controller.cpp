@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * controller.cpp
  */
 
 #include "controller.h"
@@ -50,6 +50,14 @@ void Controller::conclude() {}
  * The base keyPressed method returns true (consumes all key events).
  */
 bool Controller::keyPressed(int key) {
+    return true;
+}
+
+/**
+ * The mouse/joystick input handler for a controller.
+ * The base inputEvent method returns true (consumes all input events).
+ */
+bool Controller::inputEvent(const InputEvent*) {
     return true;
 }
 

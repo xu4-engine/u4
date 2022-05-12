@@ -1443,6 +1443,30 @@ bool GameController::keyPressed(int key) {
     return valid || KeyHandler::defaultHandler(key, NULL);
 }
 
+bool GameController::inputEvent(const InputEvent* ev) {
+    const MouseArea* area;
+
+    if (! xu4.settings->mouseOptions.enabled)
+        return false;
+
+    switch (ev->type) {
+        case CIE_MOUSE_MOVE:
+            area = xu4.eventHandler->mouseAreaForPoint(ev->x, ev->y);
+            screenSetMouseCursor(area ? area->cursor : MC_DEFAULT);
+            break;
+
+        case CIE_MOUSE_PRESS:
+            area = xu4.eventHandler->mouseAreaForPoint(ev->x, ev->y);
+            if (area && ev->n < 4) {
+                int keyCmd = area->command[ev->n - 1];
+                if (keyCmd)
+                    keyPressed(keyCmd);
+            }
+            break;
+    }
+    return true;
+}
+
 string gameGetInput(int maxlen) {
     screenEnableCursor();
     screenShowCursor();
