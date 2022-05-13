@@ -665,6 +665,7 @@ process-cfg [
             'at   set pos  coord!
           | 'size set size coord!
           | word! coord! (do emit-name append out second tok)
+          | 'image-width set width int!
           | word! int! (
               frames: second tok
               do emit-name append out to-coord [pos size frames]
@@ -679,6 +680,39 @@ process-cfg [
               do next-tile
             )
         ]]
+    ]
+
+    process-img: func [name at subimages] [
+        fname: at/filename
+        either eq? ".png" file-ext fname [
+            fname: copy pack-png image-path fname
+            ftype: 'png
+        ][
+            ftype: at/filetype
+        ]
+
+        appair img-blk mark-sol name fname
+        appair img-blk to-coord reduce [
+            none-neg1 at/width
+            none-neg1 at/height
+            none-neg1 at/depth
+        ] to-coord reduce [
+            enum-value [
+                none png u4raw u4rle u4lzw
+                u5lzw fmtowns fmtowns-pic fmtowns-tif
+            ] ftype
+            ; Skip name which can be 'tiles (assuming name is first).
+            none-zero select skip at 2 'tiles
+            enum-value [
+                none intro abyss abacus dungns transparent0
+                blackTransparencyHack fmtownsscreen
+            ] at/fixup
+        ]
+
+        if block? subimages [
+            append/block img-blk make block! 8
+            layout-subimages subimages last img-blk at/width
+        ]
     ]
 
     image-path: join root-path %image/
@@ -697,41 +731,16 @@ process-cfg [
             append/block blk img-blk: make block! 0
         ) into [some [
             'image set at paren! tok: opt block! (
-                fname: at/filename
-                either eq? ".png" file-ext fname [
-                    fname: copy pack-png image-path fname
-                    ftype: 'png
-                ][
-                    ftype: at/filetype
-                ]
-
-                appair img-blk mark-sol at/name fname
-                appair img-blk to-coord reduce [
-                    none-neg1 at/width
-                    none-neg1 at/height
-                    none-neg1 at/depth
-                ] to-coord reduce [
-                    enum-value [
-                        none png u4raw u4rle u4lzw
-                        u5lzw fmtowns fmtowns-pic fmtowns-tif
-                    ] ftype
-                    ; Skip name which can be 'tiles (assuming name is first).
-                    none-zero select skip at 2 'tiles
-                    enum-value [
-                        none intro abyss abacus dungns transparent0
-                        blackTransparencyHack fmtownsscreen
-                    ] at/fixup
-                ]
-
-                if block? first tok [
-                    append/block img-blk make block! 8
-                    layout-subimages first tok last img-blk at/width
-                ]
+                process-img at/name at first tok
             )
           | tok: set-word! 'atlas coord! block! (
                 appair img-blk mark-sol to-word first tok 'atlas
                 append img-blk third tok
                 append/block img-blk pick tok 4
+            )
+          | set-word! string! opt block! (
+                poke tmp-attr: [filename: none] 2 second tok
+                process-img to-word first tok tmp-attr third tok
             )
         ]]
       | 'tileanimset set name word! (
