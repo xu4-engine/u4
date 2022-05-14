@@ -1579,9 +1579,9 @@ static ImageSet* loadImageSet(const ConfigBoron* cfg, UBlockIt& bi) {
         dup = set->info.find(info->name);
         if (dup != set->info.end()) {
             delete dup->second;
-            set->info.erase(dup);
-        }
-        set->info[info->name] = info;
+            dup->second = info;
+        } else
+            set->info[info->name] = info;
     }
 
     return set;
