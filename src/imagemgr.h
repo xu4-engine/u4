@@ -177,15 +177,10 @@ public:
     std::map<Symbol, int> subImageIndex;
 };
 
-class Debug;
-class Settings;
-
 class ImageSet {
 public:
     ~ImageSet();
 
-    Symbol name;
-    Symbol extends;
     std::map<Symbol, ImageInfo *> info;
 };
 
@@ -213,8 +208,6 @@ private:
     const SubImage* getSubImage(Symbol name, ImageInfo** infoPtr);
     ImageInfo* load(ImageInfo* info);
     U4FILE * getImageFile(ImageInfo *info);
-    ImageSet* scheme(Symbol setname);
-    ImageInfo* getInfoFromSet(Symbol name, ImageSet *set);
 
     void fixupIntro(Image *im);
     void fixupAbyssVision(Image32*);
@@ -223,13 +216,10 @@ private:
     void fixupDungNS(Image *im);
     void fixupFMTowns(Image *im);
 
-    std::map<Symbol, ImageSet *> imageSets;
     ImageSet *baseSet;
     RGBA* vgaColors;
     RGBA* greyColors;
     uint8_t* visionBuf;
-    Debug *logger;
-    int listenerId;
     uint16_t resGroup;
 };
 

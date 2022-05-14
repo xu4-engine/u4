@@ -110,7 +110,6 @@ public:
     ~TileAnimSet();
     TileAnim* getByName(Symbol name) const;
 
-    Symbol name;
     TileAnimMap tileanims;
 };
 

@@ -149,10 +149,6 @@ static void screenInit_data(Screen* scr, Settings& settings) {
     scr->blockingUpdate = NULL;
 #endif
 
-    /* If we can't use VGA graphics then reset to EGA. */
-    if (! u4isUpgradeAvailable() && settings.videoType == "VGA")
-        settings.videoType = "EGA";
-
     // Create a special purpose image that represents the whole screen.
     xu4.screenImage = Image::create(320, 200);
     xu4.screenImage->fill(Image::black);
@@ -187,9 +183,9 @@ static void screenInit_data(Screen* scr, Settings& settings) {
 #endif
 
     assert(scr->state.tileanims == NULL);
-    scr->state.tileanims = xu4.config->newTileAnims(settings.videoType.c_str());
+    scr->state.tileanims = xu4.config->newTileAnims();
     if (! scr->state.tileanims)
-        errorFatal("Unable to find \"%s\" tile animations", settings.videoType.c_str());
+        errorFatal("Unable to find tile animations");
 
     scr->gemTilesInfo = NULL;
     screenLoadLayoutsFromConf(scr);

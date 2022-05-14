@@ -38,8 +38,6 @@ bool SettingsData::operator==(const SettingsData &s) const {
 
     if (gemLayout != s.gemLayout)
         return false;
-    if (videoType != s.videoType)
-        return false;
     if (logging != s.logging)
         return false;
     if (game != s.game)
@@ -202,7 +200,6 @@ bool Settings::read() {
     scale                 = DEFAULT_SCALE;
     fullscreen            = DEFAULT_FULLSCREEN;
     filter                = DEFAULT_FILTER;
-    videoType             = DEFAULT_VIDEO_TYPE;
     gemLayout             = DEFAULT_GEM_LAYOUT;
     lineOfSight           = DEFAULT_LINEOFSIGHT;
     screenShakes          = DEFAULT_SCREEN_SHAKES;
@@ -279,7 +276,7 @@ bool Settings::read() {
         else if (VALUE("lineOfSight="))
             lineOfSight = settingEnum(screenGetLineOfSightStyles(), val);
         else if (VALUE("video="))
-            videoType = val;
+            ;                               // Removed in v1.1.
         else if (VALUE("gemLayout="))
             gemLayout = val;
         else if (VALUE("screenShakes="))
@@ -393,7 +390,6 @@ bool Settings::write() {
             "scale=%d\n"
             "fullscreen=%d\n"
             "filter=%s\n"
-            "video=%s\n"
             "gemLayout=%s\n"
             "lineOfSight=%s\n"
             "screenShakes=%d\n"
@@ -420,7 +416,6 @@ bool Settings::write() {
             scale,
             fullscreen,
             screenGetFilterNames()[ filter ],
-            videoType.c_str(),
             gemLayout.c_str(),
             screenGetLineOfSightStyles()[ lineOfSight ],
             screenShakes,

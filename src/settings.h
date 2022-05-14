@@ -28,11 +28,6 @@
 // 0 = DOS
 #define DEFAULT_LINEOFSIGHT             0
 
-#ifndef IOS
-#define DEFAULT_VIDEO_TYPE              "VGA"
-#else
-#define DEFAULT_VIDEO_TYPE              "new"
-#endif
 #define DEFAULT_GEM_LAYOUT              "Standard"
 #define DEFAULT_SCREEN_SHAKES           1
 #define DEFAULT_GAMMA                   100
@@ -146,7 +141,7 @@ public:
     long                end_of_bitwise_comparators;
 
     std::string         gemLayout;      // Defined by Config
-    std::string         videoType;      // Defined by Config
+    std::string         videoType;      // Removed in v1.1 (now auto assigned)
     std::string         logging;        // Used by Debug
     std::string         game;
 };

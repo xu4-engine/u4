@@ -69,9 +69,8 @@ public:
     const char* musicFile( uint32_t id );
     const char* soundFile( uint32_t id );
 #endif
-    const char** schemeNames();
-    ImageSet* newScheme( uint32_t id );
-    TileAnimSet* newTileAnims(const char* name) const;
+    ImageSet* newImageSet() const;
+    TileAnimSet* newTileAnims() const;
     const Armor*  armor( uint32_t id );
     const Weapon* weapon( uint32_t id );
     int armorType( const char* name );

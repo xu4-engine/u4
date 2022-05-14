@@ -232,6 +232,7 @@ img_id: "IM^0^0"
 tmx_id: "MA^0^0"
 npc_id: "NC^0^0"
 file_buf: make binary! 4096
+module-layer: 0
 
 poke-id: func [id n] [
 	poke id 3 div n 256
@@ -240,7 +241,7 @@ poke-id: func [id n] [
 
 ; Return app_id of PNG chunk.
 pack-png: func [path filename] [
-	poke-id img_id file-id filename
+	poke-id img_id add file-id filename module-layer
 
 	ifn file-id-seen [
 		cdi-chunk 0x1002 img_id read/into join path filename file_buf
@@ -381,6 +382,7 @@ cfg: make context [
 	weapons:
 	creatures:
 	graphics:
+	tileanim:
 	layouts:
 	maps:
 	tile-rules:
@@ -392,6 +394,13 @@ cfg: make context [
 	ega-palette:
 		none
 ] load config-file
+
+ifn rules: modi/rules [
+	error "Missing module/rules"
+]
+if all [string? rules find rules '/'] [
+	module-layer: 0x2000
+]
 
 foreach file includes [
 	do bind load join root-path file cfg
@@ -516,6 +525,7 @@ emit-attr-block: func [blk src transform /extern dest it] [
 	]
 ]
 
+transforms: make binary! 512
 current-trans: none
 new-transform: func [type data /extern current-trans] [
 	current-trans: tail transforms
@@ -691,8 +701,8 @@ process-cfg [
 			ftype: at/filetype
 		]
 
-		appair img-blk mark-sol name fname
-		appair img-blk to-coord reduce [
+		appair blk mark-sol name fname
+		appair blk to-coord reduce [
 			none-neg1 at/width
 			none-neg1 at/height
 			none-neg1 at/depth
@@ -709,9 +719,11 @@ process-cfg [
 			] at/fixup
 		]
 
-		if block? subimages [
-			append/block img-blk make block! 8
-			layout-subimages subimages last img-blk at/width
+		either block? subimages [
+			append/block blk make block! 8
+			layout-subimages subimages last blk at/width
+		][
+			append blk none
 		]
 	]
 
@@ -719,72 +731,64 @@ process-cfg [
 	n: 0
 
 	process-blk graphics [
-		'imageset set name word!/path! (
-			either word? name [
-				extends: none
-			][
-				extends: first name
-				name: second name
+		'image set at paren! tok: opt block! (
+			process-img at/name at first tok
+		)
+	  | tok: set-word! 'atlas coord! block! (
+			append blk reduce [
+				mark-sol to-word first tok
+				'atlas
+				third tok
+				pick tok 4
+				none
 			]
-			appair blk mark-sol 'imageset name
-			append blk extends
-			append/block blk img-blk: make block! 0
+		)
+	  | set-word! string! opt block! (
+			poke tmp-attr: [filename: none] 2 second tok
+			process-img to-word first tok tmp-attr third tok
+		)
+	]
+
+	process-blk tileanim [
+		tok: set-word! (
+			aspec: second tok
+			anim-chance: 0
+			if eq? 'random first aspec [anim-chance: second aspec]
+
+			appair blk
+				to-word first tok
+				to-coord reduce [
+					div size? transforms 20	 ; sizeof(TileAnimTransform)
+					anim-chance
+				]
+			current-trans: none
 		) into [some [
-			'image set at paren! tok: opt block! (
-				process-img at/name at first tok
+			'random set n int! (
+				; Ignore initial 'random as it is handled above.
+				if current-trans [poke current-trans 2 n]
 			)
-		  | tok: set-word! 'atlas coord! block! (
-				appair img-blk mark-sol to-word first tok 'atlas
-				append img-blk third tok
-				append/block img-blk pick tok 4
-			)
-		  | set-word! string! opt block! (
-				poke tmp-attr: [filename: none] 2 second tok
-				process-img to-word first tok tmp-attr third tok
+		  | 'invert set n coord!	  (new-transform 0 n)
+		  | 'scroll set n int!/coord! (new-transform 1 n)
+		  | 'frame					  (new-transform 2 0)
+		  | 'pixel_color set n coord! (new-transform 3 n) into [
+				set colA coord! set colB coord! (
+					n: 13
+					foreach chan reduce [
+						first colA second colA third colA 0
+						first colB second colB third colB 0
+					][
+						poke current-trans ++ n chan
+					]
+				)
+			]
+		  | 'context-frame set n int! (
+				poke current-trans 3 1  ; ACON_FRAME
+				poke current-trans 4 n
 			)
 		]]
-	  | 'tileanimset set name word! (
-			appair blk mark-sol 'tileanims name
-			anim-dict: make block! 8
-			transforms: make binary! 512
-		) into [some [
-			tok: set-word! (
-				aspec: second tok
-				anim-chance: 0
-				if eq? 'random first aspec [anim-chance: second aspec]
-
-				appair anim-dict
-					to-word first tok
-					to-coord reduce [
-						div size? transforms 20	 ; sizeof(TileAnimTransform)
-						anim-chance
-					]
-				current-trans: none
-			) into [some [
-				'random set n int! (
-					; Ignore initial 'random as it is handled above.
-					if current-trans [poke current-trans 2 n]
-				)
-			  | 'invert set n coord!	  (new-transform 0 n)
-			  | 'scroll set n int!/coord! (new-transform 1 n)
-			  | 'frame					  (new-transform 2 0)
-			  | 'pixel_color set n coord! (new-transform 3 n) into [
-					set colA coord! set colB coord! (
-						n: 13
-						foreach chan reduce [
-							first colA second colA third colA 0
-							first colB second colB third colB 0
-						][
-							poke current-trans ++ n chan
-						]
-					)
-				]
-			  | 'context-frame set n int! (
-					poke current-trans 3 1  ; ACON_FRAME
-					poke current-trans 4 n
-				)
-			]]
-		]] (append/block blk append anim-dict mark-sol transforms)
+	]
+	ifn empty? transforms [
+		append blk mark-sol transforms
 	]
 
 	process-blk tile-rules [
