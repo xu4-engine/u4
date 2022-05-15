@@ -55,7 +55,7 @@ windows)
 		FN=`readlink -f ${SDK_DIR}/allegro-faun-dll.tar.bz2`
 		tar xf $FN -C ${ARC_DIR}
 		cp /tmp/xu4.exe-$TIME ${ARC_DIR}/xu4.exe
-		cp render.pak Ultima-IV.mod ${ARC_DIR}
+		cp render.pak Ultima-IV.mod U4-Upgrade.mod ${ARC_DIR}
 		cp COPYING ${ARC_DIR}/COPYING.txt
 		cp README.md ${ARC_DIR}/README.txt
 		cd ${ARC_DIR%/*}; zip -r xu4-win32.zip ${ARC_DIR##*/}
@@ -84,7 +84,7 @@ linux)
 	if [ "$2" != "-b" ]; then
 		clean_dir ${ARC_DIR}
 		cp /tmp/xu4-$TIME ${ARC_DIR}/xu4
-		cp render.pak Ultima-IV.mod COPYING dist/setup ${ARC_DIR}
+		cp render.pak Ultima-IV.mod U4-Upgrade.mod COPYING dist/setup ${ARC_DIR}
 		cp README.md ${ARC_DIR}/README
 		cp dist/README.linux-dr ${ARC_DIR}/README-Linux
         mkdir ${ARC_DIR}/desktop
