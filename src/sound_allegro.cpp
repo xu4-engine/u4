@@ -178,12 +178,14 @@ void soundDelete(void)
 
 #ifdef CONF_MODULE
 static const char* audioExt(const CDIEntry* entry) {
-    switch (entry->cdi) {
-        case DA7A_AUDIO_WAVE:
+    // NOTE: Using CDI_MASK_FORMAT since mod_addLayer() changes the 0xDA byte.
+
+    switch (entry->cdi & CDI_MASK_FORMAT) {
+        case DA7A_AUDIO_WAVE & CDI_MASK_FORMAT:
             return ".wav";
-        case DA7A_AUDIO_MP3:
+        case DA7A_AUDIO_MP3 & CDI_MASK_FORMAT:
             return ".mp3";
-        case DA7A_AUDIO_OGG_VORBIS:
+        case DA7A_AUDIO_OGG_VORBIS & CDI_MASK_FORMAT:
             return ".ogg";
     }
     return NULL;
