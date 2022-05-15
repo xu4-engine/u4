@@ -39,6 +39,7 @@ enum ConfigValues
     CI_WEAPONS,
     CI_CREATURES,
     CI_GRAPHICS,
+    CI_DRAW_LISTS,
     CI_TILEANIM,
     CI_LAYOUTS,
     CI_MAPS,
@@ -1602,6 +1603,71 @@ ImageSet* Config::newImageSet() const {
     }
 
     return set;
+}
+
+extern float* gpu_emitQuad(float* attr, const float*, const float*);
+
+/*
+ * \param plen  Set to number of floats in draw list.
+ *
+ * Return vertex attribute array which caller must free().
+ */
+float* Config::newDrawList(Symbol name, int* plen) const {
+    UBlockIt bi;
+    UBlockIt ai;
+    float* attrBuf;
+    float* attr;
+    float texW, texH, refW, refH;
+    float drawRect[4];
+    float uvRect[4];
+    int refHi;
+    size_t len;
+    const int entryLen = 3;     // word! coord! block!
+
+    if (CX->blockIt(&bi, CI_DRAW_LISTS)) {
+        const int16_t* cv;
+        const ScreenState* ss = screenState();
+        while (bi.it != bi.end) {
+            if (ur_atom(bi.it) == name) {
+                if (! ur_is(bi.it+2, UT_BLOCK))
+                    return NULL;
+
+                ++bi.it;
+                cv = bi.it->coord.n;
+                refHi = cv[3];
+                texW = (float) cv[0];
+                texH = (float) cv[1];
+                refW = ss->aspectW / (float) cv[2];
+                refH = ss->aspectH / (float) refHi;
+
+                ++bi.it;
+                ur_blockIt(CX->ut, &ai, bi.it);
+                len = (ai.end - ai.it) * 7 * 6;
+                attr = attrBuf = (float*) malloc(len * sizeof(float));
+
+                ur_foreach(ai) {
+                    cv = ai.it->coord.n;
+
+                    drawRect[0] = refW * cv[4];
+                    drawRect[1] = refH * float(refHi - cv[5] - cv[3]);
+                    drawRect[2] = refW * cv[2];
+                    drawRect[3] = refH * cv[3];
+
+                    uvRect[0] = (0.5f + cv[0]) / texW;
+                    uvRect[1] = (0.5f + cv[1]) / texH;
+                    uvRect[2] = (float(cv[0] + cv[2]) - 0.5f) / texW;
+                    uvRect[3] = (float(cv[1] + cv[3]) - 0.5f) / texH;
+
+                    attr = gpu_emitQuad(attr, drawRect, uvRect);
+                }
+
+                *plen = len;
+                return attrBuf;
+            }
+            bi.it += entryLen;
+        }
+    }
+    return NULL;
 }
 
 static void conf_loadTileAnimSet(const ConfigBoron* cfg, TileAnimSet* tas,

@@ -15,6 +15,8 @@
 enum GLObject {
     GLOB_GUI_LIST0,
     GLOB_GUI_LIST1,
+    GLOB_HUD_LIST0,
+    GLOB_HUD_LIST1,
 #ifdef GPU_RENDER
     GLOB_DRAW_LIST0,
     GLOB_DRAW_LIST1,
@@ -99,7 +101,7 @@ struct OpenGLResources {
     GLuint tilesMat;            // Managed by user.
     float  tilesVDim;
     float  time;
-    DrawList dl[4];
+    DrawList dl[5];
     float* dptr;
     const TileId* mapData;
     const TileRenderData* renderData;
@@ -112,7 +114,7 @@ struct OpenGLResources {
     uint16_t mapChunkFxUsed[4];
     MapFx mapChunkFx[4*CHUNK_FX_LIMIT];
 #else
-    DrawList dl[1];
+    DrawList dl[2];
     float* dptr;
 #endif
 };

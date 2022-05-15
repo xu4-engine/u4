@@ -382,6 +382,7 @@ cfg: make context [
 	weapons:
 	creatures:
 	graphics:
+	draw-lists:
 	tileanim:
 	layouts:
 	maps:
@@ -509,6 +510,18 @@ process-blk: func ['data rules /extern blk] [
 		fatal config join "Invalid " data
 	]
 	set data blk
+]
+
+/*
+  Parse data block! with rules but keep the data.
+*/
+process-minimal: func ['data rules] [
+	ifn orig: get data [return none]
+
+	ifn parse orig [some rules] [
+		fatal config join "Invalid " data
+	]
+	orig
 ]
 
 /*
@@ -746,6 +759,13 @@ process-cfg [
 	  | set-word! string! opt block! (
 			poke tmp-attr: [filename: none] 2 second tok
 			process-img to-word first tok tmp-attr third tok
+		)
+	]
+
+	; Use draw-lists as is except remove any string! from quads block.
+	process-minimal draw-lists [
+		word! coord! tok: block! (
+			poke tok 1 collect coord! first tok
 		)
 	]
 

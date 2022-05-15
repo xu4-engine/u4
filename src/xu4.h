@@ -18,6 +18,7 @@ enum NotifySender {
 enum DrawLayer {
     LAYER_CPU_BLIT,     // For legacy screenImage rendering.
     LAYER_MAP,          // When GPU_RENDER defined.
+    LAYER_HUD,          // Borders and status GUI.
     LAYER_TOP_MENU,     // GameBrowser
 
     LAYER_COUNT

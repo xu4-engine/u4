@@ -396,13 +396,15 @@ const char* gpu_init(void* res, int w, int h, int scale, int filter)
 
     gr->dl[0].buf = GLOB_GUI_LIST0;
     gr->dl[0].byteSize = ATTR_STRIDE * 6 * 400;
-#ifdef GPU_RENDER
-    gr->dl[1].buf = GLOB_DRAW_LIST0;
+    gr->dl[1].buf = GLOB_HUD_LIST0;
     gr->dl[1].byteSize = ATTR_STRIDE * 6 * 400;
-    gr->dl[2].buf = GLOB_FX_LIST0;
-    gr->dl[2].byteSize = ATTR_STRIDE * 6 * 20;
-    gr->dl[3].buf = GLOB_MAPFX_LIST0;
-    gr->dl[3].byteSize = ATTR_STRIDE * 6 * 8;
+#ifdef GPU_RENDER
+    gr->dl[2].buf = GLOB_DRAW_LIST0;
+    gr->dl[2].byteSize = ATTR_STRIDE * 6 * 400;
+    gr->dl[3].buf = GLOB_FX_LIST0;
+    gr->dl[3].byteSize = ATTR_STRIDE * 6 * 20;
+    gr->dl[4].buf = GLOB_MAPFX_LIST0;
+    gr->dl[4].byteSize = ATTR_STRIDE * 6 * 8;
 #endif
 
 #ifdef DEBUG_GL
@@ -565,10 +567,11 @@ const char* gpu_init(void* res, int w, int h, int scale, int filter)
 
     // Reserve space in the double-buffered draw lists.
     reserveDrawList(gr->vbo + GLOB_GUI_LIST0, gr->dl[0].byteSize);
+    reserveDrawList(gr->vbo + GLOB_HUD_LIST0, gr->dl[1].byteSize);
 #ifdef GPU_RENDER
-    reserveDrawList(gr->vbo + GLOB_DRAW_LIST0, gr->dl[1].byteSize);
-    reserveDrawList(gr->vbo + GLOB_FX_LIST0,   gr->dl[2].byteSize);
-    reserveDrawList(gr->vbo + GLOB_MAPFX_LIST0,gr->dl[3].byteSize);
+    reserveDrawList(gr->vbo + GLOB_DRAW_LIST0, gr->dl[2].byteSize);
+    reserveDrawList(gr->vbo + GLOB_FX_LIST0,   gr->dl[3].byteSize);
+    reserveDrawList(gr->vbo + GLOB_MAPFX_LIST0,gr->dl[4].byteSize);
 #endif
 
     // Create quad geometry.

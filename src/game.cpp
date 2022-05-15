@@ -13,6 +13,8 @@
 #include "death.h"
 #include "debug.h"
 #include "error.h"
+#include "image32.h"
+#include "gpu.h"
 #include "intro.h"
 #include "item.h"
 #include "imagemgr.h"
@@ -137,7 +139,9 @@ int AlphaActionController::get(char lastValidLetter, const string &prompt, Event
 
 GameController::GameController() : TurnController(1),
     mapArea(BORDER_WIDTH, BORDER_HEIGHT, VIEWPORT_W, VIEWPORT_H),
-    cutScene(false)
+    cutScene(false),
+    borderAttr(NULL),
+    borderAttrLen(0)
 {
     gs_listen(1<<SENDER_LOCATION | 1<<SENDER_PARTY, gameNotice, this);
 
@@ -151,6 +155,8 @@ GameController::GameController() : TurnController(1),
 GameController::~GameController() {
     discourse_free(&vendorDisc);
     discourse_free(&castleDisc);
+
+    free(borderAttr);
 
     delete c;
     c = NULL;
@@ -169,15 +175,40 @@ bool GameController::present() {
 }
 
 void GameController::conclude() {
+    if (borderAttr)
+        screenSetLayer(LAYER_HUD, NULL, NULL);
     mapArea.clear();
     xu4.eventHandler->popMouseAreaSet();
     screenSetMouseCursor(MC_DEFAULT);
 }
 
+#define HUD_LIST    1
+
+void GameController::renderHud(ScreenState* ss, void* data)
+{
+    //GameController* gc = (GameController*) data;
+
+    gpu_drawGui(xu4.gpu, HUD_LIST, 0 /*gc->fontTexture*/);
+}
+
 void GameController::initScreenWithoutReloadingState()
 {
     musicPlayLocale();
-    xu4.imageMgr->get(BKGD_BORDERS)->image->draw(0, 0);
+
+    borderAttr = xu4.config->newDrawList(BKGD_BORDERS, &borderAttrLen);
+    if (borderAttr) {
+        float* attr = gpu_beginTris(xu4.gpu, HUD_LIST);
+        if (attr) {
+            memcpy(attr, borderAttr, borderAttrLen * sizeof(float));
+            gpu_endTris(xu4.gpu, HUD_LIST, attr + borderAttrLen);
+        }
+
+        screenSetLayer(LAYER_HUD, renderHud, this);
+    } else {
+        ImageInfo* info = xu4.imageMgr->get(BKGD_BORDERS);
+        info->image->draw(0, 0);
+    }
+
     c->stats->update(); /* draw the party stats */
 
     screenEnableCursor();

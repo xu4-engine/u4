@@ -71,6 +71,7 @@ public:
 #endif
     ImageSet* newImageSet() const;
     TileAnimSet* newTileAnims() const;
+    float* newDrawList(Symbol name, int* plen) const;
     const Armor*  armor( uint32_t id );
     const Weapon* weapon( uint32_t id );
     int armorType( const char* name );
