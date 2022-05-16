@@ -113,7 +113,7 @@ struct ConfigData
 };
 
 struct ConfigBoron : public Config {
-    ConfigBoron(const char* renderPath, const char* modulePath);
+    ConfigBoron(const char* renderPath, const char* modulePath, const char*);
     ~ConfigBoron();
     const UBuffer* buffer(int value, int dataType) const;
     const UBuffer* blockIt(UBlockIt* bi, int value) const;
@@ -939,7 +939,8 @@ static const char* confLoader(FILE* fp, const CDIEntry* ent, void* user)
     return NULL;
 }
 
-ConfigBoron::ConfigBoron(const char* renderPath, const char* modulePath)
+ConfigBoron::ConfigBoron(const char* renderPath, const char* modulePath,
+                         const char* musicPath)
 {
     UBlockIt bi;
     const char* error = NULL;
@@ -961,10 +962,10 @@ ConfigBoron::ConfigBoron(const char* renderPath, const char* modulePath)
     ur_internAtoms(ut, "hit_flash miss_flash random shrine abyss"
                        " imageset tileanims _cel rect", &sym_hitFlash);
 
-    mod_init(&mod, 3);
+    mod_init(&mod, 4);
     configN = UR_INVALID_BUF;
 
-    if (renderPath) {
+    if (renderPath && renderPath[0]) {
         error = mod_addLayer(&mod, renderPath, NULL, NULL, NULL);
         if (error)
             errorFatal("%s (%s)", error, renderPath);
@@ -973,6 +974,12 @@ ConfigBoron::ConfigBoron(const char* renderPath, const char* modulePath)
     error = mod_addLayer(&mod, modulePath, NULL, confLoader, this);
     if (error)
         errorFatal("%s (%s)", error, modulePath);
+
+    if (musicPath && musicPath[0]) {
+        error = mod_addLayer(&mod, musicPath, NULL, NULL, NULL);
+        if (error)
+            errorFatal("%s (%s)", error, musicPath);
+    }
 
     npcTalk_init(&xcd.talk, ut);
 
@@ -1119,7 +1126,7 @@ ConfigBoron::~ConfigBoron()
 extern "C" int u4find_pathc(const char*, const char*, char*, size_t);
 
 // Create Config service.
-Config* configInit(const char* module) {
+Config* configInit(const char* module, const char* soundtrack) {
     const char* ext;
     char rpath[512];
     char mpath[512];
@@ -1131,7 +1138,7 @@ Config* configInit(const char* module) {
     if (! u4find_pathc(module, ext, mpath, sizeof(mpath)))
         errorFatal("Cannot find module %s", module);
 
-    return new ConfigBoron(renderFound ? rpath : NULL, mpath);
+    return new ConfigBoron(renderFound ? rpath : NULL, mpath, soundtrack);
 }
 
 void configFree(Config* conf) {

@@ -38,8 +38,18 @@ fatal: func ['code msg] [
 	] code
 ]
 
+path-slash: charset "/\"
+basename: func [path] [
+	if pos: find/last path path-slash [return next pos]
+	path
+]
+
 ifn module-file [
-	module-file: join last split root-path '/' either file-package %.pak %.mod
+	module-file: join last split root-path path-slash
+					either file-package %.pak %.mod
+]
+if gt? size? basename module-file 39 [
+	fatal config "Module filename must be less than 40 characters"
 ]
 
 enum-value: func [list val] [

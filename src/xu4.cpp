@@ -255,8 +255,8 @@ void servicesInit(XU4GameServices* gs, Options* opt) {
 
     Debug::initGlobal("debug/global.txt");
 
-    gs->config = configInit(opt->module ? opt->module
-                                        : gs->settings->game.c_str());
+    gs->config = configInit(opt->module ? opt->module : gs->settings->game,
+                            gs->settings->soundtrack);
     screenInit(LAYER_COUNT);
     Tile::initSymbols(gs->config);
 
@@ -325,15 +325,16 @@ static void servicesFree(XU4GameServices* gs) {
 static void servicesReset(XU4GameServices* gs) {
     servicesFreeGame(gs);
 
-    gs->config = configInit(gs->settings->game.c_str());
+    const Settings* settings = gs->settings;
+    gs->config = configInit(settings->game, settings->soundtrack);
     screenInit(LAYER_COUNT);
     Tile::initSymbols(gs->config);
 
     soundInit();
 
     gs->eventHandler = new EventHandler(
-                        1000/gs->settings->gameCyclesPerSecond,
-                        1000/gs->settings->screenAnimationFramesPerSecond);
+                        1000/settings->gameCyclesPerSecond,
+                        1000/settings->screenAnimationFramesPerSecond);
 
     uint32_t seed = time(NULL);
     xu4_srandom(seed);

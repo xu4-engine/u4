@@ -129,12 +129,8 @@ public:
     uint8_t             battleDiff;     // Used by Creature
     uint8_t             filter;         // Defined by screen
     uint8_t             lineOfSight;    // Defined by screen
-
-#if 0
-    //Settings that aren't in file yet
-    int                 pauseForEachTurn;
-    int                 pauseForEachMovement;
-#endif
+    char game[40];
+    char soundtrack[40];
 
     /**
      * Strings, classes, and other objects that cannot
@@ -146,7 +142,6 @@ public:
 
     std::string         gemLayout;      // Defined by Config
     std::string         logging;        // Used by Debug
-    std::string         game;
 };
 
 /**
@@ -160,6 +155,8 @@ public:
 
     void init(const char* profileName);
     void setData(const SettingsData &data);
+    void setGame(const char* modName);
+    void setSoundtrack(const char* modName);
     bool write();
     const std::string &getUserPath() const { return userPath; }
 

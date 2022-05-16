@@ -40,8 +40,6 @@ bool SettingsData::operator==(const SettingsData &s) const {
         return false;
     if (logging != s.logging)
         return false;
-    if (game != s.game)
-        return false;
 
     return true;
 }
@@ -131,6 +129,20 @@ void Settings::init(const char* profileName) {
 void Settings::setData(const SettingsData &data) {
     // bitwise copy is safe
     *(SettingsData *)this = data;
+}
+
+static void setStringZ(char* dst, const char* src, size_t bufSize) {
+    size_t len = strlen(src);
+    memcpy(dst, src, len);
+    memset(dst + len, 0, bufSize - len);
+}
+
+void Settings::setGame(const char* modName) {
+    setStringZ(game, modName, sizeof(game));
+}
+
+void Settings::setSoundtrack(const char* modName) {
+    setStringZ(soundtrack, modName, sizeof(soundtrack));
 }
 
 /*
@@ -252,7 +264,8 @@ bool Settings::read() {
     mouseOptions.enabled = 1;
 
     logging = DEFAULT_LOGGING;
-    game = "Ultima-IV";
+    setGame("Ultima-IV");
+    setSoundtrack("");
 
     settingsFile = fopen(filename.c_str(), "rt");
     if (!settingsFile)
@@ -356,7 +369,9 @@ bool Settings::read() {
         else if (VALUE("logging="))
             logging = val;
         else if (VALUE("game="))
-            game = val;
+            setGame(val);
+        else if (VALUE("soundtrack="))
+            setSoundtrack(val);
 
         /* graphics enhancements options */
         else if (VALUE("renderTileTransparency="))
@@ -457,6 +472,7 @@ bool Settings::write() {
             "mouseEnabled=%d\n"
             "logging=%s\n"
             "game=%s\n"
+            "soundtrack=%s\n"
             "renderTileTransparency=%d\n"
             "transparentTilePixelShadowOpacity=%d\n"
             "transparentTileShadowSize=%d\n",
@@ -474,7 +490,8 @@ bool Settings::write() {
             campingAlwaysCombat,
             mouseOptions.enabled,
             logging.c_str(),
-            game.c_str(),
+            game,
+            soundtrack,
             enhancementsOptions.u4TileTransparencyHack,
             enhancementsOptions.u4TileTransparencyHackPixelShadowOpacity,
             enhancementsOptions.u4TrileTransparencyHackShadowBreadth);

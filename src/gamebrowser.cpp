@@ -230,10 +230,10 @@ bool GameBrowser::keyPressed(int key)
         {
             int len;
             const char* game = sst_stringL(&modList, sel, &len);
-            if (equalGameName(xu4.settings->game.c_str(), game)) {
+            if (equalGameName(xu4.settings->game, game)) {
                 xu4.eventHandler->setControllerDone(true);
             } else {
-                xu4.settings->game = game;
+                xu4.settings->setGame(game);
                 xu4.settings->write();
                 xu4.eventHandler->quitGame();
                 xu4.gameReset = 1;

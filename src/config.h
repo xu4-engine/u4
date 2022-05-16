@@ -90,7 +90,7 @@ protected:
     void* backend;
 };
 
-extern Config* configInit(const char* module);
+extern Config* configInit(const char* module, const char* soundtrack);
 extern void    configFree(Config*);
 
 #define foreach(it, col)    for(it = col.begin(); it != col.end(); ++it)
