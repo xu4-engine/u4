@@ -36,17 +36,16 @@ ImageMgr::ImageMgr() :
     baseSet = xu4.config->newImageSet();
 
     // Auto assign Settings::videoType.
-    bool vga = false;
+    xu4.settings->videoType = GFX_EGA;
     if (baseSet) {
         std::map<Symbol, ImageInfo *>::iterator it =
             baseSet->info.find(sym.tiles);
         if (it != baseSet->info.end()) {
             string fname = it->second->getFilename();
             if (fname.find(".vga") != string::npos)
-                vga = true;
+                xu4.settings->videoType = GFX_VGA;
         }
     }
-    xu4.settings->videoType = vga ? "VGA" : "EGA";
 
 #if 0
     // Dump images.
@@ -78,7 +77,7 @@ void ImageMgr::fixupIntro(Image *im) {
     RGBA color;
 
     sigData = xu4.intro->getSigData();
-    if (xu4.settings->videoType != "VGA-ALLPNG" && xu4.settings->videoType != "new") {
+    {
         /* ----------------------------
          * update the position of "and"
          * ---------------------------- */
@@ -133,7 +132,7 @@ void ImageMgr::fixupIntro(Image *im) {
     /* -------------------------
      * update the colors for VGA
      * ------------------------- */
-    if (xu4.settings->videoType == "VGA")
+    if (xu4.settings->videoType == GFX_VGA)
     {
         ImageInfo *borderInfo = ImageMgr::get(BKGD_BORDERS);
         if (! borderInfo)
@@ -170,7 +169,7 @@ void ImageMgr::fixupIntro(Image *im) {
         x = sigData[i] + 0x14;
         y = 0xBF - sigData[i+1];
 
-        if (xu4.settings->videoType != "EGA")
+        if (xu4.settings->videoType != GFX_EGA)
         {
             // yellow gradient
             color = im->setColor(255, (y == 1 ? 250 : 255), blue[y]);
@@ -184,7 +183,7 @@ void ImageMgr::fixupIntro(Image *im) {
      * draw the red line between "Origin Systems, Inc." and "present"
      * -------------------------------------------------------------- */
     /* we're still working with an unscaled surface */
-    if (xu4.settings->videoType != "EGA")
+    if (xu4.settings->videoType != GFX_EGA)
     {
         color = im->setColor(0, 0, 161);    // dark blue
     }
@@ -272,7 +271,7 @@ void ImageMgr::fixupAbacus(Image *im) {
     im->fillRect(24, 186, 8,  1, 0, 255, 80); /* green */
     im->fillRect(24, 199, 8,  1, 0, 255, 80); /* green */
 
-    if (xu4.settings->videoType == "VGA") {
+    if (xu4.settings->videoType == GFX_VGA) {
         RGBA light, dark;
         rgba_set(light, 0x55, 0xff, 0x50, 0xff);
         rgba_set(dark,  0x58, 0x8d, 0x43, 0xff);

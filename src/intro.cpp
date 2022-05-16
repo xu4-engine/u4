@@ -670,7 +670,7 @@ void IntroController::animateTree(Symbol frame) {
         return;
 
     // Hack to account for different tree images.
-    if (xu4.settings->videoType == "EGA") {
+    if (xu4.settings->videoType == GFX_EGA) {
         x = 72;
         ytop = 68;
     } else {
@@ -737,7 +737,7 @@ void IntroController::drawAbacusBeads(int row, int selectedVirtue, int rejectedV
     ASSERT(rejectedVirtue < 8 && rejectedVirtue >= 0, "invalid virtue: %d", rejectedVirtue);
 
     const uint8_t* pos = positionTable;
-    if (xu4.settings->videoType == "VGA")
+    if (xu4.settings->videoType == GFX_VGA)
         pos += 4;
     int y = pos[2] + (row * pos[3]);
     backgroundArea.draw(IMG_WHITEBEAD, pos[0] + (selectedVirtue * pos[1]), y);
@@ -999,7 +999,7 @@ void IntroController::startQuestions() {
     };
     ReadChoiceController questionController("ab");
     uint8_t* origin = originTable;
-    if (xu4.settings->videoType == "VGA")
+    if (xu4.settings->videoType == GFX_VGA)
         origin += 3;
 
     questionRound = 0;
@@ -1770,7 +1770,7 @@ void IntroController::getTitleSourceData()
                     x = srcData[titles[i].animStepMax] - 0x4C;
                     y = 0xC0 - srcData[titles[i].animStepMax+1];
 
-                    if (xu4.settings->videoType != "EGA")
+                    if (xu4.settings->videoType != GFX_EGA)
                     {
                         // yellow gradient
                         color = info->image->setColor(255, (y == 2 ? 250 : 255), blue[y-1]);
