@@ -8,6 +8,7 @@ MFILE_OS=Makefile
 endif
 
 MODULES=render.pak Ultima-IV.mod U4-Upgrade.mod
+REND=module/render
 
 
 all: src/xu4 $(MODULES)
@@ -15,8 +16,8 @@ all: src/xu4 $(MODULES)
 src/xu4:
 	make -C src -f $(MFILE_OS)
 
-render.pak: module/render/shader/*.glsl module/render/font/cfont.png
-	boron -s tools/pack-xu4.b -f module/render -o $@
+render.pak: $(REND)/shader/*.glsl $(REND)/shader/*.png $(REND)/font/cfont.png
+	boron -s tools/pack-xu4.b -f $(REND) -o $@
 
 Ultima-IV.mod: module/Ultima-IV/*.b
 	boron -s tools/pack-xu4.b module/Ultima-IV

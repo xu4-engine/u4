@@ -58,11 +58,14 @@ struct MapFx {
 struct OpenGLResources {
     GLuint screenTex;
     GLuint whiteTex;
+    GLuint guiTex;
     GLuint noiseTex;
     GLuint shadowTex;
     GLuint shadowFbo;
     GLuint vbo[ GLOB_COUNT ];
     GLuint vao[ GLOB_COUNT ];
+
+    float guiTexSize[2];
 
     GLuint scalerLut;
     GLuint scaler;

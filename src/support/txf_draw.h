@@ -27,8 +27,9 @@ typedef struct TxfDrawState TxfDrawState;
 
 struct TxfDrawState {
     const TxfHeader* tf;
+    const TxfHeader* const* fontTable;
     const uint8_t* (*lowChar)(TxfDrawState*, const uint8_t*, const uint8_t*);
-    TxfGlyph* prev;
+    const TxfGlyph* prev;
     float prScale;
     float x;
     float y;
@@ -36,15 +37,22 @@ struct TxfDrawState {
     float lineSpacing;
     float marginL;
     float marginR;
+    float colorIndex;
     int emitTris;
+};
+
+enum TxfGenControl {
+    TC_Style = 0x11,    // ASCII Device control 1
+    TC_Font,
+    TC_Color,
+    TC_Size
 };
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void txf_begin(TxfDrawState* ds, const TxfHeader* tf, float pointSize,
-               float x, float y);
+void txf_begin(TxfDrawState* ds, int fontN, float pointSize, float x, float y);
 void txf_setFontSize(TxfDrawState* ds, float pointSize);
 int  txf_genText(TxfDrawState* ds, float* uvs, float* vertex, int stride,
                  const uint8_t* it, unsigned int len);

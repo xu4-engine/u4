@@ -8,13 +8,13 @@
   Automatically substitutes uppercase letters with lowercase if
   uppercase not available (and vice versa).
 */
-TxfGlyph* txf_glyph(const TxfHeader* tf, int c)
+const TxfGlyph* txf_glyph(const TxfHeader* tf, int c)
 {
 #if 1
-    // Assuming all ASCII glyphs are present starting with SPACE.
-    c -= 32;
+    const TxfGlyph* glyph = (TxfGlyph*) (tf + 1);
+    c -= glyph->code;
     if (c >= 0 && c < tf->glyphCount)
-        return (TxfGlyph*) (tf + 1) + c;
+        return glyph + c;
 #else
     uint16_t n;
     uint16_t* table = TABLE(tf);
@@ -74,8 +74,6 @@ float txf_kerning(const TxfHeader* tf, const TxfGlyph* left,
 static const uint8_t* drawTextReturn(TxfDrawState* ds, const uint8_t* it,
                                      const uint8_t* end)
 {
-    (void) end;
-
     if (*it == '\n')
     {
         ds->x = ds->marginL;
@@ -84,19 +82,32 @@ static const uint8_t* drawTextReturn(TxfDrawState* ds, const uint8_t* it,
     }
     else if (*it == '\t')
     {
-        TxfGlyph* tgi = txf_glyph(ds->tf, ' ');
+        const TxfGlyph* tgi = txf_glyph(ds->tf, ' ');
         if (tgi) {
             float tabWidth = tgi->advance * 4 * ds->psize;
             ds->x += tabWidth - fmodf(ds->x - ds->marginL, tabWidth);
         }
         ds->prev = 0;
     }
+    else if (*it == TC_Font)
+    {
+        if (++it == end)
+            return end;
+        ds->tf = ds->fontTable[ *it ];
+    }
+    else if (*it == TC_Color)
+    {
+        if (++it == end)
+            return end;
+        ds->colorIndex = (float) *it;
+    }
     return it + 1;
 }
 
-void txf_begin(TxfDrawState* ds, const TxfHeader* tf, float pointSize,
-               float x, float y)
+void txf_begin(TxfDrawState* ds, int fontN, float pointSize, float x, float y)
 {
+    const TxfHeader* tf = ds->fontTable[fontN];
+
     ds->tf      = tf;
     ds->lowChar = drawTextReturn;
     ds->prev    = NULL;
@@ -107,6 +118,7 @@ void txf_begin(TxfDrawState* ds, const TxfHeader* tf, float pointSize,
     ds->lineSpacing = tf->lineHeight * pointSize;
     ds->marginL = x;
     ds->marginR = 90000.0f;
+    ds->colorIndex = 0.0f;
     ds->emitTris = 1;
 }
 
@@ -131,7 +143,7 @@ int txf_genText(TxfDrawState* ds, float* uvs, float* vertex, int stride,
     float scale = ds->psize;
     float pixelRange = scale * ds->prScale;
     int drawn = 0;
-    TxfGlyph* tgi;
+    const TxfGlyph* tgi;
 
 
     while( it != end )
@@ -178,6 +190,7 @@ int txf_genText(TxfDrawState* ds, float* uvs, float* vertex, int stride,
     uvs[0] = s; \
     uvs[1] = t; \
     uvs[2] = pixelRange; \
+    uvs[3] = ds->colorIndex; \
     uvs += stride; \
     vertex[0] = x; \
     vertex[1] = y; \
@@ -228,8 +241,8 @@ int txf_genText(TxfDrawState* ds, float* uvs, float* vertex, int stride,
 static float txf_width2(const TxfHeader* tf, const uint8_t* it,
                         const uint8_t* end, const uint8_t** sol)
 {
-    TxfGlyph* prev = NULL;
-    TxfGlyph* tgi;
+    const TxfGlyph* prev = NULL;
+    const TxfGlyph* tgi;
     float width = 0.0;
     int ch;
 

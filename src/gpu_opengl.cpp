@@ -329,7 +329,8 @@ extern Image* loadImage_png(U4FILE *file);
  *
  * \return Texture name or zero if loading failed.
  */
-static GLuint loadTexture(const char* file, GLuint useTex, GLenum filter)
+static GLuint loadTexture(const char* file, GLuint useTex, GLenum filter,
+                          int* texSize)
 {
     GLuint texId = 0;
     const CDIEntry* ent = xu4.config->fileEntry(file);
@@ -342,9 +343,14 @@ static GLuint loadTexture(const char* file, GLuint useTex, GLenum filter)
             if (img) {
                 if (! useTex)
                     glGenTextures(1, &useTex);
+                //printf("KR loadTexture %s %d,%d\n", file, img->w, img->h);
                 gpu_defineTex(useTex, img->w, img->h, img->pixels,
                               GL_RGBA, filter);
                 texId = useTex;
+                if (texSize) {
+                    texSize[0] = img->w;
+                    texSize[1] = img->h;
+                }
                 delete img;
             }
         }
@@ -363,7 +369,7 @@ static GLuint loadHQXTableImage(int scale)
     strcpy(lutFile, "graphics/shader/hq2x.png");
     lutFile[18] = '0' + scale;
 #endif
-    return loadTexture(lutFile, 0, GL_NEAREST);
+    return loadTexture(lutFile, 0, GL_NEAREST, NULL);
 }
 
 static void reserveDrawList(const GLuint* vbo, int byteSize)
@@ -379,10 +385,11 @@ const char* gpu_init(void* res, int w, int h, int scale, int filter)
 {
     OpenGLResources* gr = (OpenGLResources*) res;
     GLuint sh;
-    GLint cmap;
+    GLint cmap, mmap;
 #ifdef GPU_RENDER
-    GLint mmap, noise;
+    GLint noise;
 #endif
+    int tsize[2];
 
     assert(sizeof(GLuint) == sizeof(uint32_t));
 
@@ -412,14 +419,19 @@ const char* gpu_init(void* res, int w, int h, int scale, int filter)
 #endif
 
     // Create screen, white, noise & shadow textures.
-    glGenTextures(4, &gr->screenTex);
+    glGenTextures(5, &gr->screenTex);
     gpu_defineTex(gr->screenTex, 320, 200, NULL, GL_RGB, GL_NEAREST);
     gpu_defineTex(gr->whiteTex, 2, 2, whitePixels, GL_RGBA, GL_NEAREST);
     gpu_defineTex(gr->shadowTex, SHADOW_DIM, SHADOW_DIM, NULL,
                   GL_RGBA, GL_LINEAR);
 
+    if (! loadTexture("gui.png", gr->guiTex, GL_LINEAR, tsize))
+        return "gui.png";
+    gr->guiTexSize[0] = float(tsize[0]);
+    gr->guiTexSize[1] = float(tsize[1]);
+
 #ifdef GPU_RENDER
-    if (! loadTexture("noise_2d.png", gr->noiseTex, GL_NEAREST))
+    if (! loadTexture("noise_2d.png", gr->noiseTex, GL_NEAREST, NULL))
         return "noise_2d.png";
 
     gr->shadowFbo = _makeFramebuffer(gr->shadowTex);
@@ -511,7 +523,8 @@ const char* gpu_init(void* res, int w, int h, int scale, int filter)
         return "msdf.glsl";
 
     gr->glyphTrans  = glGetUniformLocation(sh, "transform");
-    cmap            = glGetUniformLocation(sh, "msdf");
+    cmap            = glGetUniformLocation(sh, "cmap");
+    mmap            = glGetUniformLocation(sh, "msdf");
     //gr->glyphRange  = glGetUniformLocation(sh, "screenPxRange");
     gr->glyphBg     = glGetUniformLocation(sh, "bgColor");
     gr->glyphFg     = glGetUniformLocation(sh, "fgColor");
@@ -522,6 +535,7 @@ const char* gpu_init(void* res, int w, int h, int scale, int filter)
     m4_ortho(ortho, 0.0f, (float) w, 0.0f, (float) h, -1.0f, 1.0f);
     glUniformMatrix4fv(gr->glyphTrans, 1, GL_FALSE, ortho);
     glUniform1i(cmap, GTU_CMAP);
+    glUniform1i(mmap, GTU_MATERIAL);
     glUniform4f(gr->glyphBg, 0.0, 0.0, 0.0, 0.0);
     glUniform4f(gr->glyphFg, 1.0, 1.0, 1.0, 1.0);
     //glUniform1f(gr->glyphRange, 2.0);
@@ -606,7 +620,7 @@ void gpu_free(void* res)
     glDeleteProgram(gr->shadow);
     glDeleteFramebuffers(1, &gr->shadowFbo);
 #endif
-    glDeleteTextures(4, &gr->screenTex);
+    glDeleteTextures(5, &gr->screenTex);
 }
 
 void gpu_viewport(int x, int y, int w, int h)
@@ -623,7 +637,7 @@ void gpu_viewport(int x, int y, int w, int h)
  */
 uint32_t gpu_loadTexture(const char* file, int linear)
 {
-    return loadTexture(file, 0, linear ? GL_LINEAR : GL_NEAREST);
+    return loadTexture(file, 0, linear ? GL_LINEAR : GL_NEAREST, NULL);
 }
 
 uint32_t gpu_makeTexture(const Image32* img)
@@ -806,11 +820,20 @@ void gpu_drawGui(void* res, int list, uint32_t tex)
     glUniform4f(gr->glyphFg, 1.0, 1.0, 1.0, 1.0);
     */
     glActiveTexture(GL_TEXTURE0 + GTU_CMAP);
+    glBindTexture(GL_TEXTURE_2D, gr->guiTex);
+    glActiveTexture(GL_TEXTURE0 + GTU_MATERIAL);
     glBindTexture(GL_TEXTURE_2D, tex);
 
     glEnable(GL_BLEND);
 
     gpu_drawTris(gr, list);
+}
+
+void gpu_guiClutUV(void* res, float* uv, float colorIndex)
+{
+    OpenGLResources* gr = (OpenGLResources*) res;
+    uv[0] = (colorIndex + 0.5f) / gr->guiTexSize[0];
+    uv[1] = 0.5f / gr->guiTexSize[1];
 }
 
 float* gpu_emitQuad(float* attr, const float* drawRect, const float* uvRect)

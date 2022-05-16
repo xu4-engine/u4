@@ -1,6 +1,8 @@
 #include <boron/urlan.h>
 #include "cdi.h"
 
+struct StringTable;
+
 typedef struct
 {
     UBuffer entries;        // Master CDIEntry array
@@ -10,6 +12,26 @@ typedef struct
     uint16_t pathIndex[5];  // Layer index into modulePaths
 }
 Module;
+
+enum ModuleCategory
+{
+    MOD_UNKNOWN,
+    MOD_FILE_PACKAGE,
+    MOD_BASE,
+    MOD_EXTENSION,
+    MOD_SOUNDTRACK
+};
+
+// Order matches modi context in pack-xu4.b.
+enum ModInfoValues
+{
+    MI_ABOUT,
+    MI_AUTHOR,
+    MI_RULES,
+    MI_VERSION,
+
+    MI_COUNT
+};
 
 #ifdef __cplusplus
 extern "C" {
@@ -24,6 +46,8 @@ const char*     mod_addLayer(Module*, const char* filename,
 const char*     mod_path(const Module*, const CDIEntry* ent);
 const CDIEntry* mod_findAppId(const Module*, uint32_t id);
 const CDIEntry* mod_fileEntry(const Module*, const char* filename);
+
+int             mod_query(const char* filename, StringTable* modi);
 
 #ifdef __cplusplus
 }

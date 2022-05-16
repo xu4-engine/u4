@@ -53,7 +53,7 @@ typedef struct {
     int16_t x, y, w, h;
 } GuiRect;
 
-struct TxfHeader;
+struct TxfDrawState;
 
-void gui_layout(int primList, const GuiRect* root, TxfHeader* const*,
-                const uint8_t* bytecode, const void** data);
+float* gui_layout(int primList, const GuiRect* root, TxfDrawState*,
+                  const uint8_t* bytecode, const void** data);

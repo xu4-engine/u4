@@ -1,9 +1,12 @@
 #include <cstring>
+#include <algorithm>
+
 #include "config.h"
 #include "event.h"
 #include "image32.h"
 #include "gpu.h"
 #include "gui.h"
+#include "module.h"
 #include "settings.h"
 #include "screen.h"
 #include "txf_draw.h"
@@ -19,6 +22,7 @@ extern "C" {
 
 #define GUI_LIST    0
 #define PSIZE_LIST  20
+#define ATTR_COUNT  7
 
 void GameBrowser::renderBrowser(ScreenState* ss, void* data)
 {
@@ -27,7 +31,7 @@ void GameBrowser::renderBrowser(ScreenState* ss, void* data)
     //gpu_viewport(0, 0, ss->displayW, ss->displayH);
     gpu_drawGui(xu4.gpu, GUI_LIST, gb->fontTexture);
 
-    if (gb->modList.used) {
+    if (gb->modFormat.used) {
         int box[4];
         float selY = gb->txf[0]->lineHeight * PSIZE_LIST * (gb->sel + 1.0f);
 
@@ -66,21 +70,11 @@ static int loadFonts(const char** files, int txfCount, TxfHeader** txfArr)
     return txfCount;
 }
 
-static const uint8_t clut[6*4*2] = {
-    // black  white  chocolate4  burlywoord4
-    0,0,0,255, 255,255,255,255, 139,69,19,255, 139,115,85,255,
-    // royal-blue1  dodger-blue1
-    72,118,255,255, 24,116,205,255,
-
-    // semi-transparent
-    0,0,0,128, 255,255,255,128, 139,69,19,128, 139,115,85,128,
-    72,118,255,128, 24,116,205,128
-};
-
 static const char* fontFiles[] = {
     "cfont.png",
     "cfont-comfortaa.txf",
-    "cfont-avatar.txf"
+    "cfont-avatar.txf",
+    "cfont-symbols.txf"
 };
 
 /*
@@ -94,13 +88,6 @@ void GameBrowser::displayReset(int sender, void* eventData, void* user)
 
     if (eventData) {
         gb->fontTexture = gpu_loadTexture(fontFiles[0], 1);
-        if (gb->fontTexture) {
-            Image32 cimg;
-            cimg.pixels = (uint32_t*) clut;
-            cimg.w = 6*2;
-            cimg.h = 1;
-            gpu_blitTexture(gb->fontTexture, 0, 0, &cimg);
-        }
     } else {
         gpu_freeTexture(gb->fontTexture);
     }
@@ -110,9 +97,9 @@ GameBrowser::GameBrowser()
 {
     txf[0] = NULL;
     fontTexture = 0;
-    sel = 0;
+    sel = selMusic = 0;
 
-    if (! loadFonts(fontFiles+1, 2, txf))
+    if (! loadFonts(fontFiles+1, 3, txf))
         return;
 
     displayReset(SENDER_DISPLAY, (void*) screenState(), this);
@@ -131,6 +118,44 @@ GameBrowser::~GameBrowser()
     }
 }
 
+#define NO_PARENT   255
+
+struct ModuleSortContext {
+    const StringTable* st;
+
+    bool operator()(const ModuleInfo& a, const ModuleInfo& b) const
+    {
+        if (a.modFileI == b.parent)
+            return true;
+
+        const char* nameA;
+        const char* nameB;
+        const char* files = sst_strings(st);
+        int fi;
+
+        if (a.parent == b.parent) {
+            if (a.category != b.category)
+                return a.category < b.category;
+
+            // Compare module names.
+            nameA = files + sst_start(st, a.modFileI);
+            nameB = files + sst_start(st, b.modFileI);
+        } else {
+            // Compare names of parent modules.
+            fi = (a.parent == NO_PARENT) ? a.modFileI : a.parent;
+            nameA = files + sst_start(st, fi);
+            fi = (b.parent == NO_PARENT) ? b.modFileI : b.parent;
+            nameB = files + sst_start(st, fi);
+        }
+        /*
+        printf("KR name %d (%d %d) %s  %d (%d %d) %s\n",
+                a.modFileI, a.parent, a.category, nameA,
+                b.modFileI, b.parent, b.category, nameB);
+        */
+        return strcmp(nameA, nameB) < 0;
+    }
+};
+
 // Return position of ".mod" extension or 0 if none.
 static int modExtension(const char* name, int* slen)
 {
@@ -141,30 +166,148 @@ static int modExtension(const char* name, int* slen)
     return 0;
 }
 
+// Compare names ignoring any ".mod" extension.
+static bool equalModuleName(const char* a, const char* b)
+{
+    int lenA, lenB;
+    int modA = modExtension(a, &lenA);
+    int modB = modExtension(b, &lenB);
+    if (modA)
+        lenA = modA;
+    if (modB)
+        lenB = modB;
+    return ((lenA == lenB) && strncmp(a, b, lenA) == 0);
+}
+
 static int collectModFiles(const char* name, int type, void* user)
 {
     if (type == PDIR_FILE || type == PDIR_LINK) {
         int len;
         if (modExtension(name, &len))
-            sst_append((StringTable*) user, name, -1);
+            sst_append((StringTable*) user, name, len);
     }
     return PDIR_CONTINUE;
 }
 
-static void readModuleList(StringTable* modList)
+static bool isExtensionOf(const char* name, const char* /*version*/,
+                          const StringTable* childModi)
 {
-    const StringTable* st = &xu4.resourcePaths;
-    const char* paths = sst_strings(st);
-    for (uint32_t i = 0; i < st->used; ++i)
-        processDir(paths + sst_start(st, i), collectModFiles, modList);
+    int len;
+    const char* rules = sst_stringL(childModi, MI_RULES, &len);
+    const char* pver = (const char*) memchr(rules, '/', len);
+    return (pver && memcmp(name, rules, pver - rules) == 0);
 }
 
-bool GameBrowser::present()
+/*
+ * Fill modFiles with module names and infoList with sorted information.
+ * The modFormat strings match the infoList order and are edited for display
+ * in the list widget.
+ */
+static void readModuleList(StringTable* modFiles, StringTable* modFormat,
+                           std::vector<ModuleInfo>& infoList)
+{
+    char modulePath[256];
+    ModuleInfo info;
+    const StringTable* rp = &xu4.resourcePaths;
+    const char* rpath;
+    const char* files;
+    uint32_t i, m;
+    int len;
+
+    // Collect .mod files from resourcePaths.
+
+    for (i = 0; i < rp->used; ++i) {
+        m = modFiles->used;
+        rpath = sst_stringL(rp, i, &len);
+        processDir(rpath, collectModFiles, modFiles);
+
+        memcpy(modulePath, rpath, len);
+        modulePath[len] = '/';
+        files = sst_strings(modFiles);
+        for (; m < modFiles->used; ++m) {
+            strcpy(modulePath + len + 1, files + sst_start(modFiles, m));
+
+            sst_init(&info.modi, 4, 80);
+            info.resPathI = i;
+            info.modFileI = m;
+            info.category = mod_query(modulePath, &info.modi);
+            info.parent   = NO_PARENT;
+
+            if (info.category == MOD_UNKNOWN)
+                sst_free(&info.modi);
+            else
+                infoList.push_back(info);
+        }
+    }
+
+    // Assign parents.
+
+    files = sst_strings(modFiles);
+    for (const auto& it : infoList) {
+        if (it.category == MOD_BASE) {
+            const char* name = files + sst_start(modFiles, it.modFileI);
+            //const char* version = sst_stringL(it.modi, MI_VERSION, &len);
+
+            for (auto& child : infoList) {
+                if (child.category == MOD_BASE)
+                    continue;
+                if (isExtensionOf(name, NULL, &child.modi))
+                    child.parent = it.modFileI;
+            }
+        }
+    }
+
+    // Build infoList with children sorted in alphabetical order under their
+    // parents.
+
+    {
+    ModuleSortContext sortCtx;
+    sortCtx.st = modFiles;
+    sort(infoList.begin(), infoList.end(), sortCtx);
+    }
+
+    // Create modFormat strings from infoList.  The .mod suffixes are removed
+    // and child names are indented.
+
+    const int indentLen = 4;
+    strcpy(modulePath, "    ");
+
+    for (const auto& it : infoList) {
+        //printf("KR module %d %d/%d %s\n", it.category, it.modFileI, it.parent,
+        //       files + sst_start(modFiles, it.modFileI));
+
+        rpath = files + sst_start(modFiles, it.modFileI);
+
+        // Strip .mod suffix.
+        len = sst_len(modFiles, it.modFileI) - 4;
+
+        // Indent child modules.
+        if (it.category != MOD_BASE) {
+            memcpy(modulePath + indentLen, rpath, len);
+            rpath = modulePath;
+            len += indentLen;
+            if (it.category == MOD_SOUNDTRACK) {
+#if 1
+                // Blue musical note symbol.
+                memcpy(modulePath + len,
+                       " \x12\x02\x13\x2cN\x12\x00\x13\x00", 10);
+                len += 10;
+#else
+                memcpy(modulePath + len, " (music)", 8);
+                len += 8;
+#endif
+            }
+        }
+        sst_append(modFormat, rpath, len);
+    }
+}
+
+void GameBrowser::layout()
 {
     static uint8_t browserGui[] = {
-        LAYOUT_V, BG_COLOR_CI, 6,
+        LAYOUT_V, BG_COLOR_CI, 128,
         MARGIN_V_PER, 10, MARGIN_H_PER, 16, SPACING_PER, 12,
-        BG_COLOR_CI, 2,
+        BG_COLOR_CI, 17,
         MARGIN_V_PER, 6,
             LAYOUT_H,
                 FONT_SIZE, 40, LABEL_DT_S,
@@ -182,24 +325,66 @@ bool GameBrowser::present()
     const void* guiData[8];
     const void** data = guiData;
 
-    if (! fontTexture)
-        return false;
-
-    sst_init(&modList, 8, 128);
-    readModuleList(&modList);
-
     browserGui[15] = 16 * xu4.settings->scale;
 
     *data++ = "xu4 | ";
     *data++ = "Game Modules";
-    *data++ = &modList;
+    *data++ = &modFormat;
     *data++ = listArea;
     *data++ = "Play";
     *data++ = okArea;
     *data++ = "Cancel";
     *data   = cancelArea;
-    gui_layout(GUI_LIST, NULL, txf, browserGui, guiData);
 
+    TxfDrawState ds;
+    ds.fontTable = txf;
+    float* attr = gui_layout(GUI_LIST, NULL, &ds, browserGui, guiData);
+    if (attr) {
+        if (selMusic) {
+            // Draw green checkmark.
+            ds.tf = txf[2];
+            ds.colorIndex = 33.0f;
+            ds.x = listArea[0];
+            ds.y = listArea[1] + listArea[3] -
+                   txf[0]->lineHeight * PSIZE_LIST * (selMusic + 1.0f) -
+                   ds.tf->descender * PSIZE_LIST;
+            txf_setFontSize(&ds, PSIZE_LIST);
+
+            int quads = txf_genText(&ds, attr + 3, attr, ATTR_COUNT,
+                                    (const uint8_t*) "c", 1);
+            attr += quads * 6 * ATTR_COUNT;
+        }
+
+        gpu_endTris(xu4.gpu, GUI_LIST, attr);
+    }
+}
+
+bool GameBrowser::present()
+{
+    if (! fontTexture)
+        return false;
+
+    sst_init(&modFiles, 8, 128);
+    sst_init(&modFormat, 8, 50);
+    readModuleList(&modFiles, &modFormat, infoList);
+
+    // Select the current modules.
+    {
+    int len;
+    sel = selMusic = 0;
+
+    for (size_t n = 0; n < infoList.size(); ++n) {
+        const char* mod = sst_stringL(&modFiles, infoList[n].modFileI, &len);
+        if (infoList[n].category == MOD_SOUNDTRACK) {
+            if (equalModuleName(xu4.settings->soundtrack, mod))
+                selMusic = n;
+        } else if (equalModuleName(xu4.settings->game, mod)) {
+            sel = n;
+        }
+    }
+    }
+
+    layout();
     screenSetLayer(LAYER_TOP_MENU, renderBrowser, this);
     return true;
 }
@@ -207,20 +392,12 @@ bool GameBrowser::present()
 void GameBrowser::conclude()
 {
     screenSetLayer(LAYER_TOP_MENU, NULL, NULL);
-    sst_free(&modList);
-}
+    sst_free(&modFiles);
+    sst_free(&modFormat);
 
-// Compare names ignoring any ".mod" extension.
-static bool equalGameName(const char* a, const char* b)
-{
-    int lenA, lenB;
-    int modA = modExtension(a, &lenA);
-    int modB = modExtension(b, &lenB);
-    if (modA)
-        lenA = modA;
-    if (modB)
-        lenB = modB;
-    return ((lenA == lenB) && strncmp(a, b, lenA) == 0);
+    for (auto& it : infoList)
+        sst_free(&it.modi);
+    infoList.clear();
 }
 
 bool GameBrowser::keyPressed(int key)
@@ -229,16 +406,41 @@ bool GameBrowser::keyPressed(int key)
         case U4_ENTER:
         {
             int len;
-            const char* game = sst_stringL(&modList, sel, &len);
-            if (equalGameName(xu4.settings->game, game)) {
+            const char* game;
+            const char* music = "";
+
+            game = sst_stringL(&modFiles, infoList[sel].modFileI, &len);
+            if (infoList[sel].category == MOD_SOUNDTRACK) {
+                music = game;
+                game = sst_stringL(&modFiles, infoList[sel].parent, &len);
+            } else if (selMusic) {
+                int par = infoList[selMusic].parent;
+                if (par == infoList[sel].modFileI ||
+                    par == infoList[sel].parent) {
+                    music = sst_stringL(&modFiles,
+                                        infoList[selMusic].modFileI, &len);
+                }
+            }
+            //printf( "KR Game '%s' '%s'\n", game, music);
+
+            if (equalModuleName(xu4.settings->game, game) &&
+                equalModuleName(xu4.settings->soundtrack, music)) {
                 xu4.eventHandler->setControllerDone(true);
             } else {
                 xu4.settings->setGame(game);
+                xu4.settings->setSoundtrack(music);
                 xu4.settings->write();
                 xu4.eventHandler->quitGame();
                 xu4.gameReset = 1;
             }
         }
+            return true;
+
+        case U4_SPACE:
+            if (infoList[sel].category == MOD_SOUNDTRACK) {
+                selMusic = (selMusic == sel) ? 0 : sel;
+                layout();
+            }
             return true;
 
         case U4_UP:
@@ -247,7 +449,7 @@ bool GameBrowser::keyPressed(int key)
             return true;
 
         case U4_DOWN:
-            if (sel < modList.used - 1)
+            if (sel < modFormat.used - 1)
                 ++sel;
             return true;
 
@@ -256,6 +458,32 @@ bool GameBrowser::keyPressed(int key)
             return true;
     }
     return false;
+}
+
+void GameBrowser::selectModule(const int16_t* rect, int y)
+{
+    float row = (float) (rect[1] + rect[3] - y) /
+                (txf[0]->lineHeight * PSIZE_LIST);
+    int n = (int) row;
+    if (n >= 0 && n < (int) modFormat.used) {
+        if (infoList[n].category == MOD_SOUNDTRACK) {
+            // Toggle selected soundrack.
+            if (selMusic == n) {
+                selMusic = 0;
+            } else {
+                selMusic = n;
+                /*
+                do {
+                    --n;
+                } while (n && n != sel && infoList[n].category != MOD_BASE);
+                sel = n;
+                */
+            }
+            layout();
+        } else {
+            sel = n;
+        }
+    }
 }
 
 static bool insideArea(const int16_t* rect, int x, int y)
@@ -271,7 +499,9 @@ bool GameBrowser::inputEvent(const InputEvent* ev)
         case CIE_MOUSE_PRESS:
             if (ev->n == CMOUSE_LEFT) {
                 int y = screenState()->displayH - ev->y;
-                if (insideArea(cancelArea, ev->x, y))
+                if (insideArea(listArea, ev->x, y))
+                    selectModule(listArea, y);
+                else if (insideArea(cancelArea, ev->x, y))
                     keyPressed(U4_ESC);
                 else if (insideArea(okArea, ev->x, y))
                     keyPressed(U4_ENTER);

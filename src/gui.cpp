@@ -56,8 +56,7 @@ typedef struct {
 
 //----------------------------------------------------------------------------
 
-static float* gui_drawRect(float* attr, const int16_t* wbox,
-                           const TxfHeader* txf, int colorIndex)
+static float* gui_drawRect(float* attr, const int16_t* wbox, float colorIndex)
 {
     float rect[4];
     float uvs[4];
@@ -67,8 +66,7 @@ static float* gui_drawRect(float* attr, const int16_t* wbox,
     rect[2] = (float) wbox[2];
     rect[3] = (float) wbox[3];
 
-    uvs[0] = ((float) colorIndex + 0.5f) / txf->texW;
-    uvs[1] = 0.5f / txf->texH;
+    gpu_guiClutUV(xu4.gpu, uvs, colorIndex);
     uvs[2] = uvs[0];
     uvs[3] = uvs[1];
 
@@ -94,7 +92,7 @@ static float* widget_button(float* attr, const GuiRect* wbox,
     int textW;
     int quadCount;
 
-    attr = gui_drawRect(attr, &wbox->x, ds->tf, 5);
+    attr = gui_drawRect(attr, &wbox->x, 40.0f);
 
     textW = scon->prefW - (int16_t) (1.2f * ds->psize);
     ds->x = (float) (wbox->x + ((wbox->w - textW) / 2));
@@ -166,7 +164,7 @@ static float* widget_list(float* attr, const GuiRect* wbox, TxfDrawState* ds,
     float left = (float) wbox->x;
     int quadCount;
 
-    //attr = gui_drawRect(attr, &wbox->x, ds->tf, 3);
+    //attr = gui_drawRect(attr, &wbox->x, 3.0f);
 
     ds->y = (float) (wbox->y + wbox->h) - ds->tf->descender * ds->psize;
 
@@ -314,11 +312,13 @@ static void gui_setRootArea(LayoutBox* lo, const GuiRect* root)
   \param txfArr     Font list.
   \param bytecode   A program of GuiOpcode instructions.
   \param data       A pointer array of data referenced by bytecode program.
+
+  \return End primitive attribute pointer which caller must pass to
+          gpu_endTris().
 */
-void gui_layout(int primList, const GuiRect* root, TxfHeader* const* txfArr,
-                const uint8_t* bytecode, const void** data)
+float* gui_layout(int primList, const GuiRect* root, TxfDrawState* ds,
+                  const uint8_t* bytecode, const void** data)
 {
-    TxfDrawState ds;
     SizeCon sconStack[MAX_SIZECON];
     LayoutBox loStack[LO_DEPTH];
     LayoutBox* lo;
@@ -334,7 +334,7 @@ void gui_layout(int primList, const GuiRect* root, TxfHeader* const* txfArr,
     scon = sconStack; \
     pc = bytecode; \
     dp = data; \
-    txf_begin(&ds, txfArr[0], txfArr[0]->fontSize, 0.0f, 0.0f)
+    txf_begin(ds, 0, ds->fontTable[0]->fontSize, 0.0f, 0.0f)
 
 
     // First pass to gather widget size information.
@@ -424,7 +424,7 @@ void gui_layout(int primList, const GuiRect* root, TxfHeader* const* txfArr,
 
         case SPACING_EM:     // font-em-tenth
             arg = *pc++;
-            lo->spacing = arg * ds.psize / 10;
+            lo->spacing = arg * ds->psize / 10;
             break;
 
         case FIX_WIDTH_PER:  // percent
@@ -439,12 +439,12 @@ void gui_layout(int primList, const GuiRect* root, TxfHeader* const* txfArr,
 
         case FIX_WIDTH_EM:   // font-em-tenth
             arg = *pc++;
-            lo->fixedW = arg * ds.psize / 10;
+            lo->fixedW = arg * ds->psize / 10;
             break;
 
         case FIX_HEIGHT_EM:  // font-em-tenth
             arg = *pc++;
-            lo->fixedH = arg * ds.psize / 10;
+            lo->fixedH = arg * ds->psize / 10;
             break;
 
         case FROM_BOTTOM:
@@ -477,11 +477,11 @@ void gui_layout(int primList, const GuiRect* root, TxfHeader* const* txfArr,
         // Drawing
         case FONT_N:         // font-index
             arg = *pc++;
-            ds.tf = txfArr[arg];
+            ds->tf = ds->fontTable[arg];
             break;
 
         case FONT_SIZE:      // point-size
-            txf_setFontSize(&ds, (float) *pc++);
+            txf_setFontSize(ds, (float) *pc++);
             break;
 
         case BG_COLOR_CI:   // color-index
@@ -490,18 +490,18 @@ void gui_layout(int primList, const GuiRect* root, TxfHeader* const* txfArr,
 
         // Widgets
         case BUTTON_DT_S:
-            button_size(scon, &ds, (const uint8_t*) *dp++);
+            button_size(scon, ds, (const uint8_t*) *dp++);
 layout_inc:
             layout_size(lo, sconStack + lo->nextPos, scon);
             scon++;
             break;
 
         case LABEL_DT_S:
-            label_size(scon, &ds, (const uint8_t*) *dp++);
+            label_size(scon, ds, (const uint8_t*) *dp++);
             goto layout_inc;
 
         case LIST_DT_ST:
-            list_size(scon, &ds, (StringTable*) *dp++);
+            list_size(scon, ds, (StringTable*) *dp++);
             goto layout_inc;
 
         case STORE_DT_AREA:
@@ -526,9 +526,9 @@ layout_done:
         // Position Pen
         case PEN_PER:           // percent x, percent y
             arg = *pc++;
-            ds.x = arg * lo->w / 100;
+            ds->x = arg * lo->w / 100;
             arg = *pc++;
-            ds.y = arg * lo->h / 100;
+            ds->y = arg * lo->h / 100;
             break;
 
         // Layout
@@ -548,7 +548,7 @@ layout_done:
             lo->align = 0;      // Place forwards & centered.
             lo->fixedW = lo->fixedH = lo->spacing = 0;
 
-            ds.y = (float) lo->h;
+            ds->y = (float) lo->h;
             break;
 
         case LAYOUT_GRID:    // columns
@@ -607,7 +607,7 @@ layout_done:
 
         case SPACING_EM:     // font-em-tenth
             arg = *pc++;
-            lo->spacing = arg * ds.psize / 10;
+            lo->spacing = arg * ds->psize / 10;
             break;
 
         case FIX_WIDTH_PER:  // percent
@@ -622,12 +622,12 @@ layout_done:
 
         case FIX_WIDTH_EM:   // font-em-tenth
             arg = *pc++;
-            lo->fixedW = arg * ds.psize / 10;
+            lo->fixedW = arg * ds->psize / 10;
             break;
 
         case FIX_HEIGHT_EM:  // font-em-tenth
             arg = *pc++;
-            lo->fixedH = arg * ds.psize / 10;
+            lo->fixedH = arg * ds->psize / 10;
             break;
 
         case FROM_BOTTOM:
@@ -681,34 +681,34 @@ layout_done:
         // Drawing
         case FONT_N:         // font-index
             arg = *pc++;
-            ds.tf = txfArr[arg];
+            ds->tf = ds->fontTable[arg];
             break;
 
         case FONT_SIZE:      // point-size
-            txf_setFontSize(&ds, (float) *pc++);
+            txf_setFontSize(ds, (float) *pc++);
             break;
 
         case BG_COLOR_CI:   // color-index
-            attr = gui_drawRect(attr, &lo->x, ds.tf, *pc++);
+            arg = *pc++;
+            attr = gui_drawRect(attr, &lo->x, (float) arg);
             break;
 
         // Widgets
         case BUTTON_DT_S:
             gui_align(&wbox, lo, scon);
-            attr = widget_button(attr, &wbox, scon, &ds,
-                                 (const uint8_t*) *dp++);
+            attr = widget_button(attr, &wbox, scon, ds, (const uint8_t*) *dp++);
             ++scon;
             break;
 
         case LABEL_DT_S:
             gui_align(&wbox, lo, scon);
-            attr = widget_label(attr, &wbox, &ds, (const uint8_t*) *dp++);
+            attr = widget_label(attr, &wbox, ds, (const uint8_t*) *dp++);
             ++scon;
             break;
 
         case LIST_DT_ST:
             gui_align(&wbox, lo, scon);
-            attr = widget_list(attr, &wbox, &ds, (StringTable*) *dp++);
+            attr = widget_list(attr, &wbox, ds, (StringTable*) *dp++);
             ++scon;
             break;
 
@@ -722,5 +722,5 @@ layout_done:
     }
 
 done:
-    gpu_endTris(xu4.gpu, primList, attr);
+    return attr;
 }
