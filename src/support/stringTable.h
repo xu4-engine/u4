@@ -1,3 +1,5 @@
+#ifndef STRINGTABLE_H
+#define STRINGTABLE_H
 /*
  * Small Static String Table
  * Written and dedicated to the public domain in 2022 by Karl Robillard.
@@ -44,3 +46,5 @@ const char* sst_stringL(const StringTable*, int n, int* plen);
 #ifdef __cplusplus
 }
 #endif
+
+#endif  // STRINGTABLE_H
