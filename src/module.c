@@ -165,6 +165,7 @@ const char* mod_addLayer(Module* mod, const char* filename,
     const char* error;
     const char* str;
     int start;
+    int extIdMask = 0;
 
     error = mod_openModule(&ml, filename, version, &stab);
     if (error)
@@ -188,6 +189,8 @@ const char* mod_addLayer(Module* mod, const char* filename,
             error = mod_addLayer(mod, bpath, vers+1, config, user);
             if (error)
                 goto fail_layer;
+
+            extIdMask = 0x20;       // Match module-layer in pack-xu4.b
         }
     }
 
@@ -256,7 +259,7 @@ const char* mod_addLayer(Module* mod, const char* filename,
                     a = 'I';    // .png
                     b = 'M';
                 }
-                appId = CDI32(a, b, (i >> 8), (i & 0xff));
+                appId = CDI32(a, b, (extIdMask | (i >> 8)), (i & 0xff));
 
                 ent = cdi_findAppId(ml.toc, ml.tocLen, appId);
                 if (ent)

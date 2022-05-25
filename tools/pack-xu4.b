@@ -329,7 +329,7 @@ pack-files: does [
 			foreach file read spath [
 				switch file-ext file [
 					%.glsl [
-						poke-id sl_id file-id file
+						poke-id sl_id add file-id file module-layer
 						ifn file-id-seen [
 							cdi-chunk 0x0001 sl_id
 								strip-shader read/into join spath file file_buf
@@ -339,7 +339,7 @@ pack-files: does [
 						pack-png spath file
 					]
 					%.txf [
-						poke-id txf_id file-id file
+						poke-id txf_id add file-id file module-layer
 						ifn file-id-seen [
 							cdi-chunk 0x5FC0 txf_id
 								read/into join spath file file_buf
