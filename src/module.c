@@ -4,7 +4,6 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include "stringTable.h"
 #include "module.h"
 
 extern int u4find_pathc(const char*, const char*, char*, size_t);
@@ -32,15 +31,14 @@ void mod_init(Module* mod, int layers)
 {
     ur_arrInit(&mod->entries, sizeof(CDIEntry), 128);
     ur_arrInit(&mod->fileIndex, sizeof(HashEntry), 64);
-    ur_strInit(&mod->modulePaths, UR_ENC_UTF8, layers * 128);
-    mod->pathCount = 0;
+    sst_init(&mod->modulePaths, layers, 128);
 }
 
 void mod_free(Module* mod)
 {
     ur_arrFree(&mod->entries);
     ur_arrFree(&mod->fileIndex);
-    ur_strFree(&mod->modulePaths);
+    sst_free(&mod->modulePaths);
 }
 
 static void mod_registerFile(Module* mod, uint32_t hash, int entryIndex)
@@ -145,6 +143,54 @@ fail_toc:
     return error;
 }
 
+// Return position of ".mod" extension or 0 if none.
+int mod_extension(const char* name, int* slen)
+{
+    int len = strlen(name);
+    *slen = len;
+    if (len > 4 && strcmp(name + len - 4, ".mod") == 0)
+        return len - 4;
+    return 0;
+}
+
+// Compare names ignoring any ".mod" extension.
+int mod_namesEqual(const char* a, const char* b)
+{
+    int lenA, lenB;
+    int modA = mod_extension(a, &lenA);
+    int modB = mod_extension(b, &lenB);
+    if (modA)
+        lenA = modA;
+    if (modB)
+        lenB = modB;
+    return ((lenA == lenB) && strncmp(a, b, lenA) == 0);
+}
+
+static int mod_loaded(Module* mod, const char* name, const char* version)
+{
+    const char* base;
+    const char* pstart;
+    int len;
+    uint32_t i;
+
+    // Search the set paths to see if the module is already loaded.
+    for (i = 0; i < mod->modulePaths.used; ++i) {
+        pstart = sst_stringL(&mod->modulePaths, i, &len);
+        for (base = pstart + len; base != pstart; ) {
+            --base;
+            if (*base == '/' || *base == '\\') {
+                ++base;
+                break;
+            }
+        }
+
+        // TODO: Also check version (needs to be saved).
+        if (mod_namesEqual(base, name))
+            return 1;
+    }
+    return 0;
+}
+
 /*
  * \param mod       Pointer to initialized module.
  * \param filename  Path to package.
@@ -167,6 +213,8 @@ const char* mod_addLayer(Module* mod, const char* filename,
     int start;
     int extIdMask = 0;
 
+    //printf("mod_addLayer %s\n", filename);
+
     error = mod_openModule(&ml, filename, version, &stab);
     if (error)
         return error;
@@ -178,17 +226,20 @@ const char* mod_addLayer(Module* mod, const char* filename,
         str = stab.strings + stab.index.f1[MI_RULES];
         vers = strchr(str, '/');
         if (vers) {
-            char bpath[512];
             *vers = '\0';   // Terminate str.
 
-            if (! u4find_pathc(str, ".mod", bpath, sizeof(bpath))) {
-                error = "Base module not found";
-                goto fail_layer;
-            }
+            if (! mod_loaded(mod, str, vers+1)) {
+                char bpath[512];
 
-            error = mod_addLayer(mod, bpath, vers+1, config, user);
-            if (error)
-                goto fail_layer;
+                if (! u4find_pathc(str, ".mod", bpath, sizeof(bpath))) {
+                    error = "Base module not found";
+                    goto fail_layer;
+                }
+
+                error = mod_addLayer(mod, bpath, vers+1, config, user);
+                if (error)
+                    goto fail_layer;
+            }
 
             extIdMask = 0x20;       // Match module-layer in pack-xu4.b
         }
@@ -201,7 +252,7 @@ const char* mod_addLayer(Module* mod, const char* filename,
     CDIEntry* it;
     uint8_t* layer;
     int n;
-    int layerNum = mod->pathCount;
+    int layerNum = mod->modulePaths.used;
 
     ur_arrExpand(&mod->entries, start, ml.tocLen);
     it = (CDIEntry*) mod->entries.ptr.v + start;
@@ -216,13 +267,7 @@ const char* mod_addLayer(Module* mod, const char* filename,
     }
 
     // Append module path.
-    {
-    UBuffer* paths = &mod->modulePaths;
-    mod->pathIndex[ mod->pathCount++ ] = paths->used;
-    ur_strAppendCStr(paths, filename);
-    ur_strTermNull(paths);
-    ++paths->used;
-    }
+    sst_append(&mod->modulePaths, filename, -1);
 
 #define NO_PTR(ptr, msg)    if (! ptr) { error = msg; goto fail_layer; }
 
@@ -285,10 +330,11 @@ fail_layer:
 const char* mod_path(const Module* mod, const CDIEntry* ent)
 {
     int i = ent->cdi & CDI_MASK_DA;
+    int len;
 #ifdef __BIG_ENDIAN__
     i >>= 24;
 #endif
-    return mod->modulePaths.ptr.c + mod->pathIndex[i];
+    return sst_stringL(&mod->modulePaths, i, &len);
 }
 
 const CDIEntry* mod_findAppId(const Module* mod, uint32_t id)

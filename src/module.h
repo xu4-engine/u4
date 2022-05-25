@@ -1,15 +1,14 @@
 #include <boron/urlan.h>
+#include "stringTable.h"
 #include "cdi.h"
 
 struct StringTable;
 
 typedef struct
 {
-    UBuffer entries;        // Master CDIEntry array
-    UBuffer fileIndex;      // Master FNAM index into entries
-    UBuffer modulePaths;    // Layer file names
-    uint16_t pathCount;
-    uint16_t pathIndex[5];  // Layer index into modulePaths
+    UBuffer entries;            // Master CDIEntry array
+    UBuffer fileIndex;          // Master FNAM index into entries
+    StringTable modulePaths;    // Layer file names
 }
 Module;
 
@@ -47,6 +46,8 @@ const char*     mod_path(const Module*, const CDIEntry* ent);
 const CDIEntry* mod_findAppId(const Module*, uint32_t id);
 const CDIEntry* mod_fileEntry(const Module*, const char* filename);
 
+int             mod_extension(const char* name, int* slen);
+int             mod_namesEqual(const char* a, const char* b);
 int             mod_query(const char* filename, StringTable* modi);
 
 #ifdef __cplusplus

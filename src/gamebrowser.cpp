@@ -156,34 +156,11 @@ struct ModuleSortContext {
     }
 };
 
-// Return position of ".mod" extension or 0 if none.
-static int modExtension(const char* name, int* slen)
-{
-    int len = strlen(name);
-    *slen = len;
-    if (len > 4 && strcmp(name + len - 4, ".mod") == 0)
-        return len - 4;
-    return 0;
-}
-
-// Compare names ignoring any ".mod" extension.
-static bool equalModuleName(const char* a, const char* b)
-{
-    int lenA, lenB;
-    int modA = modExtension(a, &lenA);
-    int modB = modExtension(b, &lenB);
-    if (modA)
-        lenA = modA;
-    if (modB)
-        lenB = modB;
-    return ((lenA == lenB) && strncmp(a, b, lenA) == 0);
-}
-
 static int collectModFiles(const char* name, int type, void* user)
 {
     if (type == PDIR_FILE || type == PDIR_LINK) {
         int len;
-        if (modExtension(name, &len))
+        if (mod_extension(name, &len))
             sst_append((StringTable*) user, name, len);
     }
     return PDIR_CONTINUE;
@@ -376,9 +353,9 @@ bool GameBrowser::present()
     for (size_t n = 0; n < infoList.size(); ++n) {
         const char* mod = sst_stringL(&modFiles, infoList[n].modFileI, &len);
         if (infoList[n].category == MOD_SOUNDTRACK) {
-            if (equalModuleName(xu4.settings->soundtrack, mod))
+            if (mod_namesEqual(xu4.settings->soundtrack, mod))
                 selMusic = n;
-        } else if (equalModuleName(xu4.settings->game, mod)) {
+        } else if (mod_namesEqual(xu4.settings->game, mod)) {
             sel = n;
         }
     }
@@ -423,8 +400,8 @@ bool GameBrowser::keyPressed(int key)
             }
             //printf( "KR Game '%s' '%s'\n", game, music);
 
-            if (equalModuleName(xu4.settings->game, game) &&
-                equalModuleName(xu4.settings->soundtrack, music)) {
+            if (mod_namesEqual(xu4.settings->game, game) &&
+                mod_namesEqual(xu4.settings->soundtrack, music)) {
                 xu4.eventHandler->setControllerDone(true);
             } else {
                 xu4.settings->setGame(game);
