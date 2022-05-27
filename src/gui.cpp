@@ -296,8 +296,8 @@ static void gui_setRootArea(LayoutBox* lo, const GuiRect* root)
     } else {
         const ScreenState* ss = screenState();
         lo->x = lo->y = 0;
-        lo->w = ss->displayW;
-        lo->h = ss->displayH;
+        lo->w = ss->aspectW;
+        lo->h = ss->aspectH;
     }
 }
 

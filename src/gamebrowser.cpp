@@ -24,7 +24,7 @@ void GameBrowser::renderBrowser(ScreenState* ss, void* data)
 {
     GameBrowser* gb = (GameBrowser*) data;
 
-    gpu_viewport(0, 0, ss->displayW, ss->displayH);
+    //gpu_viewport(0, 0, ss->displayW, ss->displayH);
     gpu_drawGui(xu4.gpu, GUI_LIST, gb->fontTexture);
 
     if (gb->modList.used) {
@@ -33,6 +33,9 @@ void GameBrowser::renderBrowser(ScreenState* ss, void* data)
 
         box[0] = gb->listArea[0];
         box[1] = gb->listArea[1] + gb->listArea[3] - 1 - int(selY);
+        box[0] += (ss->displayW - ss->aspectW) / 2;
+        box[1] += (ss->displayH - ss->aspectH) / 2;
+
         box[2] = gb->listArea[2];
         box[3] = PSIZE_LIST + 2;
         gpu_setScissor(box);
