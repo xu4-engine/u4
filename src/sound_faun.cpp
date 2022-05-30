@@ -18,6 +18,7 @@
 #define config_musicFile(id)    xu4.config->musicFile(id)
 #define BUFFER_LIMIT    32
 #define SOURCE_LIMIT    8
+#define SID_END         7
 #define SID_MUSIC   SOURCE_LIMIT
 #define SID_SPEECH  SOURCE_LIMIT+1
 #define BUFFER_MS_FAILED    1
@@ -100,17 +101,19 @@ void soundPlay(Sound sound, bool onlyOnce, int limitMSec)
     if (bufferMs[sound] == 0)
         loadSoundBuffer(sound);
 
-    // This assumes the source is not currently playing.
-    // Need faun_sourceSetBuffer()?
-    faun_playSource(nextSource, sound, FAUN_PLAY_ONCE);
-    if (limitMSec > 0) {
-        // FIXME: Need to clear FAUN_END_TIME for next use.
-        faun_setParameter(nextSource, 1, FAUN_END_TIME,
-                          (float) limitMSec / 1000.0f);
-    }
+    // The source SID_END is reserved for when limitMSec is used so that
+    // FAUN_END_TIME doesn't need to be reset.  This assumes that limitMSec
+    // is rarely used.
 
-    if (++nextSource >= SOURCE_LIMIT)
-        nextSource = 0;
+    if (limitMSec > 0) {
+        faun_playSource(SID_END, sound, FAUN_PLAY_ONCE);
+        faun_setParameter(SID_END, 1, FAUN_END_TIME,
+                          (float) limitMSec / 1000.0f);
+    } else {
+        faun_playSource(nextSource, sound, FAUN_PLAY_ONCE);
+        if (++nextSource >= SID_END)
+            nextSource = 0;
+    }
 }
 
 /*
@@ -180,7 +183,7 @@ static bool music_start(int music, int mode) {
 
 void musicPlay(int track)
 {
-    if (musicVolume > 0.0f)
+    if (musicEnabled && musicVolume > 0.0f)
         music_start(track, FAUN_PLAY_LOOP);
 }
 
