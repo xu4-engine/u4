@@ -17,8 +17,8 @@ ALLEGRO_DL=https://github.com/liballeg/allegro5/releases/download/5.2.7.0
 ALLEGRO_SDK_MINGW=allegro-x86_64-w64-mingw32-gcc-10.2.0-posix-seh-static-5.2.7.0.zip
 
 FAUN_DL=https://wickedsmoke.github.io/sdk
-FAUN_SDK_LINUX=faun-x86_64-static-0.1.0.tar.bz2
-FAUN_SDK_MINGW=faun-x86_64-w64-mingw32-static-0.1.0.zip
+FAUN_SDK_LINUX=faun-x86_64-static-0.1.1.tar.bz2
+FAUN_SDK_MINGW=faun-x86_64-w64-mingw32-static-0.1.1.zip
 
 sdk:
 	mkdir sdk
