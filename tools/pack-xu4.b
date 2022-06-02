@@ -929,17 +929,12 @@ process-cfg [
 			map-roles: none
 		)
 	  | into [some[
-			'portal set at2 paren! content: opt block! (
-				append/block map-portals at2
-				if block? first content [
-					; Merge retroActiveDest into attributes to be used below.
-					if it: content/1/retroActiveDest [
-						appair at2 to-set-word 'retroActiveDest
-							to-coord reduce [it/x it/y none-zero it/z it/mapid]
-					]
-				]
-			)
-		  | 'labels set map-labels block!
+			'portals into [any [
+				at2: coord! word! coord! any [set-word! skip] :at2 (
+					append/block map-portals at2
+				)
+			]]
+		  | 'labels  set map-labels  block!
 		  | 'city  set at2 paren! into [any [
 				'roles set map-roles block!
 			]] (
@@ -979,36 +974,41 @@ process-cfg [
 			append/block blk map-labels
 
 			emit-attr-block blk map-portals [
+				action: second it
+				if rad: it/retroActiveDest [
+					rad: to-coord reduce [slice rad 1,3 first rad]
+				]
+
 				appair dest mark-sol it/message it/condition
 				append dest to-coord reduce [
-					none-zero it/x
-					none-zero it/y
-					none-zero it/z
-					none-zero it/startx
-					none-zero it/starty
-					none-zero it/startlevel
+					slice first it 3	; coords
+					slice third it 1,3	; start
 				]
 				append dest to-coord reduce [
-					none-zero it/destmapid
+					none-zero it/3/1	; destid
 					none-zero select [
-					   enter	1
-					   klimb	2
-					   descend	4
-					   exit_north	8
-					   exit_east	0x10
-					   exit_south	0x20
-					   exit_west	0x40
-					] it/action
-					either eq? 'true it/savelocation 1 0
-					none-zero select [
-						foot	1
-						horse	2
-						ship	4
-						balloon	8
-						footorhorse 3
-					] it/transport
+						save-enter	1
+						enter		1
+						climb		2
+						descend		4
+						exit_north	8
+						exit_east	0x10
+						exit_south	0x20
+						exit_west	0x40
+					] action
+					either eq? 'save-enter action 1 0	; saveLocation
+					any [
+						select [
+							foot	1
+							horse	2
+							ship	4
+							balloon	8
+							footorhorse 3
+						] it/transport
+						1
+					]
 				]
-				append dest it/retroActiveDest
+				append dest rad
 			]
 
 			append/block blk map-moongates

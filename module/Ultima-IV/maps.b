@@ -1,36 +1,38 @@
 maps: [
     map (id: 0 type: world fname: "world.map" width: 256 height: 256 levels: 1 chunk-dim: 32 borderbehavior: wrap music: 1) [
-        portal (x: 86 y: 107 destmapid: 1 startx: 15 starty: 30 action: enter savelocation: true transport: footorhorse)
-        portal (x: 218 y: 107 destmapid: 2 startx: 15 starty: 30 action: enter savelocation: true transport: footorhorse)
-        portal (x: 28 y: 50 destmapid: 3 startx: 15 starty: 30 action: enter savelocation: true transport: footorhorse)
-        portal (x: 146 y: 241 destmapid: 4 startx: 15 starty: 30 action: enter savelocation: true transport: footorhorse)
-        portal (x: 232 y: 135 destmapid: 5 startx: 1 starty: 15 action: enter savelocation: true transport: footorhorse)
-        portal (x: 82 y: 106 destmapid: 6 startx: 1 starty: 15 action: enter savelocation: true transport: footorhorse)
-        portal (x: 36 y: 222 destmapid: 7 startx: 1 starty: 15 action: enter savelocation: true transport: footorhorse)
-        portal (x: 58 y: 43 destmapid: 8 startx: 1 starty: 15 action: enter savelocation: true transport: footorhorse)
-        portal (x: 159 y: 20 destmapid: 9 startx: 1 starty: 15 action: enter savelocation: true transport: footorhorse)
-        portal (x: 106 y: 184 destmapid: 10 startx: 1 starty: 15 action: enter savelocation: true transport: footorhorse)
-        portal (x: 22 y: 128 destmapid: 11 startx: 1 starty: 15 action: enter savelocation: true transport: footorhorse)
-        portal (x: 187 y: 169 destmapid: 12 startx: 1 starty: 15 action: enter savelocation: true transport: footorhorse)
-        portal (x: 98 y: 145 destmapid: 13 startx: 1 starty: 15 action: enter savelocation: true transport: footorhorse)
-        portal (x: 136 y: 158 destmapid: 14 startx: 1 starty: 15 action: enter savelocation: true transport: footorhorse)
-        portal (x: 201 y: 59 destmapid: 15 startx: 1 starty: 15 action: enter savelocation: true transport: footorhorse)
-        portal (x: 136 y: 90 destmapid: 16 startx: 1 starty: 15 action: enter savelocation: true transport: footorhorse)
-        portal (x: 240 y: 73 destmapid: 17 startx: 1 starty: 1 action: enter savelocation: true transport: foot)
-        portal (x: 91 y: 67 destmapid: 18 startx: 1 starty: 1 action: enter savelocation: true transport: foot)
-        portal (x: 72 y: 168 destmapid: 19 startx: 1 starty: 1 action: enter savelocation: true transport: foot)
-        portal (x: 126 y: 20 destmapid: 20 startx: 1 starty: 1 action: enter savelocation: true transport: foot)
-        portal (x: 156 y: 27 destmapid: 21 startx: 1 starty: 1 action: enter savelocation: true transport: foot)
-        portal (x: 58 y: 102 destmapid: 22 startx: 1 starty: 1 action: enter savelocation: true transport: foot)
-        portal (x: 239 y: 240 destmapid: 23 startx: 1 starty: 1 action: enter savelocation: true transport: foot)
-        portal (x: 233 y: 233 destmapid: 24 startx: 1 starty: 1 action: enter condition: abyss savelocation: true message: "Enter the Great Stygian Abyss!^/^/" transport: foot)
-        portal (x: 233 y: 66 destmapid: 25 startx: 0 starty: 0 action: enter condition: shrine savelocation: true transport: footorhorse)
-        portal (x: 128 y: 92 destmapid: 26 startx: 0 starty: 0 action: enter condition: shrine savelocation: true transport: footorhorse)
-        portal (x: 36 y: 229 destmapid: 27 startx: 0 starty: 0 action: enter condition: shrine savelocation: true transport: footorhorse)
-        portal (x: 73 y: 11 destmapid: 28 startx: 0 starty: 0 action: enter condition: shrine savelocation: true transport: footorhorse)
-        portal (x: 205 y: 45 destmapid: 29 startx: 0 starty: 0 action: enter condition: shrine savelocation: true transport: footorhorse)
-        portal (x: 81 y: 207 destmapid: 30 startx: 0 starty: 0 action: enter condition: shrine savelocation: true transport: footorhorse)
-        portal (x: 231 y: 216 destmapid: 32 startx: 0 starty: 0 action: enter condition: shrine savelocation: true transport: footorhorse)
+        portals [
+             86,107 save-enter  1,15,30 transport: footorhorse
+            218,107 save-enter  2,15,30 transport: footorhorse
+             28, 50 save-enter  3,15,30 transport: footorhorse
+            146,241 save-enter  4,15,30 transport: footorhorse
+            232,135 save-enter  5, 1,15 transport: footorhorse
+             82,106 save-enter  6, 1,15 transport: footorhorse
+             36,222 save-enter  7, 1,15 transport: footorhorse
+             58, 43 save-enter  8, 1,15 transport: footorhorse
+            159, 20 save-enter  9, 1,15 transport: footorhorse
+            106,184 save-enter 10, 1,15 transport: footorhorse
+             22,128 save-enter 11, 1,15 transport: footorhorse
+            187,169 save-enter 12, 1,15 transport: footorhorse
+             98,145 save-enter 13, 1,15 transport: footorhorse
+            136,158 save-enter 14, 1,15 transport: footorhorse
+            201, 59 save-enter 15, 1,15 transport: footorhorse
+            136, 90 save-enter 16, 1,15 transport: footorhorse
+            240, 73 save-enter 17, 1, 1
+             91, 67 save-enter 18, 1, 1
+             72,168 save-enter 19, 1, 1
+            126, 20 save-enter 20, 1, 1
+            156, 27 save-enter 21, 1, 1
+             58,102 save-enter 22, 1, 1
+            239,240 save-enter 23, 1, 1
+            233,233 save-enter 24, 1, 1 condition: abyss  message: "Enter the Great Stygian Abyss!^/^/"
+            233, 66 save-enter 25, 0, 0 condition: shrine transport: footorhorse
+            128, 92 save-enter 26, 0, 0 condition: shrine transport: footorhorse
+             36,229 save-enter 27, 0, 0 condition: shrine transport: footorhorse
+             73, 11 save-enter 28, 0, 0 condition: shrine transport: footorhorse
+            205, 45 save-enter 29, 0, 0 condition: shrine transport: footorhorse
+             81,207 save-enter 30, 0, 0 condition: shrine transport: footorhorse
+            231,216 save-enter 32, 0, 0 condition: shrine transport: footorhorse
+        ]
         moongates [
           ; phase, x, y
             0,224,133
@@ -65,10 +67,10 @@ maps: [
                 hawkwind 30
             ]
         ]
-        portal (x: 3 y: 3 destmapid: 56 startx: 3 starty: 3 action: klimb savelocation: false message: "Klimb to second floor!^/" transport: foot)
-        portal (x: 27 y: 3 destmapid: 56 startx: 27 starty: 3 action: klimb savelocation: false message: "Klimb to second floor!^/" transport: foot)
-        portal (x: 7 y: 2 destmapid: 23 startx: 5 starty: 5 action: descend savelocation: false message: "Descend into the depths!^/" transport: foot) [
-            retroActiveDest (x: 239 y: 240 mapid: 0)
+        portals [
+             3,3 climb   56, 3, 3  message: "Klimb to second floor!^/"
+            27,3 climb   56,27, 3  message: "Klimb to second floor!^/"
+             7,2 descend 23, 5, 5  message: "Descend into the depths!^/" retroActiveDest: 0,239,240
         ]
         labels [spiritualityrune 17,8]
     ]
@@ -76,8 +78,10 @@ maps: [
         city (name: "Britannia" type: castle tlk_fname: "lcb.tlk") [
             roles [lordbritish 32]
         ]
-        portal (x: 3 y: 3 destmapid: 1 startx: 3 starty: 3 action: descend savelocation: false message: "Descend to first floor!^/" transport: foot)
-        portal (x: 27 y: 3 destmapid: 1 startx: 27 starty: 3 action: descend savelocation: false message: "Descend to first floor!^/" transport: foot)
+        portals [
+             3, 3 descend 1, 3, 3 message: "Descend to first floor!^/"
+            27, 3 descend 1,27, 3 message: "Descend to first floor!^/"
+        ]
     ]
     map (id: 2 type: city fname: "lycaeum.ult" width: 32 height: 32 levels: 1 borderbehavior: exit music: 9) [
         city (name: "Lycaeum" type: castle tlk_fname: "lycaeum.tlk") [
@@ -231,173 +235,91 @@ maps: [
     ]
     map (id: 17 type: dungeon fname: "deceit.dng" width: 8 height: 8 levels: 8 borderbehavior: wrap firstperson: true music: 7) [
         dungeon (name: "Deceit" rooms: 16)
-        portal (x: 1 y: 1 z: 7 destmapid: 17 startx: 1 starty: 1 startlevel: 7 action: exit_north savelocation: false message: "into Dungeon Deceit^/" transport: foot) [
-            retroActiveDest (x: 240 y: 73 mapid: 0)
-        ]
-        portal (x: 1 y: 1 z: 7 destmapid: 22 startx: 1 starty: 1 startlevel: 7 action: exit_east savelocation: false message: "into Dungeon Shame^/" transport: foot) [
-            retroActiveDest (x: 58 y: 102 mapid: 0)
-        ]
-        portal (x: 1 y: 1 z: 7 destmapid: 23 startx: 1 starty: 1 startlevel: 7 action: exit_south savelocation: false message: "into Dungeon Hythloth^/" transport: foot) [
-            retroActiveDest (x: 239 y: 240 mapid: 0)
-        ]
-        portal (x: 1 y: 1 z: 7 destmapid: 20 startx: 1 starty: 1 startlevel: 7 action: exit_west savelocation: false message: "into Dungeon Wrong^/" transport: foot) [
-            retroActiveDest (x: 126 y: 20 mapid: 0)
+        portals [
+            1,1,7 exit_north 17, 1,1,7  message: "into Dungeon Deceit^/"   retroActiveDest: 0,240, 73
+            1,1,7 exit_east  22, 1,1,7  message: "into Dungeon Shame^/"    retroActiveDest: 0, 58,102
+            1,1,7 exit_south 23, 1,1,7  message: "into Dungeon Hythloth^/" retroActiveDest: 0,239,240
+            1,1,7 exit_west  20, 1,1,7  message: "into Dungeon Wrong^/"    retroActiveDest: 0,126, 20
         ]
         labels [bluestone 1,7,6]
     ]
     map (id: 18 type: dungeon fname: "despise.dng" width: 8 height: 8 levels: 8 borderbehavior: wrap firstperson: true music: 7) [
         dungeon (name: "Despise" rooms: 16)
-        portal (x: 3 y: 3 z: 7 destmapid: 18 startx: 3 starty: 3 startlevel: 7 action: exit_north savelocation: false message: "into Dungeon Despise^/" transport: foot) [
-            retroActiveDest (x: 91 y: 67 mapid: 0)
-        ]
-        portal (x: 3 y: 3 z: 7 destmapid: 20 startx: 3 starty: 3 startlevel: 7 action: exit_east savelocation: false message: "into Dungeon Wrong^/" transport: foot) [
-            retroActiveDest (x: 126 y: 20 mapid: 0)
-        ]
-        portal (x: 3 y: 3 z: 7 destmapid: 23 startx: 3 starty: 3 startlevel: 7 action: exit_south savelocation: false message: "into Dungeon Hythloth^/" transport: foot) [
-            retroActiveDest (x: 239 y: 240 mapid: 0)
-        ]
-        portal (x: 3 y: 3 z: 7 destmapid: 21 startx: 3 starty: 3 startlevel: 7 action: exit_west savelocation: false message: "into Dungeon Covetous^/" transport: foot) [
-            retroActiveDest (x: 156 y: 27 mapid: 0)
+        portals [
+            3,3,7 exit_north 18, 3,3,7  message: "into Dungeon Despise^/"  retroActiveDest: 0, 91, 67
+            3,3,7 exit_east  20, 3,3,7  message: "into Dungeon Wrong^/"    retroActiveDest: 0,126, 20
+            3,3,7 exit_south 23, 3,3,7  message: "into Dungeon Hythloth^/" retroActiveDest: 0,239,240
+            3,3,7 exit_west  21, 3,3,7  message: "into Dungeon Covetous^/" retroActiveDest: 0,156, 27
         ]
         labels [yellowstone 3,5,4]
     ]
     map (id: 19 type: dungeon fname: "destard.dng" width: 8 height: 8 levels: 8 borderbehavior: wrap firstperson: true music: 7) [
         dungeon (name: "Destard" rooms: 16)
-        portal (x: 7 y: 7 z: 7 destmapid: 19 startx: 7 starty: 7 startlevel: 7 action: exit_north savelocation: false message: "into Dungeon Destard^/" transport: foot) [
-            retroActiveDest (x: 72 y: 168 mapid: 0)
-        ]
-        portal (x: 7 y: 7 z: 7 destmapid: 21 startx: 7 starty: 7 startlevel: 7 action: exit_east savelocation: false message: "into Dungeon Covetous^/" transport: foot) [
-            retroActiveDest (x: 156 y: 27 mapid: 0)
-        ]
-        portal (x: 7 y: 7 z: 7 destmapid: 23 startx: 7 starty: 7 startlevel: 7 action: exit_south savelocation: false message: "into Dungeon Hythloth^/" transport: foot) [
-            retroActiveDest (x: 239 y: 240 mapid: 0)
-        ]
-        portal (x: 7 y: 7 z: 7 destmapid: 22 startx: 7 starty: 7 startlevel: 7 action: exit_west savelocation: false message: "into Dungeon Shame^/" transport: foot) [
-            retroActiveDest (x: 58 y: 102 mapid: 0)
+        portals [
+            7,7,7 exit_north 19,7,7,7  message: "into Dungeon Destard^/"  retroActiveDest: 0, 72,168
+            7,7,7 exit_east  21,7,7,7  message: "into Dungeon Covetous^/" retroActiveDest: 0,156, 27
+            7,7,7 exit_south 23,7,7,7  message: "into Dungeon Hythloth^/" retroActiveDest: 0,239,240
+            7,7,7 exit_west  22,7,7,7  message: "into Dungeon Shame^/"    retroActiveDest: 0, 58,102
         ]
         labels [redstone 3,7,6]
     ]
     map (id: 20 type: dungeon fname: "wrong.dng" width: 8 height: 8 levels: 8 borderbehavior: wrap firstperson: true music: 7) [
         dungeon (name: "Wrong" rooms: 16)
-        portal (x: 1 y: 1 z: 7 destmapid: 17 startx: 1 starty: 1 startlevel: 7 action: exit_north savelocation: false message: "into Dungeon Deceit^/" transport: foot) [
-            retroActiveDest (x: 240 y: 73 mapid: 0)
-        ]
-        portal (x: 1 y: 1 z: 7 destmapid: 22 startx: 1 starty: 1 startlevel: 7 action: exit_east savelocation: false message: "into Dungeon Shame^/" transport: foot) [
-            retroActiveDest (x: 58 y: 102 mapid: 0)
-        ]
-        portal (x: 1 y: 1 z: 7 destmapid: 23 startx: 1 starty: 1 startlevel: 7 action: exit_south savelocation: false message: "into Dungeon Hythloth^/" transport: foot) [
-            retroActiveDest (x: 239 y: 240 mapid: 0)
-        ]
-        portal (x: 1 y: 1 z: 7 destmapid: 20 startx: 1 starty: 1 startlevel: 7 action: exit_west savelocation: false message: "into Dungeon Wrong^/" transport: foot) [
-            retroActiveDest (x: 126 y: 20 mapid: 0)
-        ]
-        portal (x: 3 y: 3 z: 7 destmapid: 18 startx: 3 starty: 3 startlevel: 7 action: exit_north savelocation: false message: "into Dungeon Despise^/" transport: foot) [
-            retroActiveDest (x: 91 y: 67 mapid: 0)
-        ]
-        portal (x: 3 y: 3 z: 7 destmapid: 20 startx: 3 starty: 3 startlevel: 7 action: exit_east savelocation: false message: "into Dungeon Wrong^/" transport: foot) [
-            retroActiveDest (x: 126 y: 20 mapid: 0)
-        ]
-        portal (x: 3 y: 3 z: 7 destmapid: 23 startx: 3 starty: 3 startlevel: 7 action: exit_south savelocation: false message: "into Dungeon Hythloth^/" transport: foot) [
-            retroActiveDest (x: 239 y: 240 mapid: 0)
-        ]
-        portal (x: 3 y: 3 z: 7 destmapid: 21 startx: 3 starty: 3 startlevel: 7 action: exit_west savelocation: false message: "into Dungeon Covetous^/" transport: foot) [
-            retroActiveDest (x: 156 y: 27 mapid: 0)
+        portals [
+            1,1,7 exit_north 17,1,1,7  message: "into Dungeon Deceit^/"   retroActiveDest: 0,240, 73
+            1,1,7 exit_east  22,1,1,7  message: "into Dungeon Shame^/"    retroActiveDest: 0, 58,102
+            1,1,7 exit_south 23,1,1,7  message: "into Dungeon Hythloth^/" retroActiveDest: 0,239,240
+            1,1,7 exit_west  20,1,1,7  message: "into Dungeon Wrong^/"    retroActiveDest: 0,126, 20
+            3,3,7 exit_north 18,3,3,7  message: "into Dungeon Despise^/"  retroActiveDest: 0, 91, 67
+            3,3,7 exit_east  20,3,3,7  message: "into Dungeon Wrong^/"    retroActiveDest: 0,126, 20
+            3,3,7 exit_south 23,3,3,7  message: "into Dungeon Hythloth^/" retroActiveDest: 0,239,240
+            3,3,7 exit_west  21,3,3,7  message: "into Dungeon Covetous^/" retroActiveDest: 0,156, 27
         ]
         labels [greenstone 6,3,7]
     ]
     map (id: 21 type: dungeon fname: "covetous.dng" width: 8 height: 8 levels: 8 borderbehavior: wrap firstperson: true music: 7) [
         dungeon (name: "Covetous" rooms: 16)
-        portal (x: 3 y: 3 z: 7 destmapid: 18 startx: 3 starty: 3 startlevel: 7 action: exit_north savelocation: false message: "into Dungeon Despise^/" transport: foot) [
-            retroActiveDest (x: 91 y: 67 mapid: 0)
-        ]
-        portal (x: 3 y: 3 z: 7 destmapid: 20 startx: 3 starty: 3 startlevel: 7 action: exit_east savelocation: false message: "into Dungeon Wrong^/" transport: foot) [
-            retroActiveDest (x: 126 y: 20 mapid: 0)
-        ]
-        portal (x: 3 y: 3 z: 7 destmapid: 23 startx: 3 starty: 3 startlevel: 7 action: exit_south savelocation: false message: "into Dungeon Hythloth^/" transport: foot) [
-            retroActiveDest (x: 239 y: 240 mapid: 0)
-        ]
-        portal (x: 3 y: 3 z: 7 destmapid: 21 startx: 3 starty: 3 startlevel: 7 action: exit_west savelocation: false message: "into Dungeon Covetous^/" transport: foot) [
-            retroActiveDest (x: 156 y: 27 mapid: 0)
-        ]
-        portal (x: 7 y: 7 z: 7 destmapid: 19 startx: 7 starty: 7 startlevel: 7 action: exit_north savelocation: false message: "into Dungeon Destard^/" transport: foot) [
-            retroActiveDest (x: 72 y: 168 mapid: 0)
-        ]
-        portal (x: 7 y: 7 z: 7 destmapid: 21 startx: 7 starty: 7 startlevel: 7 action: exit_east savelocation: false message: "into Dungeon Covetous^/" transport: foot) [
-            retroActiveDest (x: 156 y: 27 mapid: 0)
-        ]
-        portal (x: 7 y: 7 z: 7 destmapid: 23 startx: 7 starty: 7 startlevel: 7 action: exit_south savelocation: false message: "into Dungeon Hythloth^/" transport: foot) [
-            retroActiveDest (x: 239 y: 240 mapid: 0)
-        ]
-        portal (x: 7 y: 7 z: 7 destmapid: 22 startx: 7 starty: 7 startlevel: 7 action: exit_west savelocation: false message: "into Dungeon Shame^/" transport: foot) [
-            retroActiveDest (x: 58 y: 102 mapid: 0)
+        portals [
+            3,3,7 exit_north 18,3,3,7  message: "into Dungeon Despise^/"  retroActiveDest: 0, 91, 67
+            3,3,7 exit_east  20,3,3,7  message: "into Dungeon Wrong^/"    retroActiveDest: 0,126, 20
+            3,3,7 exit_south 23,3,3,7  message: "into Dungeon Hythloth^/" retroActiveDest: 0,239,240
+            3,3,7 exit_west  21,3,3,7  message: "into Dungeon Covetous^/" retroActiveDest: 0,156, 27
+            7,7,7 exit_north 19,7,7,7  message: "into Dungeon Destard^/"  retroActiveDest: 0, 72,168
+            7,7,7 exit_east  21,7,7,7  message: "into Dungeon Covetous^/" retroActiveDest: 0,156, 27
+            7,7,7 exit_south 23,7,7,7  message: "into Dungeon Hythloth^/" retroActiveDest: 0,239,240
+            7,7,7 exit_west  22,7,7,7  message: "into Dungeon Shame^/"    retroActiveDest: 0, 58,102
         ]
         labels [orangestone 7,1,6]
     ]
     map (id: 22 type: dungeon fname: "shame.dng" width: 8 height: 8 levels: 8 borderbehavior: wrap firstperson: true music: 7) [
         dungeon (name: "Shame" rooms: 16)
-        portal (x: 1 y: 1 z: 7 destmapid: 17 startx: 1 starty: 1 startlevel: 7 action: exit_north savelocation: false message: "into Dungeon Deceit^/" transport: foot) [
-            retroActiveDest (x: 240 y: 73 mapid: 0)
-        ]
-        portal (x: 1 y: 1 z: 7 destmapid: 22 startx: 1 starty: 1 startlevel: 7 action: exit_east savelocation: false message: "into Dungeon Shame^/" transport: foot) [
-            retroActiveDest (x: 58 y: 102 mapid: 0)
-        ]
-        portal (x: 1 y: 1 z: 7 destmapid: 23 startx: 1 starty: 1 startlevel: 7 action: exit_south savelocation: false message: "into Dungeon Hythloth^/" transport: foot) [
-            retroActiveDest (x: 239 y: 240 mapid: 0)
-        ]
-        portal (x: 1 y: 1 z: 7 destmapid: 20 startx: 1 starty: 1 startlevel: 7 action: exit_west savelocation: false message: "into Dungeon Wrong^/" transport: foot) [
-            retroActiveDest (x: 126 y: 20 mapid: 0)
-        ]
-        portal (x: 7 y: 7 z: 7 destmapid: 19 startx: 7 starty: 7 startlevel: 7 action: exit_north savelocation: false message: "into Dungeon Destard^/" transport: foot) [
-            retroActiveDest (x: 72 y: 168 mapid: 0)
-        ]
-        portal (x: 7 y: 7 z: 7 destmapid: 21 startx: 7 starty: 7 startlevel: 7 action: exit_east savelocation: false message: "into Dungeon Covetous^/" transport: foot) [
-            retroActiveDest (x: 156 y: 27 mapid: 0)
-        ]
-        portal (x: 7 y: 7 z: 7 destmapid: 23 startx: 7 starty: 7 startlevel: 7 action: exit_south savelocation: false message: "into Dungeon Hythloth^/" transport: foot) [
-            retroActiveDest (x: 239 y: 240 mapid: 0)
-        ]
-        portal (x: 7 y: 7 z: 7 destmapid: 22 startx: 7 starty: 7 startlevel: 7 action: exit_west savelocation: false message: "into Dungeon Shame^/" transport: foot) [
-            retroActiveDest (x: 58 y: 102 mapid: 0)
+        portals [
+            1,1,7 exit_north 17,1,1,7  message: "into Dungeon Deceit^/"   retroActiveDest: 0,240, 73
+            1,1,7 exit_east  22,1,1,7  message: "into Dungeon Shame^/"    retroActiveDest: 0, 58,102
+            1,1,7 exit_south 23,1,1,7  message: "into Dungeon Hythloth^/" retroActiveDest: 0,239,240
+            1,1,7 exit_west  20,1,1,7  message: "into Dungeon Wrong^/"    retroActiveDest: 0,126, 20
+            7,7,7 exit_north 19,7,7,7  message: "into Dungeon Destard^/"  retroActiveDest: 0, 72,168
+            7,7,7 exit_east  21,7,7,7  message: "into Dungeon Covetous^/" retroActiveDest: 0,156, 27
+            7,7,7 exit_south 23,7,7,7  message: "into Dungeon Hythloth^/" retroActiveDest: 0,239,240
+            7,7,7 exit_west  22,7,7,7  message: "into Dungeon Shame^/"    retroActiveDest: 0, 58,102
         ]
         labels [purplestone 7,7,1]
     ]
     map (id: 23 type: dungeon fname: "hythloth.dng" width: 8 height: 8 levels: 8 borderbehavior: wrap firstperson: true music: 7) [
         dungeon (name: "Hythloth" rooms: 16)
-        portal (x: 1 y: 1 z: 7 destmapid: 17 startx: 1 starty: 1 startlevel: 7 action: exit_north savelocation: false message: "into Dungeon Deceit^/" transport: foot) [
-            retroActiveDest (x: 240 y: 73 mapid: 0)
-        ]
-        portal (x: 1 y: 1 z: 7 destmapid: 22 startx: 1 starty: 1 startlevel: 7 action: exit_east savelocation: false message: "into Dungeon Shame^/" transport: foot) [
-            retroActiveDest (x: 58 y: 102 mapid: 0)
-        ]
-        portal (x: 1 y: 1 z: 7 destmapid: 23 startx: 1 starty: 1 startlevel: 7 action: exit_south savelocation: false message: "into Dungeon Hythloth^/" transport: foot) [
-            retroActiveDest (x: 239 y: 240 mapid: 0)
-        ]
-        portal (x: 1 y: 1 z: 7 destmapid: 20 startx: 1 starty: 1 startlevel: 7 action: exit_west savelocation: false message: "into Dungeon Wrong^/" transport: foot) [
-            retroActiveDest (x: 126 y: 20 mapid: 0)
-        ]
-        portal (x: 3 y: 3 z: 7 destmapid: 18 startx: 3 starty: 3 startlevel: 7 action: exit_north savelocation: false message: "into Dungeon Despise^/" transport: foot) [
-            retroActiveDest (x: 91 y: 67 mapid: 0)
-        ]
-        portal (x: 3 y: 3 z: 7 destmapid: 20 startx: 3 starty: 3 startlevel: 7 action: exit_east savelocation: false message: "into Dungeon Wrong^/" transport: foot) [
-            retroActiveDest (x: 126 y: 20 mapid: 0)
-        ]
-        portal (x: 3 y: 3 z: 7 destmapid: 23 startx: 3 starty: 3 startlevel: 7 action: exit_south savelocation: false message: "into Dungeon Hythloth^/" transport: foot) [
-            retroActiveDest (x: 239 y: 240 mapid: 0)
-        ]
-        portal (x: 3 y: 3 z: 7 destmapid: 21 startx: 3 starty: 3 startlevel: 7 action: exit_west savelocation: false message: "into Dungeon Covetous^/" transport: foot) [
-            retroActiveDest (x: 156 y: 27 mapid: 0)
-        ]
-        portal (x: 7 y: 7 z: 7 destmapid: 19 startx: 7 starty: 7 startlevel: 7 action: exit_north savelocation: false message: "into Dungeon Destard^/" transport: foot) [
-            retroActiveDest (x: 72 y: 168 mapid: 0)
-        ]
-        portal (x: 7 y: 7 z: 7 destmapid: 21 startx: 7 starty: 7 startlevel: 7 action: exit_east savelocation: false message: "into Dungeon Covetous^/" transport: foot) [
-            retroActiveDest (x: 156 y: 27 mapid: 0)
-        ]
-        portal (x: 7 y: 7 z: 7 destmapid: 23 startx: 7 starty: 7 startlevel: 7 action: exit_south savelocation: false message: "into Dungeon Hythloth^/" transport: foot) [
-            retroActiveDest (x: 239 y: 240 mapid: 0)
-        ]
-        portal (x: 7 y: 7 z: 7 destmapid: 22 startx: 7 starty: 7 startlevel: 7 action: exit_west savelocation: false message: "into Dungeon Shame^/" transport: foot) [
-            retroActiveDest (x: 58 y: 102 mapid: 0)
+        portals [
+            1,1,7 exit_north 17,1,1,7  message: "into Dungeon Deceit^/"   retroActiveDest: 0,240, 73
+            1,1,7 exit_east  22,1,1,7  message: "into Dungeon Shame^/"    retroActiveDest: 0, 58,102
+            1,1,7 exit_south 23,1,1,7  message: "into Dungeon Hythloth^/" retroActiveDest: 0,239,240
+            1,1,7 exit_west  20,1,1,7  message: "into Dungeon Wrong^/"    retroActiveDest: 0,126, 20
+            3,3,7 exit_north 18,3,3,7  message: "into Dungeon Despise^/"  retroActiveDest: 0, 91, 67
+            3,3,7 exit_east  20,3,3,7  message: "into Dungeon Wrong^/"    retroActiveDest: 0,126, 20
+            3,3,7 exit_south 23,3,3,7  message: "into Dungeon Hythloth^/" retroActiveDest: 0,239,240
+            3,3,7 exit_west  21,3,3,7  message: "into Dungeon Covetous^/" retroActiveDest: 0,156, 27
+            7,7,7 exit_north 19,7,7,7  message: "into Dungeon Destard^/"  retroActiveDest: 0, 72,168
+            7,7,7 exit_east  21,7,7,7  message: "into Dungeon Covetous^/" retroActiveDest: 0,156, 27
+            7,7,7 exit_south 23,7,7,7  message: "into Dungeon Hythloth^/" retroActiveDest: 0,239,240
+            7,7,7 exit_west  22,7,7,7  message: "into Dungeon Shame^/"    retroActiveDest: 0, 58,102
         ]
     ]
     map (id: 24 type: dungeon fname: "abyss.dng" width: 8 height: 8 levels: 8 borderbehavior: wrap firstperson: true music: 7) [
