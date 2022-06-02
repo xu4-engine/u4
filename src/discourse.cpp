@@ -131,13 +131,19 @@ bool discourse_run(const Discourse* dis, uint16_t entry, Person* npc)
     if (entry >= dis->convCount)
         return false;
 
+    bool talked = false;
+    Controller noTurns;
+    xu4.eventHandler->pushController(&noTurns);
+
     switch (dis->system) {
     case DISCOURSE_CASTLE:
-        return talkRunU4Castle(dis, entry, npc);
+        talked = talkRunU4Castle(dis, entry, npc);
+        break;
 
     case DISCOURSE_U4_TLK:
         talkRunU4Tlk(dis, entry, npc);
-        return true;
+        talked = true;
+        break;
 
 #ifdef CONF_MODULE
     case DISCOURSE_XU4_TALK:
@@ -145,18 +151,15 @@ bool discourse_run(const Discourse* dis, uint16_t entry, Person* npc)
         int32_t blkN = xu4.config->npcTalk(dis->conv.id);
         if (blkN) {
             talkRunBoron(dis, entry, npc);
-            return true;
+            talked = true;
         }
     }
-        return false;
+        break;
 #endif
 
     case DISCOURSE_VENDOR:
     {
         const char** goods = (const char**) dis->conv.table;
-        Controller noTurns;
-
-        xu4.eventHandler->pushController(&noTurns);
 
 #ifdef USE_BORON
         // Make a valid Boron word! from names with spaces.
@@ -176,11 +179,13 @@ bool discourse_run(const Discourse* dis, uint16_t entry, Person* npc)
 #endif
 
         pauseFollow(npc);
-        xu4.eventHandler->popController();
     }
-        return true;
+        talked = true;
+        break;
     }
-    return false;
+
+    xu4.eventHandler->popController();
+    return talked;
 }
 
 /*
