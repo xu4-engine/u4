@@ -357,7 +357,7 @@ void tlkToBoron(FILE *tlk, FILE* out, int editLook) {
         talk_init(&ts, tlk_buffer);
         look = editLook ? fixLook(&ts) : ts.look;
 
-        fprintf( out, "[\n  name: \"%s\"\t; %d\n", ts.name, num++ );
+        fprintf( out, "[\n  name: \"%s\"\t; %d\n", bstr(ts.name), num++ );
         fprintf( out, "  pronoun: \"%s\"\n", ts.pronoun );
         fprintf( out, "  look: \"%s\"\n", bstr(look) );
         if (ts.turnAway)
