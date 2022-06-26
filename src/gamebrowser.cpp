@@ -115,6 +115,7 @@ GameBrowser::~GameBrowser()
         gs_unplug(listenerId);
         free(txf[0]);
         free(txf[1]);
+        free(txf[2]);
     }
 }
 
@@ -293,13 +294,14 @@ void GameBrowser::layout()
             FONT_N, 0, FONT_SIZE, PSIZE_LIST, LIST_DT_ST, STORE_DT_AREA,
             FROM_BOTTOM,
             FONT_N, 1, FONT_SIZE, 24,
-            LAYOUT_H, SPACING_PER, 20, FIX_WIDTH_EM, 50,
+            LAYOUT_H, SPACING_PER, 10, FIX_WIDTH_EM, 50,
+                BUTTON_DT_S, STORE_DT_AREA,
                 BUTTON_DT_S, STORE_DT_AREA,
                 BUTTON_DT_S, STORE_DT_AREA,
             LAYOUT_END,
         LAYOUT_END
     };
-    const void* guiData[8];
+    const void* guiData[10];
     const void** data = guiData;
 
     browserGui[15] = 16 * xu4.settings->scale;
@@ -310,6 +312,8 @@ void GameBrowser::layout()
     *data++ = listArea;
     *data++ = "Play";
     *data++ = okArea;
+    *data++ = "Quit";
+    *data++ = quitArea;
     *data++ = "Cancel";
     *data   = cancelArea;
 
@@ -480,6 +484,8 @@ bool GameBrowser::inputEvent(const InputEvent* ev)
                     selectModule(listArea, y);
                 else if (insideArea(cancelArea, ev->x, y))
                     keyPressed(U4_ESC);
+                else if (insideArea(quitArea, ev->x, y))
+                    xu4.eventHandler->quitGame();
                 else if (insideArea(okArea, ev->x, y))
                     keyPressed(U4_ENTER);
             }

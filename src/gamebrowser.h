@@ -33,6 +33,7 @@ private:
     uint16_t   selMusic;        // 0 = none
     int16_t    listArea[4];
     int16_t    okArea[4];
+    int16_t    quitArea[4];
     int16_t    cancelArea[4];
 
     void selectModule(const int16_t* rect, int y);
