@@ -498,7 +498,7 @@ sound: [
     %fx_tremor.ogg
     %spell_precast_dos.ogg
     %spell_flash_25.ogg
-    %fire_field_walking.ogg
+    %whirlpool.rfx
     %cyclone.rfx
     %gate_open.ogg
     %stone_falling.ogg

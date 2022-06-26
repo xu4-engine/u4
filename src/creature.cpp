@@ -244,38 +244,42 @@ bool Creature::specialEffect() {
     case WHIRLPOOL_ID:
         {
             ObjectDeque::iterator i;
+            Map* map = c->location->map;
 
-            if (coords == c->location->coords && (c->transportContext == TRANSPORT_SHIP)) {
+            if (coords == c->location->coords &&
+                c->transportContext == TRANSPORT_SHIP) {
+
+                soundPlay(SOUND_WHIRLPOOL);
+                EventHandler::wait_msecs(soundDuration(SOUND_WHIRLPOOL));
 
                 /* Deal 10 damage to the ship */
+                soundPlay(SOUND_PARTY_STRUCK);
                 gameDamageShip(-1, 10);
 
                 /* Send the party to Locke Lake */
-                const Coords* dest =
-                    c->location->map->getLabel(Tile::sym.lockelake);
+                const Coords* dest = map->getLabel(Tile::sym.lockelake);
                 if (dest)
                     c->location->coords = *dest;
 
+                /* Always facing west in DOS version. */
+                c->party->setDirection(DIR_WEST);
+
                 /* Teleport the whirlpool that sent you there far away from lockelake */
-                this->updateCoords(Coords(0,0,0));
-                retval = true;
-                break;
+                updateCoords(Coords(0,0,0));
+                return true;
             }
 
-            /* See if the whirlpool is on top of any objects and destroy them! */
-            for (i = c->location->map->objects.begin();
-                 i != c->location->map->objects.end();) {
-
+            // See if the whirlpool is on top of any objects and destroy them!
+            for (i = map->objects.begin(); i != map->objects.end(); ) {
                 obj = *i;
 
                 if (this != obj && obj->coords == coords) {
-
                     Creature *m = dynamic_cast<Creature*>(obj);
 
                     /* Make sure the object isn't a flying creature or object */
                     if (!m || (m && (m->swims() || m->sails()) && !m->flies())) {
                         /* Destroy the object it met with */
-                        i = c->location->map->removeObject(i);
+                        i = map->removeObject(i);
                         retval = true;
                     }
                     else {
@@ -283,6 +287,12 @@ bool Creature::specialEffect() {
                     }
                 }
                 else i++;
+            }
+
+            // Play whirlpool sound once if any objects are destroyed.
+            if (retval) {
+                soundPlay(SOUND_WHIRLPOOL);
+                EventHandler::wait_msecs(soundDuration(SOUND_WHIRLPOOL));
             }
         }
 
