@@ -345,6 +345,8 @@ bool GameBrowser::present()
     if (! fontTexture)
         return false;
 
+    screenSetMouseCursor(MC_DEFAULT);
+
     sst_init(&modFiles, 8, 128);
     sst_init(&modFormat, 8, 50);
     readModuleList(&modFiles, &modFormat, infoList);
