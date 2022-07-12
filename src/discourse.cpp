@@ -211,3 +211,14 @@ int discourse_findName(const Discourse* dis, const char* name)
     }
     return -1;
 }
+
+const char* discourse_name(const Discourse* dis, uint16_t entry)
+{
+    if (entry < dis->convCount) {
+        if (dis->system == DISCOURSE_U4_TLK) {
+            const U4Talk* tlk = ((const U4Talk*) dis->conv.table) + entry;
+            return tlk->strings + tlk->name;
+        }
+    }
+    return "(unnamed)";
+}

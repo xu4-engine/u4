@@ -32,6 +32,8 @@ public:
     Person(const MapTile& tile);
     Person(const Person *p);
 
+    virtual std::string getName() const;
+
     bool isVendor() const;
     void setDiscourseId(uint16_t n);
     uint16_t discourseId() const { return convId; }

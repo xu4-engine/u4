@@ -3,6 +3,10 @@
  */
 
 #include "person.h"
+#include "context.h"
+#include "city.h"
+
+const uint16_t CONV_NONE = 0xffff;
 
 /**
  * Returns true of the object that 'punknown' points
@@ -22,11 +26,23 @@ Person::Person(const MapTile& tile) :
 {
     objType = Object::PERSON;
     npcType = NPC_EMPTY;
-    convId = 0xffff;
+    convId = CONV_NONE;
 }
 
 Person::Person(const Person *p) {
     *this = *p;
+}
+
+std::string Person::getName() const {
+    if (convId != CONV_NONE &&
+        npcType >= NPC_TALKER &&
+        npcType <= NPC_TALKER_COMPANION)
+    {
+        const City* city = static_cast<const City*>(c->location->map);
+        if (isCity(city))
+            return discourse_name(&city->disc, convId);
+    }
+    return Creature::getName();
 }
 
 bool Person::isVendor() const {

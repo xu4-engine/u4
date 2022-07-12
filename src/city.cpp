@@ -52,17 +52,15 @@ Person *City::addPerson(Person *person) {
  * Add people to the map
  */
 void City::addPeople() {
-    PersonList::iterator current;
-
     // Make sure the city has no people in it already
     removeAllPeople();
 
-    for (current = persons.begin(); current != persons.end(); current++) {
-        Person *p = *current;
-        if ( (p->tile != 0)
-             && !(c->party->canPersonJoin(p->getName(), NULL)
-                  && c->party->isPersonJoined(p->getName()))
-            )
+    PersonList::iterator it;
+    for (it = persons.begin(); it != persons.end(); it++) {
+        Person *p = *it;
+        if ((p->tile != 0) &&
+            ! (p->getNpcType() == NPC_TALKER_COMPANION &&
+               c->party->isPersonJoined(p->getName())))
             addPerson(p);
     }
 }

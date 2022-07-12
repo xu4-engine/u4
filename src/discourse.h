@@ -32,5 +32,6 @@ const char* discourse_load(Discourse*, const char* resource);
 void        discourse_free(Discourse*);
 bool        discourse_run(const Discourse*, uint16_t entry, Person*);
 int         discourse_findName(const Discourse*, const char* name);
+const char* discourse_name(const Discourse*, uint16_t entry);
 
 #endif
