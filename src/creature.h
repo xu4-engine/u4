@@ -141,7 +141,7 @@ public:
     Creature(const Creature* cproto);
 
     // Accessor methods
-    virtual std::string getName() const;
+    virtual const char* getName() const;
     virtual Symbol getHitTile() const   {return rangedhittile;}
     virtual Symbol getMissTile() const  {return rangedmisstile;}
     CreatureId getId() const                    {return id;}

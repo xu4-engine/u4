@@ -5,13 +5,10 @@
 #ifndef STATS_H
 #define STATS_H
 
-#include <string>
 #include "menu.h"
 #include "textview.h"
 
 class Ingredients;
-
-using std::string;
 
 #define STATS_AREA_WIDTH 15
 #define STATS_AREA_HEIGHT 8
@@ -66,7 +63,7 @@ private:
     void showItems();
     void showReagents(bool active = false);
     void showMixtures();
-    void setTitle(const string &s);
+    void setTitle(const char* s);
 
     TextView title;
     TextView mainArea;

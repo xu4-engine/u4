@@ -2,6 +2,8 @@
  * $Id$
  */
 
+#include <cstring>
+
 #include "party.h"
 
 #include "config.h"
@@ -13,6 +15,8 @@
 #include "utils.h"
 #include "weapon.h"
 #include "xu4.h"
+
+#define strequ(A, B)    (strcmp(A, B) == 0)
 
 #ifdef IOS
 #include "ios_helpers.h"
@@ -114,7 +118,7 @@ const Armor *PartyMember::getArmor() const {
     return xu4.config->armor(player->armor);
 }
 
-string PartyMember::getName() const          { return player->name; }
+const char* PartyMember::getName() const     { return player->name; }
 SexType PartyMember::getSex() const          { return player->sex; }
 ClassType PartyMember::getClass() const      { return player->klass; }
 
@@ -750,14 +754,14 @@ bool Party::canEnterShrine(Virtue virtue) {
 /**
  * Returns true if the person can join the party
  */
-bool Party::canPersonJoin(string name, Virtue *v) {
+bool Party::canPersonJoin(const char* name, Virtue *v) {
     int i;
 
-    if (name.empty())
-        return 0;
+    if (! name)
+        return false;
 
     for (i = 1; i < 8; i++) {
-        if (name == saveGame->players[i].name) {
+        if (strequ(name, saveGame->players[i].name)) {
             if (v)
                 *v = (Virtue) saveGame->players[i].klass;
             return true;
@@ -922,14 +926,14 @@ bool Party::isDead() {
  * Returns true if the person with that name
  * is already in the party
  */
-bool Party::isPersonJoined(string name) {
+bool Party::isPersonJoined(const char* name) {
     int i;
 
-    if (name.empty())
+    if (! name)
         return false;
 
     for (i = 1; i < saveGame->members; i++) {
-        if (name == saveGame->players[i].name)
+        if (strequ(name, saveGame->players[i].name))
             return true;
     }
     return false;
@@ -939,12 +943,12 @@ bool Party::isPersonJoined(string name) {
  * Attempts to add the person to the party.
  * Returns JOIN_SUCCEEDED if successful.
  */
-CannotJoinError Party::join(string name) {
+CannotJoinError Party::join(const char* name) {
     int i;
     SaveGamePlayerRecord tmp;
 
     for (i = saveGame->members; i < 8; i++) {
-        if (name == saveGame->players[i].name) {
+        if (strequ(name, saveGame->players[i].name)) {
 
             /* ensure avatar is experienced enough */
             if (saveGame->members + 1 > (saveGame->players[0].hpMax / 100))

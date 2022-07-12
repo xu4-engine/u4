@@ -754,7 +754,7 @@ void GameController::gameNotice(int sender, void* eventData, void* user) {
 
         case PartyEvent::ADVANCED_LEVEL:
             screenMessage("\n%c%s\nThou art now Level %d%c\n", FG_YELLOW,
-                    ev->player->getName().c_str(),
+                    ev->player->getName(),
                     ev->player->getRealLevel(), FG_WHITE);
             gameSpellEffect('r', -1, SOUND_MAGIC); // Same as resurrect spell
             break;
@@ -1674,7 +1674,7 @@ static bool destroyAt(const Coords &coords) {
     if (obj) {
         if (isCreature(obj)) {
             Creature *c = dynamic_cast<Creature*>(obj);
-            screenMessage("%s Destroyed!\n", c->getName().c_str());
+            screenMessage("%s Destroyed!\n", c->getName());
         }
         else {
             const Tile* tile = obj->tile.getTileType();
@@ -2769,7 +2769,7 @@ static void newOrder() {
         return;
 
     if (player1 == 0) {
-        screenMessage("%s, You must lead!\n", c->party->member(0)->getName().c_str());
+        screenMessage("%s, You must lead!\n", c->party->member(0)->getName());
         return;
     }
 
@@ -2781,7 +2781,7 @@ static void newOrder() {
         return;
 
     if (player2 == 0) {
-        screenMessage("%s, You must lead!\n", c->party->member(0)->getName().c_str());
+        screenMessage("%s, You must lead!\n", c->party->member(0)->getName());
         return;
     }
 
@@ -3159,7 +3159,7 @@ static void gameFixupObjects(Map *map, const SaveGameMonsterRecord* table) {
 static void gameCreatureAttack(Creature *m) {
     const Tile *ground;
 
-    screenMessage("\nAttacked by %s\n", m->getName().c_str());
+    screenMessage("\nAttacked by %s\n", m->getName());
 
     ground = battleGround(c->location->map, c->location->coords);
 
@@ -3331,7 +3331,7 @@ void gameSetActivePlayer(int player) {
     }
     else if (player < party->size()) {
         screenMessage("Set Active Player: %s!\n",
-                      party->member(player)->getName().c_str());
+                      party->member(player)->getName());
         if (party->member(player)->isDisabled())
             screenMessage("Disabled!\n");
         else

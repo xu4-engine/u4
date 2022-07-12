@@ -5,7 +5,6 @@
 #ifndef PARTY_H
 #define PARTY_H
 
-#include <string>
 #include <vector>
 
 #include "creature.h"
@@ -16,8 +15,6 @@
 class Party;
 struct Weapon;
 struct Armor;
-
-using std::string;
 
 typedef std::vector<class PartyMember *> PartyMemberVector;
 
@@ -101,7 +98,7 @@ public:
     int getMaxMp() const;
     const Weapon *getWeapon() const;
     const Armor *getArmor() const;
-    virtual string getName() const;
+    virtual const char* getName() const;
     SexType getSex() const;
     ClassType getClass() const;
     virtual CreatureStatus getState() const;
@@ -179,7 +176,7 @@ public:
     bool attemptElevation(Virtue virtue);
     bool burnTorch(int turns = 1);
     bool canEnterShrine(Virtue virtue);
-    bool canPersonJoin(string name, Virtue *v);
+    bool canPersonJoin(const char* name, Virtue *v);
     bool donate(int quantity);
     void endTurn();
     int  getChest();
@@ -189,8 +186,8 @@ public:
     bool isFlying() const;
     bool isImmobilized();
     bool isDead();
-    bool isPersonJoined(string name);
-    CannotJoinError join(string name);
+    bool isPersonJoined(const char* name);
+    CannotJoinError join(const char* name);
     bool lightTorch(int duration = 100, bool loseTorch = true);
     void quenchTorch();
     void reviveParty();

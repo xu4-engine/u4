@@ -468,7 +468,7 @@ bool CombatController::setActivePlayer(int player) {
         p->focused = true;
         focus = player;
 
-        screenMessage("\n%s with %s\n\020", p->getName().c_str(), p->getWeapon()->getName());
+        screenMessage("\n%s with %s\n\020", p->getName(), p->getWeapon()->getName());
         c->stats->highlightPlayer(focus);
         return true;
     }
@@ -629,7 +629,7 @@ static bool rangedAttack(const Coords &coords, CombatMap* map,
     case EFFECT_ELECTRICITY:
         /* FIXME: are there any special effects here? */
         soundPlay(SOUND_PC_STRUCK, false);
-        screenMessage("\n%s %cElectrified%c!\n", target->getName().c_str(), FG_BLUE, FG_WHITE);
+        screenMessage("\n%s %cElectrified%c!\n", target->getName(), FG_BLUE, FG_WHITE);
         attacker->dealDamage(map, target, attacker->getDamage());
         break;
 
@@ -640,7 +640,7 @@ static bool rangedAttack(const Coords &coords, CombatMap* map,
         {
             // POISON_EFFECT, ranged hit
             soundPlay(SOUND_POISON_EFFECT, false);
-            screenMessage("\n%s %cPoisoned%c!\n", target->getName().c_str(), FG_GREEN, FG_WHITE);
+            screenMessage("\n%s %cPoisoned%c!\n", target->getName(), FG_GREEN, FG_WHITE);
             target->addStatus(STAT_POISONED);
         }
         // else screenMessage("Failed.\n");
@@ -652,7 +652,7 @@ static bool rangedAttack(const Coords &coords, CombatMap* map,
         {
             // SLEEP, ranged hit, plays even if sleep failed or PC already asleep
             soundPlay(SOUND_SLEEP, false);
-            screenMessage("\n%s %cSlept%c!\n", target->getName().c_str(), FG_PURPLE, FG_WHITE);
+            screenMessage("\n%s %cSlept%c!\n", target->getName(), FG_PURPLE, FG_WHITE);
             target->putToSleep();
         }
         // else screenMessage("Failed.\n");
@@ -662,7 +662,7 @@ static bool rangedAttack(const Coords &coords, CombatMap* map,
     case EFFECT_FIRE:
         /* FIXME: are there any special effects here? */
         soundPlay(SOUND_PC_STRUCK, false);
-        screenMessage("\n%s %c%s Hit%c!\n", target->getName().c_str(), FG_RED,
+        screenMessage("\n%s %c%s Hit%c!\n", target->getName(), FG_RED,
                       effect == EFFECT_LAVA ? "Lava" : "Fiery", FG_WHITE);
         attacker->dealDamage(map, target, attacker->getDamage());
         break;
@@ -671,8 +671,8 @@ static bool rangedAttack(const Coords &coords, CombatMap* map,
         /* show the appropriate 'hit' message */
         // soundPlay(SOUND_PC_STRUCK, false);
         if (hittile == Tileset::findTileByName(Tile::sym.magicFlash)->getId())
-            screenMessage("\n%s %cMagical Hit%c!\n", target->getName().c_str(), FG_BLUE, FG_WHITE);
-        else screenMessage("\n%s Hit!\n", target->getName().c_str());
+            screenMessage("\n%s %cMagical Hit%c!\n", target->getName(), FG_BLUE, FG_WHITE);
+        else screenMessage("\n%s Hit!\n", target->getName());
         attacker->dealDamage(map, target, attacker->getDamage());
         break;
     }
@@ -1235,7 +1235,7 @@ void CombatController::combatNotice(int sender, void* eventData, void* user) {
     (void) user;
     if (event->type == PartyEvent::PLAYER_KILLED)
         screenMessage("\n%c%s is Killed!%c\n",
-                      FG_RED, event->player->getName().c_str(), FG_WHITE);
+                      FG_RED, event->player->getName(), FG_WHITE);
 }
 
 /**

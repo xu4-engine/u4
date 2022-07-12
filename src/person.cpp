@@ -33,7 +33,7 @@ Person::Person(const Person *p) {
     *this = *p;
 }
 
-std::string Person::getName() const {
+const char* Person::getName() const {
     if (convId != CONV_NONE &&
         npcType >= NPC_TALKER &&
         npcType <= NPC_TALKER_COMPANION)

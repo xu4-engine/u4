@@ -201,9 +201,9 @@ void StatsArea::redraw() {
 /**
  * Sets the title of the stats area.
  */
-void StatsArea::setTitle(const string &s) {
-    int titleStart = (STATS_AREA_WIDTH / 2) - ((s.length() + 2) / 2);
-    title.textAt(titleStart, 0, "%c%s%c", 16, s.c_str(), 17);
+void StatsArea::setTitle(const char* s) {
+    int titleStart = (STATS_AREA_WIDTH / 2) - ((strlen(s) + 2) / 2);
+    title.textAt(titleStart, 0, "%c%s%c", 16, s, 17);
 }
 
 /**
@@ -220,12 +220,12 @@ void StatsArea::showPartyView(bool avatarOnly) {
     if (!avatarOnly) {
         for (int i = 0; i < c->party->size(); i++) {
             p = c->party->member(i);
-            mainArea.textAt(0, i, format, i+1, (i==activePlayer) ? CHARSET_BULLET : '-', p->getName().c_str(), p->getHp(), mainArea.colorizeStatus(p->getStatus()).c_str());
+            mainArea.textAt(0, i, format, i+1, (i==activePlayer) ? CHARSET_BULLET : '-', p->getName(), p->getHp(), mainArea.colorizeStatus(p->getStatus()).c_str());
         }
     }
     else {
         p = c->party->member(0);
-        mainArea.textAt(0, 0, format, 1, (activePlayer==0) ? CHARSET_BULLET : '-', p->getName().c_str(), p->getHp(), mainArea.colorizeStatus(p->getStatus()).c_str());
+        mainArea.textAt(0, 0, format, 1, (activePlayer==0) ? CHARSET_BULLET : '-', p->getName(), p->getHp(), mainArea.colorizeStatus(p->getStatus()).c_str());
     }
 }
 

@@ -47,7 +47,7 @@ Creature::Creature(const Creature* cproto) : Object(Object::CREATURE) {
     animId = ANIM_UNUSED;
 }
 
-std::string Creature::getName() const {
+const char* Creature::getName() const {
     return CSTR(name);
 }
 

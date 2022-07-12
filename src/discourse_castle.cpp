@@ -318,7 +318,7 @@ static void runTalkLordBritish(const U4TalkLordBritish* lb)
                 break;
             case 2:
                 message("%s%s and thee also %s!\n", welcome, pcName.c_str(),
-                        party->member(1)->getName().c_str());
+                        party->member(1)->getName());
                 soundSpeakLine(VOICE_LB, LINE_WELCOME, true);
                 break;
             default:

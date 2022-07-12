@@ -32,7 +32,7 @@ public:
     Person(const MapTile& tile);
     Person(const Person *p);
 
-    virtual std::string getName() const;
+    virtual const char* getName() const;
 
     bool isVendor() const;
     void setDiscourseId(uint16_t n);

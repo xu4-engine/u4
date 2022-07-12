@@ -2,6 +2,8 @@
  * $Id$
  */
 
+#include <cstring>
+
 #include "camp.h"
 
 #include "city.h"
@@ -192,7 +194,7 @@ void InnController::maybeMeetIsaac()
                  i != c->location->map->objects.end();
                  i++) {
                 Person *p = dynamic_cast<Person*>(*i);
-                if (p && p->getName() == "Isaac") {
+                if (p && strcmp(p->getName(), "Isaac") == 0) {
                     p->updateCoords(coords);
                     return;
                 }
