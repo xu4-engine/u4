@@ -99,7 +99,7 @@ static const char* mod_openModule(ModuleLoader* ml, const char* filename,
     if (! ml->fp)
        return "Cannot open module";
 
-    if (ml->header.appId != CDI32('x','u','B', 2)) {
+    if (ml->header.appId != CDI32('x','u','4', 2)) {
         fclose(ml->fp);
         return "Invalid module id";
     }

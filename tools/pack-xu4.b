@@ -352,7 +352,7 @@ pack-files: does [
 ]
 
 if file-package [
-	cdi-begin "xuB^2"
+	cdi-begin "xu4^2"
 	pack-files
 
 	if ge? verbose 2 [probe file-dict]
@@ -595,7 +595,7 @@ map-portals: []
 map-moongates: none
 map-roles: none
 
-cdi-begin "xuB^2"
+cdi-begin "xu4^2"
 pack-files
 
 process-cfg [
