@@ -9,14 +9,14 @@ install_allegro() {
 		sudo pacman -Sy allegro
 		;;
 	fedora)
-		sudo dnf install allegro5-addon-acodec
+		sudo dnf install allegro5
 		;;
 	ubuntu|pop)
 		sudo add-apt-repository ppa:allegro/5.2
-		sudo apt-get install liballegro-acodec5.2
+		sudo apt-get install liballegro5.2
 		;;
 	debian|devuan)
-		sudo apt-get install liballegro-acodec5.2
+		sudo apt-get install liballegro5.2
 		;;
 	*)
 		echo "You will need to install Allegro 5 manually (v5.2.7 or later is recommended)"
