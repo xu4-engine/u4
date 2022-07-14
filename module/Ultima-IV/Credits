@@ -1,13 +1,6 @@
 Some assets utilize copyrighted material, the use of which is hereby
 acknowledged.
 
-image/vutne
-    The PNG files are conversions of Vanja Utne's artwork from the Ultima IV
-    Remastered project.
-
-    Copyright: KOA files (C) 2015 by Vanja Utne
-    Download:  https://github.com/MagerValp/u4remastered/tree/master/src/charcreate
-
 music/minstrel
     The OGG files are conversions (via timidity) of Markus Brenner's MIDI
     files.
@@ -15,7 +8,7 @@ music/minstrel
     Copyright: MIDI files (C) 1998 by Markus Brenner (Minstrel Dragon)
     Download:  http://markus.brenner.de/ultima/binary/u4-midi.zip
 
-stone_falling.ogg
+sound/stone_falling.ogg
     Copyright: Wav file (C) 2020 by bolkmar
     License:   CC BY 3.0
     Download:  https://freesound.org/people/bolkmar/sounds/539178/
