@@ -23,31 +23,27 @@ Developer Builds
 
 ### Dependencies
 
-There are two supported platform libraries (Allegro 5 & SDL 1.2) and
-two supported configuration libraries (Boron 2 & libxml2):
-The official builds use Allegro & Boron.
+The following libraries are required:
 
-The Allegro 5 build requires the allegro, allegro_audio, & allegro_acodec
-libraries & headers.  Allegro 5.2.7 or later is recommended.
+ - Allegro 5.2.7 (or later)
+ - Boron 2.0.8
+ - Faun 0.1.1
+    - Vorbis
+ - PNG
 
-To use SDL 1.2, the SDL & SDL_mixer libraries are required.  TiMidity++ may
-be necessary on some platforms, too.
-
-Linux distributions will provide some of these libraries.
-Below are example commands for a few flavors of Linux.
+Linux distributions will provide the Allegro, Vorbis, & PNG libraries.
+Below are example install commands for a few flavors of Linux.
 
 Fedora:
 
-    sudo dnf install allegro5-addon-acodec-devel
-    sudo dnf install SDL_mixer-devel liblibxml2-devel
+    sudo dnf install allegro5-devel libvorbis-devel libpng-devel
 
 Ubuntu:
 
     sudo add-apt-repository ppa:allegro/5.2
-    sudo apt install liballegro-acodec5-dev
-    sudo apt install libsdl-mixer1.2-dev libxml2-dev
+    sudo apt install liballegro5-dev libvorbis-dev libpng-dev
 
-When using Boron, the interpreter program is needed build game modules.
+The Boron interpreter program is needed to build game modules.
 The static binaries can be downloaded from the
 [Boron homepage](http://urlan.sourceforge.net/boron/).
 
@@ -62,6 +58,9 @@ properly configure it for xu4, build `libboron.a`, and install it:
     make -C dist/boron libboron.a
     sudo make -C dist/boron DESTDIR=/usr install-dev
 
+Faun SDKs can be downloaded from the
+[Faun Downloads](https://wickedsmoke.github.io/faun/md_download.html) page.
+
 
 ### configure
 
@@ -72,9 +71,6 @@ To see the configure options run:
 
     ./configure -h
 
-> **_NOTE:_** Building with SDL currently requires this configuration:
-> 
->    ./configure --sdl --gpu none --xml
 
 ### GNU Make
 
@@ -82,11 +78,11 @@ The following commands should get you running:
 
     ./configure
     make download
-    make Ultima-IV.mod
+    make mod
     make
     src/xu4
 
-This downloads the original game archives, packs the game module, builds the
+This downloads the original game archives, packs the game modules, builds the
 binary, and then runs the program.
 
 ### Copr
@@ -95,7 +91,7 @@ The following commands should get you running:
 
     ./configure
     make download
-    make Ultima-IV.mod
+    make mod
     copr
     ./xu4
 
@@ -133,15 +129,15 @@ specifics see the `dist/Dockerfile.*` files.
 > **_NOTE:_** dist/Makefile is currently hardcoded to use Podman `buildah`.
 > If Docker is being used, uncomment the `docker build` line.
 
-The `cbuild-sdks` Makefile target downloads the required Allegro & Boron SDKs
-using `curl`.
+The `cbuild-sdks` Makefile target downloads the required Allegro, Boron, &
+Faun SDKs using `curl`.
 
 ### Running Cbuild
 
 After setup is complete all supported targets can be built using using these
 commands:
 
-    make Ultima-IV.mod
+    make mod
     tools/cbuild linux
     tools/cbuild windows
 
@@ -156,7 +152,7 @@ Cbuild executes these steps:
  2. A container is started, the code archive & SDKs are passed to it, and
     a binary is built.
  3. The host retrieves the binary and creates the application archive using
-    the current game module.
+    the current game modules.
 
 To rebuild after any code changes, first remove the project.tar.gz file
 manually.
