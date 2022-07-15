@@ -106,6 +106,8 @@ struct Screen {
     }
 };
 
+#define XU4_SCREEN  ((Screen*) xu4.screen)
+
 static void screenLoadLayoutsFromConf(Screen*);
 #ifndef GPU_RENDER
 static void screenFindLineOfSight();
@@ -223,16 +225,17 @@ enum ScreenSystemStage {
  * Sets xu4.screen, xu4.screenSys, xu4.screenImage & xu4.gpu pointers.
  */
 void screenInit(int layerCount) {
-    xu4.screen = new Screen(layerCount);
-    screenInit_sys(xu4.settings, &xu4.screen->state.displayW, SYS_CLEAN);
-    screenInit_data(xu4.screen, *xu4.settings);
+    Screen* screen = new Screen(layerCount);
+    xu4.screen = screen;
+    screenInit_sys(xu4.settings, &screen->state.displayW, SYS_CLEAN);
+    screenInit_data(screen, *xu4.settings);
 }
 
 void screenDelete() {
     if (xu4.screen) {
-        screenDelete_data(xu4.screen);
+        screenDelete_data(XU4_SCREEN);
         screenDelete_sys();
-        delete xu4.screen;
+        delete XU4_SCREEN;
         xu4.screen = NULL;
     }
 }
@@ -241,26 +244,29 @@ void screenDelete() {
  * Re-initializes the screen and implements any changes made in settings
  */
 void screenReInit() {
+    Screen* screen = XU4_SCREEN;
+
     gs_emitMessage(SENDER_DISPLAY, NULL);
 
-    screenDelete_data(xu4.screen);
-    screenInit_sys(xu4.settings, &xu4.screen->state.displayW, SYS_RESET);
-    screenInit_data(xu4.screen, *xu4.settings); // Load new backgrounds, etc.
+    screenDelete_data(XU4_SCREEN);
+    screenInit_sys(xu4.settings, &screen->state.displayW, SYS_RESET);
+    screenInit_data(screen, *xu4.settings); // Load new backgrounds, etc.
 
-    gs_emitMessage(SENDER_DISPLAY, &xu4.screen->state);
+    gs_emitMessage(SENDER_DISPLAY, &screen->state);
 }
 
 void screenSetLayer(int layer, void (*renderFunc)(ScreenState*, void*),
                     void* data) {
-    assert(layer < xu4.screen->layersAvail);
+    Screen* screen = XU4_SCREEN;
+    assert(layer < screen->layersAvail);
 
-    RenderLayer* rl = xu4.screen->layers + layer;
+    RenderLayer* rl = screen->layers + layer;
     rl->func = renderFunc;
     rl->data = data;
 }
 
 void screenTextAt(int x, int y, const char *fmt, ...) {
-    char* buffer = xu4.screen->msgBuffer;
+    char* buffer = XU4_SCREEN->msgBuffer;
     int i, buflen;
 
     va_list args;
@@ -273,7 +279,7 @@ void screenTextAt(int x, int y, const char *fmt, ...) {
 }
 
 void screenPrompt() {
-    Screen* scr = xu4.screen;
+    Screen* scr = XU4_SCREEN;
     if (scr->needPrompt && scr->cursorEnabled && c->col == 0) {
         screenMessage("%c", CHARSET_PROMPT);
         scr->needPrompt = 0;
@@ -310,7 +316,7 @@ static const uint8_t nonWordChars[32] = {
 };
 
 void screenMessage(const char *fmt, ...) {
-    char* buffer = xu4.screen->msgBuffer;
+    char* buffer = XU4_SCREEN->msgBuffer;
     int buflen;
 
     if (! c)
@@ -381,7 +387,7 @@ newline:
             case FG_YELLOW:
             case FG_WHITE:
                 if (colorize)
-                    xu4.screen->colorFG = FONT_COLOR_INDEX(buffer[i]);
+                    XU4_SCREEN->colorFG = FONT_COLOR_INDEX(buffer[i]);
                 continue;
 
             case '\t':          // tab
@@ -431,11 +437,11 @@ newline:
     screenSetCursorPos(TEXT_AREA_X + c->col, TEXT_AREA_Y + c->line);
     screenShowCursor();
 
-    xu4.screen->needPrompt = 1;
+    XU4_SCREEN->needPrompt = 1;
 }
 
 const vector<string>& screenGetGemLayoutNames() {
-    return xu4.screen->gemLayoutNames;
+    return XU4_SCREEN->gemLayoutNames;
 }
 
 const char** screenGetFilterNames() {
@@ -536,7 +542,7 @@ bool screenTileUpdate(TileView *view, const Coords &coords)
 #else
     // Draw if it is on screen
     if (x >= 0 && y >= 0 && x < VIEWPORT_W && y < VIEWPORT_H &&
-        xu4.screen->screenLos[y*VIEWPORT_W + x])
+        XU4_SCREEN->screenLos[y*VIEWPORT_W + x])
     {
         // Get the tiles
         bool focus;
@@ -585,14 +591,14 @@ static void emitSprite(const Coords* loc, VisualId vid, void* user) {
 }
 
 void screenDisableMap() {
-    xu4.screen->renderMapView = NULL;
+    XU4_SCREEN->renderMapView = NULL;
 }
 
 /*
  * \param center    Center of view.
  */
 void screenUpdateMap(TileView* view, const Map* map, const Coords& center) {
-    Screen* sp = xu4.screen;
+    Screen* sp = XU4_SCREEN;
 
     sp->renderMapView = view;
 
@@ -657,14 +663,14 @@ void screenUpdate(TileView *view, bool showmap, bool blackout) {
     {
         screenEraseMapArea();
 #ifdef GPU_RENDER
-        xu4.screen->renderMapView = NULL;
+        XU4_SCREEN->renderMapView = NULL;
 #endif
     }
     else if (c->location->map->flags & FIRST_PERSON) {
-        xu4.screen->dungeonView->display(c, view);
+        XU4_SCREEN->dungeonView->display(c, view);
         screenRedrawMapArea();
 #ifdef GPU_RENDER
-        xu4.screen->renderMapView = NULL;
+        XU4_SCREEN->renderMapView = NULL;
 #endif
     }
     else if (showmap) {
@@ -673,7 +679,7 @@ void screenUpdate(TileView *view, bool showmap, bool blackout) {
 #else
         MapTile black = c->location->map->tileset->getByName(Tile::sym.black)->getId();
         vector<MapTile> viewTiles[VIEWPORT_W][VIEWPORT_H];
-        uint8_t* blocked = xu4.screen->blockingGrid;
+        uint8_t* blocked = XU4_SCREEN->blockingGrid;
         bool focus;
         int focusX, focusY;
         int x, y;
@@ -693,7 +699,7 @@ void screenUpdate(TileView *view, bool showmap, bool blackout) {
 
         screenFindLineOfSight();
 
-        const uint8_t* lineOfSight = xu4.screen->screenLos;
+        const uint8_t* lineOfSight = XU4_SCREEN->screenLos;
         for (y = 0; y < VIEWPORT_H; y++) {
             for (x = 0; x < VIEWPORT_W; x++) {
                 if (*lineOfSight++)
@@ -727,7 +733,7 @@ void screenUploadToGPU() {
 
 void screenRender() {
     static const float colorBlack[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
-    Screen* sp = xu4.screen;
+    Screen* sp = XU4_SCREEN;
     void* gpu = xu4.gpu;
     int offsetX = SCREEN_IMG_LEFT(sp);
     int offsetY = SCREEN_IMG_BOTTOM(sp);
@@ -807,7 +813,7 @@ void screenTextColor(int color) {
         case FG_RED:
         case FG_YELLOW:
         case FG_WHITE:
-            xu4.screen->colorFG = FONT_COLOR_INDEX(color);
+            XU4_SCREEN->colorFG = FONT_COLOR_INDEX(color);
             break;
     }
 }
@@ -816,10 +822,10 @@ void screenTextColor(int color) {
  * Draw a character from the charset onto the screen.
  */
 void screenShowChar(int chr, int x, int y) {
-    Image* charset = xu4.screen->charsetInfo->image;
+    Image* charset = XU4_SCREEN->charsetInfo->image;
     int charW = charset->width();
     int charH = CHAR_HEIGHT;
-    int colorFG = xu4.screen->colorFG;
+    int colorFG = XU4_SCREEN->colorFG;
 
     if (colorFG == FONT_COLOR_INDEX(FG_WHITE)) {
         charset->drawSubRect(x * charW, y * charH,
@@ -836,7 +842,7 @@ void screenShowChar(int chr, int x, int y) {
  * Scroll the text in the message area up one position.
  */
 static void screenScrollMessageArea() {
-    ImageInfo* charset = xu4.screen->charsetInfo;
+    ImageInfo* charset = XU4_SCREEN->charsetInfo;
     Image* screen = xu4.screenImage;
     int charW = charset->image->width();
     int charH = CHAR_HEIGHT;
@@ -852,16 +858,17 @@ static void screenScrollMessageArea() {
 }
 
 void screenCycle() {
-    int cycle = xu4.screen->state.currentCycle + 1;
+    Screen* screen = XU4_SCREEN;
+    int cycle = screen->state.currentCycle + 1;
     if (cycle >= SCR_CYCLE_MAX)
         cycle = 0;
-    xu4.screen->state.currentCycle = cycle;
+    screen->state.currentCycle = cycle;
 
     xu4.eventHandler->advanceFlourishAnim();
 }
 
 void screenUpdateCursor() {
-    Screen* scr = xu4.screen;
+    Screen* scr = XU4_SCREEN;
     int phase = scr->state.currentCycle * SCR_CYCLE_PER_SECOND / SCR_CYCLE_MAX;
 
     ASSERT(phase >= 0 && phase < 4, "derived an invalid cursor phase: %d", phase);
@@ -909,19 +916,19 @@ void screenUpdateWind() {
 
 // Private function for ReadChoiceController.
 int screenCursorEnabled() {
-    return xu4.screen->cursorEnabled;
+    return XU4_SCREEN->cursorEnabled;
 }
 
 /*
 void screenDumpCursor() {
-    Screen* scr = xu4.screen;
+    Screen* scr = XU4_SCREEN;
     printf("cursor %d,%d %d,%d\n", scr->cursorStatus, scr->cursorEnabled,
             scr->cursorX, scr->cursorY);
 }
 */
 
 void screenShowCursor() {
-    Screen* scr = xu4.screen;
+    Screen* scr = XU4_SCREEN;
     if (! scr->cursorStatus && scr->cursorEnabled) {
         scr->cursorStatus = 1;
         screenUpdateCursor();
@@ -929,7 +936,7 @@ void screenShowCursor() {
 }
 
 void screenHideCursor() {
-    Screen* scr = xu4.screen;
+    Screen* scr = XU4_SCREEN;
     if (scr->cursorStatus) {
         screenEraseTextArea(scr->cursorX, scr->cursorY, 1, 1);
     }
@@ -937,36 +944,36 @@ void screenHideCursor() {
 }
 
 void screenEnableCursor(void) {
-    xu4.screen->cursorEnabled = 1;
+    XU4_SCREEN->cursorEnabled = 1;
 }
 
 void screenDisableCursor(void) {
     screenHideCursor();
-    xu4.screen->cursorEnabled = 0;
+    XU4_SCREEN->cursorEnabled = 0;
 }
 
 void screenSetCursorPos(int x, int y) {
-    Screen* scr = xu4.screen;
+    Screen* scr = XU4_SCREEN;
     scr->cursorX = x;
     scr->cursorY = y;
 }
 
 bool screenToggle3DDungeonView() {
-    DungeonView* view = xu4.screen->dungeonView;
+    DungeonView* view = XU4_SCREEN->dungeonView;
     if (view)
         return view->toggle3DDungeonView();
     return false;
 }
 
 void screenMakeDungeonView() {
-    if (xu4.screen->dungeonView)
+    if (XU4_SCREEN->dungeonView)
         return;
-    xu4.screen->dungeonView = new DungeonView(BORDER_WIDTH, BORDER_HEIGHT,
+    XU4_SCREEN->dungeonView = new DungeonView(BORDER_WIDTH, BORDER_HEIGHT,
                                               VIEWPORT_W, VIEWPORT_H);
 }
 
 void screenDetectDungeonTraps() {
-    xu4.screen->dungeonView->detectTraps();
+    XU4_SCREEN->dungeonView->detectTraps();
 }
 
 #ifndef GPU_RENDER
@@ -1303,18 +1310,18 @@ static void screenFindLineOfSightEnhanced(const uint8_t* blocking, uint8_t* line
 static void screenFindLineOfSight() {
     if (c->location->map->flags & NO_LINE_OF_SIGHT) {
         // The map has the no line of sight flag, all is visible
-        memset(xu4.screen->screenLos, 1, VIEWPORT_W * VIEWPORT_H);
+        memset(XU4_SCREEN->screenLos, 1, VIEWPORT_W * VIEWPORT_H);
     } else {
         // otherwise calculate it from the map data
-        memset(xu4.screen->screenLos, 0, VIEWPORT_W * VIEWPORT_H);
+        memset(XU4_SCREEN->screenLos, 0, VIEWPORT_W * VIEWPORT_H);
 
         CPU_START()
         if (xu4.settings->lineOfSight == 0)
-            screenFindLineOfSightDOS(xu4.screen->blockingGrid,
-                                     xu4.screen->screenLos);
+            screenFindLineOfSightDOS(XU4_SCREEN->blockingGrid,
+                                     XU4_SCREEN->screenLos);
         else
-            screenFindLineOfSightEnhanced(xu4.screen->blockingGrid,
-                                          xu4.screen->screenLos);
+            screenFindLineOfSightEnhanced(XU4_SCREEN->blockingGrid,
+                                          XU4_SCREEN->screenLos);
         CPU_END()
     }
 }
@@ -1383,7 +1390,7 @@ static int pointInTriangle(int x, int y, int tx1, int ty1, int tx2, int ty2, int
  * Transform window x,y to MouseArea coordinate system.
  */
 void screenPointToMouseArea(int* x, int* y) {
-    const Screen* sp = xu4.screen;
+    const Screen* sp = XU4_SCREEN;
     int offsetX = SCREEN_IMG_LEFT(sp);
     int offsetY = SCREEN_IMG_BOTTOM(sp);
     unsigned int scale = xu4.settings->scale;
@@ -1440,7 +1447,7 @@ void screenEraseTextArea(int x, int y, int width, int height) {
  */
 void screenShake(int iterations) {
     if (xu4.settings->screenShakes) {
-        Screen* scr = xu4.screen;
+        Screen* scr = XU4_SCREEN;
         int shakeOffset = 1;
 
         for (int i = 0; i < iterations; i++) {
@@ -1460,7 +1467,7 @@ void screenShake(int iterations) {
  */
 static void screenShowGemTile(const Layout *layout, const Map *map,
                               MapTile &t, bool focus, int x, int y) {
-    Screen* scr = xu4.screen;
+    Screen* scr = XU4_SCREEN;
     unsigned int tile = xu4.config->usaveIds()->ultimaId(t);
 
     if (map->type == Map::DUNGEON) {
@@ -1518,7 +1525,7 @@ void screenGemUpdate() {
 
     if (map->type == Map::DUNGEON) {
         //DO THE SPECIAL DUNGEON MAP TRAVERSAL
-        layout = xu4.screen->dungeonGemLayout;
+        layout = XU4_SCREEN->dungeonGemLayout;
 
         vector<vector<int> > drawnTiles(layout->viewport.width, vector<int>(layout->viewport.height, 0));
         vector<std::pair<int,int> > coordStack;
@@ -1594,7 +1601,7 @@ void screenGemUpdate() {
         }
     } else {
         //DO THE REGULAR EVERYTHING-IS-VISIBLE MAP TRAVERSAL
-        layout = xu4.screen->gemLayout;
+        layout = XU4_SCREEN->gemLayout;
 
         for (x = 0; x < layout->viewport.width; x++) {
             for (y = 0; y < layout->viewport.height; y++) {
@@ -1614,7 +1621,7 @@ void screenGemUpdate() {
 }
 
 const ScreenState* screenState() {
-    return &xu4.screen->state;
+    return &XU4_SCREEN->state;
 }
 
 #ifdef IOS

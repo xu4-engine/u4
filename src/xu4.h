@@ -27,7 +27,6 @@ enum DrawLayer {
 class Settings;
 class Config;
 class ImageMgr;
-struct Screen;
 class Image;
 class EventHandler;
 struct SaveGame;
@@ -47,7 +46,7 @@ struct XU4GameServices {
     Settings* settings;
     Config* config;
     ImageMgr* imageMgr;
-    Screen* screen;
+    void* screen;
     void* screenSys;
     void* gpu;
     Image* screenImage;

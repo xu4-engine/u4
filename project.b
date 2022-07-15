@@ -1,5 +1,5 @@
 options [
-	os_api: 'allegro	"Platform API ('allegro 'sdl)"
+	os_api: 'allegro	"Platform API ('allegro 'glv 'sdl)"
 	use_faun: true
 	sdk_dir: none		"Path to Boron/Faun headers and libraries (UNIX only)"
 	gpu_render: false
@@ -54,6 +54,14 @@ exe %xu4 [
 				either use_faun
 					%sound_faun.cpp
 					%sound_allegro.cpp
+			]
+		]
+		glv [
+			include_from %/usr/include/GL
+			libs [%glv %faun]
+			sources_from %src [
+				%screen_glv.cpp
+				%sound_faun.cpp
 			]
 		]
 		sdl [
