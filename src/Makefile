@@ -4,13 +4,8 @@
 
 -include ../make.config
 
-PREFIX ?= /usr/local
 UI ?= allegro
 GPU ?= scale
-
-bindir=$(PREFIX)/bin
-libdir=$(PREFIX)/lib
-datadir=$(PREFIX)/share
 
 ifeq ($(UI), sdl)
 SOUND=sdl
@@ -35,9 +30,13 @@ endif
 	UILIBS+=-lboron
 #endif
 
-FEATURES=-DHAVE_BACKTRACE=1 -DHAVE_VARIADIC_MACROS=1
-DEBUGCXXFLAGS=-rdynamic -g
-CXXFLAGS=$(FEATURES) -Wall -I. -Isupport $(UIFLAGS) -DVERSION=\"$(VERSION)\" $(DEBUGCXXFLAGS)
+CXXFLAGS=-Wall -I. -Isupport $(UIFLAGS) -DVERSION=\"$(VERSION)\"
+#CXXFLAGS+=-rdynamic -DHAVE_BACKTRACE=1 -DHAVE_VARIADIC_MACROS=1
+
+# Choose one of these for debug/release mode.
+#CXXFLAGS+=-g -DDEBUG
+CXXFLAGS+=-O3 -DNDEBUG
+
 CFLAGS=$(CXXFLAGS)
 LIBS=$(UILIBS) -lGL -lpng -lz
 INSTALL=install

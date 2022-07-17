@@ -7,6 +7,9 @@ else
 MFILE_OS=Makefile
 endif
 
+# Note: xu4 is hardcoded to look in /usr & /usr/local only!
+DESTDIR ?= /usr/local
+
 MODULES=render.pak Ultima-IV.mod U4-Upgrade.mod
 REND=module/render
 
@@ -14,7 +17,7 @@ REND=module/render
 all: src/xu4 $(MODULES)
 
 src/xu4:
-	make -C src -f $(MFILE_OS)
+	make -C src -f $(MFILE_OS) xu4
 
 render.pak: $(REND)/shader/*.glsl $(REND)/shader/*.png $(REND)/font/cfont.png
 	boron -s tools/pack-xu4.b -f $(REND) -o $@
@@ -40,6 +43,13 @@ ultima4.zip:
 
 u4upgrad.zip:
 	curl -sSL -o $@ http://sourceforge.net/projects/xu4/files/Ultima%204%20VGA%20Upgrade/1.3/u4upgrad.zip
+
+install: src/xu4 $(MODULES) u4upgrad.zip
+	mkdir -p $(DESTDIR)/bin $(DESTDIR)/share/xu4
+	install -m 755 -s src/xu4 $(DESTDIR)/bin/xu4
+	install -m 644 -t $(DESTDIR)/share/xu4 $(MODULES) u4upgrad.zip
+	install -D -m 644 icons/xu4.png $(DESTDIR)/share/icons/hicolor/48x48/apps/xu4.png
+	install -D -m 644 dist/xu4.desktop $(DESTDIR)/share/applications/xu4.desktop
 
 snapshot: $(MODULES)
 	@rm -f project.tar.gz
