@@ -10,8 +10,6 @@
 #include "context.h"
 #include "xu4.h"
 
-extern bool verbose;
-
 static void handleActiveEvent(const SDL_Event &event, updateScreenCallback updateScreen) {
     if (event.active.state & SDL_APPACTIVE) {
         // application was previously iconified and is now being restored
@@ -61,7 +59,7 @@ static void handleKeyDownEvent(const SDL_Event &event, Controller *controller, u
     xu4.eventHandler->recordKey(key);
 #endif
 
-    if (verbose)
+    if (xu4.verbose)
         printf("key event: unicode = %d, sym = %d, mod = %d; translated = %d\n",
                event.key.keysym.unicode,
                event.key.keysym.sym,

@@ -13,8 +13,6 @@
 #include "screen.h"
 #include "xu4.h"
 
-extern bool verbose;
-
 #if defined(MACOSX)
 #define CURSORSIZE 16
 #define XPMSIZE    CURSORSIZE

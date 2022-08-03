@@ -60,6 +60,7 @@ struct XU4GameServices {
     uint16_t stage;
     uint16_t gameReset;         // Load another game.
     uint32_t randomFx[17];      // Effects random number generator state.
+    bool verbose;
 };
 
 extern XU4GameServices xu4;

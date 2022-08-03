@@ -111,8 +111,6 @@ static void screenLoadLayoutsFromConf(Screen*);
 static void screenFindLineOfSight();
 #endif
 
-extern bool verbose;
-
 // Just extern the system functions here. That way people aren't tempted to call them as part of the public API.
 extern void screenInit_sys(const Settings*, int* dim, int reset);
 extern void screenDelete_sys();
@@ -190,7 +188,7 @@ static void screenInit_data(Screen* scr, Settings& settings) {
     scr->gemTilesInfo = NULL;
     screenLoadLayoutsFromConf(scr);
 
-    if (verbose)
+    if (xu4.verbose)
         printf("using %s scaler\n", screenGetFilterNames()[ settings.filter ]);
 
     EventHandler::setKeyRepeat(settings.keydelay, settings.keyinterval);

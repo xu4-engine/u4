@@ -19,7 +19,6 @@
 #include "cursors.h"
 #endif
 
-extern bool verbose;
 extern unsigned int refresh_callback(unsigned int, void*);
 
 struct ScreenSDL {
@@ -77,7 +76,7 @@ void screenInit_sys(const Settings* settings, int* dim, int reset) {
     if (!SDL_SetVideoMode(dim[2], dim[3], 32, SDL_HWSURFACE | (settings->fullscreen ? SDL_FULLSCREEN : 0)))
         errorFatal("unable to set video: %s", SDL_GetError());
 
-    if (verbose) {
+    if (xu4.verbose) {
         char driver[32];
         printf("screen initialized [screenInit()], using %s video driver\n", SDL_VideoDriverName(driver, sizeof(driver)));
     }

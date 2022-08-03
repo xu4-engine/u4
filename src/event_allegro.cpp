@@ -6,8 +6,6 @@
 #include "event.h"
 #include "xu4.h"
 
-extern bool verbose;
-
 
 /*
 static void handleActiveEvent(const ALLEGRO_EVENT* event, updateScreenCallback updateScreen) {
@@ -67,7 +65,7 @@ static void handleKeyDownEvent(const ALLEGRO_EVENT* event,
     xu4.eventHandler->recordKey(key);
 #endif
 
-    if (verbose) {
+    if (xu4.verbose) {
         printf("key event: unicode = %d, sym = %d, mod = %d; translated = %d\n",
                event->keyboard.unichar,
                event->keyboard.keycode,

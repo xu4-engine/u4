@@ -36,8 +36,6 @@
 extern int gameSave(const char*);
 #endif
 
-bool verbose = false;
-
 
 #ifdef USE_BORON
 #include <boron/boron.h>
@@ -225,8 +223,7 @@ static void servicesFree(XU4GameServices*);
 #endif
 
 void servicesInit(XU4GameServices* gs, Options* opt) {
-    if (opt->flags & OPT_VERBOSE)
-        verbose = true;
+    gs->verbose = opt->flags & OPT_VERBOSE;
 
     initResourcePaths(&gs->resourcePaths);
 
