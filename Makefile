@@ -56,4 +56,4 @@ snapshot: $(MODULES)
 	copr -c
 	tools/cbuild windows
 	tools/cbuild linux
-	scp /tmp/xu4-linux.tar.gz /tmp/xu4-win32.zip $(SF_USER),xu4@web.sourceforge.net:/home/project-web/xu4/web/download
+	scp /tmp/xu4-linux.tar.gz /tmp/xu4-win32.zip $(SF_USER),xu4@web.sourceforge.net:/home/project-web/xu4/htdocs/download
