@@ -267,6 +267,9 @@ bool Settings::read() {
     setGame("Ultima-IV");
     setSoundtrack("");
 
+    if (xu4.verbose)
+        printf("Reading settings %s\n", filename.c_str());
+
     settingsFile = fopen(filename.c_str(), "rt");
     if (!settingsFile)
         return false;
