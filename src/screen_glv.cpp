@@ -200,6 +200,13 @@ static void eventHandler(GLView* view, GLViewEvent* event)
             handleKeyDownEvent(event, controller, sa->update);
             break;
 
+#ifdef ANDROID
+        case GLV_EVENT_KEY_UP:
+            if (event->code == KEY_Back)
+                xu4.eventHandler->quitGame();
+            break;
+#endif
+
         case GLV_EVENT_BUTTON_DOWN:
             ie.type = CIE_MOUSE_PRESS;
 mouse_button:
@@ -238,22 +245,23 @@ mouse_pos:
             }
             break;
         */
+
         case GLV_EVENT_CLOSE:
             xu4.eventHandler->quitGame();
             break;
+/*
 #ifdef ANDROID
-        // For mobile devices...
         case GLV_EVENT_APP:
-            switch (event->code)
-            {
+            switch (event->code) {
                 case 1:             // APP_CMD_INIT_WINDOW
+                    //resetGraphics();
+                    break;
                 case 2:             // APP_CMD_TERM_WINDOW
-                case 3:             // APP_CMD_WINDOW_RESIZED
-                case 4:             // APP_CMD_WINDOW_REDRAW_NEEDED
                     break;
             }
             break;
 #endif
+*/
         default:
             break;
     }

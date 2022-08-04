@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <android/log.h>
 #include <android/asset_manager.h>
+#include <setjmp.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -145,6 +146,8 @@ UIndex loadScript( struct android_app* app, UThread* ut, const char* filename,
 
 extern int main(int, char**);
 
+jmp_buf gMainJump;
+
 static char* dummyArgs[1] = { "xu4" };
 
 void android_main( struct android_app* app )
@@ -152,6 +155,10 @@ void android_main( struct android_app* app )
 #ifdef REDIRECT_IO
     redirectIO();
 #endif
+
+    // Set return point for errorFatal().
+    if (setjmp(gMainJump))
+        return;
 
     main(1, dummyArgs);
 
