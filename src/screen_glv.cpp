@@ -32,6 +32,7 @@ struct ScreenGLView {
 
 #define SA  ((ScreenGLView*) xu4.screenSys)
 
+#ifndef ANDROID
 /**
  * Copy xpm into an Image32.
  */
@@ -89,8 +90,9 @@ static void _loadCursors(GLView* view)
                     (const uint8_t*) img.pixels, img.w, 0);
     image32_freePixels(&img);
 }
+#endif
 
-#ifdef __linux__
+#if defined(__linux__) && ! defined(ANDROID)
 extern Image* loadImage_png(U4FILE *file);
 
 static void _setX11Icon(GLView* view, const char* filename) {
@@ -282,7 +284,7 @@ void screenInit_sys(const Settings* settings, int* dim, int reset) {
         glv_setTitle(sa->view, "Ultima IV");  // configService->gameName()
         glv_setEventHandler(sa->view, eventHandler);
 
-#ifdef __linux__
+#if defined(__linux__) && ! defined(ANDROID)
         _setX11Icon(sa->view, "/usr/share/icons/hicolor/48x48/apps/xu4.png");
 #endif
     }
@@ -306,8 +308,10 @@ void screenInit_sys(const Settings* settings, int* dim, int reset) {
 
     /* enable or disable the mouse cursor */
     if (settings->mouseOptions.enabled) {
+#ifndef ANDROID
         if (! sa->view->cursorCount)
             _loadCursors(sa->view);
+#endif
 
         glv_showCursor(sa->view, 1);
     } else {
@@ -374,6 +378,7 @@ void screenWait(int numberOfAnimationFrames) {
 }
 
 void screenSetMouseCursor(MouseCursor cursor) {
+#ifndef ANDROID
     ScreenGLView* sa = SA;
 
     if (cursor != sa->currentCursor) {
@@ -383,6 +388,7 @@ void screenSetMouseCursor(MouseCursor cursor) {
             glv_setCursor(sa->view, cursor-1);
         sa->currentCursor = cursor;
     }
+#endif
 }
 
 void screenShowMouseCursor(bool visible) {

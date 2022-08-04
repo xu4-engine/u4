@@ -1120,7 +1120,7 @@ static void screenFindLineOfSightEnhanced(const uint8_t* blocking, uint8_t* line
         { 2, __V__, 1, _NVCH, 1,     0, 0,     0, 0,     0, 0,     0, 0 },    // raster_4_3
         { 2, __V__, 1, _NVCH, 1,     0, 0,     0, 0,     0, 0,     0, 0 }     // raster_4_4
     };
-    static const char octantSign[8 * 3] = {
+    static const int8_t octantSign[8 * 3] = {
     // xSign, ySign, reflect
          1,  1,  0,     // lower-right
          1,  1,  1,
@@ -1145,7 +1145,7 @@ static void screenFindLineOfSightEnhanced(const uint8_t* blocking, uint8_t* line
     int xTile, yTile, xTileOffset, yTileOffset;
     int currentRaster;
     int maxWidth, maxHeight;
-    const char* osign = octantSign;
+    const int8_t* osign = octantSign;
 
     // determine the origin point
     xOrigin = VIEWPORT_W / 2;
