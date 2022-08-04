@@ -57,8 +57,12 @@ exe %xu4 [
 			]
 		]
 		glv [
-			include_from %/usr/include/GL
-			libs [%glv %faun]
+			unix [
+				include_from %src/glv/x11
+				libs [%Xcursor %X11]
+				sources/flags [%src/glv/x11/glv.c] "-DUSE_CURSORS"
+			]
+			libs [%faun]
 			sources_from %src [
 				%screen_glv.cpp
 				%sound_faun.cpp
@@ -181,7 +185,7 @@ exe %xu4 [
 
 		%support/notify.c
 		%support/stringTable.c
-        %support/txf_draw.c
+		%support/txf_draw.c
 	]
 ]
 
@@ -196,4 +200,10 @@ if make_util [
 			%src/util/dumpsavegame.cpp
 		]
 	]
+]
+
+dist [
+	%src/glv/x11/glv.c
+	%src/glv/x11/glv.h
+	%src/glv/x11/glv_keys.h
 ]
