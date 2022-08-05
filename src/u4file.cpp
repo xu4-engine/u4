@@ -95,10 +95,12 @@ bool u4fsetup()
     u4zip_instance = new U4ZipPackageMgr();
 
     U4FILE* uf;
-    if ((uf = u4fopen("AVATAR.EXE")))
+    if ((uf = u4fopen("AVATAR.EXE"))) {
         u4fclose(uf);
-    else
+    } else {
+        u4fcleanup();
         return false;
+    }
 
     // Check if upgrade is present & installed.
     upgradeFlags = 0;
