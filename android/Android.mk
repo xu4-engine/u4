@@ -1,5 +1,4 @@
-# The boron, faun, & png libraries are expected in the jni/sdk/ directory.
-# Run "make -C dist jni/sdk" to install these.
+# The boron, faun, & png libraries are expected in the android/sdk/ directory.
 
 LOCAL_PATH := $(call my-dir)
 

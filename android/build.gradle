@@ -28,7 +28,7 @@ android {
     }
     externalNativeBuild {
         ndkBuild {
-            path '../jni/Android.mk'
+            path 'Android.mk'
         }
     }
     sourceSets {
