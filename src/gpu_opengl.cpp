@@ -38,11 +38,19 @@ extern uint32_t getTicks();
 #define MAP_ANIMATOR    &xu4.eventHandler->flourishAnim
 #endif
 
+#ifdef ANDROID
+#define DVERSION    "#version 310 es\n"
+#define PRECISION_F "precision mediump float;\n"
+#else
+#define DVERSION    "#version 330\n"
+#define PRECISION_F
+#endif
+
 #define LOC_POS     0
 #define LOC_UV      1
 
 const char* solid_vertShader =
-    "#version 330\n"
+    DVERSION
     "uniform mat4 transform;\n"
     "layout(location = 0) in vec3 position;\n"
     "void main() {\n"
@@ -50,7 +58,7 @@ const char* solid_vertShader =
     "}\n";
 
 const char* solid_fragShader =
-    "#version 330\n"
+    DVERSION PRECISION_F
     "uniform vec4 color;\n"
     "out vec4 fragColor;\n"
     "void main() {\n"
@@ -58,7 +66,7 @@ const char* solid_fragShader =
     "}\n";
 
 const char* cmap_vertShader =
-    "#version 330\n"
+    DVERSION
     "uniform mat4 transform;\n"
     "layout(location = 0) in vec3 position;\n"
     "layout(location = 1) in vec4 uv;\n"
@@ -69,7 +77,7 @@ const char* cmap_vertShader =
     "}\n";
 
 const char* cmap_fragShader =
-    "#version 330\n"
+    DVERSION PRECISION_F
     "uniform sampler2D cmap;\n"
     "uniform vec4 tint;\n"
     "in vec4 texCoord;\n"
@@ -265,9 +273,9 @@ static int compileSLFile(GLuint program, const char* filename, int scale)
                 spos[6] = '0' + scale;
         }
 
-        src[0] = "#version 330\n#define VERTEX\n";
+        src[0] = DVERSION "#define VERTEX\n";
         src[1] = buf;
-        src[2] = "#version 330\n#define FRAGMENT\n";
+        src[2] = DVERSION PRECISION_F "#define FRAGMENT\n";
         src[3] = buf;
 
         res = compileShaderParts(program, src, 2, 2);
@@ -420,7 +428,13 @@ const char* gpu_init(void* res, int w, int h, int scale, int filter)
 
     // Create screen, white, noise & shadow textures.
     glGenTextures(5, &gr->screenTex);
-    gpu_defineTex(gr->screenTex, 320, 200, NULL, GL_RGB, GL_NEAREST);
+    gpu_defineTex(gr->screenTex, 320, 200, NULL,
+#ifdef ANDROID
+                  GL_RGBA,  // Must match glTexSubImage2D format.
+#else
+                  GL_RGB,
+#endif
+                  GL_NEAREST);
     gpu_defineTex(gr->whiteTex, 2, 2, whitePixels, GL_RGBA, GL_NEAREST);
     gpu_defineTex(gr->shadowTex, SHADOW_DIM, SHADOW_DIM, NULL,
                   GL_RGBA, GL_LINEAR);

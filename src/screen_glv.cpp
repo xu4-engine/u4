@@ -273,6 +273,11 @@ void screenInit_sys(const Settings* settings, int* dim, int reset) {
     const char* gpuError;
     int dw = 320 * settings->scale;
     int dh = 200 * settings->scale;
+#ifdef ANDROID
+    const int glVersion = 0x301;
+#else
+    const int glVersion = 0x303;
+#endif
 
     if (reset) {
         sa = SA;
@@ -284,7 +289,7 @@ void screenInit_sys(const Settings* settings, int* dim, int reset) {
 
         memset(sa, 0, sizeof(ScreenGLView));
 
-        sa->view = glv_create(GLV_ATTRIB_DOUBLEBUFFER, 0x303);
+        sa->view = glv_create(GLV_ATTRIB_DOUBLEBUFFER, glVersion);
         if (! sa->view)
             goto fatal;
 
