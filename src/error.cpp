@@ -107,6 +107,7 @@ void errorWarning(const char *fmt, ...) {
 extern struct android_app* gGlvApp;
 extern jmp_buf gMainJump;
 
+extern "C"
 void errorFatal(const char *fmt, ...) {
     char message[512];
     va_list args;

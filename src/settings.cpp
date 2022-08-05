@@ -12,7 +12,9 @@
 #include "screen.h"
 #include "xu4.h"
 
-#if defined(_WIN32) || defined(__CYGWIN__)
+#ifdef ANDROID
+extern "C" const char* androidInternalData();
+#elif defined(_WIN32) || defined(__CYGWIN__)
 #include <windows.h>
 #include <shlobj.h>
 #elif defined(MACOSX)
@@ -64,7 +66,10 @@ void Settings::init(const char* profileName) {
     } else {
         profile.clear();
 
-#if defined(MACOSX)
+#if defined(ANDROID)
+        userPath = androidInternalData();
+        userPath += '/';
+#elif defined(MACOSX)
             FSRef folder;
             OSErr err = FSFindFolder(kUserDomain, kApplicationSupportFolderType, kCreateFolder, &folder);
             if (err == noErr) {
@@ -119,7 +124,10 @@ void Settings::init(const char* profileName) {
 #endif
 
     }
+
+#ifndef ANDROID
     FileSystem::createDirectory(userPath);
+#endif
 
     filename = userPath + SETTINGS_BASE_FILENAME;
 

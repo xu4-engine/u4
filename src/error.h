@@ -11,6 +11,9 @@
 #define PRINTF_LIKE(x,y) /* nothing */
 #endif
 
+#if defined(ANDROID) && defined(__cplusplus)
+extern "C"
+#endif
 void errorFatal(const char *fmt, ...) PRINTF_LIKE(1, 2);
 void errorWarning(const char *fmt, ...) PRINTF_LIKE(1, 2);
 

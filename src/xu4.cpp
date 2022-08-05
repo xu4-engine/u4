@@ -24,6 +24,10 @@
 #include "sound.h"
 #include "utils.h"
 
+#ifdef ANDROID
+extern "C" const char* androidInternalData();
+#endif
+
 #if defined(MACOSX)
 #include "macosx/osxinit.h"
 #endif
@@ -193,6 +197,10 @@ missing_value:
 //----------------------------------------------------------------------------
 
 static void initResourcePaths(StringTable* st) {
+#ifdef ANDROID
+    sst_init(st, 2, 64);
+    sst_append(st, androidInternalData(), -1);
+#else
     char* home;
 
     sst_init(st, 4, 32);
@@ -213,6 +221,7 @@ static void initResourcePaths(StringTable* st) {
     }
     sst_append(st, "/usr/share/xu4", -1);
     sst_append(st, "/usr/local/share/xu4", -1);
+#endif
 #endif
 }
 
