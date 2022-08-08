@@ -2563,7 +2563,7 @@ void readyWeapon(int player) {
     // get the weapon to use
     c->stats->setView(STATS_WEAPONS);
     screenMessage("Weapon: ");
-    WeaponType weapon = (WeaponType) AlphaActionController::get(WEAP_MAX + 'a' - 1, "Weapon: ");
+    int weapon = AlphaActionController::get(WEAP_MAX + 'a' - 1, "Weapon: ");
     c->stats->setView(STATS_PARTY_OVERVIEW);
     if (weapon == -1)
         return;
@@ -2911,7 +2911,7 @@ static void wearArmor(int player) {
 
     c->stats->setView(STATS_ARMOR);
     screenMessage("Armour: ");
-    ArmorType armor = (ArmorType) AlphaActionController::get(ARMR_MAX + 'a' - 1, "Armour: ");
+    int armor = AlphaActionController::get(ARMR_MAX + 'a' - 1, "Armour: ");
     c->stats->setView(STATS_PARTY_OVERVIEW);
     if (armor == -1)
         return;
