@@ -38,6 +38,34 @@ struct RenderLayer {
     void* data;
 };
 
+static const char* fontFiles[] = {
+    "cfont-comfortaa.txf",
+    "cfont-avatar.txf",
+    "cfont-symbols.txf"
+};
+
+/*
+ * Load textured font metrics.
+ *
+ * Return zero if any files failed to load.
+ */
+static int loadFonts(const char** files, int txfCount, TxfHeader** txfArr)
+{
+    int i;
+    for (i = 0; i < txfCount; ++i) {
+        txfArr[i] = (TxfHeader*) xu4.config->loadFile(*files++);
+        if (! txfArr[i]) {
+            int fn;
+            for (fn = 0; fn < i; ++fn) {
+                free(txfArr[fn]);
+                txfArr[fn] = NULL;
+            }
+            return 0;
+        }
+    }
+    return txfCount;
+}
+
 struct Screen {
     RenderLayer* layers;
     vector<string> gemLayoutNames;
@@ -49,6 +77,7 @@ struct Screen {
     ImageInfo* gemTilesInfo;
     char* msgBuffer;
     ScreenState state;
+    TxfHeader* txf[3];
     int cursorX;
     int cursorY;
     int cursorStatus;
@@ -83,6 +112,7 @@ struct Screen {
         msgBuffer = new char[MsgBufferSize];
 
         state.tileanims = NULL;
+        state.fontTable = txf;
         state.currentCycle = 0;
         state.vertOffset = 0;
         state.displayW = state.displayH = 0;
@@ -97,9 +127,16 @@ struct Screen {
         textureInfo = NULL;
         renderMapView = NULL;
 #endif
+        txf[0] = NULL;
+        loadFonts(fontFiles, 3, txf);
     }
 
     ~Screen() {
+        if (txf[0]) {
+            free(txf[0]);
+            free(txf[1]);
+            free(txf[2]);
+        }
         delete dungeonView;
         delete[] msgBuffer;
         delete[] layers;

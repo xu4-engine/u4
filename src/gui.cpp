@@ -24,7 +24,6 @@
 #include "gpu.h"
 #include "gui.h"
 #include "screen.h"
-#include "txf_draw.h"
 #include "xu4.h"
 
 #define ATTR_COUNT  7

@@ -55,9 +55,12 @@ struct MapFx {
     AnimId anim;
 };
 
+#define TEXTURE_COUNT  6
+
 struct OpenGLResources {
     GLuint screenTex;
     GLuint whiteTex;
+    GLuint fontTex;
     GLuint guiTex;
     GLuint noiseTex;
     GLuint shadowTex;

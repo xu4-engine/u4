@@ -9,7 +9,6 @@
 #include "module.h"
 #include "settings.h"
 #include "screen.h"
-#include "txf_draw.h"
 #include "u4file.h"
 #include "xu4.h"
 
@@ -27,12 +26,11 @@ void GameBrowser::renderBrowser(ScreenState* ss, void* data)
 {
     GameBrowser* gb = (GameBrowser*) data;
 
-    //gpu_viewport(0, 0, ss->displayW, ss->displayH);
-    gpu_drawGui(xu4.gpu, GPU_DLIST_GUI, gb->fontTexture);
+    gpu_drawGui(xu4.gpu, GPU_DLIST_GUI);
 
     if (gb->modFormat.used) {
         int box[4];
-        float selY = gb->txf[0]->lineHeight * PSIZE_LIST * (gb->sel + 1.0f);
+        float selY = gb->lineHeight * PSIZE_LIST * (gb->sel + 1.0f);
 
         box[0] = gb->listArea[0];
         box[1] = gb->listArea[1] + gb->listArea[3] - 1 - int(selY);
@@ -47,75 +45,9 @@ void GameBrowser::renderBrowser(ScreenState* ss, void* data)
     }
 }
 
-/*
- * Load textured font metrics.
- *
- * Return zero if any files failed to load.
- */
-static int loadFonts(const char** files, int txfCount, TxfHeader** txfArr)
-{
-    int i;
-    for (i = 0; i < txfCount; ++i) {
-        txfArr[i] = (TxfHeader*) xu4.config->loadFile(*files++);
-        if (! txfArr[i]) {
-            int fn;
-            for (fn = 0; fn < i; ++fn) {
-                free(txfArr[fn]);
-                txfArr[fn] = NULL;
-            }
-            return 0;
-        }
-    }
-    return txfCount;
-}
-
-static const char* fontFiles[] = {
-    "cfont.png",
-    "cfont-comfortaa.txf",
-    "cfont-avatar.txf",
-    "cfont-symbols.txf"
-};
-
-/*
- * Reload any GPU data.  As this notification should not occur when the
- * browser is open, we don't handle GUI layout here.
- */
-void GameBrowser::displayReset(int sender, void* eventData, void* user)
-{
-    GameBrowser* gb = (GameBrowser*) user;
-    //ScreenState* ss = (ScreenState*) eventData;
-
-    if (eventData) {
-        gb->fontTexture = gpu_loadTexture(fontFiles[0], 1);
-    } else {
-        gpu_freeTexture(gb->fontTexture);
-    }
-}
-
 GameBrowser::GameBrowser()
 {
-    txf[0] = NULL;
-    fontTexture = 0;
     sel = selMusic = 0;
-
-    if (! loadFonts(fontFiles+1, 3, txf))
-        return;
-
-    displayReset(SENDER_DISPLAY, (void*) screenState(), this);
-    listenerId = gs_listen(1<<SENDER_DISPLAY, displayReset, this);
-}
-
-GameBrowser::~GameBrowser()
-{
-    if (fontTexture)
-        gpu_freeTexture(fontTexture);
-
-    if (txf[0]) {
-        gs_unplug(listenerId);
-        free(txf[0]);
-        free(txf[1]);
-        free(txf[2]);
-    }
 }
 
 #define NO_PARENT   255
@@ -317,16 +249,16 @@ void GameBrowser::layout()
     *data   = cancelArea;
 
     TxfDrawState ds;
-    ds.fontTable = txf;
+    ds.fontTable = screenState()->fontTable;
     float* attr = gui_layout(GPU_DLIST_GUI, NULL, &ds, browserGui, guiData);
     if (attr) {
         if (selMusic) {
             // Draw green checkmark.
-            ds.tf = txf[2];
+            ds.tf = ds.fontTable[2];
             ds.colorIndex = 33.0f;
             ds.x = listArea[0];
             ds.y = listArea[1] + listArea[3] -
-                   txf[0]->lineHeight * PSIZE_LIST * (selMusic + 1.0f) -
+                   lineHeight * PSIZE_LIST * (selMusic + 1.0f) -
                    ds.tf->descender * PSIZE_LIST;
             txf_setFontSize(&ds, PSIZE_LIST);
 
@@ -341,9 +273,7 @@ void GameBrowser::layout()
 
 bool GameBrowser::present()
 {
-    if (! fontTexture)
-        return false;
-
+    lineHeight = screenState()->fontTable[0]->lineHeight;
     screenSetMouseCursor(MC_DEFAULT);
 
     sst_init(&modFiles, 8, 128);
@@ -444,8 +374,7 @@ bool GameBrowser::keyPressed(int key)
 
 void GameBrowser::selectModule(const int16_t* rect, int y)
 {
-    float row = (float) (rect[1] + rect[3] - y) /
-                (txf[0]->lineHeight * PSIZE_LIST);
+    float row = (float) (rect[1] + rect[3] - y) / (lineHeight * PSIZE_LIST);
     int n = (int) row;
     if (n >= 0 && n < (int) modFormat.used) {
         if (infoList[n].category == MOD_SOUNDTRACK) {

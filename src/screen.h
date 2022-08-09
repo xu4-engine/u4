@@ -25,6 +25,7 @@
 
 #include "direction.h"
 #include "types.h"
+#include "txf_draw.h"
 #include "u4file.h"
 
 class Image;
@@ -79,6 +80,7 @@ class TileAnimSet;
 // Expose a few Screen members via this struct.
 struct ScreenState {
     const TileAnimSet* tileanims;
+    const TxfHeader* const* fontTable;
     int currentCycle;
     int vertOffset;
     int displayW;       // Full display pixel dimensions.

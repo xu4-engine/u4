@@ -427,7 +427,7 @@ const char* gpu_init(void* res, int w, int h, int scale, int filter)
 #endif
 
     // Create screen, white, noise & shadow textures.
-    glGenTextures(5, &gr->screenTex);
+    glGenTextures(TEXTURE_COUNT, &gr->screenTex);
     gpu_defineTex(gr->screenTex, 320, 200, NULL,
 #ifdef ANDROID
                   GL_RGBA,  // Must match glTexSubImage2D format.
@@ -438,6 +438,9 @@ const char* gpu_init(void* res, int w, int h, int scale, int filter)
     gpu_defineTex(gr->whiteTex, 2, 2, whitePixels, GL_RGBA, GL_NEAREST);
     gpu_defineTex(gr->shadowTex, SHADOW_DIM, SHADOW_DIM, NULL,
                   GL_RGBA, GL_LINEAR);
+
+    if (! loadTexture("cfont.png", gr->fontTex, GL_LINEAR, NULL))
+        return "cfont.png";
 
     if (! loadTexture("gui.png", gr->guiTex, GL_LINEAR, tsize))
         return "gui.png";
@@ -634,7 +637,7 @@ void gpu_free(void* res)
     glDeleteProgram(gr->shadow);
     glDeleteFramebuffers(1, &gr->shadowFbo);
 #endif
-    glDeleteTextures(5, &gr->screenTex);
+    glDeleteTextures(TEXTURE_COUNT, &gr->screenTex);
 }
 
 void gpu_viewport(int x, int y, int w, int h)
@@ -642,6 +645,7 @@ void gpu_viewport(int x, int y, int w, int h)
     glViewport(x, y, w, h);
 }
 
+#if 0
 /*
  * Load a texture from a module file.
  *
@@ -653,6 +657,7 @@ uint32_t gpu_loadTexture(const char* file, int linear)
 {
     return loadTexture(file, 0, linear ? GL_LINEAR : GL_NEAREST, NULL);
 }
+#endif
 
 uint32_t gpu_makeTexture(const Image32* img)
 {
@@ -824,7 +829,7 @@ void gpu_drawTris(void* res, int list)
     glDrawArrays(GL_TRIANGLES, 0, dl->count / ATTR_COUNT);
 }
 
-void gpu_drawGui(void* res, int list, uint32_t tex)
+void gpu_drawGui(void* res, int list)
 {
     OpenGLResources* gr = (OpenGLResources*) res;
 
@@ -836,7 +841,7 @@ void gpu_drawGui(void* res, int list, uint32_t tex)
     glActiveTexture(GL_TEXTURE0 + GTU_CMAP);
     glBindTexture(GL_TEXTURE_2D, gr->guiTex);
     glActiveTexture(GL_TEXTURE0 + GTU_MATERIAL);
-    glBindTexture(GL_TEXTURE_2D, tex);
+    glBindTexture(GL_TEXTURE_2D, gr->fontTex);
 
     glEnable(GL_BLEND);
 

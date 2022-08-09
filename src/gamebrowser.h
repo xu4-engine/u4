@@ -14,7 +14,6 @@ struct ScreenState;
 class GameBrowser : public Controller {
 public:
     GameBrowser();
-    ~GameBrowser();
 
     /* controller functions */
     virtual bool present();
@@ -26,15 +25,13 @@ private:
     StringTable modFiles;
     StringTable modFormat;
     std::vector<ModuleInfo> infoList;
-    TxfHeader* txf[3];
-    uint32_t   fontTexture;
-    int        listenerId;
     uint16_t   sel;
     uint16_t   selMusic;        // 0 = none
     int16_t    listArea[4];
     int16_t    okArea[4];
     int16_t    quitArea[4];
     int16_t    cancelArea[4];
+    float lineHeight;
 
     void selectModule(const int16_t* rect, int y);
     void layout();
