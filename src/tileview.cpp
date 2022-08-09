@@ -298,13 +298,12 @@ void TileView::removeEffect(int id) {
  * \param uvTable   Texture coordinate min & max indexed by VisualId.
  */
 void TileView::updateEffects(float cx, float cy, const float* uvTable) {
-    const int TRIS_MAP_FX = 1;
     const float halfTile = VIEW_TILE_SIZE * -0.5f;
 
     if (effectCount) {
         const Animator* fxAnim = &xu4.eventHandler->fxAnim;
         float* animPos;
-        float* attr = gpu_beginTris(xu4.gpu, TRIS_MAP_FX);
+        float* attr = gpu_beginTris(xu4.gpu, GPU_DLIST_VIEW_FX);
         float rect[4];
         float scaleY = scale * aspect;
         int uvIndex;
@@ -337,9 +336,9 @@ draw:
                     break;
             }
         }
-        gpu_endTris(xu4.gpu, TRIS_MAP_FX, attr);
+        gpu_endTris(xu4.gpu, GPU_DLIST_VIEW_FX, attr);
     } else {
-        gpu_clearTris(xu4.gpu, TRIS_MAP_FX);
+        gpu_clearTris(xu4.gpu, GPU_DLIST_VIEW_FX);
     }
 }
 #endif

@@ -1415,7 +1415,7 @@ void gpu_drawMap(void* res, const TileView* view, const float* tileUVs,
     }
 
     if (fxUsed) {
-        const int MAPFX_LIST = 2;
+        const int MAPFX_LIST = GLOB_MAPFX_LIST0 / 2;
         float rect[4];
         float xoff, yoff;
         float* fxAttr = gpu_beginTris(gr, MAPFX_LIST);

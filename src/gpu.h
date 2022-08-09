@@ -1,5 +1,12 @@
 #include <stdint.h>
 
+enum GpuDrawList {
+    GPU_DLIST_GUI,
+    GPU_DLIST_HUD,
+    GPU_DLIST_VIEW_OBJ,
+    GPU_DLIST_VIEW_FX
+};
+
 struct BlockingGroups;
 class Map;
 class TileView;

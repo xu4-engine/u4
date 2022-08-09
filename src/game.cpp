@@ -182,13 +182,11 @@ void GameController::conclude() {
     screenSetMouseCursor(MC_DEFAULT);
 }
 
-#define HUD_LIST    1
-
 void GameController::renderHud(ScreenState* ss, void* data)
 {
     //GameController* gc = (GameController*) data;
 
-    gpu_drawGui(xu4.gpu, HUD_LIST, 0 /*gc->fontTexture*/);
+    gpu_drawGui(xu4.gpu, GPU_DLIST_HUD, 0 /*gc->fontTexture*/);
 }
 
 void GameController::initScreenWithoutReloadingState()
@@ -197,10 +195,10 @@ void GameController::initScreenWithoutReloadingState()
 
     borderAttr = xu4.config->newDrawList(BKGD_BORDERS, &borderAttrLen);
     if (borderAttr) {
-        float* attr = gpu_beginTris(xu4.gpu, HUD_LIST);
+        float* attr = gpu_beginTris(xu4.gpu, GPU_DLIST_HUD);
         if (attr) {
             memcpy(attr, borderAttr, borderAttrLen * sizeof(float));
-            gpu_endTris(xu4.gpu, HUD_LIST, attr + borderAttrLen);
+            gpu_endTris(xu4.gpu, GPU_DLIST_HUD, attr + borderAttrLen);
         }
 
         screenSetLayer(LAYER_HUD, renderHud, this);

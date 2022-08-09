@@ -568,11 +568,6 @@ struct SpriteRenderData {
     int cx, cy;
 };
 
-enum TriangleList {
-    TRIS_MAP_OBJ,
-    TRIS_MAP_FX
-};
-
 #define VIEW_TILE_SIZE  (2.0f / VIEWPORT_W)     //1.0f
 
 static void emitSprite(const Coords* loc, VisualId vid, void* user) {
@@ -635,7 +630,7 @@ void screenUpdateMap(TileView* view, const Map* map, const Coords& center) {
     rd.rect[2] = rd.rect[3] = VIEW_TILE_SIZE;
     rd.cx = center.x;
     rd.cy = center.y;
-    rd.attr = gpu_beginTris(xu4.gpu, TRIS_MAP_OBJ);
+    rd.attr = gpu_beginTris(xu4.gpu, GPU_DLIST_VIEW_OBJ);
 
     map->queryVisible(center, view->columns / 2, emitSprite, &rd, &focusObj);
 
@@ -646,7 +641,7 @@ void screenUpdateMap(TileView* view, const Map* map, const Coords& center) {
         }
     }
 
-    gpu_endTris(xu4.gpu, TRIS_MAP_OBJ, rd.attr);
+    gpu_endTris(xu4.gpu, GPU_DLIST_VIEW_OBJ, rd.attr);
     }
 }
 #endif
@@ -756,13 +751,13 @@ void screenRender() {
                     sp->blockingUpdate, sp->blockX, sp->blockY, view->scale);
         sp->blockingUpdate = NULL;
 
-        gpu_drawTris(gpu, TRIS_MAP_OBJ);
+        gpu_drawTris(gpu, GPU_DLIST_VIEW_OBJ);
 
         anim_advance(&xu4.eventHandler->fxAnim, 1.0f / 24.0f);
         view->updateEffects((float) sp->blockX,
                             (float) sp->blockY,
                             sp->textureInfo->tileTexCoord);
-        gpu_drawTris(gpu, TRIS_MAP_FX);
+        gpu_drawTris(gpu, GPU_DLIST_VIEW_FX);
 
         if (view->highlightActive())
             gpu_invertColors(gpu);

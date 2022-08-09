@@ -20,7 +20,6 @@ extern "C" {
 }
 
 
-#define GUI_LIST    0
 #define PSIZE_LIST  20
 #define ATTR_COUNT  7
 
@@ -29,7 +28,7 @@ void GameBrowser::renderBrowser(ScreenState* ss, void* data)
     GameBrowser* gb = (GameBrowser*) data;
 
     //gpu_viewport(0, 0, ss->displayW, ss->displayH);
-    gpu_drawGui(xu4.gpu, GUI_LIST, gb->fontTexture);
+    gpu_drawGui(xu4.gpu, GPU_DLIST_GUI, gb->fontTexture);
 
     if (gb->modFormat.used) {
         int box[4];
@@ -319,7 +318,7 @@ void GameBrowser::layout()
 
     TxfDrawState ds;
     ds.fontTable = txf;
-    float* attr = gui_layout(GUI_LIST, NULL, &ds, browserGui, guiData);
+    float* attr = gui_layout(GPU_DLIST_GUI, NULL, &ds, browserGui, guiData);
     if (attr) {
         if (selMusic) {
             // Draw green checkmark.
@@ -336,7 +335,7 @@ void GameBrowser::layout()
             attr += quads * 6 * ATTR_COUNT;
         }
 
-        gpu_endTris(xu4.gpu, GUI_LIST, attr);
+        gpu_endTris(xu4.gpu, GPU_DLIST_GUI, attr);
     }
 }
 
