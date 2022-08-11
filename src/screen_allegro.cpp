@@ -11,6 +11,7 @@
 #include "image.h"
 #include "settings.h"
 #include "screen.h"
+#include "u4.h"
 #include "xu4.h"
 
 #if defined(MACOSX)
@@ -112,8 +113,9 @@ void screenInit_sys(const Settings* settings, ScreenState* state, int reset) {
     int dflags = ALLEGRO_OPENGL | ALLEGRO_OPENGL_3_0 |
                  ALLEGRO_OPENGL_FORWARD_COMPATIBLE;
 #endif
-    int dw = 320 * settings->scale;
-    int dh = 200 * settings->scale;
+    int scale = settings->scale;
+    int dw = U4_SCREEN_W * scale;
+    int dh = U4_SCREEN_H * scale;
 
     if (reset) {
         sa = SA;
@@ -184,10 +186,25 @@ void screenInit_sys(const Settings* settings, ScreenState* state, int reset) {
 
     state->displayW = al_get_display_width(sa->disp);
     state->displayH = al_get_display_height(sa->disp);
-    state->aspectW  = dw;
-    state->aspectH  = dh;
-    state->aspectX  = (state->displayW - dw) / 2;
-    state->aspectY  = (state->displayH - dh) / 2;
+
+    // Scale automatically in fullscreen mode.
+    if (settings->fullscreen)
+    {
+        // HQX filter is limited to 4x.
+        scale = (settings->filter == 1) ? 4 : 6;
+
+        for ( ; scale > 1; --scale) {
+            dw = U4_SCREEN_W * scale;
+            dh = U4_SCREEN_H * scale;
+            if (dw <= state->displayW && dh <= state->displayH)
+                break;
+        }
+    }
+
+    state->aspectW = dw;
+    state->aspectH = dh;
+    state->aspectX = (state->displayW - dw) / 2;
+    state->aspectY = (state->displayH - dh) / 2;
 
     al_set_window_title(sa->disp, "Ultima IV");  // configService->gameName()
 
@@ -234,7 +251,7 @@ void screenInit_sys(const Settings* settings, ScreenState* state, int reset) {
     // as the context is lost when mucking with bitmaps.
     al_set_current_opengl_context(sa->disp);
 
-    gpuError = gpu_init(&sa->gpu, dw, dh, settings->scale, settings->filter);
+    gpuError = gpu_init(&sa->gpu, dw, dh, scale, settings->filter);
     if (gpuError)
         errorFatal("Unable to obtain OpenGL resource (%s)", gpuError);
 

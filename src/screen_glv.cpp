@@ -11,12 +11,12 @@
 #include "image.h"
 #include "settings.h"
 #include "screen.h"
+#include "u4.h"
 #include "xu4.h"
 
 #include <assert.h>
 #include <glv.h>
 #include <glv_keys.h>
-
 
 #define CURSORSIZE 20
 #define XPMSIZE    32
@@ -271,8 +271,9 @@ mouse_pos:
 void screenInit_sys(const Settings* settings, ScreenState* state, int reset) {
     ScreenGLView* sa;
     const char* gpuError;
-    int dw = 320 * settings->scale;
-    int dh = 200 * settings->scale;
+    int scale = settings->scale;
+    int dw = U4_SCREEN_W * scale;
+    int dh = U4_SCREEN_H * scale;
 #ifdef ANDROID
     const int glVersion = 0x301;
 #else
@@ -314,10 +315,27 @@ void screenInit_sys(const Settings* settings, ScreenState* state, int reset) {
 
     state->displayW = sa->view->width;
     state->displayH = sa->view->height;
-    state->aspectW  = dw;
-    state->aspectH  = dh;
-    state->aspectX  = (state->displayW - dw) / 2;
-    state->aspectY  = (state->displayH - dh) / 2;
+
+    // Scale automatically in fullscreen mode.
+#ifndef ANDROID
+    if (settings->fullscreen)
+#endif
+    {
+        // HQX filter is limited to 4x.
+        scale = (settings->filter == 1) ? 4 : 6;
+
+        for ( ; scale > 1; --scale) {
+            dw = U4_SCREEN_W * scale;
+            dh = U4_SCREEN_H * scale;
+            if (dw <= state->displayW && dh <= state->displayH)
+                break;
+        }
+    }
+
+    state->aspectW = dw;
+    state->aspectH = dh;
+    state->aspectX = (state->displayW - dw) / 2;
+    state->aspectY = (state->displayH - dh) / 2;
 
     // Can settings->gamma be applied?
 
@@ -333,7 +351,7 @@ void screenInit_sys(const Settings* settings, ScreenState* state, int reset) {
         glv_showCursor(sa->view, 0);
     }
 
-    gpuError = gpu_init(&sa->gpu, dw, dh, settings->scale, settings->filter);
+    gpuError = gpu_init(&sa->gpu, dw, dh, scale, settings->filter);
     if (gpuError)
         errorFatal("Unable to obtain OpenGL resource (%s)", gpuError);
 

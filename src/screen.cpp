@@ -768,7 +768,7 @@ void screenRender() {
     int offsetY = ss->aspectY;
 
     if (ss->vertOffset) {
-        offsetY -= ss->vertOffset * xu4.settings->scale;
+        offsetY -= ss->vertOffset;
         gpu_clear(gpu, colorBlack);     // Clear the top rows of pixels.
     }
     gpu_viewport(ss->aspectX, offsetY, ss->aspectW, ss->aspectH);
@@ -1420,7 +1420,7 @@ static int pointInTriangle(int x, int y, int tx1, int ty1, int tx2, int ty2, int
  */
 void screenPointToMouseArea(int* x, int* y) {
     const Screen* sp = XU4_SCREEN;
-    unsigned int scale = xu4.settings->scale;
+    unsigned int scale = sp->state.aspectH / U4_SCREEN_H;
     *x = (*x - sp->state.aspectX) / scale;
     *y = (*y - sp->state.aspectY) / scale;
 }
@@ -1475,7 +1475,7 @@ void screenEraseTextArea(int x, int y, int width, int height) {
 void screenShake(int iterations) {
     if (xu4.settings->screenShakes) {
         Screen* scr = XU4_SCREEN;
-        int shakeOffset = 1;
+        int shakeOffset = scr->state.aspectH / U4_SCREEN_H;
 
         for (int i = 0; i < iterations; i++) {
             // shift the screen down and make the top row black

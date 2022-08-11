@@ -235,7 +235,8 @@ void GameBrowser::layout()
     const void* guiData[10];
     const void** data = guiData;
 
-    browserGui[15] = 16 * xu4.settings->scale;
+    // Set title FONT_SIZE
+    browserGui[15] = screenState()->aspectW / 20;
 
     *data++ = "xu4 | ";
     *data++ = "Game Modules";

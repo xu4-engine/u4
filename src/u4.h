@@ -46,6 +46,10 @@
 #define CHARSET_PROMPT '\020'
 #define CHARSET_FLOOR '\022'
 
+/* screen size (in pixels) */
+#define U4_SCREEN_W 320
+#define U4_SCREEN_H 200
+
 /* map viewport size (in tiles) */
 #define VIEWPORT_W 11
 #define VIEWPORT_H 11

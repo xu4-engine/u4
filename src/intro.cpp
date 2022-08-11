@@ -2077,7 +2077,7 @@ bool IntroController::updateTitle()
             if (step >= mapArea.columns)
                 mapArea.scissor = NULL;
             else {
-                int scale = xu4.settings->scale;
+                int scale = screenState()->aspectH / U4_SCREEN_H;
                 mapScissor[0] = scale * (160 - step * 8);   // Left
                 mapScissor[1] = mapArea.screenRect[1];      // Bottom
                 mapScissor[2] = scale * (step * 2 * 8);     // Width

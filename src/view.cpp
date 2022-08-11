@@ -3,8 +3,9 @@
 #endif
 
 #include "image.h"
-#include "settings.h"
+#include "screen.h"
 #include "view.h"
+#include "u4.h"
 #include "xu4.h"
 
 View::View(int x, int y, int width, int height) :
@@ -19,7 +20,7 @@ View::View(int x, int y, int width, int height) :
  * Hook for reinitializing when graphics reloaded.
  */
 void View::reinit() {
-    int scale = xu4.settings->scale;
+    int scale = screenState()->aspectH / U4_SCREEN_H;
     screenRect[0] = x * scale;
     screenRect[1] = (xu4.screenImage->height() - (y + height)) * scale;
     screenRect[2] = width  * scale;

@@ -11,6 +11,7 @@
 #include "image.h"
 #include "settings.h"
 #include "screen.h"
+#include "u4.h"
 #include "xu4.h"
 
 #if defined(MACOSX)
@@ -70,8 +71,8 @@ void screenInit_sys(const Settings* settings, ScreenState* state, int reset) {
 
     SDL_SetGamma(settings->gamma / 100.0f, settings->gamma / 100.0f, settings->gamma / 100.0f);
 
-    state->aspectW = 320 * settings->scale;
-    state->aspectH = 200 * settings->scale;
+    state->aspectW = U4_SCREEN_W * settings->scale;
+    state->aspectH = U4_SCREEN_H * settings->scale;
 
     if (!SDL_SetVideoMode(state->aspectW, state->aspectH, 32,
                 SDL_HWSURFACE | (settings->fullscreen ? SDL_FULLSCREEN : 0)))
