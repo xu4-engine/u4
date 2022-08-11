@@ -83,7 +83,10 @@ exe %xu4 [
 		cflags "-DUSE_BORON -DCONF_MODULE"
 		unix [
 			libs %boron
-			if sdk_dir [libs %pthread]  ; Needed for static libboron.
+			if sdk_dir [
+					; Needed for static libboron & libfaun.
+					libs [%pthread %pulse-simple %pulse %vorbisfile]
+			]
 		]
 		win32 [
 			libs_from %../usr/lib either msvc %libboron %boron
@@ -202,7 +205,9 @@ if make_util [
 	]
 ]
 
+; cbuild makes the archive for mingw & allegro so add the Linux files as well.
 dist [
+	%src/screen_glv.cpp
 	%src/glv/x11/glv.c
 	%src/glv/x11/glv.h
 	%src/glv/x11/glv_keys.h

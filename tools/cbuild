@@ -5,7 +5,7 @@ VERSION=DR-$(git rev-parse --short HEAD)
 
 if [ ! -s project.tar.gz ]; then
 	sed -i "s/DR-1.0/${VERSION}/" project.b
-	copr -a -t mingw gpu_render:true
+	copr -a -t mingw "os_api:'allegro"
 fi
 
 
@@ -63,13 +63,13 @@ windows)
 	;;
 
 linux)
-	echo '
+	echo $'
   tar xjf /tmp/boron-x86_64-static-2.0.8.tar.bz2
   tar xjf /tmp/faun-x86_64-static-0.1.1.tar.bz2 -C boron --strip-components=1
   mkdir u4
   cd u4
   tar xf /tmp/project.tar.gz
-  copr make_util:false sdk_dir:%../boron
+  copr "os_api:\'glv" make_util:false sdk_dir:%../boron
 ' >$HDIR/${SCRIPT}
 
 	podman run -d -it --name=$ID xu4/f33-gcc /bin/bash || exit
@@ -86,8 +86,7 @@ linux)
 		cp /tmp/xu4-$TIME ${ARC_DIR}/xu4
 		cp render.pak Ultima-IV.mod U4-Upgrade.mod COPYING dist/setup ${ARC_DIR}
 		cp README.md ${ARC_DIR}/README
-		cp dist/README.linux-dr ${ARC_DIR}/README-Linux
-        mkdir ${ARC_DIR}/desktop
+		mkdir ${ARC_DIR}/desktop
 		cp icons/xu4.png dist/xu4.desktop ${ARC_DIR}/desktop
 		tar czf /tmp/xu4-linux.tar.gz -C ${ARC_DIR%/*} ${ARC_DIR##*/}
 	fi

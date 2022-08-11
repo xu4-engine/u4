@@ -1,41 +1,22 @@
 #!/bin/sh
 # XU4 Linux Installer
 
-install_allegro() {
-	echo "Installing Allegro 5..."
-	. /etc/os-release
-	case $ID in
-	arch)
-		sudo pacman -Sy allegro
-		;;
-	fedora)
-		sudo dnf install allegro5
-		;;
-	ubuntu|pop)
-		sudo add-apt-repository ppa:allegro/5.2
-		sudo apt-get install liballegro5.2
-		;;
-	debian|devuan)
-		sudo apt-get install liballegro5.2
-		;;
-	*)
-		echo "You will need to install Allegro 5 manually (v5.2.7 or later is recommended)"
-		;;
-	esac
-}
+PREFIX=/usr
+SHARE=$PREFIX/share
 
 case $1 in
 install)
-	sudo install -m 755 xu4 /usr/bin
-	sudo install -D -m 644 Ultima-IV.mod /usr/share/xu4/Ultima-IV.mod
-	sudo install -D -m 644 desktop/xu4.png /usr/share/icons/hicolor/48x48/apps/xu4.png
-	sudo install -D -m 644 desktop/xu4.desktop /usr/share/applications/xu4.desktop
-	install_allegro
+	sudo install -D -m 755 xu4 $PREFIX/bin/xu4
+	sudo install -D -m 644 render.pak $SHARE/xu4/render.pak
+	sudo install -m 644 Ultima-IV.mod U4-Upgrade.mod $SHARE/xu4
+	sudo install -D -m 644 desktop/xu4.png $SHARE/icons/hicolor/48x48/apps/xu4.png
+	sudo install -D -m 644 desktop/xu4.desktop $SHARE/applications/xu4.desktop
 	;;
 
 uninstall)
-	sudo rm -f /usr/bin/xu4 /usr/share/xu4/Ultima-IV.mod
-	sudo rm -f /usr/share/icons/hicolor/48x48/apps/xu4.png /usr/share/applications/xu4.desktop
+	sudo rm -f $PREFIX/bin/xu4
+	sudo rm -f $SHARE/xu4/render.pak $SHARE/xu4/Ultima-IV.mod $SHARE/xu4/U4-Upgrade.mod
+	sudo rm -f $SHARE/icons/hicolor/48x48/apps/xu4.png $SHARE/applications/xu4.desktop
 	;;
 
 *)

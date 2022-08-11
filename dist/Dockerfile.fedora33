@@ -5,8 +5,7 @@ FROM fedora:33
 RUN dnf -y install bzip2 diffutils git make tree
 RUN useradd build
 
-# Using boron-2.0.7 (commit 2eeddda3 needed for copr).
-ADD http://urlan.sourceforge.net/boron/static/boron-2.0.7-Linux.x86_64 /usr/bin/boron
+ADD http://urlan.sourceforge.net/boron/static/boron-2.0.8-Linux.x86_64 /usr/bin/boron
 RUN chmod +x /usr/bin/boron
 
 USER build
