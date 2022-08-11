@@ -38,6 +38,8 @@ struct RenderLayer {
     void* data;
 };
 
+static const float colorBlack[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+
 static const char* fontFiles[] = {
     "cfont-comfortaa.txf",
     "cfont-avatar.txf",
@@ -287,6 +289,7 @@ void screenReInit() {
 
     screenDelete_data(XU4_SCREEN);
     screenInit_sys(xu4.settings, &screen->state, SYS_RESET);
+    gpu_clear(xu4.gpu, colorBlack);
     screenInit_data(screen, *xu4.settings); // Load new backgrounds, etc.
 
     gs_emitMessage(SENDER_DISPLAY, &screen->state);
@@ -761,7 +764,6 @@ void screenUploadToGPU() {
 }
 
 void screenRender() {
-    static const float colorBlack[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
     Screen* sp = XU4_SCREEN;
     void* gpu = xu4.gpu;
     ScreenState* ss = &sp->state;
