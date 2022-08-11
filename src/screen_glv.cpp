@@ -268,7 +268,7 @@ mouse_pos:
 }
 
 
-void screenInit_sys(const Settings* settings, int* dim, int reset) {
+void screenInit_sys(const Settings* settings, ScreenState* state, int reset) {
     ScreenGLView* sa;
     const char* gpuError;
     int dw = 320 * settings->scale;
@@ -312,10 +312,12 @@ void screenInit_sys(const Settings* settings, int* dim, int reset) {
     glv_changeMode(sa->view, &mode);
     }
 
-    dim[0] = sa->view->width;
-    dim[1] = sa->view->height;
-    dim[2] = dw;
-    dim[3] = dh;
+    state->displayW = sa->view->width;
+    state->displayH = sa->view->height;
+    state->aspectW  = dw;
+    state->aspectH  = dh;
+    state->aspectX  = (state->displayW - dw) / 2;
+    state->aspectY  = (state->displayH - dh) / 2;
 
     // Can settings->gamma be applied?
 

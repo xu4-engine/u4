@@ -87,6 +87,8 @@ struct ScreenState {
     int displayH;
     int aspectW;        // Aspect-correct pixel dimensions.
     int aspectH;
+    int aspectX;        // Origin of aspect-correct area on display.
+    int aspectY;
 };
 
 #define SCR_CYCLE_PER_SECOND 4

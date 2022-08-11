@@ -100,7 +100,7 @@ static ALLEGRO_BITMAP* loadBitmapPng(const char* filename) {
 #include <allegro5/allegro_opengl.h>
 
 
-void screenInit_sys(const Settings* settings, int* dim, int reset) {
+void screenInit_sys(const Settings* settings, ScreenState* state, int reset) {
     ScreenAllegro* sa;
     const char* gpuError;
 #ifdef _WIN32
@@ -182,10 +182,12 @@ void screenInit_sys(const Settings* settings, int* dim, int reset) {
     }
 #endif
 
-    dim[0] = al_get_display_width(sa->disp);
-    dim[1] = al_get_display_height(sa->disp);
-    dim[2] = dw;
-    dim[3] = dh;
+    state->displayW = al_get_display_width(sa->disp);
+    state->displayH = al_get_display_height(sa->disp);
+    state->aspectW  = dw;
+    state->aspectH  = dh;
+    state->aspectX  = (state->displayW - dw) / 2;
+    state->aspectY  = (state->displayH - dh) / 2;
 
     al_set_window_title(sa->disp, "Ultima IV");  // configService->gameName()
 

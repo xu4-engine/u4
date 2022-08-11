@@ -50,7 +50,7 @@ void u4_SDL_QuitSubSystem(Uint32 flags) {
         SDL_QuitSubSystem(flags);
 }
 
-void screenInit_sys(const Settings* settings, int* dim, int reset) {
+void screenInit_sys(const Settings* settings, ScreenState* state, int reset) {
     ScreenSDL* sd;
 
     if (! reset) {
@@ -70,10 +70,11 @@ void screenInit_sys(const Settings* settings, int* dim, int reset) {
 
     SDL_SetGamma(settings->gamma / 100.0f, settings->gamma / 100.0f, settings->gamma / 100.0f);
 
-    dim[2] = 320 * settings->scale;
-    dim[3] = 200 * settings->scale;
+    state->aspectW = 320 * settings->scale;
+    state->aspectH = 200 * settings->scale;
 
-    if (!SDL_SetVideoMode(dim[2], dim[3], 32, SDL_HWSURFACE | (settings->fullscreen ? SDL_FULLSCREEN : 0)))
+    if (!SDL_SetVideoMode(state->aspectW, state->aspectH, 32,
+                SDL_HWSURFACE | (settings->fullscreen ? SDL_FULLSCREEN : 0)))
         errorFatal("unable to set video: %s", SDL_GetError());
 
     if (xu4.verbose) {
@@ -96,11 +97,12 @@ void screenInit_sys(const Settings* settings, int* dim, int reset) {
     }
 
     {
-    //ScreenState* state = screenState();
     SDL_Surface* ss = SDL_GetVideoSurface();
 
-    dim[0] = ss->w;
-    dim[1] = ss->h;
+    state->displayW = ss->w;
+    state->displayH = ss->h;
+    state->aspectX  = (state->displayW - state->aspectW) / 2;
+    state->aspectY  = (state->displayH - state->aspectH) / 2;
 
 #if 0
     printf( "SDL color masks: R:%08x G:%08x B:%08x A:%08x\n",

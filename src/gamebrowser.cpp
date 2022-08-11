@@ -34,8 +34,8 @@ void GameBrowser::renderBrowser(ScreenState* ss, void* data)
 
         box[0] = gb->listArea[0];
         box[1] = gb->listArea[1] + gb->listArea[3] - 1 - int(selY);
-        box[0] += (ss->displayW - ss->aspectW) / 2;
-        box[1] += (ss->displayH - ss->aspectH) / 2;
+        box[0] += ss->aspectX;
+        box[1] += ss->aspectY;
 
         box[2] = gb->listArea[2];
         box[3] = PSIZE_LIST + 2;
@@ -409,14 +409,17 @@ bool GameBrowser::inputEvent(const InputEvent* ev)
     switch (ev->type) {
         case CIE_MOUSE_PRESS:
             if (ev->n == CMOUSE_LEFT) {
-                int y = screenState()->displayH - ev->y;
-                if (insideArea(listArea, ev->x, y))
+                const ScreenState* ss = screenState();
+                int x = ev->x - ss->aspectX;
+                int y = (ss->displayH - ev->y) - ss->aspectY;
+
+                if (insideArea(listArea, x, y))
                     selectModule(listArea, y);
-                else if (insideArea(cancelArea, ev->x, y))
+                else if (insideArea(cancelArea, x, y))
                     keyPressed(U4_ESC);
-                else if (insideArea(quitArea, ev->x, y))
+                else if (insideArea(quitArea, x, y))
                     xu4.eventHandler->quitGame();
-                else if (insideArea(okArea, ev->x, y))
+                else if (insideArea(okArea, x, y))
                     keyPressed(U4_ENTER);
             }
             break;

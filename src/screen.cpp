@@ -151,7 +151,7 @@ static void screenFindLineOfSight();
 #endif
 
 // Just extern the system functions here. That way people aren't tempted to call them as part of the public API.
-extern void screenInit_sys(const Settings*, int* dim, int reset);
+extern void screenInit_sys(const Settings*, ScreenState*, int reset);
 extern void screenDelete_sys();
 
 static void initDungeonTileChars(std::map<string, int>& dungeonTileChars) {
@@ -264,7 +264,7 @@ enum ScreenSystemStage {
 void screenInit(int layerCount) {
     Screen* screen = new Screen(layerCount);
     xu4.screen = screen;
-    screenInit_sys(xu4.settings, &screen->state.displayW, SYS_CLEAN);
+    screenInit_sys(xu4.settings, &screen->state, SYS_CLEAN);
     screenInit_data(screen, *xu4.settings);
 }
 
@@ -286,7 +286,7 @@ void screenReInit() {
     gs_emitMessage(SENDER_DISPLAY, NULL);
 
     screenDelete_data(XU4_SCREEN);
-    screenInit_sys(xu4.settings, &screen->state.displayW, SYS_RESET);
+    screenInit_sys(xu4.settings, &screen->state, SYS_RESET);
     screenInit_data(screen, *xu4.settings); // Load new backgrounds, etc.
 
     gs_emitMessage(SENDER_DISPLAY, &screen->state);
@@ -760,21 +760,18 @@ void screenUploadToGPU() {
     gpu_blitTexture(gpu_screenTexture(xu4.gpu), 0, 0, xu4.screenImage);
 }
 
-#define SCREEN_IMG_LEFT(sp)     (sp->state.displayW - sp->state.aspectW) / 2
-#define SCREEN_IMG_BOTTOM(sp)   (sp->state.displayH - sp->state.aspectH) / 2
-
 void screenRender() {
     static const float colorBlack[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
     Screen* sp = XU4_SCREEN;
     void* gpu = xu4.gpu;
-    int offsetX = SCREEN_IMG_LEFT(sp);
-    int offsetY = SCREEN_IMG_BOTTOM(sp);
+    ScreenState* ss = &sp->state;
+    int offsetY = ss->aspectY;
 
-    if (sp->state.vertOffset) {
-        offsetY -= sp->state.vertOffset * xu4.settings->scale;
+    if (ss->vertOffset) {
+        offsetY -= ss->vertOffset * xu4.settings->scale;
         gpu_clear(gpu, colorBlack);     // Clear the top rows of pixels.
     }
-    gpu_viewport(offsetX, offsetY, sp->state.aspectW, sp->state.aspectH);
+    gpu_viewport(ss->aspectX, offsetY, ss->aspectW, ss->aspectH);
     gpu_drawTextureScaled(gpu, gpu_screenTexture(gpu));
 
 #ifdef GPU_RENDER
@@ -809,7 +806,7 @@ void screenRender() {
     RenderLayer* end = rl + sp->layersAvail;
     for (; rl != end; ++rl) {
         if (rl->func)
-            rl->func(&sp->state, rl->data);
+            rl->func(ss, rl->data);
     }
     }
 }
@@ -1423,11 +1420,9 @@ static int pointInTriangle(int x, int y, int tx1, int ty1, int tx2, int ty2, int
  */
 void screenPointToMouseArea(int* x, int* y) {
     const Screen* sp = XU4_SCREEN;
-    int offsetX = SCREEN_IMG_LEFT(sp);
-    int offsetY = SCREEN_IMG_BOTTOM(sp);
     unsigned int scale = xu4.settings->scale;
-    *x = (*x - offsetX) / scale;
-    *y = (*y - offsetY) / scale;
+    *x = (*x - sp->state.aspectX) / scale;
+    *y = (*y - sp->state.aspectY) / scale;
 }
 
 /**
