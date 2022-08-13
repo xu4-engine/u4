@@ -765,6 +765,7 @@ public:
     void wait();
     void waitTimeout();
     virtual bool keyPressed(int key);
+    virtual bool inputEvent(const InputEvent*);
     virtual void timerFired();
 };
 
@@ -781,6 +782,12 @@ void AnyKeyController::waitTimeout() {
 
 bool AnyKeyController::keyPressed(int key) {
     xu4.eventHandler->setControllerDone();
+    return true;
+}
+
+bool AnyKeyController::inputEvent(const InputEvent* ev) {
+    if (ev->type == IE_MOUSE_PRESS && ev->n == CMOUSE_LEFT)
+        xu4.eventHandler->setControllerDone();
     return true;
 }
 

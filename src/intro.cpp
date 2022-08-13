@@ -495,17 +495,20 @@ bool IntroController::keyPressed(int key) {
 }
 
 bool IntroController::inputEvent(const InputEvent* ev) {
-    if (mode == INTRO_MENU &&
-        ev->type == IE_MOUSE_PRESS && ev->n == CMOUSE_LEFT)
+    if (ev->type == IE_MOUSE_PRESS && ev->n == CMOUSE_LEFT)
     {
-        int cx, cy;
-        menuArea.mouseTextPos(ev->x, ev->y, cx, cy);
+        if (mode == INTRO_TITLES || mode == INTRO_MAP)
+            keyPressed(U4_SPACE);
+        else if (mode == INTRO_MENU) {
+            int cx, cy;
+            menuArea.mouseTextPos(ev->x, ev->y, cx, cy);
 
-        // Matches text position in updateScreen().
-        if (cx >= 10 && cx <= 28) {
-            if (cy >= 5 && cy <= 9) {
-                static const char menuKey[] = "rjica";
-                keyPressed( menuKey[cy - 5] );
+            // Matches text position in updateScreen().
+            if (cx >= 10 && cx <= 28) {
+                if (cy >= 5 && cy <= 9) {
+                    static const char menuKey[] = "rjica";
+                    keyPressed( menuKey[cy - 5] );
+                }
             }
         }
     }
