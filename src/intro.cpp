@@ -787,11 +787,11 @@ void IntroController::updateScreen() {
 
         menuArea.textAt(1,  1, "In another world, in a time to come.");
         menuArea.textAt(14, 3, "Options:");
-        menuArea.textAt(10, 5, "%s", menuArea.colorizeString("Return to the view", FG_YELLOW, 0, 1).c_str());
-        menuArea.textAt(10, 6, "%s", menuArea.colorizeString("Journey Onward",     FG_YELLOW, 0, 1).c_str());
-        menuArea.textAt(10, 7, "%s", menuArea.colorizeString("Initiate New Game",  FG_YELLOW, 0, 1).c_str());
-        menuArea.textAt(10, 8, "%s", menuArea.colorizeString("Configure",          FG_YELLOW, 0, 1).c_str());
-        menuArea.textAt(10, 9, "%s", menuArea.colorizeString("About",              FG_YELLOW, 0, 1).c_str());
+        menuArea.textAtKey(10, 5, "Return to the view", 0);
+        menuArea.textAtKey(10, 6, "Journey Onward", 0);
+        menuArea.textAtKey(10, 7, "Initiate New Game", 0);
+        menuArea.textAtKey(10, 8, "Configure", 0);
+        menuArea.textAtKey(10, 9, "About", 0);
         drawBeasties();
 
         // draw the cursor last
@@ -1042,13 +1042,13 @@ void IntroController::startQuestions() {
         EventHandler::wait_msecs(1000);
 
         const string& virtue1 = gypsyText[questionTree[i1] + 4];
-        questionArea.textAt(0, 2, "%s and", virtue1.c_str());
+        questionArea.textAtFmt(0, 2, "%s and", virtue1.c_str());
         drawCard(0, questionTree[i1], origin);
         EventHandler::wait_msecs(1000);
 
         soundSpeakLine(VOICE_GYPSY, 3);
-        questionArea.textAt(virtue1.size() + 4, 2, " %s.  She says",
-                            gypsyText[questionTree[i2] + 4].c_str());
+        questionArea.textAtFmt(virtue1.size() + 4, 2, " %s.  She says",
+                               gypsyText[questionTree[i2] + 4].c_str());
         drawCard(1, questionTree[i2], origin);
         questionArea.textAt(0, 3, "\"Consider this:\"");
         questionArea.enableCursor();
@@ -1119,7 +1119,7 @@ void IntroController::about() {
     backgroundArea.draw(BKGD_OPTIONS_BTM, 0, 120);
 
     screenHideCursor();
-    menuArea.textAt(14, 1, "XU4 %s", VERSION);
+    menuArea.textAtFmt(14, 1, "XU4 %s", VERSION);
     menuArea.textAt(1, 3, "xu4 is free software; you can redist-");
     menuArea.textAt(1, 4, "ribute it and/or modify it under the");
     menuArea.textAt(1, 5, "terms of the GNU GPL as published by");
@@ -1145,13 +1145,13 @@ void IntroController::showText(const string &text) {
 
     unsigned long pos = current.find("\n");
     while (pos < current.length()) {
-        questionArea.textAt(0, lineNo++, "%s", current.substr(0, pos).c_str());
+        questionArea.textAt(0, lineNo++, current.substr(0, pos).c_str());
         current = current.substr(pos+1);
         pos = current.find("\n");
     }
 
     /* write the last line (possibly only line) */
-    questionArea.textAt(0, lineNo++, "%s", current.substr(0, pos).c_str());
+    questionArea.textAt(0, lineNo++, current.substr(0, pos).c_str());
 }
 
 /**

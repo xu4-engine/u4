@@ -49,7 +49,9 @@ public:
 
     void drawChar(int chr, int x, int y);
     void drawCharMasked(int chr, int x, int y, unsigned char mask);
-    void textAt(int x, int y, const char *fmt, ...) PRINTF_LIKE(4, 5);
+    void textAt(int x, int y, const char *text);
+    void textAtFmt(int x, int y, const char *fmt, ...) PRINTF_LIKE(4, 5);
+    void textAtKey(int x, int y, const char *text, int keyIndex);
     void scroll();
 
     void setCursorFollowsText(bool follows) { cursorFollowsText = follows; }
@@ -60,7 +62,7 @@ public:
     // functions to add color to strings
     void textSelectedAt(int x, int y, const char *text);
     string colorizeStatus(char statustype);
-    string colorizeString(string input, TextColor color, unsigned int colorstart, unsigned int colorlength=0);
+    string highlightKey(const string& input, unsigned int keyIndex);
 
 protected:
     void drawCursor();

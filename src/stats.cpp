@@ -120,9 +120,11 @@ void StatsArea::update(bool avatarOnly) {
      * update the lower stats box (food, gold, etc.)
      */
     if (c->transportContext == TRANSPORT_SHIP)
-        summary.textAt(0, 0, "F:%04d   SHP:%02d", c->saveGame->food / 100, c->saveGame->shiphull);
+        summary.textAtFmt(0, 0, "F:%04d   SHP:%02d",
+                          c->saveGame->food / 100, c->saveGame->shiphull);
     else
-        summary.textAt(0, 0, "F:%04d   G:%04d", c->saveGame->food / 100, c->saveGame->gold);
+        summary.textAtFmt(0, 0, "F:%04d   G:%04d",
+                          c->saveGame->food / 100, c->saveGame->gold);
 
     statsNotice(SENDER_AURA, &c->aura, this);
 
@@ -203,7 +205,7 @@ void StatsArea::redraw() {
  */
 void StatsArea::setTitle(const char* s) {
     int titleStart = (STATS_AREA_WIDTH / 2) - ((strlen(s) + 2) / 2);
-    title.textAt(titleStart, 0, "%c%s%c", 16, s, 17);
+    title.textAtFmt(titleStart, 0, "%c%s%c", 16, s, 17);
 }
 
 /**
@@ -220,12 +222,12 @@ void StatsArea::showPartyView(bool avatarOnly) {
     if (!avatarOnly) {
         for (int i = 0; i < c->party->size(); i++) {
             p = c->party->member(i);
-            mainArea.textAt(0, i, format, i+1, (i==activePlayer) ? CHARSET_BULLET : '-', p->getName(), p->getHp(), mainArea.colorizeStatus(p->getStatus()).c_str());
+            mainArea.textAtFmt(0, i, format, i+1, (i==activePlayer) ? CHARSET_BULLET : '-', p->getName(), p->getHp(), mainArea.colorizeStatus(p->getStatus()).c_str());
         }
     }
     else {
         p = c->party->member(0);
-        mainArea.textAt(0, 0, format, 1, (activePlayer==0) ? CHARSET_BULLET : '-', p->getName(), p->getHp(), mainArea.colorizeStatus(p->getStatus()).c_str());
+        mainArea.textAtFmt(0, 0, format, 1, (activePlayer==0) ? CHARSET_BULLET : '-', p->getName(), p->getHp(), mainArea.colorizeStatus(p->getStatus()).c_str());
     }
 }
 
@@ -239,16 +241,16 @@ void StatsArea::showPlayerDetails() {
 
     PartyMember *p = c->party->member(player);
     setTitle(p->getName());
-    mainArea.textAt(0, 0, "%c             %c", p->getSex(), p->getStatus());
-    string classStr = getClassName(p->getClass());
-    int classStart = (STATS_AREA_WIDTH / 2) - (classStr.length() / 2);
-    mainArea.textAt(classStart, 0, "%s", classStr.c_str());
-    mainArea.textAt(0, 2, " MP:%02d  LV:%d", p->getMp(), p->getRealLevel());
-    mainArea.textAt(0, 3, "STR:%02d  HP:%04d", p->getStr(), p->getHp());
-    mainArea.textAt(0, 4, "DEX:%02d  HM:%04d", p->getDex(), p->getMaxHp());
-    mainArea.textAt(0, 5, "INT:%02d  EX:%04d", p->getInt(), p->getExp());
-    mainArea.textAt(0, 6, "W:%s", p->getWeapon()->getName());
-    mainArea.textAt(0, 7, "A:%s", p->getArmor()->getName());
+    mainArea.textAtFmt(0, 0, "%c             %c", p->getSex(), p->getStatus());
+    const char* classStr = getClassName(p->getClass());
+    int classStart = (STATS_AREA_WIDTH / 2) - (strlen(classStr) / 2);
+    mainArea.textAt(classStart, 0, classStr);
+    mainArea.textAtFmt(0, 2, " MP:%02d  LV:%d", p->getMp(), p->getRealLevel());
+    mainArea.textAtFmt(0, 3, "STR:%02d  HP:%04d", p->getStr(), p->getHp());
+    mainArea.textAtFmt(0, 4, "DEX:%02d  HM:%04d", p->getDex(), p->getMaxHp());
+    mainArea.textAtFmt(0, 5, "INT:%02d  EX:%04d", p->getInt(), p->getExp());
+    mainArea.textAtFmt(0, 6, "W:%s", p->getWeapon()->getName());
+    mainArea.textAtFmt(0, 7, "A:%s", p->getArmor()->getName());
 }
 
 /**
@@ -259,7 +261,7 @@ void StatsArea::showWeapons() {
 
     int line = 0;
     int col = 0;
-    mainArea.textAt(0, line++, "A-%s", xu4.config->weapon(WEAP_HANDS)->getName());
+    mainArea.textAtFmt(0, line++, "A-%s", xu4.config->weapon(WEAP_HANDS)->getName());
     for (int w = WEAP_HANDS + 1; w < WEAP_MAX; w++) {
         int n = c->saveGame->weapons[w];
         if (n >= 100)
@@ -267,7 +269,7 @@ void StatsArea::showWeapons() {
         if (n >= 1) {
             const char *format = (n >= 10) ? "%c%d-%s" : "%c-%d-%s";
 
-            mainArea.textAt(col, line++, format, w - WEAP_HANDS + 'A', n, xu4.config->weapon((WeaponType) w)->getAbbrev());
+            mainArea.textAtFmt(col, line++, format, w - WEAP_HANDS + 'A', n, xu4.config->weapon((WeaponType) w)->getAbbrev());
             if (line >= (STATS_AREA_HEIGHT)) {
                 line = 0;
                 col += 8;
@@ -286,9 +288,10 @@ void StatsArea::showArmor() {
     mainArea.textAt(0, line++, "A  -No Armour");
     for (int a = ARMR_NONE + 1; a < ARMR_MAX; a++) {
         if (c->saveGame->armor[a] > 0) {
-            const char *format = (c->saveGame->armor[a] >= 10) ? "%c%d-%s" : "%c-%d-%s";
+            const char *format = (c->saveGame->armor[a] >= 10) ? "%c%d-%s"
+                                                               : "%c-%d-%s";
 
-            mainArea.textAt(0, line++, format, a - ARMR_NONE + 'A',
+            mainArea.textAtFmt(0, line++, format, a - ARMR_NONE + 'A',
                     c->saveGame->armor[a],
                     xu4.config->armor((ArmorType) a)->getName());
         }
@@ -302,11 +305,11 @@ void StatsArea::showEquipment() {
     setTitle("Equipment");
 
     int line = 0;
-    mainArea.textAt(0, line++, "%2d Torches", c->saveGame->torches);
-    mainArea.textAt(0, line++, "%2d Gems", c->saveGame->gems);
-    mainArea.textAt(0, line++, "%2d Keys", c->saveGame->keys);
+    mainArea.textAtFmt(0, line++, "%2d Torches", c->saveGame->torches);
+    mainArea.textAtFmt(0, line++, "%2d Gems", c->saveGame->gems);
+    mainArea.textAtFmt(0, line++, "%2d Keys", c->saveGame->keys);
     if (c->saveGame->sextants > 0)
-        mainArea.textAt(0, line++, "%2d Sextants", c->saveGame->sextants);
+        mainArea.textAtFmt(0, line++, "%2d Sextants", c->saveGame->sextants);
 }
 
 /**
@@ -326,7 +329,7 @@ void StatsArea::showItems() {
                 buffer[j++] = getStoneName((Virtue) i)[0];
         }
         buffer[j] = '\0';
-        mainArea.textAt(0, line++, "Stones:%s", buffer);
+        mainArea.textAtFmt(0, line++, "Stones:%s", buffer);
     }
     if (c->saveGame->runes != 0) {
         j = 0;
@@ -335,7 +338,7 @@ void StatsArea::showItems() {
                 buffer[j++] = getVirtueName((Virtue) i)[0];
         }
         buffer[j] = '\0';
-        mainArea.textAt(0, line++, "Runes:%s", buffer);
+        mainArea.textAtFmt(0, line++, "Runes:%s", buffer);
     }
     if (c->saveGame->items & (ITEM_CANDLE | ITEM_BOOK | ITEM_BELL)) {
         buffer[0] = '\0';
@@ -351,7 +354,7 @@ void StatsArea::showItems() {
             strcat(buffer, getItemName(ITEM_CANDLE));
             buffer[15] = '\0';
         }
-        mainArea.textAt(0, line++, "%s", buffer);
+        mainArea.textAt(0, line++, buffer);
     }
     if (c->saveGame->items & (ITEM_KEY_C | ITEM_KEY_L | ITEM_KEY_T)) {
         j = 0;
@@ -362,14 +365,14 @@ void StatsArea::showItems() {
         if (c->saveGame->items & ITEM_KEY_C)
             buffer[j++] = getItemName(ITEM_KEY_C)[0];
         buffer[j] = '\0';
-        mainArea.textAt(0, line++, "3 Part Key:%s", buffer);
+        mainArea.textAtFmt(0, line++, "3 Part Key:%s", buffer);
     }
     if (c->saveGame->items & ITEM_HORN)
-        mainArea.textAt(0, line++, "%s", getItemName(ITEM_HORN));
+        mainArea.textAt(0, line++, getItemName(ITEM_HORN));
     if (c->saveGame->items & ITEM_WHEEL)
-        mainArea.textAt(0, line++, "%s", getItemName(ITEM_WHEEL));
+        mainArea.textAt(0, line++, getItemName(ITEM_WHEEL));
     if (c->saveGame->items & ITEM_SKULL)
-        mainArea.textAt(0, line++, "%s", getItemName(ITEM_SKULL));
+        mainArea.textAt(0, line++, getItemName(ITEM_SKULL));
 }
 
 /**
@@ -382,7 +385,9 @@ void StatsArea::showReagents(bool active)
     Menu::MenuItemList::iterator i;
     int line = 0,
         r = REAG_ASH;
-    string shortcut ("A");
+    char shortcut[2];
+
+    shortcut[1] = '\0';
 
     reagentsMixMenu.show(&mainArea);
 
@@ -393,9 +398,9 @@ void StatsArea::showReagents(bool active)
             // Insert the reagent menu item shortcut character
             shortcut[0] = 'A'+r;
             if (active)
-                mainArea.textAt(0, line++, "%s", mainArea.colorizeString(shortcut, FG_YELLOW, 0, 1).c_str());
+                mainArea.textAtKey(0, line++, shortcut, 0);
             else
-                mainArea.textAt(0, line++, "%s", shortcut.c_str());
+                mainArea.textAt(0, line++, shortcut);
         }
     }
 }
@@ -413,7 +418,7 @@ void StatsArea::showMixtures() {
         if (n >= 100)
             n = 99;
         if (n >= 1) {
-            mainArea.textAt(col, line++, "%c-%02d", s + 'A', n);
+            mainArea.textAtFmt(col, line++, "%c-%02d", s + 'A', n);
             if (line >= (STATS_AREA_HEIGHT)) {
                 if (col >= 10)
                     break;

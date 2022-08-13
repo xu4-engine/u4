@@ -85,7 +85,7 @@ void Menu::setCurrent(int id) {
 void Menu::show(TextView *view)
 {
     if (title.length() > 0)
-        view->textAt(titleX, titleY, "%s", title.c_str());
+        view->textAt(titleX, titleY, title.c_str());
 
     for (current = items.begin(); current != items.end(); current++)
     {
@@ -100,9 +100,11 @@ void Menu::show(TextView *view)
                 text[0] = '\010';
             }
 
+            string ctext = view->highlightKey(text, mi->getScOffset());
+
             if (mi->isHighlighted())
             {
-                view->textSelectedAt(mi->getX(), mi->getY(), view->colorizeString(text.c_str(), FG_YELLOW, mi->getScOffset(), 1).c_str());
+                view->textSelectedAt(mi->getX(), mi->getY(), ctext.c_str());
                 // hack for the custom U5 mix reagents menu
                 // places cursor 1 column over, rather than 2.
                 view->setCursorPos(mi->getX() - (view->getWidth() == 15 ? 1 : 2), mi->getY(), true);
@@ -110,7 +112,7 @@ void Menu::show(TextView *view)
             }
             else
             {
-                view->textAt(mi->getX(), mi->getY(), "%s", view->colorizeString(text.c_str(), FG_YELLOW, mi->getScOffset(), 1).c_str());
+                view->textAt(mi->getX(), mi->getY(), ctext.c_str());
             }
         }
     }

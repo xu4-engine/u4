@@ -653,7 +653,7 @@ bool ReadStringController::keyPressed(int key) {
             value += key;
 
             if (view) {
-                view->textAt(screenX + len, screenY, "%c", key);
+                view->textAtFmt(screenX + len, screenY, "%c", key);
             } else {
                 screenHideCursor();
                 screenTextAt(screenX + len, screenY, "%c", key);
