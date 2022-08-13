@@ -8,8 +8,10 @@
 #include "debug.h"
 #include "event.h"
 #include "imagemgr.h"
+#include "screen.h"
 #include "settings.h"
 #include "textview.h"
+#include "u4.h"
 #include "xu4.h"
 
 Image *TextView::charset = NULL;
@@ -247,6 +249,16 @@ void TextView::setCursorPos(int x, int y, bool clearOld) {
     cursorY = y;
 
     drawCursor();
+}
+
+/*
+ * Translate InputEvent mouse position to view character coordinates.
+ */
+void TextView::mouseTextPos(int mouseX, int mouseY, int& cx, int& cy) {
+    const ScreenState* ss = screenState();
+    int scale = ss->aspectH / U4_SCREEN_H;
+    cx = (((mouseX - ss->aspectX) / scale) - x) / CHAR_WIDTH;
+    cy = (((mouseY - ss->aspectY) / scale) - y) / CHAR_HEIGHT;
 }
 
 void TextView::enableCursor() {

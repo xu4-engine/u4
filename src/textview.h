@@ -59,6 +59,8 @@ public:
     void enableCursor();
     void disableCursor();
 
+    void mouseTextPos(int mouseX, int mouseY, int& tx, int& ty);
+
     // functions to add color to strings
     void textSelectedAt(int x, int y, const char *text);
     string colorizeStatus(char statustype);

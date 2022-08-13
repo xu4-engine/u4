@@ -494,6 +494,24 @@ bool IntroController::keyPressed(int key) {
     return valid || KeyHandler::defaultHandler(key, NULL);
 }
 
+bool IntroController::inputEvent(const InputEvent* ev) {
+    if (mode == INTRO_MENU &&
+        ev->type == CIE_MOUSE_PRESS && ev->n == CMOUSE_LEFT)
+    {
+        int cx, cy;
+        menuArea.mouseTextPos(ev->x, ev->y, cx, cy);
+
+        // Matches text position in updateScreen().
+        if (cx >= 10 && cx <= 28) {
+            if (cy >= 5 && cy <= 9) {
+                static const char menuKey[] = "rjica";
+                keyPressed( menuKey[cy - 5] );
+            }
+        }
+    }
+    return true;
+}
+
 /**
  * Draws the small map on the intro screen.
  */

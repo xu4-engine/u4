@@ -90,6 +90,7 @@ public:
     bool present();
     void conclude();
     bool keyPressed(int key);
+    bool inputEvent(const InputEvent*);
     unsigned char *getSigData();
     void updateScreen();
     void timerFired();
