@@ -182,7 +182,8 @@ static float* widget_list(float* attr, const GuiRect* wbox, TxfDrawState* ds,
 
 struct LayoutBox {
     int16_t x, y, w, h;         // Pixel units.  X,Y is the bottom left.
-    int16_t nextPos;            // X or Y position for the next widget.
+    int16_t nextPos;            // sconStack position (first pass) or
+                                // X/Y position for next widget (second pass).
     uint16_t fixedW;            // Assign fixed width to children.
     uint16_t fixedH;            // Assign fixed height to children.
     uint16_t spacing;           // Pixel gap between widgets.
@@ -388,14 +389,7 @@ float* gui_layout(int primList, const GuiRect* root, TxfDrawState* ds,
             arg = *pc++;
             if (lo == loStack) {
                 arg = arg * lo->h / 100;
-                lo->y += arg;
                 lo->h -= arg + arg;
-                if (lo->form == LAYOUT_V) {
-                    if (lo->align & BACKWARDS)
-                        lo->nextPos = lo->y;
-                    else
-                        lo->nextPos = lo->y + lo->h;
-                }
             }
             if (pc[-2] == MARGIN_V_PER)
                 break;
@@ -405,13 +399,7 @@ float* gui_layout(int primList, const GuiRect* root, TxfDrawState* ds,
             arg = *pc++;
             if (lo == loStack) {
                 arg = arg * lo->w / 100;
-                lo->x += arg;
                 lo->w -= arg + arg;
-                if (lo->form == LAYOUT_H) {
-                    lo->nextPos = lo->x;
-                    if (lo->align & BACKWARDS)
-                        lo->nextPos += lo->w;
-                }
             }
             break;
 
