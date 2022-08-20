@@ -101,22 +101,7 @@ static void _setX11Icon(GLView* view, const char* filename) {
         Image* img = loadImage_png(uf);
         u4fclose(uf);
         if (img) {
-            size_t pixelCount = img->w * img->h;
-            long* icon = (long*) malloc((2 + pixelCount) * sizeof(long));
-            if (icon) {
-                const RGBA* col = (const RGBA*) img->pixels;
-                const RGBA* end = col + pixelCount;
-                long* ip = icon + 2;
-
-                icon[0] = img->w;
-                icon[1] = img->h;
-                for (; col != end; ++col)
-                    *ip++ = col->a << 24 | col->r << 16 | col->g << 8 | col->b;
-
-                glv_setIcon(view, icon);
-                free(icon);
-            }
-
+            glv_setIcon(view, img->w, img->h, (const uint8_t*) img->pixels, 0);
             delete img;
         }
     }
