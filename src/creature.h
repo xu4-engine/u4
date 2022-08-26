@@ -6,7 +6,8 @@
 #define CREATURE_H
 
 #include "object.h"
-#include "movement.h"
+#include "location.h"
+#include "savegame.h"
 
 class CombatController;
 class Tile;

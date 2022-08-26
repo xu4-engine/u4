@@ -156,7 +156,6 @@ exe %xu4 [
 		%maploader.cpp
 		%menu.cpp
 		%menuitem.cpp
-		%movement.cpp
 		%names.cpp
 		%object.cpp
 		%party.cpp
