@@ -639,7 +639,7 @@ bool ReadStringController::keyPressed(int key) {
 
                 if (view) {
                     view->textAt(screenX + len - 1, screenY, " ");
-                    view->setCursorPos(screenX + len - 1, screenY, true);
+                    view->setCursorPos(screenX + len - 1, screenY);
                 } else {
                     screenHideCursor();
                     screenTextAt(screenX + len - 1, screenY, " ");
@@ -662,6 +662,7 @@ bool ReadStringController::keyPressed(int key) {
 
             if (view) {
                 view->textAtFmt(screenX + len, screenY, "%c", key);
+                view->setCursorPos(screenX + len + 1, screenY);
             } else {
                 screenHideCursor();
                 screenTextAt(screenX + len, screenY, "%c", key);
@@ -699,8 +700,6 @@ ReadChoiceController::ReadChoiceController(const string &choices) {
     this->choices = choices;
 }
 
-extern int screenCursorEnabled();
-
 bool ReadChoiceController::keyPressed(int key) {
     // isupper() accepts 1-byte characters, yet the modifier keys
     // (ALT, SHIFT, ETC) produce values beyond 255
@@ -709,8 +708,9 @@ bool ReadChoiceController::keyPressed(int key) {
 
     if (choices.empty() || choices.find_first_of(key) < choices.length()) {
         // If the value is printable, display it
-        if (screenCursorEnabled() && key > ' ' && key <= 0x7F)
-            screenMessage("%c", toupper(key));
+        const ScreenState* ss = screenState();
+        if (ss->cursorVisible && key > ' ' && key <= 0x7F)
+            screenShowChar(toupper(key), ss->cursorX, ss->cursorY);
         value = key;
         doneWaiting();
         return true;
@@ -1035,7 +1035,7 @@ const char* EventHandler::readString(int maxlen, const char *extraChars)
 const char* EventHandler::readStringView(int maxlen, TextView *view,
                                          const char* extraChars) {
     assert(maxlen < 32);
-    ReadStringController ctrl(maxlen, view->getCursorX(), view->getCursorY(),
+    ReadStringController ctrl(maxlen, view->cursorX(), view->cursorY(),
                               view);
     if (extraChars)
         addCharBits(ctrl.accepted, extraChars);

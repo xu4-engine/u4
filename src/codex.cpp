@@ -68,7 +68,7 @@ static void pausedMessage(int sec, const char* msg) {
 /* slight pause before continuing */
 static void codexSlightPause() {
     screenMessage("\n");
-    screenDisableCursor();
+    screenHideCursor();
     screenUploadToGPU();
     EventHandler::wait_msecs(1000);
 }
@@ -85,7 +85,7 @@ void codexStart() {
 #ifdef IOS
     U4IOS::IOSHideGameControllerHelper hideControllsHelper;
 #endif
-    screenDisableCursor();
+    screenHideCursor();
     screenUpdate(&xu4.game->mapArea, false, true);
 
     // make the avatar alone
@@ -182,7 +182,6 @@ static void codexEject(CodexEjectCode code) {
     EventHandler::wait_msecs(2000);
 
     /* re-enable the cursor and show it */
-    screenEnableCursor();
     screenShowCursor();
 
     /* return view to normal and exit the Abyss */
@@ -281,7 +280,7 @@ ask_next:
     U4IOS::IOSConversationHelper::setIntroString((current < VIRT_MAX) ? "Which virtue?" : "Which principle?");
 #endif
     codex->word = gameGetInput();
-    screenDisableCursor();
+    screenHideCursor();
 
     if ((current < VIRT_MAX) &&
         (strcasecmp(codex->word.c_str(), getVirtueName(static_cast<Virtue>(current))) == 0)) {
@@ -342,7 +341,7 @@ static bool codexHandleInfinity(Codex* codex) {
         if (i > 0)
             codexImpureThoughts();
 
-        screenEnableCursor();
+        screenShowCursor();
         screenMessage("\nAbove the din, the voice asks:\n\nIf all eight virtues of the Avatar combine into and are derived from the Three Principles of Truth, Love and Courage...");
         screenUploadToGPU();
 
@@ -404,7 +403,7 @@ correct:
 static void codexHandleEndgame(Codex* codex) {
     int i;
 
-    screenEnableCursor();
+    screenShowCursor();
 
 #ifdef IOS
     // Ugh, we now enter happy callback land, so I know how to do these things manually. Good thing I kept these separate functions.
@@ -438,7 +437,7 @@ static void codexHandleEndgame(Codex* codex) {
     }
 
     /* CONGRATULATIONS!... you have completed the game in x turns */
-    screenDisableCursor();
+    screenHideCursor();
     // Note: This text has leading spaces & should be centered.
     screenMessage("%s%d%s", codex->endgameText2[3].c_str(),
                   c->saveGame->moves,

@@ -453,9 +453,9 @@ bool IntroController::keyPressed(int key) {
         case 'c': {
             // Make a copy of our settings so we can change them
             settingsChanged = *xu4.settings;
-            screenDisableCursor();
+            screenHideCursor();
             runMenu(&confMenu, &extendedMenuArea, true);
-            screenEnableCursor();
+            screenShowCursor();
             updateScreen();
             break;
         }
@@ -817,14 +817,11 @@ void IntroController::updateScreen() {
 
         // draw the cursor last
         screenSetCursorPos(24, 16);
-        screenShowCursor();
         break;
 
     default:
         ASSERT(0, "bad mode in updateScreen");
     }
-
-    screenUpdateCursor();
 }
 
 /**
@@ -832,9 +829,6 @@ void IntroController::updateScreen() {
  * series of questions to determine the class of the new character.
  */
 void IntroController::initiateNewGame() {
-    // disable the screen cursor because a text cursor will now be used
-    screenDisableCursor();
-
     // draw the extended background for all option screens
     backgroundArea.draw(BKGD_INTRO);
     backgroundArea.draw(BKGD_OPTIONS_BTM, 0, 120);
@@ -845,17 +839,15 @@ void IntroController::initiateNewGame() {
 
     // enable the text cursor after setting it's initial position
     // this will avoid drawing in undesirable areas like 0,0
-    menuArea.setCursorPos(11, 7, false);
-    menuArea.setCursorFollowsText(true);
-    menuArea.enableCursor();
+    menuArea.setCursorPos(11, 7);
 
     drawBeasties();
 
     string nameBuffer = EventHandler::readStringView(12, &menuArea, "\033");
     if (nameBuffer.length() == 0) {
         // the user didn't enter a name
-        menuArea.disableCursor();
-        screenEnableCursor();
+        menuArea.hideCursor();
+        screenShowCursor();
         updateScreen();
         return;
     }
@@ -868,7 +860,7 @@ void IntroController::initiateNewGame() {
     menuArea.textAt(3, 3, "Art thou Male or Female?");
 
     // the cursor is already enabled, just change its position
-    menuArea.setCursorPos(28, 3, true);
+    menuArea.setCursorPos(28, 3);
 
     drawBeasties();
 
@@ -880,7 +872,7 @@ void IntroController::initiateNewGame() {
         sex = SEX_FEMALE;
 
     // Display entry for a moment.
-    menuArea.drawChar(toupper(sexChoice), 28, 3);
+    menuArea.hideCursor();
     screenUploadToGPU();
     EventHandler::wait_msecs(250);
 
@@ -892,8 +884,6 @@ void IntroController::finishInitiateGame(const string &nameBuffer, SexType sex)
 #ifdef IOS
     mode = INTRO_MENU; // ensure we are now in the menu mode, (i.e., stop drawing the map).
 #endif
-    // no more text entry, so disable the text cursor
-    menuArea.disableCursor();
 
     {
     uint16_t saveGroup = xu4.imageMgr->setResourceGroup(StageIntro);
@@ -918,7 +908,7 @@ void IntroController::finishInitiateGame(const string &nameBuffer, SexType sex)
 
     FILE *saveGameFile = fopen((xu4.settings->getUserPath() + PARTY_SAV).c_str(), "wb");
     if (!saveGameFile) {
-        questionArea.disableCursor();
+        questionArea.hideCursor();
         xu4.errorMessage = "Unable to create save game!";
         updateScreen();
         return;
@@ -962,7 +952,7 @@ void IntroController::finishInitiateGame(const string &nameBuffer, SexType sex)
     EventHandler::waitAnyKey();
 
     // done: exit intro and let game begin
-    questionArea.disableCursor();
+    questionArea.hideCursor();
 
     if (xu4.stage != StageExitGame)
         xu4.stage = StagePlay;
@@ -996,11 +986,11 @@ void IntroController::showStory() {
 
         switch (storyInd) {
             case 3:
-                questionArea.disableCursor();
+                questionArea.hideCursor();
                 animateTree(IMG_MOONGATE);
                 break;
             case 5:
-                questionArea.disableCursor();
+                questionArea.hideCursor();
                 animateTree(IMG_ITEMS);
                 break;
             case 20:
@@ -1015,7 +1005,7 @@ void IntroController::showStory() {
         }
 
         // enable the cursor here to avoid drawing in undesirable locations
-        questionArea.enableCursor();
+        questionArea.showCursor();
         EventHandler::waitAnyKey();
         if (xu4.stage != StageIntro)
             break;
@@ -1055,7 +1045,7 @@ void IntroController::startQuestions() {
 
         // draw the cards and show the lead up text
 
-        questionArea.disableCursor();
+        questionArea.hideCursor();
         questionArea.clear();
         questionArea.textAt(0, 0, gypsyText[n].c_str());
         questionArea.textAt(0, 1, gypsyText[GYP_UPON_TABLE].c_str());
@@ -1071,7 +1061,7 @@ void IntroController::startQuestions() {
                                gypsyText[questionTree[i2] + 4].c_str());
         drawCard(1, questionTree[i2], origin);
         questionArea.textAt(0, 3, "\"Consider this:\"");
-        questionArea.enableCursor();
+        questionArea.showCursor();
 
 #ifdef IOS
         U4IOS::switchU4IntroControllerToContinueButton();
@@ -1190,8 +1180,7 @@ void IntroController::runMenu(Menu *menu, TextView *view, bool withBeasties) {
     menuController.waitFor();
 
     // enable the cursor here, after the menu has been established
-    view->enableCursor();
-    view->disableCursor();
+    view->hideCursor();
 }
 
 /**
@@ -1200,7 +1189,6 @@ void IntroController::runMenu(Menu *menu, TextView *view, bool withBeasties) {
  */
 void IntroController::timerFired() {
     screenCycle();
-    screenUpdateCursor();
 
     if (mode == INTRO_TITLES)
         if (updateTitle() == false)

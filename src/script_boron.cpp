@@ -68,9 +68,9 @@ static const UCell* script_eval(UThread* ut, char* script, int len)
 CFUNC(cf_gameWait)
 {
     (void) ut;
-    screenDisableCursor();
+    screenHideCursor();
     EventHandler::wait_msecs((int) ur_int(a1));
-    screenEnableCursor();
+    screenShowCursor();
 
     ur_setId(res, UT_UNSET);
     return UR_OK;
@@ -190,11 +190,7 @@ CFUNC(cf_innSleep)
 CFUNC(cf_cursor)
 {
     (void) ut;
-    if (ur_logic(a1))
-        screenEnableCursor();
-    else
-        screenDisableCursor();
-
+    screenShowCursor( ur_logic(a1) );
     ur_setId(res, UT_UNSET);
     return UR_OK;
 }
@@ -625,9 +621,9 @@ CFUNC(cf_pcHeal)
 
     if (player > 0) {
         if (CFUNC_OPTIONS & 1) {
-            screenDisableCursor();
+            screenHideCursor();
             (*spellEffectCallback)('r', -1, SOUND_MAGIC);
-            screenEnableCursor();
+            screenShowCursor();
        }
 
         switch (remedy[0]) {

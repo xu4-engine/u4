@@ -148,7 +148,7 @@ void GameController::initScreenWithoutReloadingState()
 
     c->stats->update(); /* draw the party stats */
 
-    screenEnableCursor();
+    screenShowCursor();
     screenMessage("Press Alt-h for help\n");
     screenPrompt();
 
@@ -1432,7 +1432,6 @@ bool GameController::inputEvent(const InputEvent* ev) {
 }
 
 const char* gameGetInput(int maxlen) {
-    screenEnableCursor();
     screenShowCursor();
 #ifdef IOS
     U4IOS::IOSConversationHelper helper;
@@ -2664,15 +2663,15 @@ static bool mixReagentsForSpellU4(int spell) {
 static bool mixReagentsForSpellU5(int spell) {
     Ingredients ingredients;
 
-    screenDisableCursor();
+    screenHideCursor();
 
     c->stats->getReagentsMenu()->reset(); // reset the menu, highlighting the first item
     ReagentsMenuController getReagentsController(c->stats->getReagentsMenu(), &ingredients, c->stats->getMainArea());
     xu4.eventHandler->pushController(&getReagentsController);
     getReagentsController.waitFor();
 
-    c->stats->getMainArea()->disableCursor();
-    screenEnableCursor();
+    c->stats->getMainArea()->hideCursor();
+    screenShowCursor();
 
     screenMessage("How many? ");
 
@@ -2730,7 +2729,7 @@ bool gamePeerCity(int city, void *data) {
     if (peerMap != NULL) {
         xu4.game->setMap(peerMap, 1, NULL);
         gameSetViewMode(VIEW_GEM);
-        screenDisableCursor();
+        screenHideCursor();
 
 #ifdef IOS
         U4IOS::IOSConversationChoiceHelper continueHelper;
@@ -2740,7 +2739,7 @@ bool gamePeerCity(int city, void *data) {
         EventHandler::readChoice("\015 \033");
 
         xu4.game->exitToParentMap();
-        screenEnableCursor();
+        screenShowCursor();
         gameSetViewMode(VIEW_NORMAL);
         return true;
     }
@@ -2762,7 +2761,7 @@ void peer(bool useGem) {
         screenMessage("Peer at a Gem!\n");
     }
 
-    screenDisableCursor();
+    screenHideCursor();
     gameSetViewMode(VIEW_GEM);
 
 #ifdef IOS
@@ -2772,7 +2771,7 @@ void peer(bool useGem) {
 #endif
     EventHandler::readChoice("\015 \033");
 
-    screenEnableCursor();
+    screenShowCursor();
     gameSetViewMode(VIEW_NORMAL);
 }
 
@@ -2894,7 +2893,6 @@ static void ztatsFor(int player) {
 void GameController::timerFired() {
     if (cutScene) {
         screenCycle();
-        screenUpdateCursor();
         screenUploadToGPU();
     } else {
         if (++c->windCounter >= MOON_SECONDS_PER_PHASE * 4) {

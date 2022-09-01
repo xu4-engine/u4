@@ -121,7 +121,7 @@ void Shrine::enhancedSequence() {
     annotations.add(Coords(5, 6, c->location->coords.z),
             tileset->getByName(Tile::sym.grass)->getId(), false, true);
 
-    screenDisableCursor();
+    screenHideCursor();
     screenMessage("You approach\nthe ancient\nshrine...\n");
     gameUpdateScreen();
     EventHandler::wait_msecs(1000);
@@ -148,7 +148,7 @@ void Shrine::enhancedSequence() {
     screenMessage("\n...and kneel before the altar.\n");
     gameUpdateScreen();
     EventHandler::wait_msecs(1000);
-    screenEnableCursor();
+    screenShowCursor();
 }
 
 void Shrine::meditationCycle() {
@@ -159,7 +159,7 @@ void Shrine::meditationCycle() {
 
     c->saveGame->lastmeditation = (c->saveGame->moves / SHRINE_MEDITATION_INTERVAL) & 0xffff;
 
-    screenDisableCursor();
+    screenHideCursor();
     for (int i = 0; i < MEDITATION_MANTRAS_PER_CYCLE; i++) {
         screenUploadToGPU();
         if (EventHandler::wait_msecs(interval))
@@ -173,7 +173,7 @@ void Shrine::askMantra() {
     const char* input;
     ShrineState* ss = &c->shrineState;
 
-    screenEnableCursor();
+    screenShowCursor();
     screenMessage("\nMantra: ");
 
 #ifdef IOS

@@ -38,14 +38,12 @@ extern const RGBA fontColor[25];
 class TextView : public View {
 public:
     TextView(int x, int y, int columns, int rows);
-    virtual ~TextView();
 
     void reinit();
 
-    int getCursorX() const { return cursorX; }
-    int getCursorY() const { return cursorY; }
-    bool getCursorEnabled() const { return cursorEnabled; }
-    int getWidth() const { return columns; }
+    int cursorX() const { return _cursorX; }
+    int cursorY() const { return _cursorY; }
+    int columns() const { return _cols; }
 
     void drawChar(int chr, int x, int y);
     void drawCharMasked(int chr, int x, int y, unsigned char mask);
@@ -55,9 +53,9 @@ public:
     void scroll();
 
     void setCursorFollowsText(bool follows) { cursorFollowsText = follows; }
-    void setCursorPos(int x, int y, bool clearOld = true);
-    void enableCursor();
-    void disableCursor();
+    void setCursorPos(int x, int y);
+    void showCursor();
+    void hideCursor();
 
     void mouseTextPos(int mouseX, int mouseY, int& tx, int& ty);
 
@@ -67,17 +65,15 @@ public:
     string highlightKey(const string& input, unsigned int keyIndex);
 
 protected:
-    void drawCursor();
-    static void cursorTimer(void *data);
+    void syncCursorPos();
 
-    int columns, rows;          /**< size of the view in character cells  */
-    bool cursorEnabled;         /**< whether the cursor is enabled */
-    bool cursorFollowsText;     /**< whether the cursor is moved past the last character written */
-    int cursorX, cursorY;       /**< current position of cursor */
-    int cursorPhase;            /**< the rotation state of the cursor */
+    uint16_t _cols, _rows;      // size of the view in character cells
+    int16_t _cursorX, _cursorY; // current position of cursor
     uint8_t colorBG;
     uint8_t colorFG;
-    static Image *charset;      /**< image containing font */
+    bool cursorVisible;         // whether the cursor is enabled
+    bool cursorFollowsText;     // places cursor after last char. written
+    static Image *charset;      // image containing font
 };
 
 #endif /* TEXTVIEW_H */

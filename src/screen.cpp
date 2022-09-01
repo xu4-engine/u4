@@ -80,12 +80,9 @@ struct Screen {
     char* msgBuffer;
     ScreenState state;
     TxfHeader* txf[3];
-    int cursorX;
-    int cursorY;
-    int cursorStatus;
-    int cursorEnabled;
     short needPrompt;
     short colorFG;
+    uint8_t uploadScreen;
     uint8_t layersAvail;
 #ifdef GPU_RENDER
     ImageInfo* textureInfo;
@@ -104,6 +101,7 @@ struct Screen {
     Screen(uint8_t layerCount) {
         layers = new RenderLayer[layerCount];
         memset(layers, 0, sizeof(RenderLayer) * layerCount);
+        uploadScreen = 0;
         layersAvail = layerCount;
 
         gemLayout = NULL;
@@ -119,10 +117,9 @@ struct Screen {
         state.vertOffset = 0;
         state.displayW = state.displayH = 0;
         state.aspectW = state.aspectH = 0;
+        state.cursorX = state.cursorY = 0;
+        state.cursorVisible = false;
 
-        cursorX = cursorY = 0;
-        cursorStatus = 0;
-        cursorEnabled = 1;
         needPrompt = 1;
         colorFG = FONT_COLOR_INDEX(FG_WHITE);
 #ifdef GPU_RENDER
@@ -320,7 +317,7 @@ void screenTextAt(int x, int y, const char *fmt, ...) {
 
 void screenPrompt() {
     Screen* scr = XU4_SCREEN;
-    if (scr->needPrompt && scr->cursorEnabled && c->col == 0) {
+    if (scr->needPrompt && scr->state.cursorVisible && c->col == 0) {
         screenMessage("%c", CHARSET_PROMPT);
         scr->needPrompt = 0;
     }
@@ -338,13 +335,9 @@ void screenCrLf() {
     /* scroll the message area, if necessary */
     if (c->line == TEXT_AREA_H) {
         c->line--;
-        screenHideCursor();
         screenScrollMessageArea();
-        screenSetCursorPos(TEXT_AREA_X + c->col, TEXT_AREA_Y + c->line);
-        screenShowCursor();
-    } else {
-        screenSetCursorPos(TEXT_AREA_X + c->col, TEXT_AREA_Y + c->line);
     }
+    screenSetCursorPos(TEXT_AREA_X + c->col, TEXT_AREA_Y + c->line);
 }
 
 // whitespace & color codes: " \b\t\n\r\023\024\025\026\027\030\031"
@@ -381,8 +374,6 @@ void screenMessageN(const char* buffer, int buflen) {
                     xu4.settings->enhancementsOptions.textColorization;
     const int colCount = TEXT_AREA_W;
     int i, w;
-
-    screenHideCursor();
 
     /* scroll the message area, if necessary */
     if (c->line == TEXT_AREA_H) {
@@ -475,7 +466,6 @@ newline:
     }
 
     screenSetCursorPos(TEXT_AREA_X + c->col, TEXT_AREA_Y + c->line);
-    screenShowCursor();
 
     XU4_SCREEN->needPrompt = 1;
 }
@@ -749,7 +739,6 @@ void screenUpdate(TileView *view, bool showmap, bool blackout) {
 #endif
     }
 
-    screenUpdateCursor();
     screenUpdateMoons();
     screenUpdateWind();
     screenUploadToGPU();
@@ -760,7 +749,23 @@ void screenUpdate(TileView *view, bool showmap, bool blackout) {
  * This function will be removed after GPU rendering is fully implemented.
  */
 void screenUploadToGPU() {
-    gpu_blitTexture(gpu_screenTexture(xu4.gpu), 0, 0, xu4.screenImage);
+    XU4_SCREEN->uploadScreen = 1;
+}
+
+static void screenUploadCursor(Screen* sp, uint32_t stex) {
+    int phase = sp->state.currentCycle * SCR_CYCLE_PER_SECOND / SCR_CYCLE_MAX;
+
+    ASSERT(phase >= 0 && phase < 4, "derived an invalid cursor phase: %d", phase);
+    int cursorChar = 31 - phase;
+    const Image* charset = sp->charsetInfo->image;
+
+    // NOTE: This code requires the charset image to be one character wide.
+    int cdim = charset->width();
+    Image32 cimg;
+    cimg.pixels = charset->pixels + (cdim * cdim * cursorChar);
+    cimg.w = cimg.h = cdim;
+    gpu_blitTexture(stex, sp->state.cursorX * cdim, sp->state.cursorY * cdim,
+                    &cimg);
 }
 
 void screenRender() {
@@ -768,6 +773,16 @@ void screenRender() {
     void* gpu = xu4.gpu;
     ScreenState* ss = &sp->state;
     int offsetY = ss->aspectY;
+
+    if (sp->uploadScreen) {
+        sp->uploadScreen = 0;
+
+        uint32_t stex = gpu_screenTexture(xu4.gpu);
+        gpu_blitTexture(stex, 0, 0, xu4.screenImage);
+
+        if (sp->state.cursorVisible)
+            screenUploadCursor(sp, stex);
+    }
 
     if (ss->vertOffset) {
         offsetY -= ss->vertOffset;
@@ -898,17 +913,6 @@ void screenCycle() {
     xu4.eventHandler->advanceFlourishAnim();
 }
 
-void screenUpdateCursor() {
-    Screen* scr = XU4_SCREEN;
-    int phase = scr->state.currentCycle * SCR_CYCLE_PER_SECOND / SCR_CYCLE_MAX;
-
-    ASSERT(phase >= 0 && phase < 4, "derived an invalid cursor phase: %d", phase);
-
-    if (scr->cursorStatus) {
-        screenShowChar(31 - phase, scr->cursorX, scr->cursorY);
-    }
-}
-
 void screenUpdateMoons() {
     int trammelChar, feluccaChar;
 
@@ -945,48 +949,23 @@ void screenUpdateWind() {
     }
 }
 
-// Private function for ReadChoiceController.
-int screenCursorEnabled() {
-    return XU4_SCREEN->cursorEnabled;
-}
-
 /*
 void screenDumpCursor() {
     Screen* scr = XU4_SCREEN;
-    printf("cursor %d,%d %d,%d\n", scr->cursorStatus, scr->cursorEnabled,
-            scr->cursorX, scr->cursorY);
+    printf("cursor %d %d,%d\n",
+            scr->state.cursorVisible, scr->state.cursorX, scr->state.cursorY);
 }
 */
 
-void screenShowCursor() {
-    Screen* scr = XU4_SCREEN;
-    if (! scr->cursorStatus && scr->cursorEnabled) {
-        scr->cursorStatus = 1;
-        screenUpdateCursor();
-    }
-}
-
-void screenHideCursor() {
-    Screen* scr = XU4_SCREEN;
-    if (scr->cursorStatus) {
-        screenEraseTextArea(scr->cursorX, scr->cursorY, 1, 1);
-    }
-    scr->cursorStatus = 0;
-}
-
-void screenEnableCursor(void) {
-    XU4_SCREEN->cursorEnabled = 1;
-}
-
-void screenDisableCursor(void) {
-    screenHideCursor();
-    XU4_SCREEN->cursorEnabled = 0;
+void screenShowCursor(bool on) {
+    XU4_SCREEN->state.cursorVisible = on;
 }
 
 void screenSetCursorPos(int x, int y) {
     Screen* scr = XU4_SCREEN;
-    scr->cursorX = x;
-    scr->cursorY = y;
+    scr->state.cursorVisible = true;
+    scr->state.cursorX = x;
+    scr->state.cursorY = y;
 }
 
 bool screenToggle3DDungeonView() {
@@ -1643,7 +1622,6 @@ void screenGemUpdate() {
 
     screenRedrawMapArea();
 
-    screenUpdateCursor();
     screenUpdateMoons();
     screenUpdateWind();
     screenUploadToGPU();

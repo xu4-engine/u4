@@ -41,7 +41,7 @@ void deathStart(int delaySeconds) {
 
     // stop playing music
     musicFadeOut(1000);
-    screenDisableCursor();
+    screenHideCursor();
 
     if (delaySeconds > 0) {
         if(EventHandler::wait_msecs(delaySeconds * 1000))
@@ -77,7 +77,6 @@ static void deathRevive() {
 
     c->party->reviveParty();
 
-    screenEnableCursor();
     screenShowCursor();
     c->stats->setView(STATS_PARTY_OVERVIEW);
 }

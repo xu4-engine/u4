@@ -45,12 +45,12 @@ void CampController::beginCombat() {
     musicFadeOut(1000);
 
     screenMessage("Resting...\n");
-    screenDisableCursor();
+    screenHideCursor();
 
     if (EventHandler::wait_msecs(xu4.settings->campTime * 1000))
         return;
 
-    screenEnableCursor();
+    screenShowCursor();
 
     /* Is the party ambushed during their rest? */
     if (xu4.settings->campingAlwaysCombat || (xu4_random(8) == 0)) {
@@ -118,12 +118,12 @@ void InnController::beginCombat() {
     c->party->setTransport(ts->getByName(Tile::sym.corpse)->getId());
     gameUpdateScreen();
 
-    screenDisableCursor();
+    screenHideCursor();
 
     if (EventHandler::wait_msecs(xu4.settings->innTime * 1000))
         return;
 
-    screenEnableCursor();
+    screenShowCursor();
 
     /* restore the avatar to normal */
     c->party->setTransport(ts->getByName(Tile::sym.avatar)->getId());

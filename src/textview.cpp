@@ -6,7 +6,6 @@
 #include <cstring>
 
 #include "debug.h"
-#include "event.h"
 #include "imagemgr.h"
 #include "screen.h"
 #include "settings.h"
@@ -18,24 +17,17 @@ Image *TextView::charset = NULL;
 
 TextView::TextView(int x, int y, int columns, int rows)
     : View(x, y, columns * CHAR_WIDTH, rows * CHAR_HEIGHT) {
-    this->columns = columns;
-    this->rows = rows;
-    cursorEnabled = false;
-    cursorFollowsText = false;
-    cursorX = 0;
-    cursorY = 0;
-    cursorPhase = 0;
+    _cols = columns;
+    _rows = rows;
+    _cursorX = 0;
+    _cursorY = 0;
     colorFG = FONT_COLOR_INDEX(FG_WHITE);
     colorBG = FONT_COLOR_INDEX(BG_NORMAL);
+    cursorVisible = false;
+    cursorFollowsText = false;
 
     if (charset == NULL)
         charset = xu4.imageMgr->get(BKGD_CHARSET)->image;
-
-    xu4.eventHandler->getTimer()->add(&cursorTimer, /*SCR_CYCLE_PER_SECOND*/4, this);
-}
-
-TextView::~TextView() {
-    xu4.eventHandler->getTimer()->remove(&cursorTimer, this);
 }
 
 void TextView::reinit() {
@@ -83,8 +75,8 @@ const RGBA fontColor[25] = {
  * Draw a character from the charset onto the view.
  */
 void TextView::drawChar(int chr, int x, int y) {
-    ASSERT(x < columns, "x value of %d out of range", x);
-    ASSERT(y < rows, "y value of %d out of range", y);
+    ASSERT(x < _cols, "x value of %d out of range", x);
+    ASSERT(y < _rows, "y value of %d out of range", y);
 
     charset->drawLetter(this->x + (x * CHAR_WIDTH),
                         this->y + (y * CHAR_HEIGHT),
@@ -102,13 +94,11 @@ void TextView::drawChar(int chr, int x, int y) {
  */
 void TextView::drawCharMasked(int chr, int x, int y, unsigned char mask) {
     drawChar(chr, x, y);
+    int mx = this->x + (x * CHAR_WIDTH);
+    int my = this->y + (y * CHAR_HEIGHT);
     for (int i = 0; i < 8; i++) {
-        if (mask & (1 << i)) {
-            xu4.screenImage->fillRect(this->x + (x * CHAR_WIDTH),
-                                      this->y + (y * CHAR_HEIGHT) + i,
-                                      CHAR_WIDTH, 1,
-                                      0, 0, 0);
-        }
+        if (mask & (1 << i))
+            xu4.screenImage->fillRect(mx, my + i, CHAR_WIDTH, 1, 0, 0, 0);
     }
 }
 
@@ -117,7 +107,7 @@ void TextView::textSelectedAt(int x, int y, const char *text) {
     if (xu4.settings->enhancements &&
         xu4.settings->enhancementsOptions.textColorization) {
         colorBG = FONT_COLOR_INDEX(BG_BRIGHT);
-        for (int i=0; i < columns-1; i++)
+        for (int i=0; i < _cols-1; i++)
             textAt(x-1+i, y, " ");
         textAt(x, y, text);
         colorBG = FONT_COLOR_INDEX(BG_NORMAL);
@@ -170,12 +160,6 @@ string TextView::highlightKey(const string& input, unsigned int keyIndex) {
 }
 
 void TextView::textAt(int x, int y, const char *text) {
-    bool reenableCursor = false;
-    if (cursorFollowsText && cursorEnabled) {
-        disableCursor();
-        reenableCursor = true;
-    }
-
     int ch;
     while ((ch = *text++)) {
         switch (ch) {
@@ -195,10 +179,12 @@ void TextView::textAt(int x, int y, const char *text) {
         }
     }
 
-    if (cursorFollowsText)
-        setCursorPos(x, y, true);
-    if (reenableCursor)
-        enableCursor();
+    if (cursorFollowsText) {
+        _cursorX = x;
+        _cursorY = y;
+        if (cursorVisible)
+            syncCursorPos();
+    }
 }
 
 void TextView::textAtFmt(int x, int y, const char *fmt, ...) {
@@ -226,29 +212,32 @@ void TextView::scroll() {
                           x, y + CHAR_HEIGHT,
                           width, height - CHAR_HEIGHT);
 
-    screen->fillRect(x, y + (CHAR_HEIGHT * (rows - 1)),
+    screen->fillRect(x, y + (CHAR_HEIGHT * (_rows - 1)),
                      width, CHAR_HEIGHT,
                      0, 0, 0);
 
     update();
 }
 
-void TextView::setCursorPos(int x, int y, bool clearOld) {
-    while (x >= columns) {
-        x -= columns;
+void TextView::syncCursorPos()
+{
+    screenSetCursorPos(x / CHAR_WIDTH + _cursorX, y / CHAR_HEIGHT + _cursorY);
+}
+
+/*
+ * Position and show cursor.
+ */
+void TextView::setCursorPos(int x, int y) {
+    while (x >= _cols) {
+        x -= _cols;
         y++;
     }
-    ASSERT(y < rows, "y value of %d out of range", y);
+    ASSERT(y < _rows, "y value of %d out of range", y);
 
-    if (clearOld && cursorEnabled) {
-        drawChar(' ', cursorX, cursorY);
-        update(cursorX * CHAR_WIDTH, cursorY * CHAR_HEIGHT, CHAR_WIDTH, CHAR_HEIGHT);
-    }
-
-    cursorX = x;
-    cursorY = y;
-
-    drawCursor();
+    _cursorX = x;
+    _cursorY = y;
+    cursorVisible = true;
+    syncCursorPos();
 }
 
 /*
@@ -261,29 +250,12 @@ void TextView::mouseTextPos(int mouseX, int mouseY, int& cx, int& cy) {
     cy = (((mouseY - ss->aspectY) / scale) - y) / CHAR_HEIGHT;
 }
 
-void TextView::enableCursor() {
-    cursorEnabled = true;
-    drawCursor();
+void TextView::showCursor() {
+    cursorVisible = true;
+    syncCursorPos();
 }
 
-void TextView::disableCursor() {
-    cursorEnabled = false;
-    drawChar(' ', cursorX, cursorY);
-    update(cursorX * CHAR_WIDTH, cursorY * CHAR_HEIGHT, CHAR_WIDTH, CHAR_HEIGHT);
-}
-
-void TextView::drawCursor() {
-    ASSERT(cursorPhase >= 0 && cursorPhase < 4, "invalid cursor phase: %d", cursorPhase);
-
-    if (!cursorEnabled)
-        return;
-
-    drawChar(31 - cursorPhase, cursorX, cursorY);
-    update(cursorX * CHAR_WIDTH, cursorY * CHAR_HEIGHT, CHAR_WIDTH, CHAR_HEIGHT);
-}
-
-void TextView::cursorTimer(void *data) {
-    TextView *thiz = static_cast<TextView *>(data);
-    thiz->cursorPhase = (thiz->cursorPhase + 1) % 4;
-    thiz->drawCursor();
+void TextView::hideCursor() {
+    cursorVisible = false;
+    screenHideCursor();
 }

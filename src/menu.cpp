@@ -107,8 +107,7 @@ void Menu::show(TextView *view)
                 view->textSelectedAt(mi->getX(), mi->getY(), ctext.c_str());
                 // hack for the custom U5 mix reagents menu
                 // places cursor 1 column over, rather than 2.
-                view->setCursorPos(mi->getX() - (view->getWidth() == 15 ? 1 : 2), mi->getY(), true);
-                view->enableCursor();
+                view->setCursorPos(mi->getX() - (view->columns() == 15 ? 1 : 2), mi->getY());
             }
             else
             {
@@ -332,10 +331,6 @@ MenuController::MenuController(Menu *menu, TextView *view) {
 
 bool MenuController::keyPressed(int key) {
     bool handled = true;
-    bool cursorOn = view->getCursorEnabled();
-
-    if (cursorOn)
-        view->disableCursor();
 
     switch(key) {
     case U4_UP:
@@ -363,8 +358,6 @@ bool MenuController::keyPressed(int key) {
 
     menu->show(view);
 
-    if (cursorOn)
-        view->enableCursor();
     view->update();
 
     if (menu->getClosed())
