@@ -37,9 +37,27 @@ using std::string;
 #define U4_RIGHT_META   309
 #define U4_LEFT_META    310
 
-struct _MouseArea;
-class EventHandler;
-class TextView;
+enum InputEventType {
+    IE_MOUSE_MOVE,
+    IE_MOUSE_PRESS,
+    IE_MOUSE_RELEASE,
+    IE_MOUSE_WHEEL
+};
+
+enum ControllerMouseButton {
+    CMOUSE_LEFT = 1,
+    CMOUSE_MIDDLE,
+    CMOUSE_RIGHT
+};
+
+struct InputEvent {
+    uint16_t type;      // InputEventType
+    uint16_t n;         // Button id
+    uint16_t state;     // Button mask
+    int16_t  x, y;      // Axis value
+};
+
+//----------------------------------------------------------------------------
 
 /**
  * A controller that invokes a key handler function.
@@ -58,74 +76,6 @@ public:
 private:
     Callback handler;
     void* data;
-};
-
-/**
- * A controller to read a string, terminated by the enter key.
- */
-class ReadStringController : public WaitableController<string> {
-public:
-    ReadStringController(int maxlen, int screenX, int screenY,
-                         TextView* view = NULL,
-                         const char* accepted_chars = NULL);
-
-    virtual bool keyPressed(int key);
-
-    static string get(int maxlen, int screenX, int screenY, const char *extraChars = NULL);
-    static string get(int maxlen, TextView *view, const char *extraChars = NULL);
-#ifdef IOS
-    void setValue(const string &utf8StringValue) {
-        value = utf8StringValue;
-    }
-#endif
-
-protected:
-    int maxlen, screenX, screenY;
-    TextView *view;
-    uint8_t accepted[16];   // Character bitset.
-};
-
-/**
- * A controller to read a integer, terminated by the enter key.
- * Non-numeric keys are ignored.
- */
-class ReadIntController : public ReadStringController {
-public:
-    ReadIntController(int maxlen, int screenX, int screenY);
-
-    static int get(int maxlen);
-    int getInt() const;
-};
-
-/**
- * A controller to read a single key from a provided list.
- */
-class ReadChoiceController : public WaitableController<int> {
-public:
-    ReadChoiceController(const string &choices);
-    virtual bool keyPressed(int key);
-
-    static char get(const string &choices);
-
-protected:
-    string choices;
-};
-
-/**
- * A controller to read a direction enter with the arrow keys.
- */
-class ReadDirController : public WaitableController<Direction> {
-public:
-    ReadDirController();
-    virtual bool keyPressed(int key);
-};
-
-class AnyKeyController : public Controller {
-public:
-    void wait();
-    void waitTimeout();
-    virtual bool keyPressed(int key);
-    virtual void timerFired();
 };
 
 /**
@@ -202,6 +152,9 @@ struct FrameSleep {
 
 typedef void(*updateScreenCallback)(void);
 
+struct _MouseArea;
+class TextView;
+
 /**
  * A class for handling game events.
  */
@@ -211,8 +164,20 @@ public:
     EventHandler(int gameCycleDuration, int frameDuration);
     ~EventHandler();
 
-    /* Static functions */
+    /* Static user input functions. */
+    static int       choosePlayer();
+    static int       readAlphaAction(char letter, const char* prompt);
+    static char      readChoice(const char* choices);
+    static Direction readDir();
+    static int       readInt(int maxlen);
+    static string    readString(int maxlen, const char *extraChars = NULL);
+    static string    readStringView(int maxlen, TextView *view,
+                                    const char *extraChars = NULL);
+    static void waitAnyKey();
+    static void waitAnyKeyTimeout();
     static bool wait_msecs(unsigned int msecs);
+
+    /* Static functions */
     static bool timerQueueEmpty();
     static int setKeyRepeat(int delay, int interval);
     static bool globalKeyHandler(int key);

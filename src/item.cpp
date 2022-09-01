@@ -581,7 +581,7 @@ void useTelescope(int notused) {
     U4IOS::IOSConversationChoiceHelper telescopeHelper;
     telescopeHelper.updateChoices("abcdefghijklmnop ");
 #endif
-    int choice = AlphaActionController::get('p', "You Select: ");
+    int choice = EventHandler::readAlphaAction('p', "You Select: ");
     if (choice == -1)
         return;
 

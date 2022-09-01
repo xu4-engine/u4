@@ -102,7 +102,7 @@ static void lordBritishCheckLevels() {
 /**
  * Print text with pauses after paragraphs and/or complete pages.
  */
-static void messageParts(AnyKeyController* anyKey, const char* text) {
+static void messageParts(const char* text) {
     const char* cp = text;
     int lines = 0;
     int len;
@@ -123,7 +123,7 @@ static void messageParts(AnyKeyController* anyKey, const char* text) {
                 len = cp - text;
                 screenMessageN(text, len);
                 text += len;
-                anyKey->waitTimeout();
+                EventHandler::waitAnyKeyTimeout();
 
                 while (*cp == '\n')
                     ++cp;
@@ -173,7 +173,7 @@ enum SpokenLines {
  * one quest item is complete, Lord British provides some direction to
  * the next one.
  */
-static void lordBritishHelp(AnyKeyController* anyKey) {
+static void lordBritishHelp() {
     const char* text;
     const SaveGame* saveGame = c->saveGame;
     bool fullAvatar, partialAvatar;
@@ -262,7 +262,7 @@ static void lordBritishHelp(AnyKeyController* anyKey) {
     }
 
     screenMessageN("\nHe says: ", 10);
-    messageParts(anyKey, text);
+    messageParts(text);
 }
 
 static void lordBritishHeal(char answer) {
@@ -288,7 +288,6 @@ static void lordBritishHeal(char answer) {
 
 static void runTalkLordBritish(const U4TalkLordBritish* lb)
 {
-    AnyKeyController anyKey;
     std::string input;
     const char* in;
     const char* strings = lb->strings;
@@ -340,12 +339,13 @@ static void runTalkLordBritish(const U4TalkLordBritish* lb)
         message("\n\n\nLord British rises and says: At long last!\n%s"
                 " thou hast come!  We have waited such a long, long time...\n",
                 pcName.c_str());
-        anyKey.waitTimeout();
+        EventHandler::waitAnyKeyTimeout();
         soundSpeakLine(VOICE_LB, LINE_NEW_AGE);
         message("\n\nLord British sits and says: A new age is upon Britannia."
                 " The great evil Lords are gone but our people lack direction"
                 " and purpose in their lives...\n");
-        anyKey.wait();      // There's no timeout here in the DOS version.
+        // There's no timeout here in the DOS version.
+        EventHandler::waitAnyKey();
         soundSpeakLine(VOICE_LB, LINE_CHAMPION);
         message("A champion of virtue is called for. Thou may be this champion,"                " but only time shall tell.  I will aid thee any way that I"
                 " can!\n"
@@ -373,14 +373,14 @@ static void runTalkLordBritish(const U4TalkLordBritish* lb)
             int l = lbKeyLine[k];
             if (l < LINE_WELCOME)
                 soundSpeakLine(VOICE_LB, l);
-            messageParts(&anyKey, strings + lb->text[k]);
+            messageParts(strings + lb->text[k]);
         } else if (inputEq("help")) {
-            lordBritishHelp(&anyKey);
+            lordBritishHelp();
         } else if (inputEq("heal")) {
             soundSpeakLine(VOICE_LB, LINE_I_AM_WELL);
             message("\n\n\n\n\n\nHe says: I am\nwell, thank ye.\n"
                     "\nHe asks: Art thou well? ");
-            lordBritishHeal(ReadChoiceController::get("yn \n\033"));
+            lordBritishHeal(EventHandler::readChoice("yn \n\033"));
         } else {
             soundSpeakLine(VOICE_LB, LINE_CANNOT_HELP);
             message("\nHe says: I cannot help thee with that.\n");
@@ -394,7 +394,6 @@ static void runTalkLordBritish(const U4TalkLordBritish* lb)
 
 static void runTalkHawkwind(const U4TalkHawkwind* hw)
 {
-    AnyKeyController anyKey;
     std::string input;
     const char* strings = hw->strings;
     const char* in;
@@ -419,7 +418,7 @@ static void runTalkHawkwind(const U4TalkHawkwind* hw)
 
     soundSpeakLine(VOICE_HW, HW_GREETING);
     message("%s%s%s", HW_STRING(HW_WELCOME), pcName, HW_STRING(HW_GREETING));
-    anyKey.wait();
+    EventHandler::waitAnyKey();
 
     while (xu4.stage == StagePlay) {
         soundSpeakLine(VOICE_HW, prompt);
@@ -455,7 +454,7 @@ static void runTalkHawkwind(const U4TalkHawkwind* hw)
                 soundSpeakLine(VOICE_HW, HW_GOTOSHRINE);
                 message("\n\n%s\n%s", HW_STRING(4 * 8 + v),
                                       HW_STRING(HW_GOTOSHRINE));
-                anyKey.wait();
+                EventHandler::waitAnyKey();
                 // FIXME: Remove extra LF here before the prompt.
             }
             screenCrLf();

@@ -306,6 +306,8 @@ bool EventHandler::run() {
     return ended;
 }
 
+//----------------------------------------------------------------------------
+
 #ifdef DEBUG
 #include <fcntl.h>
 
@@ -463,9 +465,7 @@ uint32_t EventHandler::replay(const char* file) {
 }
 #endif
 
-
 //----------------------------------------------------------------------------
-
 
 /* TimedEvent functions */
 TimedEvent::TimedEvent(TimedEvent::Callback cb, int i, void *d) :
@@ -580,6 +580,33 @@ const MouseArea* EventHandler::getMouseAreaSet() const {
         return NULL;
 }
 
+//----------------------------------------------------------------------------
+
+/**
+ * A controller to read a string, terminated by the enter key.
+ */
+class ReadStringController : public WaitableController<string> {
+public:
+    ReadStringController(int maxlen, int screenX, int screenY,
+                         TextView* view = NULL,
+                         const char* accepted_chars = NULL);
+
+    virtual bool keyPressed(int key);
+
+#ifdef IOS
+    void setValue(const string &utf8StringValue) {
+        value = utf8StringValue;
+    }
+#endif
+
+protected:
+    int maxlen, screenX, screenY;
+    TextView *view;
+    uint8_t accepted[16];   // Character bitset.
+
+    friend EventHandler;
+};
+
 #define TEST_BIT(bits, c)   (bits[c >> 3] & 1 << (c & 7))
 #define MAX_BITS    128
 
@@ -673,39 +700,19 @@ bool ReadStringController::keyPressed(int key) {
     }
 }
 
-string ReadStringController::get(int maxlen, int screenX, int screenY, const char* extraChars) {
-    ReadStringController ctrl(maxlen, screenX, screenY);
-    if (extraChars)
-        addCharBits(ctrl.accepted, extraChars);
+//----------------------------------------------------------------------------
 
-    xu4.eventHandler->pushController(&ctrl);
-    return ctrl.waitFor();
-}
+/**
+ * A controller to read a single key from a provided list.
+ */
+class ReadChoiceController : public WaitableController<int> {
+public:
+    ReadChoiceController(const string &choices);
+    virtual bool keyPressed(int key);
 
-string ReadStringController::get(int maxlen, TextView *view, const char* extraChars) {
-    ReadStringController ctrl(maxlen, view->getCursorX(), view->getCursorY(),
-                              view);
-    if (extraChars)
-        addCharBits(ctrl.accepted, extraChars);
-
-    xu4.eventHandler->pushController(&ctrl);
-    return ctrl.waitFor();
-}
-
-ReadIntController::ReadIntController(int maxlen, int screenX, int screenY) :
-    ReadStringController(maxlen, screenX, screenY, NULL, "0123456789 \n\r\010")
-{}
-
-int ReadIntController::get(int maxlen) {
-    ReadIntController ctrl(maxlen, TEXT_AREA_X + c->col, TEXT_AREA_Y + c->line);
-    xu4.eventHandler->pushController(&ctrl);
-    ctrl.waitFor();
-    return ctrl.getInt();
-}
-
-int ReadIntController::getInt() const {
-    return static_cast<int>(strtol(value.c_str(), NULL, 10));
-}
+protected:
+    string choices;
+};
 
 ReadChoiceController::ReadChoiceController(const string &choices) {
     this->choices = choices;
@@ -731,11 +738,16 @@ bool ReadChoiceController::keyPressed(int key) {
     return false;
 }
 
-char ReadChoiceController::get(const string &choices) {
-    ReadChoiceController ctrl(choices);
-    xu4.eventHandler->pushController(&ctrl);
-    return ctrl.waitFor();
-}
+//----------------------------------------------------------------------------
+
+/**
+ * A controller to read a direction enter with the arrow keys.
+ */
+class ReadDirController : public WaitableController<Direction> {
+public:
+    ReadDirController();
+    virtual bool keyPressed(int key);
+};
 
 ReadDirController::ReadDirController() {
     value = DIR_NONE;
@@ -765,6 +777,15 @@ bool ReadDirController::keyPressed(int key) {
     return false;
 }
 
+//----------------------------------------------------------------------------
+
+class AnyKeyController : public Controller {
+public:
+    void wait();
+    void waitTimeout();
+    virtual bool keyPressed(int key);
+    virtual void timerFired();
+};
 
 void AnyKeyController::wait() {
     timerInterval = 0;
@@ -788,6 +809,88 @@ void AnyKeyController::timerFired() {
 
 //----------------------------------------------------------------------------
 
+/**
+ * A controller to read a player number.
+ */
+class ReadPlayerController : public ReadChoiceController {
+public:
+    ReadPlayerController();
+    ~ReadPlayerController();
+    virtual bool keyPressed(int key);
+
+    int getPlayer();
+    int waitFor();
+};
+
+ReadPlayerController::ReadPlayerController() : ReadChoiceController("12345678 \033\n") {
+#ifdef IOS
+    U4IOS::beginCharacterChoiceDialog();
+#endif
+}
+
+ReadPlayerController::~ReadPlayerController() {
+#ifdef IOS
+    U4IOS::endCharacterChoiceDialog();
+#endif
+}
+
+bool ReadPlayerController::keyPressed(int key) {
+    bool valid = ReadChoiceController::keyPressed(key);
+    if (valid) {
+        if (value < '1' ||
+            value > ('0' + c->saveGame->members))
+            value = '0';
+    } else {
+        value = '0';
+    }
+    return valid;
+}
+
+int ReadPlayerController::getPlayer() {
+    return value - '1';
+}
+
+int ReadPlayerController::waitFor() {
+    ReadChoiceController::waitFor();
+    return getPlayer();
+}
+
+//----------------------------------------------------------------------------
+
+/**
+ * A controller to handle input for commands requiring a letter
+ * argument in the range 'a' - lastValidLetter.
+ */
+class AlphaActionController : public WaitableController<int> {
+public:
+    AlphaActionController(char letter, const string &p) : lastValidLetter(letter), prompt(p) {}
+    bool keyPressed(int key);
+
+private:
+    char lastValidLetter;
+    string prompt;
+};
+
+bool AlphaActionController::keyPressed(int key) {
+    if (islower(key))
+        key = toupper(key);
+
+    if (key >= 'A' && key <= toupper(lastValidLetter)) {
+        screenMessage("%c\n", key);
+        value = key - 'A';
+        doneWaiting();
+    } else if (key == U4_SPACE || key == U4_ESC || key == U4_ENTER) {
+        screenMessage("\n");
+        value = -1;
+        doneWaiting();
+    } else {
+        screenMessage("\n%s", prompt.c_str());
+        return KeyHandler::defaultHandler(key, NULL);
+    }
+    return true;
+}
+
+//----------------------------------------------------------------------------
 
 KeyHandler::KeyHandler(KeyHandler::Callback func, void* userData) :
     handler(func), data(userData)
@@ -862,4 +965,118 @@ bool KeyHandler::keyPressed(int key) {
     if (! processed)
         processed = handler(key, data);
     return processed;
+}
+
+//----------------------------------------------------------------------------
+
+/*
+ * Read a player number.
+ * Return -1 if none is selected.
+ */
+int EventHandler::choosePlayer()
+{
+    ReadPlayerController ctrl;
+    xu4.eventHandler->pushController(&ctrl);
+    return ctrl.waitFor();
+}
+
+/**
+ * Handle input for commands requiring a letter argument in the
+ * range 'a' - lastValidLetter.
+ */
+int EventHandler::readAlphaAction(char lastValidLetter, const char* prompt)
+{
+    AlphaActionController ctrl(lastValidLetter, prompt);
+    xu4.eventHandler->pushController(&ctrl);
+    return ctrl.waitFor();
+}
+
+/*
+ * Read a single key from a provided list.
+ */
+char EventHandler::readChoice(const char* choices)
+{
+    ReadChoiceController ctrl(choices);
+    xu4.eventHandler->pushController(&ctrl);
+    return ctrl.waitFor();
+}
+
+/*
+ * Read a direction entered with the arrow keys.
+ */
+Direction EventHandler::readDir()
+{
+    ReadDirController ctrl;
+#ifdef IOS
+    U4IOS::IOSDirectionHelper directionPopup;
+#endif
+    xu4.eventHandler->pushController(&ctrl);
+    return ctrl.waitFor();
+}
+
+/**
+ * Read an integer, terminated by the enter key.
+ * Non-numeric keys are ignored.
+ */
+int EventHandler::readInt(int maxlen)
+{
+    ReadStringController ctrl(maxlen, TEXT_AREA_X + c->col,
+                                      TEXT_AREA_Y + c->line,
+                              NULL, "0123456789 \n\r\010");
+
+    xu4.eventHandler->pushController(&ctrl);
+    string s = ctrl.waitFor();
+    return static_cast<int>(strtol(s.c_str(), NULL, 10));
+}
+
+/*
+ * Read a string, terminated by the enter key.
+ */
+string EventHandler::readString(int maxlen, const char *extraChars)
+{
+    ReadStringController ctrl(maxlen, TEXT_AREA_X + c->col,
+                                      TEXT_AREA_Y + c->line);
+    if (extraChars)
+        addCharBits(ctrl.accepted, extraChars);
+
+    xu4.eventHandler->pushController(&ctrl);
+    return ctrl.waitFor();
+}
+
+/*
+ * Read a string, terminated by the enter key.
+ */
+string EventHandler::readStringView(int maxlen, TextView *view,
+                                    const char* extraChars) {
+    ReadStringController ctrl(maxlen, view->getCursorX(), view->getCursorY(),
+                              view);
+    if (extraChars)
+        addCharBits(ctrl.accepted, extraChars);
+
+    xu4.eventHandler->pushController(&ctrl);
+    return ctrl.waitFor();
+}
+
+/*
+ * Wait until a key is pressed.
+ */
+void EventHandler::waitAnyKey()
+{
+#if 1
+    AnyKeyController ctrl;
+    ctrl.wait();
+#else
+    ReadChoiceController ctrl("");
+    xu4.eventHandler->pushController(&ctrl);
+    ctrl.waitFor();
+#endif
+}
+
+/*
+ * Wait briefly (10 seconds) for a key press.
+ */
+void EventHandler::waitAnyKeyTimeout()
+{
+    AnyKeyController ctrl;
+    ctrl.waitTimeout();
 }

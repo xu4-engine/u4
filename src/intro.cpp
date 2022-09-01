@@ -496,7 +496,7 @@ bool IntroController::keyPressed(int key) {
 
 bool IntroController::inputEvent(const InputEvent* ev) {
     if (mode == INTRO_MENU &&
-        ev->type == CIE_MOUSE_PRESS && ev->n == CMOUSE_LEFT)
+        ev->type == IE_MOUSE_PRESS && ev->n == CMOUSE_LEFT)
     {
         int cx, cy;
         menuArea.mouseTextPos(ev->x, ev->y, cx, cy);
@@ -848,7 +848,7 @@ void IntroController::initiateNewGame() {
 
     drawBeasties();
 
-    string nameBuffer = ReadStringController::get(12, &menuArea, "\033");
+    string nameBuffer = EventHandler::readStringView(12, &menuArea, "\033");
     if (nameBuffer.length() == 0) {
         // the user didn't enter a name
         menuArea.disableCursor();
@@ -870,7 +870,7 @@ void IntroController::initiateNewGame() {
     drawBeasties();
 
     SexType sex;
-    int sexChoice = ReadChoiceController::get("mf");
+    int sexChoice = EventHandler::readChoice("mf");
     if (sexChoice == 'm')
         sex = SEX_MALE;
     else
@@ -953,10 +953,10 @@ void IntroController::finishInitiateGame(const string &nameBuffer, SexType sex)
 #ifdef IOS
     U4IOS::switchU4IntroControllerToContinueButton();
 #endif
-    anyKey.wait();
+    EventHandler::waitAnyKey();
 
     showText(binData->introGypsy[GYP_SEGUE2]);
-    anyKey.wait();
+    EventHandler::waitAnyKey();
 
     // done: exit intro and let game begin
     questionArea.disableCursor();
@@ -1013,7 +1013,7 @@ void IntroController::showStory() {
 
         // enable the cursor here to avoid drawing in undesirable locations
         questionArea.enableCursor();
-        anyKey.wait();
+        EventHandler::waitAnyKey();
         if (xu4.stage != StageIntro)
             break;
     }
@@ -1028,7 +1028,6 @@ void IntroController::startQuestions() {
         12, 12, 218,    // EGA
         22, 16, 218,    // VGA
     };
-    ReadChoiceController questionController("ab");
     uint8_t* origin = originTable;
     if (xu4.settings->videoType == GFX_VGA)
         origin += 3;
@@ -1075,7 +1074,7 @@ void IntroController::startQuestions() {
         U4IOS::switchU4IntroControllerToContinueButton();
 #endif
         // wait for a key
-        anyKey.wait();
+        EventHandler::waitAnyKey();
 
         // show the question to choose between virtues
         showText(getQuestion(questionTree[i1], questionTree[i2]));
@@ -1084,8 +1083,7 @@ void IntroController::startQuestions() {
         U4IOS::switchU4IntroControllerToABButtons();
 #endif
         // wait for an answer
-        xu4.eventHandler->pushController(&questionController);
-        int choice = questionController.waitFor();
+        int choice = EventHandler::readChoice("ab");
 
         // update the question tree
         if (doQuestion(choice == 'a' ? 0 : 1))
@@ -1146,7 +1144,7 @@ void IntroController::about() {
     menuArea.textAt(4, 9, "Copyright \011 1987, Lord British");
     drawBeasties();
 
-    anyKey.wait();
+    EventHandler::waitAnyKey();
 
     screenShowCursor();
     updateScreen();

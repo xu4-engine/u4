@@ -160,9 +160,7 @@ bool CheatMenuController::keyPressed(int key) {
                       "j - Join Compan.\n"
                       "(more)");
 
-        ReadChoiceController pauseController("");
-        xu4.eventHandler->pushController(&pauseController);
-        pauseController.waitFor();
+        EventHandler::waitAnyKey();
 
         screenMessage("\n"
                       "k - Show Karma\n"
@@ -178,8 +176,7 @@ bool CheatMenuController::keyPressed(int key) {
                       "x - Exit Map\n"
                       "(more)");
 
-        xu4.eventHandler->pushController(&pauseController);
-        pauseController.waitFor();
+        EventHandler::waitAnyKey();
 
         screenMessage("\n"
                       "y - Y-up\n"
@@ -276,7 +273,7 @@ bool CheatMenuController::keyPressed(int key) {
             screenMessage("Create transport!\nWhich? ");
 
             // Get the transport of choice
-            char transport = ReadChoiceController::get("shb \033\015");
+            char transport = EventHandler::readChoice("shb \033\015");
             switch(transport) {
                 case 's': name = "ship";    break;
                 case 'h': name = "horse";   break;
@@ -284,7 +281,6 @@ bool CheatMenuController::keyPressed(int key) {
             }
 
             if (name) {
-                ReadDirController readDir;
                 const Tile *tile;
                 Symbol symbol = xu4.config->intern(name);
 
@@ -292,15 +288,15 @@ bool CheatMenuController::keyPressed(int key) {
                 screenMessage("%s\n", tile->nameStr());
 
                 // Get the direction in which to create the transport
-                xu4.eventHandler->pushController(&readDir);
-
                 screenMessage("Dir: ");
-                map_move(coords, readDir.waitFor(), c->location->map);
+                Direction dir = EventHandler::readDir();
+
+                map_move(coords, dir, c->location->map);
                 if (coords != c->location->coords) {
                     bool ok = false;
                     const Tile* ground = c->location->map->tileTypeAt(coords, WITHOUT_OBJECTS);
 
-                    screenMessage("%s\n", getDirectionName(readDir.getValue()));
+                    screenMessage("%s\n", getDirectionName(dir));
 
                     switch(transport) {
                     case 's': ok = ground->isSailable(); break;

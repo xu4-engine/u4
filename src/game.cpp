@@ -76,67 +76,6 @@ static const MouseArea mouseAreas[] = {
     {0, {{0,0}, {0,0}, {0,0}}, MC_DEFAULT, {0,0}}
 };
 
-ReadPlayerController::ReadPlayerController() : ReadChoiceController("12345678 \033\n") {
-#ifdef IOS
-    U4IOS::beginCharacterChoiceDialog();
-#endif
-}
-
-ReadPlayerController::~ReadPlayerController() {
-#ifdef IOS
-    U4IOS::endCharacterChoiceDialog();
-#endif
-}
-
-bool ReadPlayerController::keyPressed(int key) {
-    bool valid = ReadChoiceController::keyPressed(key);
-    if (valid) {
-        if (value < '1' ||
-            value > ('0' + c->saveGame->members))
-            value = '0';
-    } else {
-        value = '0';
-    }
-    return valid;
-}
-
-int ReadPlayerController::getPlayer() {
-    return value - '1';
-}
-
-int ReadPlayerController::waitFor() {
-    ReadChoiceController::waitFor();
-    return getPlayer();
-}
-
-bool AlphaActionController::keyPressed(int key) {
-    if (islower(key))
-        key = toupper(key);
-
-    if (key >= 'A' && key <= toupper(lastValidLetter)) {
-        screenMessage("%c\n", key);
-        value = key - 'A';
-        doneWaiting();
-    } else if (key == U4_SPACE || key == U4_ESC || key == U4_ENTER) {
-        screenMessage("\n");
-        value = -1;
-        doneWaiting();
-    } else {
-        screenMessage("\n%s", prompt.c_str());
-        return KeyHandler::defaultHandler(key, NULL);
-    }
-    return true;
-}
-
-int AlphaActionController::get(char lastValidLetter, const string &prompt, EventHandler *eh) {
-    if (!eh)
-        eh = xu4.eventHandler;
-
-    AlphaActionController ctrl(lastValidLetter, prompt);
-    eh->pushController(&ctrl);
-    return ctrl.waitFor();
-}
-
 GameController::GameController() : TurnController(1),
     mapArea(BORDER_WIDTH, BORDER_HEIGHT, VIEWPORT_W, VIEWPORT_H),
     cutScene(false),
@@ -866,7 +805,7 @@ bool GameController::keyPressed(int key) {
             else {
 #ifdef IOS
                 U4IOS::IOSSuperButtonHelper superHelper;
-                key = ReadChoiceController::get("xk \033\n");
+                key = EventHandler::readChoice("xk \033\n");
 #else
                 key = 'k';
 #endif
@@ -889,7 +828,7 @@ bool GameController::keyPressed(int key) {
             if (up && down) {
 #ifdef IOS
                 U4IOS::IOSClimbHelper climbHelper;
-                key = ReadChoiceController::get("kd \033\n");
+                key = EventHandler::readChoice("kd \033\n");
 #else
                 key = 'k'; // This is consistent with the previous code. Ideally, I would have a UI here as well.
 #endif
@@ -1330,7 +1269,6 @@ bool GameController::keyPressed(int key) {
 #ifdef IOS
             U4IOS::IOSHideActionKeysHelper hideActionKeys;
 #endif
-            ReadChoiceController pauseController("");
 
             screenMessage("Key Reference:\n"
                           "Arrow Keys: Move\n"
@@ -1345,8 +1283,7 @@ bool GameController::keyPressed(int key) {
                           "i: Ignite torch\n"
                           "(more)");
 
-            xu4.eventHandler->pushController(&pauseController);
-            pauseController.waitFor();
+            EventHandler::waitAnyKey();
 
             screenMessage("\n"
                           "j: Jimmy lock\n"
@@ -1362,8 +1299,7 @@ bool GameController::keyPressed(int key) {
                           "t: Talk\n"
                           "(more)");
 
-            xu4.eventHandler->pushController(&pauseController);
-            pauseController.waitFor();
+            EventHandler::waitAnyKey();
 
             screenMessage("\n"
                           "u: Use Item\n"
@@ -1379,8 +1315,7 @@ bool GameController::keyPressed(int key) {
                           ">: + Sound Vol\n"
                           "(more)");
 
-            xu4.eventHandler->pushController(&pauseController);
-            pauseController.waitFor();
+            EventHandler::waitAnyKey();
 
             screenMessage("\n"
                           "Alt-Q: Main Menu\n"
@@ -1406,7 +1341,7 @@ bool GameController::keyPressed(int key) {
                 endTurn = false;
 
                 screenMessage("Quit to menu?");
-                char choice = ReadChoiceController::get("yn \n\033");
+                char choice = EventHandler::readChoice("yn \n\033");
                 if (choice != 'y') {
                     screenMessage("\n");
                     break;
@@ -1479,12 +1414,12 @@ bool GameController::inputEvent(const InputEvent* ev) {
         return false;
 
     switch (ev->type) {
-        case CIE_MOUSE_MOVE:
+        case IE_MOUSE_MOVE:
             area = xu4.eventHandler->mouseAreaForPoint(ev->x, ev->y);
             screenSetMouseCursor(area ? area->cursor : MC_DEFAULT);
             break;
 
-        case CIE_MOUSE_PRESS:
+        case IE_MOUSE_PRESS:
             area = xu4.eventHandler->mouseAreaForPoint(ev->x, ev->y);
             if (area && ev->n < 4) {
                 int keyCmd = area->command[ev->n - 1];
@@ -1504,7 +1439,7 @@ string gameGetInput(int maxlen) {
     helper.beginConversation(U4IOS::UIKeyboardTypeDefault);
 #endif
 
-    return ReadStringController::get(maxlen, TEXT_AREA_X + c->col, TEXT_AREA_Y + c->line);
+    return EventHandler::readString(maxlen, NULL);
 }
 
 int gameGetPlayer(bool canBeDisabled, bool canBeActivePlayer) {
@@ -1521,9 +1456,7 @@ int gameGetPlayer(bool canBeDisabled, bool canBeActivePlayer) {
         }
         else
         {
-            ReadPlayerController readPlayerController;
-            xu4.eventHandler->pushController(&readPlayerController);
-            player = readPlayerController.waitFor();
+            player = EventHandler::choosePlayer();
             if (player >= 0)
                 c->col--;   // Will display the name in place of the number
         }
@@ -1552,15 +1485,10 @@ int gameGetPlayer(bool canBeDisabled, bool canBeActivePlayer) {
 }
 
 Direction gameGetDirection() {
-    ReadDirController dirController;
 
     screenMessage("Dir?");
-#ifdef IOS
-    U4IOS::IOSDirectionHelper directionPopup;
-#endif
 
-    xu4.eventHandler->pushController(&dirController);
-    Direction dir = dirController.waitFor();
+    Direction dir = EventHandler::readDir();
 
     screenMessage("\b\b\b\b");
 
@@ -1810,7 +1738,7 @@ void castSpell(int player) {
 #ifdef IOS
     U4IOS::IOSCastSpellHelper castSpellController;
 #endif
-    int spell = AlphaActionController::get('z', "Spell: ");
+    int spell = EventHandler::readAlphaAction('z', "Spell: ");
     if (spell == -1)
         return;
 
@@ -1836,7 +1764,7 @@ void castSpell(int player) {
         choiceController.fullSizeChoicePanel();
         choiceController.updateGateSpellChoices();
 #endif
-        int choice = ReadChoiceController::get("12345678 \033\n");
+        int choice = EventHandler::readChoice("12345678 \033\n");
         if (choice < '1' || choice > '8')
             screenMessage("None\n");
         else {
@@ -1870,7 +1798,7 @@ void castSpell(int player) {
         choiceController.updateEnergyFieldSpellChoices();
 #endif
         EnergyFieldType fieldType = ENERGYFIELD_NONE;
-        char key = ReadChoiceController::get("flps \033\n\r");
+        char key = EventHandler::readChoice("flps \033\n\r");
         switch(key) {
         case 'f': fieldType = ENERGYFIELD_FIRE; break;
         case 'l': fieldType = ENERGYFIELD_LIGHTNING; break;
@@ -2561,7 +2489,7 @@ void readyWeapon(int player) {
     // get the weapon to use
     c->stats->setView(STATS_WEAPONS);
     screenMessage("Weapon: ");
-    int weapon = AlphaActionController::get(WEAP_MAX + 'a' - 1, "Weapon: ");
+    int weapon = EventHandler::readAlphaAction(WEAP_MAX + 'a' - 1, "Weapon: ");
     c->stats->setView(STATS_PARTY_OVERVIEW);
     if (weapon == -1)
         return;
@@ -2661,7 +2589,7 @@ static void mixReagents() {
             screenMessage("For Spell: ");
             c->stats->setView(STATS_MIXTURES);
 
-            int choice = ReadChoiceController::get("abcdefghijklmnopqrstuvwxyz \033\n\r");
+            int choice = EventHandler::readChoice("abcdefghijklmnopqrstuvwxyz \033\n\r");
             if (choice == ' ' || choice == '\033' || choice == '\n' || choice == '\r')
                 break;
 
@@ -2701,7 +2629,7 @@ static bool mixReagentsForSpellU4(int spell) {
     screenMessage("Reagent: ");
 
     while (xu4.stage == StagePlay) {
-        int choice = ReadChoiceController::get("abcdefgh\n\r \033");
+        int choice = EventHandler::readChoice("abcdefgh\n\r \033");
 
         // done selecting reagents? mix it up and prompt to mix
         // another spell
@@ -2748,7 +2676,7 @@ static bool mixReagentsForSpellU5(int spell) {
 
     screenMessage("How many? ");
 
-    int howmany = ReadIntController::get(2);
+    int howmany = EventHandler::readInt(2);
     gameSpellMixHowMany(spell, howmany, &ingredients);
 
     return true;
@@ -2809,7 +2737,7 @@ bool gamePeerCity(int city, void *data) {
         continueHelper.updateChoices(" ");
         continueHelper.fullSizeChoicePanel();
 #endif
-        ReadChoiceController::get("\015 \033");
+        EventHandler::readChoice("\015 \033");
 
         xu4.game->exitToParentMap();
         screenEnableCursor();
@@ -2842,7 +2770,7 @@ void peer(bool useGem) {
     continueHelper.updateChoices(" ");
     continueHelper.fullSizeChoicePanel();
 #endif
-    ReadChoiceController::get("\015 \033");
+    EventHandler::readChoice("\015 \033");
 
     screenEnableCursor();
     gameSetViewMode(VIEW_NORMAL);
@@ -2909,7 +2837,7 @@ static void wearArmor(int player) {
 
     c->stats->setView(STATS_ARMOR);
     screenMessage("Armour: ");
-    int armor = AlphaActionController::get(ARMR_MAX + 'a' - 1, "Armour: ");
+    int armor = EventHandler::readAlphaAction(ARMR_MAX + 'a' - 1, "Armour: ");
     c->stats->setView(STATS_PARTY_OVERVIEW);
     if (armor == -1)
         return;
@@ -3636,7 +3564,7 @@ static void mixReagentsSuper() {
     showMixturesSuper(page);
     screenMessage("For Spell: ");
 
-    int spell = ReadChoiceController::get("abcdefghijklmnopqrstuvwxyz \033\n\r");
+    int spell = EventHandler::readChoice("abcdefghijklmnopqrstuvwxyz \033\n\r");
     if (spell < 'a' || spell > 'z' ) {
       screenMessage("\nDone.\n");
       done = true;
@@ -3661,7 +3589,7 @@ static void mixReagentsSuper() {
       screenMessage("You can make %d.\n", (mixQty > ingQty) ? ingQty : mixQty);
       screenMessage("How many? ");
 
-      int howmany = ReadIntController::get(2);
+      int howmany = EventHandler::readInt(2);
 
       if (howmany == 0) {
         screenMessage("\nNone mixed!\n");

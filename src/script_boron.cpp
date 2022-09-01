@@ -276,7 +276,7 @@ CFUNC(inputChoiceS)
             valid += cp[si.it];
 
         valid += " \015\033";   // Space, CR, ESC.
-        ch = ReadChoiceController::get(valid);
+        ch = EventHandler::readChoice(valid.c_str());
         screenCrLf();
 
         si.it = start;
@@ -310,7 +310,7 @@ CFUNC(inputChoiceB)
     }
 
     valid += " \015\033";   // Space, CR, ESC.
-    ch = ReadChoiceController::get(valid);
+    ch = EventHandler::readChoice(valid.c_str());
     screenCrLf();
 
     bi.it = start;
@@ -365,7 +365,7 @@ CFUNC(cf_inputNumber)
     int maxLen = ur_int(a1);
     if (maxLen <= 0)
         maxLen = 7;     //Conversation::BUFFERLEN;
-    int val = ReadIntController::get(maxLen);
+    int val = EventHandler::readInt(maxLen);
     screenCrLf();
 
     if (val) {
@@ -387,8 +387,7 @@ CFUNC(cf_inputText)
     int maxLen = ur_int(a1);
     if (maxLen <= 0)
         maxLen = TEXT_AREA_W-2;
-    string str = ReadStringController::get(maxLen, TEXT_AREA_X + c->col,
-                                                   TEXT_AREA_Y + c->line);
+    string str = EventHandler::readString(maxLen);
     screenCrLf();
 
     if (str.empty()) {
@@ -413,13 +412,11 @@ CFUNC(cf_inputText)
 */
 CFUNC(cf_inputPlayer)
 {
-    ReadPlayerController cont;
     int player;
     (void) ut;
     (void) a1;
 
-    xu4.eventHandler->pushController(&cont);
-    player = cont.waitFor();
+    player = EventHandler::choosePlayer();
     screenCrLf();
 
     if (player != -1) {

@@ -408,7 +408,7 @@ static bool insideArea(const int16_t* rect, int x, int y)
 bool GameBrowser::inputEvent(const InputEvent* ev)
 {
     switch (ev->type) {
-        case CIE_MOUSE_PRESS:
+        case IE_MOUSE_PRESS:
             if (ev->n == CMOUSE_LEFT) {
                 const ScreenState* ss = screenState();
                 int x = ev->x - ss->aspectX;
@@ -425,7 +425,7 @@ bool GameBrowser::inputEvent(const InputEvent* ev)
             }
             break;
 
-        case CIE_MOUSE_WHEEL:
+        case IE_MOUSE_WHEEL:
             if (ev->y < 0)
                 keyPressed(U4_DOWN);
             else if (ev->y > 0)

@@ -95,7 +95,7 @@ void EventHandler::handleInputEvents(Controller* waitCon,
             break;
 
         case SDL_MOUSEBUTTONDOWN:
-            ie.type = CIE_MOUSE_PRESS;
+            ie.type = IE_MOUSE_PRESS;
 mouse_button:
             ie.n = event.button.button;
             ie.x = event.button.x;
@@ -109,18 +109,18 @@ mouse_event:
             break;
 
         case SDL_MOUSEBUTTONUP:
-            ie.type = CIE_MOUSE_RELEASE;
+            ie.type = IE_MOUSE_RELEASE;
             goto mouse_button;
 
         case SDL_MOUSEWHEEL:
-            ie.type = CIE_MOUSE_WHEEL;
+            ie.type = IE_MOUSE_WHEEL;
             ie.n = 0;
             ie.x = event.wheel.x;
             ie.y = event.wheel.y;
             goto mouse_event;
 
         case SDL_MOUSEMOTION:
-            ie.type = CIE_MOUSE_MOVE;
+            ie.type = IE_MOUSE_MOVE;
             ie.n = 0;
             ie.x = event.motion.x;
             ie.y = event.motion.y;

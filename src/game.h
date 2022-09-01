@@ -31,35 +31,6 @@ typedef enum {
 } ViewMode;
 
 /**
- * A controller to read a player number.
- */
-class ReadPlayerController : public ReadChoiceController {
-public:
-    ReadPlayerController();
-    ~ReadPlayerController();
-    virtual bool keyPressed(int key);
-
-    int getPlayer();
-    int waitFor();
-};
-
-/**
- * A controller to handle input for commands requiring a letter
- * argument in the range 'a' - lastValidLetter.
- */
-class AlphaActionController : public WaitableController<int> {
-public:
-    AlphaActionController(char letter, const string &p) : lastValidLetter(letter), prompt(p) {}
-    bool keyPressed(int key);
-
-    static int get(char lastValidLetter, const string &prompt, EventHandler *eh = NULL);
-
-private:
-    char lastValidLetter;
-    string prompt;
-};
-
-/**
  * Controls interaction while Ztats are being displayed.
  */
 class ZtatsController : public WaitableController<void *> {

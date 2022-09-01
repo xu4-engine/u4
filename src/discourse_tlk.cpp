@@ -106,7 +106,7 @@ static void runTalkDialogue(TalkFunc func, TalkState* ts)
             if (ts->nextOp == OP_PAUSE_ASK) {
                 ts->nextOp = OP_NOP;
 
-                ReadChoiceController::get("");
+                EventHandler::waitAnyKey();
 
                 reply = func(ts, DS_QUESTION, input.c_str());
                 message("\n%s\n\nYou say: ", reply);
@@ -123,7 +123,7 @@ tell_name:
             } else if (inputEq("give")) {
                 if (ts->person->getNpcType() == NPC_TALKER_BEGGAR) {
                     message("How much? ");
-                    int gold = ReadIntController::get(2);
+                    int gold = EventHandler::readInt(2);
                     screenCrLf();
                     if (gold > 0) {
                         if (c->party->donate(gold)) {

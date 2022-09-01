@@ -1103,12 +1103,7 @@ bool CombatController::keyPressed(int key) {
 void CombatController::attack() {
     screenMessage("Dir: ");
 
-    ReadDirController dirController;
-#ifdef IOS
-    U4IOS::IOSDirectionHelper directionPopup;
-#endif
-    xu4.eventHandler->pushController(&dirController);
-    Direction dir = dirController.waitFor();
+    Direction dir = EventHandler::readDir();
     if (dir == DIR_NONE)
         return;
     screenMessage("%s\n", getDirectionName(dir));
@@ -1119,7 +1114,7 @@ void CombatController::attack() {
     int range = weapon->range;
     if (weapon->canChooseDistance()) {
         screenMessage("Range: ");
-        range = ReadChoiceController::get("123456789") - '0';
+        range = EventHandler::readChoice("123456789") - '0';
         if (range < 1 || range > weapon->range)
             return;
         screenMessage("%d\n", range);

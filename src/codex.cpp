@@ -336,7 +336,6 @@ ask_next:
 }
 
 static bool codexHandleInfinity(Codex* codex) {
-    ReadChoiceController pauseController("");
     int i;
 
     for (i = 0; i < 3; ++i) {
@@ -347,8 +346,7 @@ static bool codexHandleInfinity(Codex* codex) {
         screenMessage("\nAbove the din, the voice asks:\n\nIf all eight virtues of the Avatar combine into and are derived from the Three Principles of Truth, Love and Courage...");
         screenUploadToGPU();
 
-        xu4.eventHandler->pushController(&pauseController);
-        pauseController.waitFor();
+        EventHandler::waitAnyKey();
 
         screenMessage("\n\nThen what is the one thing which encompasses and is the whole of all undeniable Truth, unending Love, and unyielding Courage?\n\n");
 #ifdef IOS
@@ -404,7 +402,6 @@ correct:
 }
 
 static void codexHandleEndgame(Codex* codex) {
-    ReadChoiceController pauseController("");
     int i;
 
     screenEnableCursor();
@@ -437,8 +434,7 @@ static void codexHandleEndgame(Codex* codex) {
         }
         screenUploadToGPU();
 
-        xu4.eventHandler->pushController(&pauseController);
-        pauseController.waitFor();
+        EventHandler::waitAnyKey();
     }
 
     /* CONGRATULATIONS!... you have completed the game in x turns */

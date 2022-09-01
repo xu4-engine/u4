@@ -75,7 +75,7 @@ void Shrine::enter() {
     U4IOS::IOSConversationHelper inputVirture;
     inputVirture.beginConversation(U4IOS::UIKeyboardTypeDefault, "Upon which virtue dost thou meditate?");
 #endif
-    input = ReadStringController::get(32, TEXT_AREA_X + c->col, TEXT_AREA_Y + c->line);
+    input = EventHandler::readString(32);
 #ifdef IOS
     }
 #endif
@@ -86,7 +86,7 @@ void Shrine::enter() {
     U4IOS::IOSConversationChoiceHelper cyclesChoice;
     cyclesChoice.updateChoices("0123 \015\033");
 #endif
-    choice = ReadChoiceController::get("0123\015\033");
+    choice = EventHandler::readChoice("0123\015\033");
 #ifdef IOS
     }
 #endif
@@ -181,7 +181,7 @@ void Shrine::askMantra() {
     U4IOS::IOSConversationHelper mantraHelper;
     mantraHelper.beginConversation(U4IOS::UIKeyboardTypeASCIICapable, "Mantra?");
 #endif
-    input = ReadStringController::get(4, TEXT_AREA_X + c->col, TEXT_AREA_Y + c->line);
+    input = EventHandler::readString(4);
     screenMessage("\n");
 #ifdef IOS
     }
@@ -216,9 +216,9 @@ void Shrine::askMantra() {
         U4IOS::testFlightPassCheckPoint(std::string("Gained avatarhood in: ")
                                         + getVirtueName(virtue));
 #endif
-        ReadChoiceController::get("");
+        EventHandler::waitAnyKey();
         showVision(elevated);
-        ReadChoiceController::get("");
+        EventHandler::waitAnyKey();
         eject();
     }
 }

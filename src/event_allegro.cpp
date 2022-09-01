@@ -102,7 +102,7 @@ void EventHandler::handleInputEvents(Controller* waitCon,
             break;
 
         case ALLEGRO_EVENT_MOUSE_BUTTON_DOWN:
-            ie.type = CIE_MOUSE_PRESS;
+            ie.type = IE_MOUSE_PRESS;
 mouse_button:
             if (event.mouse.button < 4)
                 ie.n = mouseButtonMap[event.mouse.button];
@@ -119,18 +119,18 @@ mouse_event:
             break;
 
         case ALLEGRO_EVENT_MOUSE_BUTTON_UP:
-            ie.type = CIE_MOUSE_RELEASE;
+            ie.type = IE_MOUSE_RELEASE;
             goto mouse_button;
 
         case ALLEGRO_EVENT_MOUSE_AXES:
             ie.n = 0;
             if (event.mouse.dz || event.mouse.dw) {
-                ie.type = CIE_MOUSE_WHEEL;
+                ie.type = IE_MOUSE_WHEEL;
                 ie.x = event.mouse.dw;
                 ie.y = event.mouse.dz;
                 goto mouse_event;
             }
-            ie.type = CIE_MOUSE_MOVE;
+            ie.type = IE_MOUSE_MOVE;
             goto mouse_pos;
 
         /*

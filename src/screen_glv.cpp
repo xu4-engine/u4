@@ -193,7 +193,7 @@ static void eventHandler(GLView* view, GLViewEvent* event)
 #endif
 
         case GLV_EVENT_BUTTON_DOWN:
-            ie.type = CIE_MOUSE_PRESS;
+            ie.type = IE_MOUSE_PRESS;
 mouse_button:
             // GLV button order matches ControllerMouseButton.
             ie.n = event->code;
@@ -207,16 +207,16 @@ mouse_pos:
             break;
 
         case GLV_EVENT_BUTTON_UP:
-            ie.type = CIE_MOUSE_RELEASE;
+            ie.type = IE_MOUSE_RELEASE;
             goto mouse_button;
 
         case GLV_EVENT_MOTION:
-            ie.type = CIE_MOUSE_MOVE;
+            ie.type = IE_MOUSE_MOVE;
             goto mouse_pos;
 
         case GLV_EVENT_WHEEL:
             ie.n = 0;
-            ie.type = CIE_MOUSE_WHEEL;
+            ie.type = IE_MOUSE_WHEEL;
             goto mouse_pos;
 
         /*
