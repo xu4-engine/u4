@@ -190,6 +190,7 @@ public:
     CannotJoinError join(const char* name);
     bool lightTorch(int duration = 100, bool loseTorch = true);
     void quenchTorch();
+    bool applyRest(HealType);
     void reviveParty();
     MapTile getTransport() const;
     void setTransport(MapTile transport);

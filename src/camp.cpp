@@ -77,7 +77,7 @@ void CampController::beginCombat() {
         /* Make sure we've waited long enough for camping to be effective */
         bool healed = false;
         if (((c->saveGame->moves / CAMP_HEAL_INTERVAL) >= 0x10000) || (((c->saveGame->moves / CAMP_HEAL_INTERVAL) & 0xffff) != c->saveGame->lastcamp))
-            healed = heal();
+            healed = c->party->applyRest(HT_CAMPHEAL);
 
         screenMessage(healed ? "Party Healed!\n" : "No effect.\n");
         c->saveGame->lastcamp = (c->saveGame->moves / CAMP_HEAL_INTERVAL) & 0xffff;
@@ -93,19 +93,6 @@ void CampController::endCombat(bool adjustKarma) {
     for (int i = 0; i < c->party->size(); i++)
         c->party->member(i)->wakeUp();
     CombatController::endCombat(adjustKarma);
-}
-
-bool CampController::heal() {
-    // restore each party member to max mp, and restore some hp
-    bool healed = false;
-    for (int i = 0; i < c->party->size(); i++) {
-        PartyMember *m = c->party->member(i);
-        m->setMp(m->getMaxMp());
-        if ((m->getHp() < m->getMaxHp()) && m->heal(HT_CAMPHEAL))
-            healed = true;
-    }
-
-    return healed;
 }
 
 InnController::InnController() {
@@ -143,7 +130,7 @@ void InnController::beginCombat() {
     gameUpdateScreen();
 
     /* the party is always healed */
-    heal();
+    c->party->applyRest(HT_INNHEAL);
 
     /* Is there a special encounter during your stay? */
     // mwinterrowd suggested code, based on u4dos
@@ -164,20 +151,6 @@ void InnController::beginCombat() {
 
     musicFadeIn(INN_FADE_IN_TIME, true);
 }
-
-bool InnController::heal() {
-    // restore each party member to max mp, and restore some hp
-    bool healed = false;
-    for (int i = 0; i < c->party->size(); i++) {
-        PartyMember *m = c->party->member(i);
-        m->setMp(m->getMaxMp());
-        if ((m->getHp() < m->getMaxHp()) && m->heal(HT_INNHEAL))
-            healed = true;
-    }
-
-    return healed;
-}
-
 
 void InnController::maybeMeetIsaac()
 {

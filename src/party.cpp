@@ -1001,6 +1001,21 @@ void Party::quenchTorch() {
 }
 
 /**
+ * Restore each party member to max MP, and restore some HP.
+ * \return True if any member gained HP.
+ */
+bool Party::applyRest(HealType type) {
+    bool healed = false;
+    for (int i = 0; i < size(); i++) {
+        PartyMember *m = member(i);
+        m->setMp(m->getMaxMp());
+        if ((m->getHp() < m->getMaxHp()) && m->heal(type))
+            healed = true;
+    }
+    return healed;
+}
+
+/**
  * Revives the party after the entire party has been killed
  */
 void Party::reviveParty() {
