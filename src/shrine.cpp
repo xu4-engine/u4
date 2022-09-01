@@ -33,7 +33,7 @@ bool shrineCanEnter(const Portal *p) {
 }
 
 const char* Shrine::getName() const {
-    string& str = c->shrineState.shrineName;
+    std::string& str = c->shrineState.shrineName;
     str = "Shrine of ";
     str += getVirtueName(virtue);
     return str.c_str();
@@ -47,7 +47,7 @@ const char* Shrine::mantraStr() const {
  * Enter the shrine
  */
 void Shrine::enter() {
-    string input;
+    const char* input;
     ShrineState* ss = &c->shrineState;
     int choice;
 
@@ -99,7 +99,7 @@ void Shrine::enter() {
     screenMessage("\n\n");
 
     // ensure the player chose the right virtue and entered a valid number for cycles
-    if (strncasecmp(input.c_str(), getVirtueName(virtue), 6) != 0 || ss->cycles == 0) {
+    if (strncasecmp(input, getVirtueName(virtue), 6) != 0 || ss->cycles == 0) {
         screenMessage("Thou art unable to focus thy thoughts on this subject!\n");
         eject();
     }
@@ -170,7 +170,7 @@ void Shrine::meditationCycle() {
 }
 
 void Shrine::askMantra() {
-    string input;
+    const char* input;
     ShrineState* ss = &c->shrineState;
 
     screenEnableCursor();
@@ -187,7 +187,7 @@ void Shrine::askMantra() {
     }
 #endif
 
-    if (strcasecmp(input.c_str(), mantraStr()) != 0) {
+    if (strcasecmp(input, mantraStr()) != 0) {
         c->party->adjustKarma(KA_BAD_MANTRA);
         screenMessage("Thou art not able to focus thy thoughts with that Mantra!\n");
         eject();

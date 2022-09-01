@@ -5,8 +5,6 @@
 #ifndef ITEM_H
 #define ITEM_H
 
-#include <string>
-
 #include "types.h"
 
 class Map;
@@ -34,6 +32,6 @@ typedef void (*DestroyAllCreaturesCallback)(void);
 
 void itemSetDestroyAllCreaturesCallback(DestroyAllCreaturesCallback callback);
 const ItemLocation *itemAtLocation(const Map *map, const Coords &coords);
-void itemUse(const std::string &shortname);
+void itemUse(const char* shortname);
 
 #endif

@@ -2,6 +2,7 @@
  * event.cpp
  */
 
+#include <cassert>
 #include <cctype>
 #include <cstring>
 #include <list>
@@ -1032,29 +1033,39 @@ int EventHandler::readInt(int maxlen)
 /*
  * Read a string, terminated by the enter key.
  */
-string EventHandler::readString(int maxlen, const char *extraChars)
+const char* EventHandler::readString(int maxlen, const char *extraChars)
 {
+    assert(maxlen < 32);
     ReadStringController ctrl(maxlen, TEXT_AREA_X + c->col,
                                       TEXT_AREA_Y + c->line);
     if (extraChars)
         addCharBits(ctrl.accepted, extraChars);
 
     xu4.eventHandler->pushController(&ctrl);
-    return ctrl.waitFor();
+    ctrl.waitFor();
+
+    char* buf = xu4.eventHandler->readStringBuf;
+    strcpy(buf, ctrl.value.c_str());
+    return buf;
 }
 
 /*
  * Read a string, terminated by the enter key.
  */
-string EventHandler::readStringView(int maxlen, TextView *view,
-                                    const char* extraChars) {
+const char* EventHandler::readStringView(int maxlen, TextView *view,
+                                         const char* extraChars) {
+    assert(maxlen < 32);
     ReadStringController ctrl(maxlen, view->getCursorX(), view->getCursorY(),
                               view);
     if (extraChars)
         addCharBits(ctrl.accepted, extraChars);
 
     xu4.eventHandler->pushController(&ctrl);
-    return ctrl.waitFor();
+    ctrl.waitFor();
+
+    char* buf = xu4.eventHandler->readStringBuf;
+    strcpy(buf, ctrl.value.c_str());
+    return buf;
 }
 
 /*

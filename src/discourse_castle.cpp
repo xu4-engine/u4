@@ -293,7 +293,7 @@ static void runTalkLordBritish(const U4TalkLordBritish* lb)
     const char* strings = lb->strings;
     const Party* party = c->party;
     PartyMember* p0 = party->member(0);
-    string pcName( p0->getName() );
+    std::string pcName( p0->getName() );
     int k;
 
     /* If the avatar is dead Lord British resurrects them! */

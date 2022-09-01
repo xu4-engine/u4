@@ -318,7 +318,7 @@ static Tile* conf_tile(ConfigBoron* cfg, Tile* tile, int id, UBlockIt& bi)
     if (ur_is(cell, UT_WORD))
         tile->imageName = ur_atom(cell);
     else {
-        string tname("tile_");
+        std::string tname("tile_");
         tname += ur_atomCStr(cfg->ut, tile->name);
         tile->imageName = ur_intern(cfg->ut, tname.c_str(), tname.size());
     }
@@ -1476,7 +1476,7 @@ Map* Config::restoreMap(uint32_t id) {
         bool ok;
 
         if (rmap->type == Map::DUNGEON) {
-            string path(xu4.settings->getUserPath() + DNGMAP_SAV);
+            std::string path(xu4.settings->getUserPath() + DNGMAP_SAV);
             sav = fopen(path.c_str(), "rb");
         }
         ok = loadMap(rmap, sav);

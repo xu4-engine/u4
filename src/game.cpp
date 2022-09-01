@@ -1201,7 +1201,7 @@ bool GameController::keyPressed(int key) {
 #ifdef IOS
             U4IOS::IOSConversationHelper::setIntroString("Use which item?");
 #endif
-            itemUse(gameGetInput().c_str());
+            itemUse(gameGetInput());
             if (settings.enhancements)
                 c->stats->setView(STATS_PARTY_OVERVIEW);
             break;
@@ -1431,7 +1431,7 @@ bool GameController::inputEvent(const InputEvent* ev) {
     return true;
 }
 
-string gameGetInput(int maxlen) {
+const char* gameGetInput(int maxlen) {
     screenEnableCursor();
     screenShowCursor();
 #ifdef IOS

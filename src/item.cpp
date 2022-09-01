@@ -49,7 +49,7 @@ void useTelescope(int notused);
 bool isReagentInInventory(int reag);
 void putReagentInInventory(int reag);
 bool isAbyssOpened(const Portal *p);
-void itemHandleStones(const string &color);
+void itemHandleStones(const char* color);
 
 static const ItemLocation items[] = {
     { "Mandrake Root", NULL, "mandrake1",
@@ -490,9 +490,9 @@ void useStone(int item) {
 #ifdef IOS
         U4IOS::IOSConversationHelper::setIntroString("Which virtue?");
 #endif
-        string virtue = gameGetInput();
+        const char* virtue = gameGetInput();
 
-        if (strncasecmp(virtue.c_str(), getVirtueName((Virtue)c->location->coords.z), 6) == 0) {
+        if (strncasecmp(virtue, getVirtueName((Virtue)c->location->coords.z), 6) == 0) {
             /* now ask for stone */
             screenMessage("\n\nThe Voice says: Use thy Stone.\n\nColor:\n");
             needStoneNames = 1;
@@ -647,13 +647,13 @@ const ItemLocation *itemAtLocation(const Map *map, const Coords &coords) {
 /**
  * Uses the item indicated by 'shortname'
  */
-void itemUse(const string &shortname) {
+void itemUse(const char* shortname) {
     unsigned int i;
     const ItemLocation *item = NULL;
 
     for (i = 0; i < N_ITEMS; i++) {
         if (items[i].shortname &&
-            strcasecmp(items[i].shortname, shortname.c_str()) == 0) {
+            strcasecmp(items[i].shortname, shortname) == 0) {
 
             item = &items[i];
 
@@ -695,14 +695,14 @@ bool isAbyssOpened(const Portal *p) {
 /**
  * Handles naming of stones when used
  */
-void itemHandleStones(const string &color) {
+void itemHandleStones(const char* color) {
     bool found = false;
 
     for (int i = 0; i < 8; i++) {
-        if (strcasecmp(color.c_str(), getStoneName((Virtue)i)) == 0 &&
+        if (strcasecmp(color, getStoneName((Virtue)i)) == 0 &&
             isStoneInInventory(1<<i)) {
             found = true;
-            itemUse(color.c_str());
+            itemUse(color);
         }
     }
 

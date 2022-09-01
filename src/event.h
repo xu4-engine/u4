@@ -6,14 +6,11 @@
 #define EVENT_H
 
 #include <list>
-#include <string>
 #include <vector>
 
 #include "anim.h"
 #include "controller.h"
 #include "types.h"
-
-using std::string;
 
 #define U4_UP           '['
 #define U4_DOWN         '/'
@@ -170,9 +167,9 @@ public:
     static char      readChoice(const char* choices);
     static Direction readDir();
     static int       readInt(int maxlen);
-    static string    readString(int maxlen, const char *extraChars = NULL);
-    static string    readStringView(int maxlen, TextView *view,
-                                    const char *extraChars = NULL);
+    static const char* readString(int maxlen, const char *extraChars = NULL);
+    static const char* readStringView(int maxlen, TextView *view,
+                                      const char *extraChars = NULL);
     static void waitAnyKey();
     static void waitAnyKeyTimeout();
     static bool wait_msecs(unsigned int msecs);
@@ -252,6 +249,7 @@ protected:
     std::vector<Controller *> controllers;
     std::list<const _MouseArea*> mouseAreaSets;
     updateScreenCallback updateScreen;
+    char readStringBuf[32];
 };
 
 #endif

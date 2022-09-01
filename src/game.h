@@ -134,7 +134,7 @@ void gameDestroyAllCreatures();
 
 /* etc */
 void gameBadCommand();
-string gameGetInput(int maxlen = 32);
+const char* gameGetInput(int maxlen = 30);
 int gameGetPlayer(bool canBeDisabled, bool canBeActivePlayer);
 void gameGetPlayerForCommand(bool (*commandFn)(int player), bool canBeDisabled, bool canBeActivePlayer);
 void gameDamageParty(int minDamage, int maxDamage);

@@ -163,13 +163,13 @@ bool discourse_run(const Discourse* dis, uint16_t entry, Person* npc)
 
 #ifdef USE_BORON
         // Make a valid Boron word! from names with spaces.
-        string word(c->location->map->getName());
+        std::string word(c->location->map->getName());
         replace(word.begin(), word.end(), ' ', '-');
 
         xu4.config->scriptEvalArg("talk-to %s '%s", goods[entry], word.c_str());
 #else
         // Load and run the appropriate script.
-        string ugood(goods[entry]);
+        std::string ugood(goods[entry]);
         ugood[0] = toupper(ugood[0]);   // Script baseId is case sensitive.
 
         Script* script = new Script();

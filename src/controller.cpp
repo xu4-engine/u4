@@ -2,6 +2,8 @@
  * controller.cpp
  */
 
+#include <cstdio>
+
 #include "controller.h"
 #include "event.h"
 #include "xu4.h"

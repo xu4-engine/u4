@@ -2,6 +2,7 @@
  * event_allegro.cpp
  */
 
+#include <cstdio>
 #include "screen_allegro.h"
 #include "event.h"
 #include "xu4.h"
