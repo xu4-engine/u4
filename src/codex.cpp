@@ -111,7 +111,7 @@ void codexStart() {
                 if (codexHandleInfinity(&codex)) {
                     codexHandleEndgame(&codex);
                     codexFree(&codex);
-                    xu4.eventHandler->pushKeyHandler(KeyHandler::ignoreKeys);
+                    EventHandler::ignoreInput();
                     return;     // Don't reset view mode - pause forever.
                 }
             }

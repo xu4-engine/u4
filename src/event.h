@@ -57,25 +57,6 @@ struct InputEvent {
 //----------------------------------------------------------------------------
 
 /**
- * A controller that invokes a key handler function.
- */
-class KeyHandler : public Controller {
-public:
-    typedef bool (*Callback)(int, void*);
-
-    /* Static default key handler functions */
-    static bool defaultHandler(int key, void *data);
-    static bool ignoreKeys(int key, void *data);
-
-    KeyHandler(KeyHandler::Callback func, void* userData = NULL);
-    virtual bool keyPressed(int key);
-
-private:
-    Callback handler;
-    void* data;
-};
-
-/**
  * A class for handling timed events.
  */
 class TimedEvent {
@@ -173,11 +154,13 @@ public:
     static void waitAnyKey();
     static void waitAnyKeyTimeout();
     static bool wait_msecs(unsigned int msecs);
+    static void ignoreInput();
 
     /* Static functions */
     static bool timerQueueEmpty();
     static int setKeyRepeat(int delay, int interval);
     static bool globalKeyHandler(int key);
+    static bool defaultKeyHandler(int key);
 
     /* Member functions */
     void setTimerInterval(int msecs);
@@ -202,10 +185,6 @@ public:
     void setControllerDone(bool exit = true);
     bool getControllerDone();
     void quitGame();
-
-    /* Key handler functions */
-    void pushKeyHandler(KeyHandler::Callback func, void* data = NULL);
-    void popKeyHandler();
 
     /* Mouse area functions */
     void pushMouseAreaSet(const _MouseArea *mouseAreas);

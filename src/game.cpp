@@ -1404,7 +1404,7 @@ bool GameController::keyPressed(int key) {
         screenPrompt();
     }
 
-    return valid || KeyHandler::defaultHandler(key, NULL);
+    return valid || EventHandler::defaultKeyHandler(key);
 }
 
 bool GameController::inputEvent(const InputEvent* ev) {
@@ -1572,7 +1572,7 @@ bool ZtatsController::keyPressed(int key) {
         doneWaiting();
         return true;
     default:
-        return KeyHandler::defaultHandler(key, NULL);
+        return EventHandler::defaultKeyHandler(key);
     }
 }
 

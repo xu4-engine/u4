@@ -129,26 +129,6 @@ void EventHandler::setController(Controller *c) {
     pushController(c);
 }
 
-/**
- * Adds a key handler controller to the stack.
- */
-void EventHandler::pushKeyHandler(KeyHandler::Callback func, void* data) {
-    KeyHandler* kh = new KeyHandler(func, data);
-    pushController(kh);
-}
-
-/**
- * Pops a key handler off the stack.
- * Returns a pointer to the resulting key handler after
- * the current handler is popped.
- */
-void EventHandler::popKeyHandler() {
-    if (controllers.empty())
-        return;
-
-    popController();
-}
-
 const MouseArea* EventHandler::mouseAreaForPoint(int x, int y) const {
     int i;
     const MouseArea *areas = getMouseAreaSet();
@@ -694,7 +674,7 @@ bool ReadStringController::keyPressed(int key) {
             soundInvalidInput();
         return true;
     } else {
-        bool valid = KeyHandler::defaultHandler(key, NULL);
+        bool valid = EventHandler::defaultKeyHandler(key);
         if (! valid)
             soundInvalidInput();
         return valid;
@@ -886,18 +866,25 @@ bool AlphaActionController::keyPressed(int key) {
         doneWaiting();
     } else {
         screenMessage("\n%s", prompt.c_str());
-        return KeyHandler::defaultHandler(key, NULL);
+        return EventHandler::defaultKeyHandler(key);
     }
     return true;
 }
 
 //----------------------------------------------------------------------------
 
-KeyHandler::KeyHandler(KeyHandler::Callback func, void* userData) :
-    handler(func), data(userData)
-{
-    setDeleteOnPop(true);
-}
+/*
+ * A controller that ignores keypresses
+ */
+class IgnoreKeysController : public Controller {
+public:
+    virtual bool keyPressed(int key) {
+        EventHandler::globalKeyHandler(key);
+        return true;
+    }
+};
+
+//----------------------------------------------------------------------------
 
 /**
  * Handles any and all keystrokes.
@@ -928,7 +915,7 @@ bool EventHandler::globalKeyHandler(int key) {
 /**
  * A default key handler that should be valid everywhere
  */
-bool KeyHandler::defaultHandler(int key, void *data) {
+bool EventHandler::defaultKeyHandler(int key) {
     switch (key) {
 #ifdef DEBUG
     case '`':
@@ -952,20 +939,6 @@ bool KeyHandler::defaultHandler(int key, void *data) {
     }
 
     return true;
-}
-
-/**
- * A key handler that ignores keypresses
- */
-bool KeyHandler::ignoreKeys(int key, void *data) {
-    return true;
-}
-
-bool KeyHandler::keyPressed(int key) {
-    bool processed = EventHandler::globalKeyHandler(key);
-    if (! processed)
-        processed = handler(key, data);
-    return processed;
 }
 
 //----------------------------------------------------------------------------
@@ -1090,4 +1063,13 @@ void EventHandler::waitAnyKeyTimeout()
 {
     AnyKeyController ctrl;
     ctrl.waitTimeout();
+}
+
+/*
+ * Ignore non-global key & mouse events forever.
+ */
+void EventHandler::ignoreInput()
+{
+    IgnoreKeysController ctrl;
+    xu4.eventHandler->runController(&ctrl);
 }

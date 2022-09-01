@@ -491,7 +491,7 @@ bool IntroController::keyPressed(int key) {
         return true;
     }
 
-    return valid || KeyHandler::defaultHandler(key, NULL);
+    return valid || EventHandler::defaultKeyHandler(key);
 }
 
 bool IntroController::inputEvent(const InputEvent* ev) {

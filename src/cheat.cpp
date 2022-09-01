@@ -448,5 +448,5 @@ bool WindCmdController::keyPressed(int key) {
         return true;
     }
 
-    return KeyHandler::defaultHandler(key, NULL);
+    return EventHandler::defaultKeyHandler(key);
 }
