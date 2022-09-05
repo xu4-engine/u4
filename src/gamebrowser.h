@@ -1,4 +1,5 @@
 #include "controller.h"
+#include "gui.h"
 
 struct ModuleInfo {
     StringTable modi;
@@ -21,19 +22,25 @@ public:
     virtual bool keyPressed(int key);
     virtual bool inputEvent(const InputEvent*);
 
+    enum Widgets {
+        WI_LIST,
+        WI_OK,
+        WI_QUIT,
+        WI_CANCEL,
+        WI_COUNT
+    };
+
 private:
     StringTable modFiles;
     StringTable modFormat;
     std::vector<ModuleInfo> infoList;
-    uint16_t   sel;
-    uint16_t   selMusic;        // 0 = none
-    int16_t    listArea[4];
-    int16_t    okArea[4];
-    int16_t    quitArea[4];
-    int16_t    cancelArea[4];
+    uint16_t sel;
+    uint16_t selMusic;          // 0 = none
+    GuiArea gbox[ WI_COUNT ];
+    void* atree;
     float lineHeight;
 
-    void selectModule(const int16_t* rect, int y);
+    void selectModule(const GuiArea* area, int y);
     void layout();
 
     static void renderBrowser(ScreenState* ss, void* data);

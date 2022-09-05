@@ -43,17 +43,29 @@ enum GuiOpcode {
     BG_COLOR_CI,    // color-index
 
     // Widgets
+    ARRAY_DT_AREA,  // initial-wid, DATA GuiArea*
     BUTTON_DT_S,    // DATA const char*
     LABEL_DT_S,     // DATA const char*
     LIST_DT_ST,     // DATA StringTable*
-    STORE_DT_AREA   // DATA int[4]
+    STORE_DT_AREA,  // DATA int16_t[4]
+    STORE_AREA
 };
 
 typedef struct {
     int16_t x, y, w, h;
 } GuiRect;
 
+// Matches BTree2Box
+typedef struct {
+    uint16_t x, y;
+    uint16_t x2, y2;
+    int wid;
+} GuiArea;
+
 struct TxfDrawState;
 
 float* gui_layout(int primList, const GuiRect* root, TxfDrawState*,
                   const uint8_t* bytecode, const void** data);
+void*  gui_areaTree(const GuiArea* areas, int count);
+const GuiArea* gui_pick(const void* tree, const GuiArea* areas,
+                        uint16_t x, uint16_t y);

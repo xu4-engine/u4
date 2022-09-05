@@ -5,7 +5,6 @@
 #include "event.h"
 #include "image32.h"
 #include "gpu.h"
-#include "gui.h"
 #include "module.h"
 #include "settings.h"
 #include "screen.h"
@@ -29,15 +28,16 @@ void GameBrowser::renderBrowser(ScreenState* ss, void* data)
     gpu_drawGui(xu4.gpu, GPU_DLIST_GUI);
 
     if (gb->modFormat.used) {
+        const GuiArea* area = gb->gbox + WI_LIST;
         int box[4];
         float selY = gb->lineHeight * PSIZE_LIST * (gb->sel + 1.0f);
 
-        box[0] = gb->listArea[0];
-        box[1] = gb->listArea[1] + gb->listArea[3] - 1 - int(selY);
+        box[0] = area->x;
+        box[1] = area->y2 - 1 - int(selY);
         box[0] += ss->aspectX;
         box[1] += ss->aspectY;
 
-        box[2] = gb->listArea[2];
+        box[2] = area->x2 - area->x;
         box[3] = PSIZE_LIST + 2;
         gpu_setScissor(box);
         gpu_invertColors(xu4.gpu);
@@ -48,6 +48,7 @@ void GameBrowser::renderBrowser(ScreenState* ss, void* data)
 GameBrowser::GameBrowser()
 {
     sel = selMusic = 0;
+    atree = NULL;
 }
 
 #define NO_PARENT   255
@@ -217,37 +218,35 @@ void GameBrowser::layout()
         LAYOUT_V, BG_COLOR_CI, 128,
         MARGIN_V_PER, 10, MARGIN_H_PER, 16, SPACING_PER, 12,
         BG_COLOR_CI, 17,
+        ARRAY_DT_AREA, WI_LIST,
         MARGIN_V_PER, 6,
             LAYOUT_H,
                 FONT_SIZE, 40, LABEL_DT_S,
                 FONT_N, 1,     LABEL_DT_S,
             LAYOUT_END,
-            FONT_N, 0, FONT_SIZE, PSIZE_LIST, LIST_DT_ST, STORE_DT_AREA,
+            FONT_N, 0, FONT_SIZE, PSIZE_LIST, LIST_DT_ST, STORE_AREA,
             FROM_BOTTOM,
             FONT_N, 1, FONT_SIZE, 24,
             LAYOUT_H, SPACING_PER, 10, FIX_WIDTH_EM, 50,
-                BUTTON_DT_S, STORE_DT_AREA,
-                BUTTON_DT_S, STORE_DT_AREA,
-                BUTTON_DT_S, STORE_DT_AREA,
+                BUTTON_DT_S, STORE_AREA,
+                BUTTON_DT_S, STORE_AREA,
+                BUTTON_DT_S, STORE_AREA,
             LAYOUT_END,
         LAYOUT_END
     };
-    const void* guiData[10];
+    const void* guiData[7];
     const void** data = guiData;
 
     // Set title FONT_SIZE
-    browserGui[15] = screenState()->aspectW / 20;
+    browserGui[17] = screenState()->aspectW / 20;
 
+    *data++ = gbox;
     *data++ = "xu4 | ";
     *data++ = "Game Modules";
     *data++ = &modFormat;
-    *data++ = listArea;
     *data++ = "Play";
-    *data++ = okArea;
     *data++ = "Quit";
-    *data++ = quitArea;
-    *data++ = "Cancel";
-    *data   = cancelArea;
+    *data   = "Cancel";
 
     TxfDrawState ds;
     ds.fontTable = screenState()->fontTable;
@@ -255,10 +254,12 @@ void GameBrowser::layout()
     if (attr) {
         if (selMusic) {
             // Draw green checkmark.
+            const GuiArea* area = gbox + WI_LIST;
+
             ds.tf = ds.fontTable[2];
             ds.colorIndex = 33.0f;
-            ds.x = listArea[0];
-            ds.y = listArea[1] + listArea[3] -
+            ds.x = area->x;
+            ds.y = area->y2 -
                    lineHeight * PSIZE_LIST * (selMusic + 1.0f) -
                    ds.tf->descender * PSIZE_LIST;
             txf_setFontSize(&ds, PSIZE_LIST);
@@ -269,6 +270,9 @@ void GameBrowser::layout()
         }
 
         gpu_endTris(xu4.gpu, GPU_DLIST_GUI, attr);
+
+        free(atree);
+        atree = gui_areaTree(gbox, WI_COUNT);
     }
 }
 
@@ -304,6 +308,9 @@ bool GameBrowser::present()
 
 void GameBrowser::conclude()
 {
+    free(atree);
+    atree = NULL;
+
     screenSetLayer(LAYER_TOP_MENU, NULL, NULL);
     sst_free(&modFiles);
     sst_free(&modFormat);
@@ -373,9 +380,9 @@ bool GameBrowser::keyPressed(int key)
     return false;
 }
 
-void GameBrowser::selectModule(const int16_t* rect, int y)
+void GameBrowser::selectModule(const GuiArea* area, int y)
 {
-    float row = (float) (rect[1] + rect[3] - y) / (lineHeight * PSIZE_LIST);
+    float row = (float) (area->y2 - y) / (lineHeight * PSIZE_LIST);
     int n = (int) row;
     if (n >= 0 && n < (int) modFormat.used) {
         if (infoList[n].category == MOD_SOUNDTRACK) {
@@ -398,13 +405,6 @@ void GameBrowser::selectModule(const int16_t* rect, int y)
     }
 }
 
-static bool insideArea(const int16_t* rect, int x, int y)
-{
-    if (x < rect[0] || y < rect[1])
-        return false;
-    return (x < (rect[0] + rect[2]) && y < (rect[1] + rect[3]));
-}
-
 bool GameBrowser::inputEvent(const InputEvent* ev)
 {
     switch (ev->type) {
@@ -414,14 +414,23 @@ bool GameBrowser::inputEvent(const InputEvent* ev)
                 int x = ev->x - ss->aspectX;
                 int y = (ss->displayH - ev->y) - ss->aspectY;
 
-                if (insideArea(listArea, x, y))
-                    selectModule(listArea, y);
-                else if (insideArea(cancelArea, x, y))
-                    keyPressed(U4_ESC);
-                else if (insideArea(quitArea, x, y))
-                    xu4.eventHandler->quitGame();
-                else if (insideArea(okArea, x, y))
-                    keyPressed(U4_ENTER);
+                const GuiArea* hit = gui_pick(atree, gbox, x, y);
+                if (hit) {
+                    switch (hit->wid) {
+                        case WI_LIST:
+                            selectModule((const GuiArea*) hit, y);
+                            break;
+                        case WI_OK:
+                            keyPressed(U4_ENTER);
+                            break;
+                        case WI_CANCEL:
+                            keyPressed(U4_ESC);
+                            break;
+                        case WI_QUIT:
+                            xu4.eventHandler->quitGame();
+                            break;
+                    }
+                }
             }
             break;
 

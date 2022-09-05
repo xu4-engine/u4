@@ -326,6 +326,8 @@ float* gui_layout(int primList, const GuiRect* root, TxfDrawState* ds,
     GuiRect wbox;
     float* attr;
     int arg;
+    int areaWid;
+    GuiArea* areaArr = NULL;
     const uint8_t* pc;
     const void** dp;
 
@@ -476,6 +478,11 @@ float* gui_layout(int primList, const GuiRect* root, TxfDrawState* ds,
             break;
 
         // Widgets
+        case ARRAY_DT_AREA: // initial-wid
+            dp++;
+            pc++;
+            break;
+
         case BUTTON_DT_S:
             button_size(scon, ds, (const uint8_t*) *dp++);
 layout_inc:
@@ -493,6 +500,9 @@ layout_inc:
 
         case STORE_DT_AREA:
             dp++;
+            break;
+
+        case STORE_AREA:
             break;
         }
     }
@@ -681,6 +691,11 @@ layout_done:
             break;
 
         // Widgets
+        case ARRAY_DT_AREA: // initial-wid
+            areaArr = (GuiArea*) *dp++;
+            areaWid = *pc++;
+            break;
+
         case BUTTON_DT_S:
             gui_align(&wbox, lo, scon);
             attr = widget_button(attr, &wbox, scon, ds, (const uint8_t*) *dp++);
@@ -701,8 +716,22 @@ layout_done:
 
         case STORE_DT_AREA:
             {
-            GuiRect* dst = (GuiRect*) *dp++;
-            memcpy(dst, &wbox, sizeof(GuiRect));
+            GuiArea* dst = (GuiArea*) *dp++;
+            dst->x  = wbox.x;
+            dst->y  = wbox.y;
+            dst->x2 = wbox.x + wbox.w;
+            dst->y2 = wbox.y + wbox.h;
+            }
+            break;
+
+        case STORE_AREA:
+            if (areaArr) {
+                areaArr->x  = wbox.x;
+                areaArr->y  = wbox.y;
+                areaArr->x2 = wbox.x + wbox.w;
+                areaArr->y2 = wbox.y + wbox.h;
+                areaArr->wid = areaWid++;
+                ++areaArr;
             }
             break;
         }
@@ -710,4 +739,24 @@ layout_done:
 
 done:
     return attr;
+}
+
+//----------------------------------------------------------------------------
+
+#include "btree2.c"
+
+/**
+ * Return opaque tree pointer which caller must free().
+ */
+void* gui_areaTree(const GuiArea* areas, int count)
+{
+    BTree2Gen gen;
+    return btree2_generate(&gen, (const BTree2Box*) areas, count);
+}
+
+const GuiArea* gui_pick(const void* tree, const GuiArea* areas,
+                        uint16_t x, uint16_t y)
+{
+    return (const GuiArea*)
+        btree2_pick((const BTree2*) tree, (const BTree2Box*) areas, x, y);
 }
