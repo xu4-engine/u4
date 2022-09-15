@@ -61,8 +61,9 @@ enum OptionsFlag {
     OPT_NO_INTRO   = 2,
     OPT_NO_AUDIO   = 4,
     OPT_VERBOSE    = 8,
-    OPT_RECORD     = 0x10,
-    OPT_REPLAY     = 0x20,
+    OPT_FILTER     = 0x10,
+    OPT_RECORD     = 0x20,
+    OPT_REPLAY     = 0x40,
     OPT_TEST_SAVE  = 0x80
 };
 
@@ -90,6 +91,7 @@ int parseOptions(Options* opt, int argc, char** argv) {
             if (++i >= argc)
                 goto missing_value;
             opt->filter = Settings::settingEnum(screenGetFilterNames(),argv[i]);
+            opt->used |= OPT_FILTER;
         }
         else if (strEqualAlt(argv[i], "-s", "--scale"))
         {
@@ -256,7 +258,7 @@ void servicesInit(XU4GameServices* gs, Options* opt) {
         gs->settings->fullscreen = (opt->flags & OPT_FULLSCREEN) ? true : false;
     if (opt->scale)
         gs->settings->scale = opt->scale;
-    if (opt->filter)
+    if (opt->used & OPT_FILTER)
         gs->settings->filter = opt->filter;
 
     Debug::initGlobal("debug/global.txt");
