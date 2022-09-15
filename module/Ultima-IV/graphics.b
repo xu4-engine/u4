@@ -170,19 +170,19 @@ graphics: [
         whitebead  8,187, 8,12
         blackbead 24,187, 8,12
     ]
-    image (name: honcom filename: "u4/honcom.ega" width: 320 height: 200 depth: 4 filetype: u4lzw) [
+    image (name: cards1 filename: "u4/honcom.ega" width: 320 height: 200 depth: 4 filetype: u4lzw) [
         honestycard     12,12, 90,124
         compassioncard 218,12, 90,124
     ]
-    image (name: valjus filename: "u4/valjus.ega" width: 320 height: 200 depth: 4 filetype: u4lzw) [
+    image (name: cards2 filename: "u4/valjus.ega" width: 320 height: 200 depth: 4 filetype: u4lzw) [
         valorcard    12,12, 90,124
         justicecard 218,12, 90,124
     ]
-    image (name: sachonor filename: "u4/sachonor.ega" width: 320 height: 200 depth: 4 filetype: u4lzw) [
+    image (name: cards3 filename: "u4/sachonor.ega" width: 320 height: 200 depth: 4 filetype: u4lzw) [
         sacrificecard   12,12, 90,124
         honorcard      218,12, 90,124
     ]
-    image (name: spirhum filename: "u4/spirhum.ega" width: 320 height: 200 depth: 4 filetype: u4lzw) [
+    image (name: cards4 filename: "u4/spirhum.ega" width: 320 height: 200 depth: 4 filetype: u4lzw) [
         spiritualitycard   12,12, 90,124
         humilitycard      218,12, 90,124
     ]
@@ -252,7 +252,7 @@ graphics: [
         cross
     ]
     image (name: gemtiles filename: "ega/gem.png" tiles: 128)
-    image (name: dungew filename: "ega/dungeonhall.png") [
+    image (name: dung_hall filename: "ega/dungeonhall.png") [
         dung0_lft_ew    0, 0, 32,176
         dung0_rgt_ew  144, 0, 32,176
         dung1_lft_ew   32,32, 32,112
@@ -262,7 +262,7 @@ graphics: [
         dung3_lft_ew   80,80,  8, 16
         dung3_rgt_ew   88,80,  8, 16
     ]
-    image (name: dungns filename: "ega/dungeonhall.png" fixup: dungns) [
+    image (name: dung_hall2 filename: "ega/dungeonhall.png" fixup: dungns) [
         dung0_lft_ns    0, 0, 32,176
         dung0_rgt_ns  144, 0, 32,176
         dung1_lft_ns   32,32, 32,112
@@ -272,7 +272,7 @@ graphics: [
         dung3_lft_ns   80,80,  8, 16
         dung3_rgt_ns   88,80,  8, 16
     ]
-    image (name: dungew_door filename: "ega/dungeonhall_door.png") [
+    image (name: dung_door filename: "ega/dungeonhall_door.png") [
         dung0_lft_ew_door    0, 0, 32,176
         dung0_rgt_ew_door  144, 0, 32,176
         dung1_lft_ew_door   32,32, 32,112
@@ -282,7 +282,7 @@ graphics: [
         dung3_lft_ew_door   80,80,  8, 16
         dung3_rgt_ew_door   88,80,  8, 16
     ]
-    image (name: dungns_door filename: "ega/dungeonhall_door.png" fixup: dungns) [
+    image (name: dung_door2 filename: "ega/dungeonhall_door.png" fixup: dungns) [
         dung0_lft_ns_door   0, 0, 32,176
         dung0_rgt_ns_door 144, 0, 32,176
         dung1_lft_ns_door  32,32, 32,112
@@ -292,7 +292,7 @@ graphics: [
         dung3_lft_ns_door  80,80,  8, 16
         dung3_rgt_ns_door  88,80,  8, 16
      ]
-    image (name: dungbackew filename: "ega/dung0ma.png") [
+    image (name: dungback0 filename: "ega/dung0ma.png") [
         dung0_mid_ew  0, 0, 176,176
         dung1_mid_ew  0,32, 176,112
         dung1_xxx_ew  0, 0,  32,112
@@ -301,7 +301,7 @@ graphics: [
         dung3_mid_ew  0,80, 176, 16
         dung3_xxx_ew  0, 0,  80, 16
     ]
-    image (name: dungbackns filename: "ega/dung0ma.png" fixup: dungns) [
+    image (name: dungback1 filename: "ega/dung0ma.png" fixup: dungns) [
         dung0_mid_ns  0, 0, 176,176
         dung1_mid_ns  0,32, 176,112
         dung1_xxx_ns  0, 0,  32,112
@@ -312,19 +312,19 @@ graphics: [
     ]
     dung0_mid_ew_door: "ega/dung0ma_door.png"
     image (name: dung0_mid_ns_door filename: "ega/dung0ma_door.png" fixup: dungns)
-    dung1_mid_ew_door_image: "ega/dung1ma_door.png" [
+    dung1_mid_door_image: "ega/dung1ma_door.png" [
         dung1_mid_ew_door  0,32, 176,112
     ]
     image (name: dung1_mid_ns_door_image filename: "ega/dung1ma_door.png" fixup: dungns) [
         dung1_mid_ns_door  0,32, 176,112
     ]
-    dung2_mid_ew_door_image: "ega/dung2ma_door.png" [
+    dung2_mid_door_image: "ega/dung2ma_door.png" [
         dung2_mid_ew_door  0,64, 176,48
     ]
     image (name: dung2_mid_ns_door_image filename: "ega/dung2ma_door.png" fixup: dungns) [
         dung2_mid_ns_door  0,64, 176,48
     ]
-    dung3_mid_ew_door_image: "ega/dung3ma_door.png" [
+    dung3_mid_door_image: "ega/dung3ma_door.png" [
         dung3_mid_ew_door  0,80, 176,16
     ]
     image (name: dung3_mid_ns_door_image filename: "ega/dung3ma_door.png" fixup: dungns) [

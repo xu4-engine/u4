@@ -1561,9 +1561,14 @@ static ImageInfo* loadImageInfo(const ConfigBoron* cfg, UBlockIt& bi) {
 
 #if 0
     UThread* ut = cfg->ut;
-    UBuffer* str = ur_buffer(bi.it[1].series.buf);
-    uint8_t* cp = str->ptr.b;
-    printf("KR image 0x%02x%02x%02x%02x\n", cp[0], cp[1], cp[2], cp[3]);
+    printf("KR image %s ", ur_atomCStr(ut, ur_atom(bi.it)));
+    if (isAtlas)
+        printf("atlas\n");
+    else {
+        UBuffer* str = ur_buffer(bi.it[1].series.buf);
+        uint8_t* cp = str->ptr.b;
+        printf("0x%02x%02x%02x%02x\n", cp[0], cp[1], cp[2], cp[3]);
+    }
 #endif
 
     ImageInfo* info = new ImageInfo;

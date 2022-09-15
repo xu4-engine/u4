@@ -216,7 +216,7 @@ graphics: [
     image (name: rune7 filename: "u4u/rune_7.ega" width: 320 height: 200 depth: 8 filetype: u4rle)
     image (name: rune8 filename: "u4u/rune_8.ega" width: 320 height: 200 depth: 8 filetype: u4rle)
     image (name: gemtiles filename: "vga/gem.png" tiles: 128)
-    dung: "vga/dungeonhall.png" [
+    dung_hall: "vga/dungeonhall.png" [
         dung0_lft_ew    0, 0, 16,176
         dung0_rgt_ew  160, 0, 16,176
         dung1_lft_ew   16, 8, 32,160
