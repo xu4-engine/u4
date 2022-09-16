@@ -39,6 +39,7 @@ private:
     GuiArea gbox[ WI_COUNT ];
     void* atree;
     float lineHeight;
+    float psizeList;            // List font point size.
 
     void selectModule(const GuiArea* area, int y);
     void layout();

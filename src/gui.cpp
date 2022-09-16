@@ -330,6 +330,7 @@ float* gui_layout(int primList, const GuiRect* root, TxfDrawState* ds,
     GuiArea* areaArr = NULL;
     const uint8_t* pc;
     const void** dp;
+    float vgaScale = screenState()->aspectH / 480.0f;
 
 #define RESET_LAYOUT \
     lo = NULL; \
@@ -471,6 +472,10 @@ float* gui_layout(int primList, const GuiRect* root, TxfDrawState* ds,
 
         case FONT_SIZE:      // point-size
             txf_setFontSize(ds, (float) *pc++);
+            break;
+
+        case FONT_VSIZE:     // scaled-vga-height
+            txf_setFontSize(ds, vgaScale * (float) *pc++);
             break;
 
         case BG_COLOR_CI:   // color-index
@@ -683,6 +688,10 @@ layout_done:
 
         case FONT_SIZE:      // point-size
             txf_setFontSize(ds, (float) *pc++);
+            break;
+
+        case FONT_VSIZE:     // scaled-vga-height
+            txf_setFontSize(ds, vgaScale * (float) *pc++);
             break;
 
         case BG_COLOR_CI:   // color-index

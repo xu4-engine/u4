@@ -18,7 +18,6 @@ extern "C" {
 }
 
 
-#define PSIZE_LIST  20
 #define ATTR_COUNT  7
 
 void GameBrowser::renderBrowser(ScreenState* ss, void* data)
@@ -30,7 +29,7 @@ void GameBrowser::renderBrowser(ScreenState* ss, void* data)
     if (gb->modFormat.used) {
         const GuiArea* area = gb->gbox + WI_LIST;
         int box[4];
-        float selY = gb->lineHeight * PSIZE_LIST * (gb->sel + 1.0f);
+        float selY = gb->lineHeight * gb->psizeList * (gb->sel + 1.0f);
 
         box[0] = area->x;
         box[1] = area->y2 - 1 - int(selY);
@@ -38,7 +37,7 @@ void GameBrowser::renderBrowser(ScreenState* ss, void* data)
         box[1] += ss->aspectY;
 
         box[2] = area->x2 - area->x;
-        box[3] = PSIZE_LIST + 2;
+        box[3] = gb->psizeList + 2;
         gpu_setScissor(box);
         gpu_invertColors(xu4.gpu);
         gpu_setScissor(NULL);
@@ -48,6 +47,7 @@ void GameBrowser::renderBrowser(ScreenState* ss, void* data)
 GameBrowser::GameBrowser()
 {
     sel = selMusic = 0;
+    psizeList = 20.0f;
     atree = NULL;
 }
 
@@ -221,12 +221,12 @@ void GameBrowser::layout()
         ARRAY_DT_AREA, WI_LIST,
         MARGIN_V_PER, 6,
             LAYOUT_H,
-                FONT_SIZE, 40, LABEL_DT_S,
-                FONT_N, 1,     LABEL_DT_S,
+                FONT_VSIZE, 38, LABEL_DT_S,
+                FONT_N, 1,      LABEL_DT_S,
             LAYOUT_END,
-            FONT_N, 0, FONT_SIZE, PSIZE_LIST, LIST_DT_ST, STORE_AREA,
+            FONT_N, 0, FONT_VSIZE, 20, LIST_DT_ST, STORE_AREA,
             FROM_BOTTOM,
-            FONT_N, 1, FONT_SIZE, 24,
+            FONT_N, 1, FONT_VSIZE, 22,
             LAYOUT_H, SPACING_PER, 10, FIX_WIDTH_EM, 50,
                 BUTTON_DT_S, STORE_AREA,
                 BUTTON_DT_S, STORE_AREA,
@@ -237,8 +237,8 @@ void GameBrowser::layout()
     const void* guiData[7];
     const void** data = guiData;
 
-    // Set title FONT_SIZE
-    browserGui[17] = screenState()->aspectW / 20;
+    // Set psizeList to match list FONT_VSIZE.
+    psizeList = 20.0f * screenState()->aspectH / 480.0f;
 
     *data++ = gbox;
     *data++ = "xu4 | ";
@@ -260,9 +260,9 @@ void GameBrowser::layout()
             ds.colorIndex = 33.0f;
             ds.x = area->x;
             ds.y = area->y2 -
-                   lineHeight * PSIZE_LIST * (selMusic + 1.0f) -
-                   ds.tf->descender * PSIZE_LIST;
-            txf_setFontSize(&ds, PSIZE_LIST);
+                   lineHeight * psizeList * (selMusic + 1.0f) -
+                   ds.tf->descender * psizeList;
+            txf_setFontSize(&ds, psizeList);
 
             int quads = txf_genText(&ds, attr + 3, attr, ATTR_COUNT,
                                     (const uint8_t*) "c", 1);
@@ -382,7 +382,7 @@ bool GameBrowser::keyPressed(int key)
 
 void GameBrowser::selectModule(const GuiArea* area, int y)
 {
-    float row = (float) (area->y2 - y) / (lineHeight * PSIZE_LIST);
+    float row = (float) (area->y2 - y) / (lineHeight * psizeList);
     int n = (int) row;
     if (n >= 0 && n < (int) modFormat.used) {
         if (infoList[n].category == MOD_SOUNDTRACK) {
