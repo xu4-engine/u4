@@ -289,6 +289,7 @@ bool spellCast(unsigned int spell, int character, int param, SpellCastError *err
 
     // If there's a negate magic aura, spells fail!
     if (c->aura.getType() == Aura::NEGATE) {
+        soundPlay(SOUND_EVADE);     // TODO: Check if this should be played.
         *error = CASTERR_FAILED;
         return false;
     }
@@ -309,6 +310,7 @@ bool spellCast(unsigned int spell, int character, int param, SpellCastError *err
     }
 
     if (!(*spells[spell].spellFunc)(param)) {
+        soundPlay(SOUND_EVADE);
         *error = CASTERR_FAILED;
         return false;
     }

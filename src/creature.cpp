@@ -200,21 +200,22 @@ bool Creature::specialEffect() {
             ObjectDeque::iterator i;
 
             if (coords == c->location->coords) {
+                if (c->transportContext == TRANSPORT_BALLOON)
+                    return false;
+
+                soundPlay(SOUND_STORM);
+                EventHandler::wait_msecs(soundDuration(SOUND_STORM));
 
                 /* damage the ship */
                 if (c->transportContext == TRANSPORT_SHIP) {
-                    soundPlay(SOUND_STORM);
-                    EventHandler::wait_msecs(soundDuration(SOUND_STORM));
-
                     for (int i = 0; i < 4; ++i) {
                         // FIXME: Highlight all player stats.
-                        soundPlay(SOUND_PARTY_STRUCK);
                         if (gameDamageShip(-1, 10))
                             break;
                     }
                 }
                 /* anything else but balloon damages the party */
-                else if (c->transportContext != TRANSPORT_BALLOON) {
+                else {
                     /* FIXME: formula for twister damage is guesstimated from u4dos */
                     gameDamageParty(0, 75);
                 }
@@ -253,7 +254,6 @@ bool Creature::specialEffect() {
                 EventHandler::wait_msecs(soundDuration(SOUND_WHIRLPOOL));
 
                 /* Deal 10 damage to the ship */
-                soundPlay(SOUND_PARTY_STRUCK);
                 gameDamageShip(-1, 10);
 
                 /* Send the party to Locke Lake */

@@ -698,7 +698,8 @@ void GameController::gameNotice(int sender, void* eventData, void* user) {
 
         case PartyEvent::STARVING:
             screenMessage("\n%cStarving!!!%c\n", FG_YELLOW, FG_WHITE);
-            /* FIXME: add sound effect here */
+            soundPlay(SOUND_NPC_STRUCK);
+            /* FIXME: Player status lines should flash white. */
 
             // 2 damage to each party member for starving!
             for (int i = 0; i < c->saveGame->members; i++)
@@ -1880,8 +1881,6 @@ void fire() {
 }
 
 static void hitPartyAtRange(const Coords& coords, int hitFrames) {
-    soundPlay(SOUND_PARTY_STRUCK);
-
     /* FIXME: In u4dos this graphic remains on screen if the player's
        ship is sunk. */
     GameController::flashTile(coords, Tile::sym.hitFlash, hitFrames);
@@ -3203,13 +3202,14 @@ void gameDamageParty(int minDamage, int maxDamage) {
 
     for (i = 0; i < c->party->size(); i++) {
         if (xu4_random(2) == 0) {
+            soundPlay(SOUND_PARTY_STRUCK);
             damage = ((minDamage >= 0) && (minDamage < maxDamage)) ?
                 xu4_random((maxDamage + 1) - minDamage) + minDamage :
                 maxDamage;
             c->party->member(i)->applyDamage(c->location->map, damage);
             c->stats->highlightPlayer(i);
             lastdmged = i;
-            EventHandler::wait_msecs(50);
+            EventHandler::wait_msecs(83);
         }
     }
 
@@ -3228,6 +3228,7 @@ void gameDamageParty(int minDamage, int maxDamage) {
  */
 bool gameDamageShip(int minDamage, int maxDamage) {
     if (c->transportContext == TRANSPORT_SHIP) {
+        soundPlay(SOUND_PARTY_STRUCK);
         screenShake(1);
 
         int damage = ((minDamage >= 0) && (minDamage < maxDamage)) ?
