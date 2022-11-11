@@ -86,7 +86,7 @@ public:
     void save(const char* filename) {
         image32_savePPM(this, filename);
     }
-    void drawHighlighted();
+    void drawHighlight(int rx, int ry, int rw, int rh);
 
 #ifdef IOS
     CGLayerRef getSurface() { return surface; }

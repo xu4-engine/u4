@@ -2,6 +2,7 @@
  * image.cpp
  */
 
+#include <cassert>
 #include <list>
 #include "image.h"
 #include "screen.h"
@@ -318,15 +319,25 @@ void Image::drawSubRectInvertedOn(Image *dest, int x, int y, int rx, int ry, int
 }
 
 /**
- * Invert the RGB values of image.
+ * Invert the RGB values of a rectangle inside the image.
  */
-void Image::drawHighlighted() {
-    RGBA* col = (RGBA*) pixels;
-    RGBA* end = col + w*h;
-    while (col != end) {
-        col->r = 0xff - col->r;
-        col->g = 0xff - col->g;
-        col->b = 0xff - col->b;
-        ++col;
+void Image::drawHighlight(int rx, int ry, int rw, int rh) {
+    RGBA* cp;
+    RGBA* cend;
+    RGBA* crow = (RGBA*) pixels + w * ry + rx;
+
+    assert((rx+rw) <= w);
+    assert((ry+rh) <= h);
+
+    while (rh--) {
+        cp = crow;
+        cend = cp + rw;
+        while( cp != cend ) {
+            cp->r = 0xff - cp->r;
+            cp->g = 0xff - cp->g;
+            cp->b = 0xff - cp->b;
+            ++cp;
+        }
+        crow += w;
     }
 }

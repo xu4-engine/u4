@@ -77,14 +77,6 @@ void View::unhighlight() {
 }
 
 void View::drawHighlighted() {
-    Image *tmp = Image::create(highlightW, highlightH);
-    if (!tmp)
-        return;
-
-    xu4.screenImage->drawSubRectOn(tmp, 0, 0,
-                                this->x + highlightX,
-                                this->y + highlightY, highlightW, highlightH);
-    tmp->drawHighlighted();
-    tmp->draw(this->x + highlightX, this->y + highlightY);
-    delete tmp;
+    xu4.screenImage->drawHighlight(x + highlightX, y + highlightY,
+                                   highlightW, highlightH);
 }
