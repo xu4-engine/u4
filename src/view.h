@@ -1,15 +1,5 @@
-/*
- * $Id$
- */
-
 #ifndef VIEW_H
 #define VIEW_H
-
-#ifdef IOS
-#include "ios_helpers.h"
-#endif
-
-class TileView;
 
 /**
  * Generic base class for reflecting the state of a game object onto
@@ -27,19 +17,16 @@ public:
     virtual void highlight(int x, int y, int width, int height);
     virtual void unhighlight();
 
-    bool highlightActive() const { return highlighted; }
+    void setHighlight(int x, int y, int width, int height);
+    bool highlightActive() const { return highlightW > 0; }
+
     int screenRect[4];
+    int x, y, width, height;
 
 protected:
-    int x, y, width, height;
-    int highlightX, highlightY, highlightW, highlightH;
-    bool highlighted;
+    int16_t highlightX, highlightY, highlightW, highlightH;
 
     void drawHighlighted();
-#ifdef IOS
-    friend void U4IOS::updateScreenView();
-#endif
-    friend void screenUpdate(TileView*, bool, bool);
 };
 
 #endif /* VIEW_H */

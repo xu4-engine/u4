@@ -1,18 +1,24 @@
 /*
- * $Id$
+ * stats.cpp
  */
 
+#include <cassert>
 #include <cstring>
 
 #include "stats.h"
 
 #include "config.h"
-#include "debug.h"
 #include "party.h"
 #include "spell.h"
 #include "weapon.h"
 #include "u4.h"
 #include "xu4.h"
+
+enum RedrawMode {
+    REDRAW_NONE = 0,
+    REDRAW_ALL  = 1,
+    REDRAW_AURA = 2
+};
 
 /**
  * StatsArea class implementation
@@ -35,6 +41,10 @@ StatsArea::StatsArea() :
 
     listenerId = gs_listen(1<<SENDER_PARTY | 1<<SENDER_AURA | 1<<SENDER_MENU,
                            statsNotice, this);
+    focusPlayer = -1;
+    redrawMode = REDRAW_NONE;
+    flashMask  = 0;
+    flashCycle = 0;
 }
 
 StatsArea::~StatsArea() {
@@ -71,17 +81,47 @@ void StatsArea::nextItem() {
 }
 
 /**
- * Update the stats (ztats) box on the upper right of the screen.
+ * Queue update for the stats (ztats) box on the upper right of the screen.
  */
-void StatsArea::update(bool avatarOnly) {
-    clear();
+void StatsArea::update() {
+    redrawMode |= REDRAW_ALL;
+}
+
+/**
+ * Called once per screen update to redraw the stats area if needed.
+ */
+void StatsArea::redraw() {
+    // Force a redraw when player flash times out.
+    if (flashCycle) {
+        --flashCycle;
+        if (! flashCycle) {
+            flashMask = 0;
+            if (view == STATS_PARTY_OVERVIEW)
+                redrawMode |= REDRAW_ALL;
+        }
+    }
+
+    if (redrawMode == REDRAW_NONE)
+        return;
+
+    if (redrawMode == REDRAW_AURA) {
+        redrawMode = REDRAW_NONE;
+        redrawAura();
+        return;
+    }
+
+    // Clear Areas.
+    for (int i = 0; i < STATS_AREA_WIDTH; i++)
+        title.drawChar(CHARSET_HORIZBAR, i, 0);
+    mainArea.clear();
+    summary.clear();
 
     /*
      * update the upper stats box
      */
     switch(view) {
     case STATS_PARTY_OVERVIEW:
-        showPartyView(avatarOnly);
+        showPartyView();
         break;
     case STATS_CHAR1:
     case STATS_CHAR2:
@@ -126,9 +166,43 @@ void StatsArea::update(bool avatarOnly) {
         summary.textAtFmt(0, 0, "F:%04d   G:%04d",
                           c->saveGame->food / 100, c->saveGame->gold);
 
-    statsNotice(SENDER_AURA, &c->aura, this);
+    redrawAura();
 
-    redraw();
+    title.update();
+    mainArea.update();
+    summary.update();
+
+    if (flashMask && view == STATS_PARTY_OVERVIEW) {
+        int count = c->party->size();
+        for (int i = 0; i < count; i++) {
+            if (flashMask & (1 << i)) {
+                xu4.screenImage->drawHighlight(
+                        mainArea.x, mainArea.y + i * CHAR_HEIGHT,
+                        STATS_AREA_WIDTH * CHAR_WIDTH, CHAR_HEIGHT);
+            }
+        }
+    }
+
+    redrawMode = REDRAW_NONE;
+}
+
+void StatsArea::redrawAura() {
+    static const char auraChar[6] = {
+        // NONE, HORN, JINX, NEGATE, PROTECTION, QUICKNESS
+        CHARSET_ANKH, CHARSET_REDDOT, 'J', 'N', 'P', 'Q'
+    };
+
+    int type = c->aura.getType();
+    if (type > Aura::NONE && type <= Aura::QUICKNESS) {
+        summary.drawChar(auraChar[type], STATS_AREA_WIDTH/2, 0);
+    } else {
+        unsigned char mask = 0xff;
+        for (int i = 0; i < VIRT_MAX; i++) {
+            if (c->saveGame->karma[i] == 0)
+                mask &= ~(1 << i);
+        }
+        summary.drawCharMasked(CHARSET_ANKH, STATS_AREA_WIDTH/2, 0, mask);
+    }
 }
 
 void StatsArea::statsNotice(int sender, void* eventData, void* user) {
@@ -138,35 +212,7 @@ void StatsArea::statsNotice(int sender, void* eventData, void* user) {
         sa->update();   /* do a full update */
     }
     else if (sender == SENDER_AURA) {
-        Aura* aura = (Aura*) eventData;
-        unsigned char mask = 0xff;
-        for (int i = 0; i < VIRT_MAX; i++) {
-            if (c->saveGame->karma[i] == 0)
-                mask &= ~(1 << i);
-        }
-
-        switch (aura->getType()) {
-        case Aura::NONE:
-            sa->summary.drawCharMasked(0, STATS_AREA_WIDTH/2, 0, mask);
-            break;
-        case Aura::HORN:
-            sa->summary.drawChar(CHARSET_REDDOT, STATS_AREA_WIDTH/2, 0);
-            break;
-        case Aura::JINX:
-            sa->summary.drawChar('J', STATS_AREA_WIDTH/2, 0);
-            break;
-        case Aura::NEGATE:
-            sa->summary.drawChar('N', STATS_AREA_WIDTH/2, 0);
-            break;
-        case Aura::PROTECTION:
-            sa->summary.drawChar('P', STATS_AREA_WIDTH/2, 0);
-            break;
-        case Aura::QUICKNESS:
-            sa->summary.drawChar('Q', STATS_AREA_WIDTH/2, 0);
-            break;
-        }
-
-        sa->summary.update();
+        sa->redrawMode |= REDRAW_AURA;
     }
     else if (sender == SENDER_MENU) {
         const Menu* menu = ((MenuEvent*) eventData)->menu;
@@ -175,29 +221,23 @@ void StatsArea::statsNotice(int sender, void* eventData, void* user) {
     }
 }
 
-void StatsArea::highlightPlayer(int player) {
-    ASSERT(player < c->party->size(), "player number out of range: %d", player);
-    mainArea.highlight(0, player * CHAR_HEIGHT, STATS_AREA_WIDTH * CHAR_WIDTH, CHAR_HEIGHT);
-#ifdef IOS
-    U4IOS::updateActivePartyMember(player);
-#endif
-}
-
-void StatsArea::clear() {
-    for (int i = 0; i < STATS_AREA_WIDTH; i++)
-        title.drawChar(CHARSET_HORIZBAR, i, 0);
-
-    mainArea.clear();
-    summary.clear();
-}
-
-/**
- * Redraws the entire stats area
+/*
+ * Highlight the active player.  Pass -1 to disable the highlight.
  */
-void StatsArea::redraw() {
-    title.update();
-    mainArea.update();
-    summary.update();
+void StatsArea::highlightPlayer(int player) {
+    assert(player < c->party->size());
+    if (focusPlayer != player) {
+        focusPlayer = player;
+        redrawMode |= REDRAW_ALL;
+    }
+}
+
+void StatsArea::flashPlayers(int playerMask) {
+    if (view == STATS_PARTY_OVERVIEW) {
+        flashMask  = playerMask;
+        flashCycle = 3;
+        redrawMode |= REDRAW_ALL;
+    }
 }
 
 /**
@@ -211,23 +251,26 @@ void StatsArea::setTitle(const char* s) {
 /**
  * The basic party view.
  */
-void StatsArea::showPartyView(bool avatarOnly) {
+void StatsArea::showPartyView() {
     const char *format = "%d%c%-9.8s%3d%s";
-
-    PartyMember *p = NULL;
+    PartyMember *p;
     int activePlayer = c->party->getActivePlayer();
+    int count = avatarOnly ? 1 : c->party->size();
 
-    ASSERT(c->party->size() <= 8, "party members out of range: %d", c->party->size());
+    //printf("KR showPartyView %d\n", focusPlayer);
+    assert(count <= 8);
 
-    if (!avatarOnly) {
-        for (int i = 0; i < c->party->size(); i++) {
-            p = c->party->member(i);
-            mainArea.textAtFmt(0, i, format, i+1, (i==activePlayer) ? CHARSET_BULLET : '-', p->getName(), p->getHp(), mainArea.colorizeStatus(p->getStatus()).c_str());
-        }
+    for (int i = 0; i < count; i++) {
+        p = c->party->member(i);
+        mainArea.textAtFmt(0, i, format, i+1,
+                           (i==activePlayer) ? CHARSET_BULLET : '-',
+                           p->getName(), p->getHp(),
+                           mainArea.colorizeStatus(p->getStatus()).c_str());
     }
-    else {
-        p = c->party->member(0);
-        mainArea.textAtFmt(0, 0, format, 1, (activePlayer==0) ? CHARSET_BULLET : '-', p->getName(), p->getHp(), mainArea.colorizeStatus(p->getStatus()).c_str());
+
+    if (focusPlayer >= 0) {
+        mainArea.setHighlight(0, focusPlayer * CHAR_HEIGHT,
+                              STATS_AREA_WIDTH * CHAR_WIDTH, CHAR_HEIGHT);
     }
 }
 
@@ -237,7 +280,7 @@ void StatsArea::showPartyView(bool avatarOnly) {
 void StatsArea::showPlayerDetails() {
     int player = view - STATS_CHAR1;
 
-    ASSERT(player < 8, "character number out of range: %d", player);
+    assert(player < 8);
 
     PartyMember *p = c->party->member(player);
     setTitle(p->getName());

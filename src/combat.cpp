@@ -473,6 +473,7 @@ bool CombatController::setActivePlayer(int player) {
         return true;
     }
 
+    c->stats->highlightPlayer(-1);
     return false;
 }
 
@@ -726,6 +727,7 @@ void CombatController::finishTurn() {
 
     /* return to party overview */
     c->stats->setView(STATS_PARTY_OVERVIEW);
+    c->stats->highlightPlayer(-1);
 
     if (isWon() && winOrLose) {
         endCombat(true);

@@ -1,7 +1,3 @@
-#ifdef IOS
-#include "ios_helpers.h"
-#endif
-
 #include "image.h"
 #include "screen.h"
 #include "view.h"
@@ -10,8 +6,7 @@
 
 View::View(int x, int y, int width, int height) :
     x(x), y(y), width(width), height(height),
-    highlightX(0), highlightY(0), highlightW(0), highlightH(0),
-    highlighted(false)
+    highlightX(0), highlightY(0), highlightW(0), highlightH(0)
 {
     reinit();
 }
@@ -39,44 +34,41 @@ void View::clear() {
  * Update the view to the screen.
  */
 void View::update() {
-    if (highlighted)
-        drawHighlighted();
-#ifdef IOS
-    U4IOS::updateView();
-#endif
+    drawHighlighted();
 }
 
 /**
  * Update a piece of the view to the screen.
  */
 void View::update(int x, int y, int width, int height) {
-    if (highlighted)
-        drawHighlighted();
-#ifdef IOS
-    U4IOS::updateRectInView(x, y, width, height);
-#endif
+    drawHighlighted();
+}
+
+/**
+ * Set highlight (inverted colors) rectangle.
+ */
+void View::setHighlight(int x, int y, int width, int height) {
+    highlightX = x;
+    highlightY = y;
+    highlightW = width;
+    highlightH = height;
 }
 
 /**
  * Highlight a piece of the screen by drawing it in inverted colors.
  */
 void View::highlight(int x, int y, int width, int height) {
-    highlighted = true;
-    highlightX = x;
-    highlightY = y;
-    highlightW = width;
-    highlightH = height;
-
+    setHighlight(x, y, width, height);
     update(x, y, width, height);
 }
 
 void View::unhighlight() {
-    highlighted = false;
     update(highlightX, highlightY, highlightW, highlightH);
-    highlightX = highlightY = highlightW = highlightH = 0;
+    highlightW = highlightH = 0;
 }
 
 void View::drawHighlighted() {
-    xu4.screenImage->drawHighlight(x + highlightX, y + highlightY,
-                                   highlightW, highlightH);
+    if (highlightW > 0)
+        xu4.screenImage->drawHighlight(x + highlightX, y + highlightY,
+                                       highlightW, highlightH);
 }

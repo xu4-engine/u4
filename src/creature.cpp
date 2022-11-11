@@ -209,7 +209,6 @@ bool Creature::specialEffect() {
                 /* damage the ship */
                 if (c->transportContext == TRANSPORT_SHIP) {
                     for (int i = 0; i < 4; ++i) {
-                        // FIXME: Highlight all player stats.
                         if (gameDamageShip(-1, 10))
                             break;
                     }

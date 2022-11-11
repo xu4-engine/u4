@@ -561,9 +561,6 @@ void GameController::finishTurn() {
 
         gameCheckDrowning();
 
-        /* update party stats */
-        //c->stats->setView(STATS_PARTY_OVERVIEW);
-
         screenUpdate(&this->mapArea, true, false);
         screenWait(1);
 
@@ -697,13 +694,21 @@ void GameController::gameNotice(int sender, void* eventData, void* user) {
             break;
 
         case PartyEvent::STARVING:
+        {
+            int pcMask = 0;
+
             screenMessage("\n%cStarving!!!%c\n", FG_YELLOW, FG_WHITE);
             soundPlay(SOUND_NPC_STRUCK);
-            /* FIXME: Player status lines should flash white. */
 
             // 2 damage to each party member for starving!
-            for (int i = 0; i < c->saveGame->members; i++)
-                c->party->member(i)->applyDamage(c->location->map, 2);
+            for (int i = 0; i < c->saveGame->members; i++) {
+                if (c->party->member(i)->applyDamage(c->location->map, 2))
+                    pcMask |= 1 << i;
+            }
+
+            if (pcMask)
+                c->stats->flashPlayers(pcMask);
+        }
             break;
 
         default:
@@ -747,6 +752,7 @@ void gameSpellEffect(int spell, int player, Sound sound) {
         xu4.game->mapArea.highlight(0, 0, VIEWPORT_W * TILE_WIDTH, VIEWPORT_H * TILE_HEIGHT);
         EventHandler::wait_msecs(time);
         xu4.game->mapArea.unhighlight();
+        c->stats->highlightPlayer(-1);
 
         if (effect == Spell::SFX_TREMOR) {
             gameUpdateScreen();
@@ -3198,7 +3204,6 @@ vector<Coords> gameGetDirectionalActionPath(int dirmask, int validDirections,
 void gameDamageParty(int minDamage, int maxDamage) {
     int i;
     int damage;
-    int lastdmged = -1;
 
     for (i = 0; i < c->party->size(); i++) {
         if (xu4_random(2) == 0) {
@@ -3208,7 +3213,6 @@ void gameDamageParty(int minDamage, int maxDamage) {
                 maxDamage;
             c->party->member(i)->applyDamage(c->location->map, damage);
             c->stats->highlightPlayer(i);
-            lastdmged = i;
             EventHandler::wait_msecs(83);
         }
     }
@@ -3216,7 +3220,7 @@ void gameDamageParty(int minDamage, int maxDamage) {
     screenShake(1);
 
     // Un-highlight the last player
-    if (lastdmged != -1) c->stats->highlightPlayer(lastdmged);
+    c->stats->highlightPlayer(-1);
 }
 
 /**
@@ -3229,6 +3233,7 @@ void gameDamageParty(int minDamage, int maxDamage) {
 bool gameDamageShip(int minDamage, int maxDamage) {
     if (c->transportContext == TRANSPORT_SHIP) {
         soundPlay(SOUND_PARTY_STRUCK);
+        c->stats->flashPlayers(-1);
         screenShake(1);
 
         int damage = ((minDamage >= 0) && (minDamage < maxDamage)) ?

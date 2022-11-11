@@ -81,16 +81,16 @@ void codexStart() {
     if(! codexInit(&codex))
         return;
 
+    // make the avatar alone
+    c->stats->setView(STATS_PARTY_OVERVIEW);
+    c->stats->showAvatarOnly(true);
+
     // disable the whirlpool cursor and black out the screen
 #ifdef IOS
     U4IOS::IOSHideGameControllerHelper hideControllsHelper;
 #endif
     screenHideCursor();
     screenUpdate(&xu4.game->mapArea, false, true);
-
-    // make the avatar alone
-    c->stats->setView(STATS_PARTY_OVERVIEW);
-    c->stats->update(true);
 
     // change the view mode so the dungeon doesn't get shown
     gameSetViewMode(VIEW_CUTSCENE);
@@ -122,6 +122,7 @@ void codexStart() {
 
     codexFree(&codex);
     gameSetViewMode(VIEW_NORMAL);
+    c->stats->showAvatarOnly(false);
 }
 
 /**

@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * stats.h
  */
 
 #ifndef STATS_H
@@ -41,12 +41,13 @@ public:
 
     void setView(StatsView view);
 
-    void clear();
     void prevItem();
     void nextItem();
-    void update(bool avatarOnly = false);
-    void highlightPlayer(int player);
+    void update();
     void redraw();
+    void highlightPlayer(int player);
+    void flashPlayers(int playerMask);
+    void showAvatarOnly(bool enable) { avatarOnly = enable; }
 
     TextView *getMainArea() { return &mainArea; }
 
@@ -55,7 +56,7 @@ public:
 
 private:
     static void statsNotice(int, void*, void*);
-    void showPartyView(bool avatarOnly);
+    void showPartyView();
     void showPlayerDetails();
     void showWeapons();
     void showArmor();
@@ -64,6 +65,7 @@ private:
     void showReagents(bool active = false);
     void showMixtures();
     void setTitle(const char* s);
+    void redrawAura();
 
     TextView title;
     TextView mainArea;
@@ -73,6 +75,12 @@ private:
 
     Menu reagentsMixMenu;
     int listenerId;
+
+    int16_t  focusPlayer;
+    uint16_t redrawMode;
+    uint16_t flashMask;
+    uint16_t flashCycle;
+    bool     avatarOnly;
 };
 
 /**

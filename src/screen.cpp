@@ -19,6 +19,7 @@
 #include "game.h"
 #include "imagemgr.h"
 #include "settings.h"
+#include "stats.h"
 #include "textview.h"
 #include "tileanim.h"
 #include "tileset.h"
@@ -677,12 +678,16 @@ void screenUpdateMap(TileView* view, const Map* map, const Coords& center) {
 #endif
 
 /**
- * Redraw the screen.  If showmap is set, the normal map is drawn in
- * the map area.  If blackout is set, the map area is blacked out. If
- * neither is set, the map area is left untouched.
+ * Redraw the map & stats views.
+ *
+ * If showmap is set, the normal map is drawn in the map area.
+ * If blackout is set, the map area is blacked out.
+ * If neither is set, the map area is left untouched.
  */
 void screenUpdate(TileView *view, bool showmap, bool blackout) {
     ASSERT(c != NULL, "context has not yet been initialized");
+
+    c->stats->redraw();
 
     if (blackout)
     {
