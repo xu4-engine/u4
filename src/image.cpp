@@ -10,6 +10,11 @@
 
 #include "support/image32.c"
 
+union RgbaInt {
+    RGBA col;
+    uint32_t u32;
+};
+
 RGBA Image::black = {0, 0, 0, 255};
 int Image::blending = 0;
 
@@ -55,9 +60,9 @@ RGBA Image::setColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
 }
 
 void Image::putPixel(int x, int y, int r, int g, int b, int a) {
-    RGBA col;
-    rgba_set(col, r, g, b, a);
-    pixels[ y*w + x ] = *((uint32_t*) &col);
+    RgbaInt ri;
+    rgba_set(ri.col, r, g, b, a);
+    pixels[ y*w + x ] = ri.u32;
 }
 
 void Image::makeColorTransparent(const RGBA& bgColor, int haloSize, int shadowOpacity)
@@ -138,18 +143,13 @@ void Image::fill(const RGBA& col) {
  * Fills a rectangle in the image with a given color.
  */
 void Image::fillRect(int x, int y, int rw, int rh, int r, int g, int b, int a) {
-    RGBA col;
-    uint32_t icol;
+    RgbaInt ri;
     uint32_t* dp;
     uint32_t* dend;
     uint32_t* drow = pixels + w * y + x;
     int blitW, blitH;
 
-    col.r = r;
-    col.g = g;
-    col.b = b;
-    col.a = a;
-    icol = *((uint32_t*) &col);
+    rgba_set(ri.col, r, g, b, a);
 
     blitW = rw;
     if ((blitW + x) > int(w))
@@ -167,7 +167,7 @@ void Image::fillRect(int x, int y, int rw, int rh, int r, int g, int b, int a) {
         dp = drow;
         dend = dp + blitW;
         while( dp != dend )
-            *dp++ = icol;
+            *dp++ = ri.u32;
         drow += w;
     }
 }

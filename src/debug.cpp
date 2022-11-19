@@ -212,7 +212,7 @@ void Debug::trace(const string &msg, const string &fn, const string &func, const
 
         if (line > 0) {
             l_line = line;
-            char ln[8];
+            char ln[12];
             sprintf(ln, "%d", line);
             message += "line ";
             message += ln;

@@ -125,12 +125,12 @@ static void list_size(SizeCon* size, TxfDrawState* ds, StringTable* st)
 {
     float fsize[2];
     int rows;
+    const char* longText = "<empty>";
+    int maxLen = 0;
 
     if (st->used) {
         const char* text;
-        const char* longText;
         int len;
-        int maxLen = 0;
 
         for (uint32_t i = 0; i < st->used; ++i) {
             text = sst_stringL(st, i, &len);
@@ -139,10 +139,12 @@ static void list_size(SizeCon* size, TxfDrawState* ds, StringTable* st)
                 longText = text;
             }
         }
-        txf_emSize(ds->tf, (const uint8_t*) longText, maxLen, fsize);
-    } else {
-        txf_emSize(ds->tf, (const uint8_t*) "<empty>", 7, fsize);
     }
+
+    if (! maxLen)
+        maxLen = 7;
+    txf_emSize(ds->tf, (const uint8_t*) longText, maxLen, fsize);
+
     fsize[0] *= ds->psize;
     fsize[1] *= ds->psize;
 
