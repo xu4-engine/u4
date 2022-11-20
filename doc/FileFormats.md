@@ -301,7 +301,7 @@ Offset | Bytes | Purpose
 0x0480 |   32  | Repetition of 0x420-0x43F
 0x04A0 |   32  | Repetition of 0x440-0x45F
 0x04C0 |   32  | Movement_behavior for NPCs 0-31 (0x0=Fixed, 0x1=Wander, 0x80=Follow, 0xFF=Attack)
-0x04E0 |   32  | Conversion index (in corresponding .TLK file) for NPCs 0-31
+0x04E0 |   32  | Conversation index (in corresponding .TLK file) for NPCs 0-31
 
 
 .TLK files
