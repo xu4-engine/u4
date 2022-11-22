@@ -21,6 +21,32 @@
 #endif
 
 
+#ifdef CONF_MODULE
+// Map header written by pack-xu4 (CDI 0xDA7A1FC0).
+struct Xu4MapHeader {
+    uint8_t  idM;           // 'm'
+    uint8_t  idVersion;
+    uint16_t w;             // Total tile width.
+    uint16_t h;             // Total tile height.
+    uint8_t  levels;
+    uint8_t  chunkDim;      // If non-zero then map is chunked.
+    uint16_t flags;         // zero, reserved for future features.
+    uint16_t npcCount;
+    uint32_t npcOffset;
+    // uint8_t grid[w * h];
+    // Xu4MapNpc npc[npcCount];
+};
+
+struct Xu4MapNpc {
+    uint16_t role;
+    uint16_t talkId;
+    uint16_t tile;
+    uint16_t x;
+    uint16_t y;
+    uint16_t movement;
+};
+#endif
+
 #ifdef U5_DAT
 static bool isChunkCompressed(Map *map, int chunk) {
     return map->compressed_chunks[ chunk ] == 255;
@@ -474,6 +500,54 @@ static bool loadDungeonMap(Map *map, U4FILE *uf, FILE *sav) {
     return true;
 }
 
+#ifdef CONF_MODULE
+static bool loadCityXu4(Map* map, U4FILE* uf, size_t npcCount) {
+    if (! loadMapData(map, uf, Tile::sym.grass))
+        return false;
+
+    bool ok = false;
+    const UltimaSaveIds* usaveIds = xu4.config->usaveIds();
+    Xu4MapNpc* npcBuffer = new Xu4MapNpc[npcCount];
+
+    size_t n = u4fread(npcBuffer, sizeof(Xu4MapNpc), npcCount, uf);
+    if (n == npcCount) {
+        City* city = dynamic_cast<City*>(map);
+        const Xu4MapNpc* npc = npcBuffer;
+        for (size_t i = 0; i < npcCount; ++i) {
+            //printf("NPC %ld %d,%d %d\n", i, npc->x, npc->y, npc->role);
+
+            MapTile tile = usaveIds->moduleId(npc->tile);
+            Person* per = new Person(tile);
+            per->prevTile = tile;
+
+            Coords& pos = per->getStart();
+            pos.x = npc->x;
+            pos.y = npc->y;
+            pos.z = 0;
+
+            per->movement = (ObjectMovement) npc->movement;
+
+            per->setDiscourseId(npc->talkId);   // Sets npcType.
+
+            if (npc->role)
+                per->setNpcType((PersonNpcType) npc->role);
+
+            city->persons.push_back(per);
+            ++npc;
+        }
+        ok = true;
+
+        const char* err = discourse_load(&city->disc,
+                                    xu4.config->confString(city->tlk_fname));
+        if (err)
+            errorFatal(err);
+    }
+
+    delete[] npcBuffer;
+    return ok;
+}
+#endif
+
 bool loadMap(Map *map, FILE* sav) {
     U4FILE* uf;
     bool ok = false;
@@ -486,7 +560,25 @@ bool loadMap(Map *map, FILE* sav) {
         const CDIEntry* ent = xu4.config->mapFile(map->id);
         if (ent) {
             uf = u4fopen_stdio(xu4.config->modulePath(ent));
-            u4fseek(uf, ent->offset, SEEK_SET);
+            if (uf) {
+                Xu4MapHeader head;
+
+                u4fseek(uf, ent->offset, SEEK_SET);
+                if (u4fread(&head, 1, sizeof(head), uf) != sizeof(head))
+                    goto done;
+                if (head.idM != 'm' || head.idVersion != 1)
+                    goto done;
+
+                map->width  = head.w;
+                map->height = head.h;
+                map->chunk_width  =
+                map->chunk_height = head.chunkDim;
+
+                if (map->type == Map::CITY) {
+                    ok = loadCityXu4(map, uf, head.npcCount);
+                    goto done;
+                }
+            }
         } else
             uf = NULL;
     }
@@ -513,6 +605,9 @@ bool loadMap(Map *map, FILE* sav) {
                 ok = loadMapData(map, uf, SYM_UNSET);
                 break;
         }
+#ifdef CONF_MODULE
+done:
+#endif
         u4fclose(uf);
     }
     return ok;

@@ -73,6 +73,24 @@ make-constraint: func [spec] [
 	usable
 ]
 
+; Roles used in city blocks starting with NPC_TALKER_COMPANION
+npc-roles: [
+	companion	weaponsvendor	armorvendor
+	foodvendor	tavernkeeper	reagentsvendor
+	healer		innkeeper		guildvendor
+	horsevendor	lordbritish		hawkwind
+]
+
+; Roles used in TMX files that match PersonNpcType
+npc-roles2: [
+	none
+	talk		talk-beggar		talk-guard
+	companion	weapons			armor
+	food		tavern			reagents
+	healer		inn				guild
+	stable		lordbritish		hawkwind
+]
+
 weapon-flags: swap [
 	0x01 lose
 	0x02 losewhenranged
@@ -110,15 +128,74 @@ attribute-flags: func [blk spec] [
 ]
 
 none-zero: func [v] [either v v 0]
-none-neg1: func [v] [either v v -1]
+alternate: func [v a] [either v v a]
 
 ;---------------------------------------
 ; TMX Map
 
 tmx-fatal: func [file msg] [fatal data ["TMX" file '-' msg]]
 
-load-tmx: func [file /extern width height data /local it] [
+; Convert <object> x & y pixel position to tile coord!.
+tmx-position: func [x y] [
+	x: to-int x
+	y: to-int y
+	div to-coord [x y] 16
+]
+
+object-parse: func [xml attr /local it] [
+	blk: make block! 40
+	; TMX 1.9 changed "type" to "class".
+	parse construct xml ['=' ':'  "/>" '>'  "class=" "type:"] [some[
+		thru "<object " tok: to '>' :tok (
+			tok: to-block tok
+			foreach it attr [
+				append blk select tok it
+			]
+		)
+	]]
+	blk
+]
+
+; Convert TMX <object> to Boron #[role talk_id tile x y movement] values.
+; The type attribute contains a movement char. & talk_id (e.g. "W 12")
+tmx-npcs: func [object-tags /local gid x y name type] [
+	ifn object-tags [return none]
+	data: clear u16#[]
+	attr: object-parse object-tags [gid x y name type]
+	foreach [gid x y name type] attr [
+		role: 0
+		case [
+			none? name []
+			find name "role/" [
+				role: enum-value npc-roles2 to-word skip name 5
+			]
+			find name "companion/" [role: 4]
+		]
+		talk_id: sub to-int skip type 2 1
+		pos: tmx-position x y
+
+		append data role
+		appair data talk_id sub to-int gid 1
+		appair data first pos sub second pos 1
+		append data enum-value "SWFA" first type	; ObjectMovement
+	]
+	data
+]
+
+; Convert TMX <object name="" x="" y=""> to Boron (name x,y) values.
+tmx-labels: func [object-tags /local name] [
+	ifn object-tags [return none]
+	blk: make block! 16
+	attr: object-parse object-tags [name x y]
+	foreach [name x y] attr [
+		appair blk mark-sol to-word name tmx-position x y
+	]
+	blk
+]
+
+load-tmx: func [file /extern width height data npcs map-labels /local it] [
 	w: csv: none
+	npcs-obj: labels-obj: none
 
 	; See https://doc.mapeditor.org/en/stable/reference/tmx-map-format/
 	parse read/text file [
@@ -130,6 +207,15 @@ load-tmx: func [file /extern width height data /local it] [
 			h: to-int h
 			enc: slice enc 3
 		)
+		any [
+			thru "<objectgroup " thru {name="} group-name: to '"' :group-name
+			objects: thru "</objectgroup>" :objects (
+				switch group-name [
+					"npcs"   [npcs-obj: objects]
+					"labels" [labels-obj: objects]
+				]
+			)
+		]
 	]
 
 	case [
@@ -140,11 +226,14 @@ load-tmx: func [file /extern width height data /local it] [
 		not zero? and h 31 [tmx-fatal file "height is not a multiple of 32"]
 	]
 
+	map-labels: tmx-labels labels-obj
+
 	context [
 		width: w
 		height: h
 		data: to-block construct csv [',' ' ']
 		map it data [sub it 1]		; Convert indices to zero base.
+		npcs: tmx-npcs npcs-obj
 	]
 ]
 
@@ -263,13 +352,37 @@ pack-png: func [path filename] [
 pack-tmx: func [id filename chunk-dim] [
 	poke-id tmx_id id
 
-	tmx: load-tmx filename
-	data: tmx/data
-	if chunk-dim [
-		data: map-chunks tmx/width tmx/height data chunk-dim
-	]
-	cdi-chunk 0x1FC0 tmx_id data
+	tmx: load-tmx join root-path filename
+	do bind [
+		map-grid: either chunk-dim [
+			map-chunks width height data chunk-dim
+		][
+			chunk-dim: 0
+			append make binary! size? data data
+		]
 
+		either npcs [
+			npc-count: div size? npcs 6
+			npc-offset: size? map-grid
+			npc-data: to-binary npcs
+		][
+			npc-count:
+			npc-offset: 0
+			npc-data: #{}
+		]
+
+		m1-data: construct binary! [
+			u8  0x6D 0x01
+			u16 width height
+			u8  1 chunk-dim
+			u16 0 npc-count
+			u32 npc-offset
+			map-grid
+			npc-data
+		]
+	] tmx
+
+	cdi-chunk 0x1FC0 tmx_id m1-data
 	tmx_id
 ]
 
@@ -465,8 +578,7 @@ pack-talk: func [filename /local it] [
 		meld-strings spec: load join root-path filename
 		tblk: make block! mul size? spec 5
 		foreach it spec [
-			do bind it npc-talk
-			append tblk mark-sol values-of npc-talk
+			append tblk mark-sol values-of make npc-talk it
 		]
 		if ge? verbose 2 [
 			print [filename '>' to-binary npc_id]
@@ -748,9 +860,9 @@ process-cfg [
 
 		appair blk mark-sol name fname
 		appair blk to-coord reduce [
-			none-neg1 at/width
-			none-neg1 at/height
-			none-neg1 at/depth
+			alternate at/width  -1
+			alternate at/height -1
+			alternate at/depth  -1
 		] to-coord reduce [
 			enum-value [
 				none png u4raw u4rle u4lzw
@@ -896,10 +1008,15 @@ process-cfg [
 
 	process-blk maps [
 		'map set at paren! (
+			map-labels: none
+			clear map-portals
+			map-moongates: none
+			map-roles: none
+
 			fname: at/fname
 			chunk-dim: at/chunk-dim
 			either eq? ".tmx" file-ext fname [
-				copy pack-tmx at/id fname chunk-dim
+				pack-tmx at/id fname chunk-dim	; Sets map-labels
 				fname: none
 			][
 				fname: to-file fname
@@ -909,9 +1026,9 @@ process-cfg [
 				at/id
 				enum-value [world city shrine combat dungeon] at/type
 				enum-value [wrap exit fixed] at/borderbehavior
-				at/width
-				at/height
-				at/levels
+				none-zero at/width
+				none-zero at/height
+				alternate at/levels 1
 			]
 			append blk to-coord reduce [
 				none-zero chunk-dim
@@ -922,11 +1039,6 @@ process-cfg [
 				]
 				none-zero at/music
 			]
-
-			map-labels: none
-			clear map-portals
-			map-moongates: none
-			map-roles: none
 		)
 	  | into [some[
 			'portals into [any [
@@ -950,12 +1062,7 @@ process-cfg [
 					dest: make block! 0
 					foreach [role id] map-roles [
 						append dest to-coord reduce [
-							enum-value [
-								companion	weaponsvendor	armorvendor
-								foodvendor	tavernkeeper	reagentsvendor
-								healer		innkeeper		guildvendor
-								horsevendor	lordbritish		hawkwind
-							] role
+							enum-value npc-roles role
 							id
 						]
 					]

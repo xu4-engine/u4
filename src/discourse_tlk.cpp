@@ -400,19 +400,25 @@ struct BoronDialogue {
     TalkState state;
     UThread* ut;
     const UCell* values;
+    const UCell* askCell;
     UBlockIt topics;
 };
+
+static inline bool wordQuestionHumility(UThread* ut, const UCell* cell)
+{
+    return strcmp(ur_wordCStr(cell), "ask-humility") == 0;
+}
 
 static const char* dialogueBoron(TalkState* ts, int value, const char* input)
 {
     BoronDialogue* bd = (BoronDialogue*) ts;
     UThread* ut = bd->ut;
     USeriesIter si;
-    const UCell* cell;
+    UIndex n;
 
-    if (input) {
-        const UCell* end = bd->topics.end;
-        UIndex n;
+    if (value == DS_KEYWORD) {
+        const UCell* cell = bd->topics.it;
+        const UCell* end  = bd->topics.end;
 
         while (cell != end) {
             if (ur_is(cell, UT_STRING)) {
@@ -420,36 +426,82 @@ static const char* dialogueBoron(TalkState* ts, int value, const char* input)
                 n = si.end - si.it;
                 if (strncasecmp(si.buf->ptr.c + si.it, input, n) == 0) {
                     ur_seriesSlice(ut, &si, ++cell);
-                    return si.buf->ptr.c + si.it;
+
+                    // Queue up any following question.
+                    ++cell;
+                    if (cell != end && ur_is(cell, UT_WORD)) {
+                        bd->askCell = cell;
+                        ts->nextOp = OP_PAUSE_ASK;
+                    }
+                    goto reply;
                 }
                 cell += 2;
             } else if (ur_is(cell, UT_WORD)) {
+                // Skip (ask "Question?" ["Yes reply" "No reply"])
                 cell += 3;
             }
         }
         return NULL;
-    } else {
-        cell = bd->values + value;
-        ur_seriesSlice(ut, &si, cell);
-        //assert(si.buf->form != UR_ENC_UCS2);
-        return si.buf->ptr.c + si.it;
     }
+
+    switch (value) {
+        case DS_QUESTION:
+            if (! bd->askCell)
+                return NULL;
+            ur_seriesSlice(ut, &si, bd->askCell + 1);
+            break;
+        case DS_ANSWER_Y:
+            n = 0;
+            goto answer;
+        case DS_ANSWER_N:
+            n = 1;
+answer:
+            if (! bd->askCell)
+                return NULL;
+            if (wordQuestionHumility(ut, bd->askCell))
+                c->party->adjustKarma(n ? KA_HUMBLE : KA_BRAGGED);
+            {
+            const UBuffer* blk = ur_bufferSer(bd->askCell + 2);
+            ur_seriesSlice(ut, &si, blk->ptr.cell + n);
+            }
+            bd->askCell = NULL;
+            break;
+        default:
+            ur_seriesSlice(ut, &si, bd->values + value);
+            break;
+    }
+
+reply:
+    //assert(si.buf->form != UR_ENC_UCS2);
+    return si.buf->ptr.c + si.it;
 }
 
-void talkRunBoron(const Discourse* disc, int conv, Person* person)
+void talkRunBoron(int32_t discBlkN, int conv, Person* person)
 {
     BoronDialogue bd;
     UThread* ut = xu4.config->boronThread();
-    const UBuffer* blk = ur_buffer(disc->conv.id);
+    const UBuffer* blk = ur_buffer(discBlkN);
 
     bd.ut = ut;
     bd.values = blk->ptr.cell + conv * DI_COUNT;
-    ur_blockIt(bd.ut, &bd.topics, blk->ptr.cell + DI_TOPICS);
+    bd.askCell = NULL;
+    ur_blockIt(ut, &bd.topics, bd.values + DI_TOPICS);
 
     bd.state.person = person;
     bd.state.turnAway = (int) ur_int(bd.values + DI_TURN_AWAY);
     bd.state.nextOp = OP_NOP;
 
     runTalkDialogue(dialogueBoron, &bd.state);
+}
+
+const char* talkNameBoron(int32_t discBlkN, int conv)
+{
+    UThread* ut = xu4.config->boronThread();
+    const UBuffer* blk = ur_buffer(discBlkN);
+    const UCell* values = blk->ptr.cell + conv * DI_COUNT;
+
+    USeriesIter si;
+    ur_seriesSlice(ut, &si, values + DI_NAME);
+    return si.buf->ptr.c + si.it;
 }
 #endif

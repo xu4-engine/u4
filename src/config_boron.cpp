@@ -182,6 +182,7 @@ const UBuffer* ConfigBoron::blockBuffer(int value, uint32_t n, int dataType) con
 #define STRING_NONE (UT_BI_COUNT + UT_STRING)
 #define FILE_NONE   (UT_BI_COUNT + UT_FILE)
 #define BLOCK_NONE  (UT_BI_COUNT + UT_BLOCK)
+#define STRING_FILE (0x80 + UT_STRING)
 
 static bool validParam(const UBlockIt& bi, int count, const uint8_t* dtype)
 {
@@ -195,8 +196,13 @@ static bool validParam(const UBlockIt& bi, int count, const uint8_t* dtype)
         req  = dtype[i];
 
         if (req > UT_BI_COUNT) {
-            if (type == UT_NONE || type == (req - UT_BI_COUNT))
-                continue;
+            if (req == STRING_FILE) {
+                if (type == UT_STRING || type == UT_FILE)
+                    continue;
+            } else {
+                if (type == UT_NONE || type == (req - UT_BI_COUNT))
+                    continue;
+            }
             return false;
         }
         if (type != req)
@@ -409,7 +415,7 @@ static void conf_initCity(ConfigBoron* cfg, City* city, UBlockIt& bi)
 {
     static const uint8_t cityParam[4] = {
         // name  type  tlk_fname  roles
-        UT_STRING, UT_WORD, UT_FILE, BLOCK_NONE
+        UT_STRING, UT_WORD, STRING_FILE, BLOCK_NONE
     };
     if (! validParam(bi, sizeof(cityParam), cityParam))
         errorFatal("Invalid city parameters");
@@ -1459,8 +1465,8 @@ Map* Config::map(uint32_t id) {
     /* if the map hasn't been loaded yet, load it! */
     if (! rmap->data) {
         if (! loadMap(rmap, NULL))
-            errorFatal("loadMap failed to read \"%s\" (type %d)",
-                       confString(rmap->fname), rmap->type);
+            errorFatal("loadMap failed to read map #%d (type %d)",
+                       rmap->id, rmap->type);
     }
     return rmap;
 }
