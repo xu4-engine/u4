@@ -821,10 +821,6 @@ void gpu_drawTris(void* res, int list)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glBlendEquation(GL_FUNC_ADD);
 
-#ifdef GPU_RENDER
-    if (list > GLOB_GUI_LIST1)
-        glUniformMatrix4fv(gr->worldTrans, 1, GL_FALSE, m4_identity);
-#endif
     glBindVertexArray(gr->vao[ dl->buf ]);
     glDrawArrays(GL_TRIANGLES, 0, dl->count / ATTR_COUNT);
 }
@@ -1419,6 +1415,9 @@ void gpu_drawMap(void* res, const TileView* view, const float* tileUVs,
         }
     }
 
+    matrix[kX] = matrix[kY] = 0.0f;
+    glUniformMatrix4fv(gr->worldTrans, 1, GL_FALSE, matrix);
+
     if (fxUsed) {
         const int MAPFX_LIST = GLOB_MAPFX_LIST0 / 2;
         float rect[4];
@@ -1437,20 +1436,20 @@ void gpu_drawMap(void* res, const TileView* view, const float* tileUVs,
                     if (anim_valueI(MAP_ANIMATOR, it->anim))
                         continue;
 
-                    rect[0] = scale  * (xoff + it->x);
-                    rect[1] = scaleY * (yoff + it->y);
-                    rect[2] = scale  * it->w;
-                    rect[3] = scaleY * it->h;
+                    rect[0] = xoff + it->x;
+                    rect[1] = yoff + it->y;
+                    rect[2] = it->w;
+                    rect[3] = it->h;
 
                     //printf("KR fx %f,%f %f,%f\n", it->x, it->y, it->w, it->h);
                     fxAttr = gpu_emitQuad(fxAttr, rect, &it->u);
 #else
                     // NOTE: Width is doubled to allow flags to change
                     // direction in the shader.
-                    rect[0] = scale  * (xoff + it->x - it->w);
-                    rect[1] = scaleY * (yoff + it->y);
-                    rect[2] = scale  * it->w * 2.0f;
-                    rect[3] = scaleY * it->h;
+                    rect[0] = xoff + it->x - it->w;
+                    rect[1] = yoff + it->y;
+                    rect[2] = it->w * 2.0f;
+                    rect[3] = it->h;
 
                     fxAttr = gpu_emitQuadFlag(fxAttr, rect);
 #endif

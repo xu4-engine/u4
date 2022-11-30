@@ -599,16 +599,14 @@ struct SpriteRenderData {
     int cx, cy;
 };
 
-#define VIEW_TILE_SIZE  (2.0f / VIEWPORT_W)     //1.0f
-
 static void emitSprite(const Coords* loc, VisualId vid, void* user) {
     SpriteRenderData* rd = (SpriteRenderData*) user;
     float* rect = rd->rect;
-    const float halfTile = VIEW_TILE_SIZE * -0.5f;
     int uvIndex = VID_INDEX(vid);
 
-    rect[0] = halfTile + (float) (loc->x - rd->cx) * VIEW_TILE_SIZE;
-    rect[1] = halfTile + (float) (rd->cy - loc->y) * VIEW_TILE_SIZE;
+    // Make a quad with the view center as the origin.
+    rect[0] = (float) (loc->x - rd->cx) - 0.5f;
+    rect[1] = (float) (rd->cy - loc->y) - 0.5f;
     rd->attr = gpu_emitQuad(rd->attr, rect, rd->uvTable + uvIndex*4);
 #if 0
     printf("KR emitSprite %d,%d vid:%d:%d\n",
@@ -656,6 +654,7 @@ void screenUpdateMap(TileView* view, const Map* map, const Coords& center) {
     {
     SpriteRenderData rd;
     const Object* focusObj;
+    const float VIEW_TILE_SIZE = 1.0f;
 
     rd.uvTable = sp->textureInfo->tileTexCoord;
     rd.rect[2] = rd.rect[3] = VIEW_TILE_SIZE;
@@ -820,6 +819,8 @@ void screenRender() {
 
         if (view->scissor)
             gpu_setScissor(NULL);
+
+        gpu_viewport(ss->aspectX, offsetY, ss->aspectW, ss->aspectH);
     }
 #endif
 

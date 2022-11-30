@@ -290,28 +290,23 @@ void TileView::removeEffect(int id) {
     }
 }
 
-#define VIEW_TILE_SIZE  1.0f
-
 /*
  * \param cx        View center X.
  * \param cy        View center Y.
  * \param uvTable   Texture coordinate min & max indexed by VisualId.
  */
 void TileView::updateEffects(float cx, float cy, const float* uvTable) {
-    const float halfTile = VIEW_TILE_SIZE * -0.5f;
-
     if (effectCount) {
+        const float VIEW_TILE_SIZE = 1.0f;
         const Animator* fxAnim = &xu4.eventHandler->fxAnim;
         float* animPos;
         float* attr = gpu_beginTris(xu4.gpu, GPU_DLIST_VIEW_FX);
         float rect[4];
-        float scaleY = scale * aspect;
         int uvIndex;
         VisualEffect* it = effect;
         VisualEffect* end = it + effectCount;
 
-        rect[2] = scale  * VIEW_TILE_SIZE;
-        rect[3] = scaleY * VIEW_TILE_SIZE;
+        rect[2] = rect[3] = VIEW_TILE_SIZE;
 
         for (; it != end; ++it) {
             switch (it->method) {
@@ -330,8 +325,8 @@ void TileView::updateEffects(float cx, float cy, const float* uvTable) {
                     uvIndex = VID_INDEX(it->vid);
 draw:
                     // Similar to emitSprite() in screen.cpp.
-                    rect[0] = scale  * (halfTile + (it->pos[0] - cx));
-                    rect[1] = scaleY * (halfTile + (cy - it->pos[1]));
+                    rect[0] = (it->pos[0] - cx) - 0.5f;
+                    rect[1] = (cy - it->pos[1]) - 0.5f;
                     attr = gpu_emitQuad(attr, rect, uvTable + uvIndex*4);
                     break;
             }
