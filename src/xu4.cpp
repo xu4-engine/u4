@@ -32,7 +32,7 @@ extern "C" const char* androidInternalData();
 #include "macosx/osxinit.h"
 #endif
 
-#if defined(_WIN32) && defined(DEBUG)
+#ifdef _WIN32
 #include "win32console.c"
 #endif
 
@@ -358,7 +358,7 @@ int main(int argc, char *argv[]) {
 #if defined(MACOSX)
     osxInit(argv[0]);
 #endif
-#if defined(_WIN32) && defined(DEBUG)
+#ifdef _WIN32
     redirectIOToConsole();
 #endif
     //printf("sizeof(Tile) %ld\n", sizeof(Tile));
