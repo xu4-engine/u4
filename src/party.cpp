@@ -11,6 +11,7 @@
 #include "debug.h"
 #include "mapmgr.h"
 #include "sound.h"
+#include "stats.h"
 #include "tileset.h"
 #include "utils.h"
 #include "weapon.h"
@@ -792,13 +793,15 @@ bool Party::donate(int quantity) {
 void Party::endTurn() {
     Location* loc = c->location;
     int i;
+    int nonCombat = (loc->context & CTX_NON_COMBAT) == loc->context;
+    int poisonedMask = 0;
 
     saveGame->moves++;
 
     for (i = 0; i < size(); i++) {
 
         /* Handle player status (only for non-combat turns) */
-        if ((loc->context & CTX_NON_COMBAT) == loc->context) {
+        if (nonCombat) {
 
             /* party members eat food (also non-combat) */
             if (!members[i]->isDead())
@@ -811,14 +814,8 @@ void Party::endTurn() {
                 break;
 
             case STAT_POISONED:
-                /* SOLUS
-                 * shouldn't play poison damage sound in combat,
-                 * yet if the PC takes damage just befor combat
-                 * begins, the sound is played  after the combat
-                 * screen appears
-                 */
-                soundPlay(SOUND_POISON_DAMAGE, false);
-                members[i]->applyDamage(loc->map, 2);
+                if (members[i]->applyDamage(loc->map, 2))
+                    poisonedMask |= 1 << i;
                 break;
 
             default:
@@ -831,8 +828,23 @@ void Party::endTurn() {
             saveGame->players[i].mp++;
     }
 
+    /* FIXME: Starving uses a game message while poisoning does not.
+     * They should be handled in a similar manner.
+     */
+
+    if (poisonedMask) {
+        /* NOTE: In the DOS version the poisoned sound & status flash occurs
+         * for each PC separately.  Xu4 combines them.
+         *
+         * If the poison damage occurs just before combat begins, these
+         * effects may be observed after the combat screen appears.
+         */
+        soundPlay(SOUND_POISON_DAMAGE);
+        c->stats->flashPlayers(poisonedMask);
+    }
+
     /* The party is starving! */
-    if ((saveGame->food == 0) && ((loc->context & CTX_NON_COMBAT) == loc->context)) {
+    if ((saveGame->food == 0) && nonCombat) {
         PartyEvent event(PartyEvent::STARVING, 0);
         gs_emitMessage(SENDER_PARTY, &event);
     }

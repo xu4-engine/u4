@@ -234,7 +234,8 @@ void StatsArea::highlightPlayer(int player) {
 
 void StatsArea::flashPlayers(int playerMask) {
     if (view == STATS_PARTY_OVERVIEW) {
-        flashMask  = playerMask;
+        // Using OR operator to handle multiple flashPlayers calls per frame.
+        flashMask |= playerMask;
         flashCycle = 3;
         redrawMode |= REDRAW_ALL;
     }
