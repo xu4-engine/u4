@@ -27,7 +27,7 @@ The following libraries are required:
 
  - Allegro 5.2.7 (or later)
  - Boron 2.0.8
- - Faun 0.1.1
+ - Faun 0.1.2
     - Vorbis
  - PNG
 
@@ -59,7 +59,7 @@ properly configure it for xu4, build `libboron.a`, and install it:
     sudo make -C dist/boron DESTDIR=/usr install-dev
 
 Faun SDKs can be downloaded from the
-[Faun Downloads](https://wickedsmoke.github.io/faun/md_download.html) page.
+[Faun Releases](https://github.com/WickedSmoke/faun/releases) page.
 
 
 ### configure
