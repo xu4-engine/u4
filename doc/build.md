@@ -23,13 +23,15 @@ Developer Builds
 
 ### Dependencies
 
-The following libraries are required:
+The following libraries are required for all targets:
 
- - Allegro 5.2.7 (or later)
  - Boron 2.0.8
  - Faun 0.1.2
     - Vorbis
  - PNG
+
+Allegro 5.2.7 (or later) is also required for Windows.  This is optional
+for Linux, which uses the src/glv Git submodule by default.
 
 Linux distributions will provide the Allegro, Vorbis, & PNG libraries.
 Below are example install commands for a few flavors of Linux.
@@ -47,7 +49,7 @@ The Boron interpreter program is needed to build game modules.
 The static binaries can be downloaded from the
 [Boron homepage](http://urlan.sourceforge.net/boron/).
 
-The Boron library can be built from
+There are three ways the Boron library can be obtained.  It can be built from
 [source](https://sourceforge.net/p/urlan/boron/code/ci/master/tree/)
 or a pre-built SDK can be downloaded from the
 [xu4 download](http://xu4.sourceforge.net/download.php#devel) page.
@@ -58,8 +60,9 @@ properly configure it for xu4, build `libboron.a`, and install it:
     make -C dist/boron libboron.a
     sudo make -C dist/boron DESTDIR=/usr install-dev
 
-Faun SDKs can be downloaded from the
-[Faun Releases](https://github.com/WickedSmoke/faun/releases) page.
+Faun SDKs and source can be downloaded from the
+[Faun Releases](https://github.com/WickedSmoke/faun/releases) page.  The
+source is also available via the src/faun Git submodule.
 
 
 ### configure
@@ -78,12 +81,11 @@ The following commands should get you running:
 
     ./configure
     make download
-    make mod
     make
     src/xu4
 
-This downloads the original game archives, packs the game modules, builds the
-binary, and then runs the program.
+This downloads the original game archives, builds the binary, packs the game
+modules, and then runs the program.
 
 ### Copr
 
