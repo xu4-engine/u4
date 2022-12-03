@@ -61,10 +61,6 @@
 #define DEFAULT_SHADOW_PIXEL_OPACITY    64
 #define DEFAULT_SHADOW_PIXEL_SIZE       2
 
-// videoType
-#define GFX_EGA     0
-#define GFX_VGA     1
-
 enum BattleDifficulty {
     BattleDiff_Normal,
     BattleDiff_Hard,
@@ -161,7 +157,6 @@ public:
     const std::string &getUserPath() const { return userPath; }
 
     std::string profile;
-    uint8_t videoType;      // Hidden from user in v1.1 (now auto assigned)
 
 private:
     bool read();

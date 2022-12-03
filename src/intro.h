@@ -295,6 +295,7 @@ private:
     int  listenerId;
     int  introMusic;
     bool bSkipTitles;
+    bool egaGraphics;
 };
 
 #endif

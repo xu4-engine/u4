@@ -158,7 +158,7 @@ void DungeonView::drawInDungeon(const MapTile& mt, int x_offset, int distance, D
     const int * nscale;
     int offset_multiplier = 0;
     int offset_adj = 0;
-    if (xu4.settings->videoType != GFX_EGA)
+    if (! egaGraphics)
     {
         lscale = & lscale_vga[0];
         nscale = & nscale_vga[0];
@@ -451,6 +451,8 @@ void DungeonView::cacheGraphicData() {
         name = xu4.config->intern(dngGraphicInfo[i].imageName);
         graphic[i].info = xu4.imageMgr->imageInfo(name, &graphic[i].sub);
     }
+
+    egaGraphics = (graphic[1].info->fixup == FIXUP_DUNGNS);
 }
 
 static void drawGraphic(const ImageInfo* info, const SubImage* subimage,
@@ -491,7 +493,7 @@ void DungeonView::drawWall(int index) {
     // FIXME: subimage2 is a horrible hack, needs to be cleaned up
     i2 = dngGraphicInfo[index].subimage2;
     if (i2) {
-        if (xu4.settings->videoType == GFX_EGA) {
+        if (egaGraphics) {
             x = dngGraphicInfo[index].ega_x2;
             y = dngGraphicInfo[index].ega_y2;
         } else {

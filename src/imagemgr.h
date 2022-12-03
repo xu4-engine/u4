@@ -202,6 +202,7 @@ public:
 
     const RGBA* vgaPalette();
     const RGBA* greyPalette();
+    bool usingVGA() const { return vgaGraphics; }
 
 private:
     static void notice(int, void*, void*);
@@ -221,6 +222,7 @@ private:
     RGBA* greyColors;
     uint8_t* visionBuf;
     uint16_t resGroup;
+    bool vgaGraphics;
 };
 
 #endif /* IMAGEMGR_H */

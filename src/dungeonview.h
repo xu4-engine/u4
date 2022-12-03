@@ -59,6 +59,7 @@ private:
     int      spotTrapRange;
     uint32_t spotTrapTime;
     bool screen3dDungeonViewEnabled;
+    bool egaGraphics;
     GraphicData graphic[84];
 };
 

@@ -178,7 +178,8 @@ IntroController::IntroController() :
     binData(NULL),
     titles(),                   // element list
     title(titles.begin()),      // element iterator
-    bSkipTitles(false)
+    bSkipTitles(false),
+    egaGraphics(true)
 {
     // initialize menus
     confMenu.setTitle("XU4 Configuration:", 0, 0);
@@ -691,7 +692,7 @@ void IntroController::animateTree(Symbol frame) {
         return;
 
     // Hack to account for different tree images.
-    if (xu4.settings->videoType == GFX_EGA) {
+    if (egaGraphics) {
         x = 72;
         ytop = 68;
     } else {
@@ -751,14 +752,14 @@ void IntroController::drawCard(int pos, int card, const uint8_t* origin) {
 void IntroController::drawAbacusBeads(int row, int selectedVirtue, int rejectedVirtue) {
     static const uint8_t positionTable[8] = {
         128, 9, 24, 15,     // EGA
-        128, 8, 18, 16,     // VGA
+        128, 8, 18, 16,     // Utne
     };
     ASSERT(row >= 0 && row < 7, "invalid row: %d", row);
     ASSERT(selectedVirtue < 8 && selectedVirtue >= 0, "invalid virtue: %d", selectedVirtue);
     ASSERT(rejectedVirtue < 8 && rejectedVirtue >= 0, "invalid virtue: %d", rejectedVirtue);
 
     const uint8_t* pos = positionTable;
-    if (xu4.settings->videoType == GFX_VGA)
+    if (! egaGraphics)
         pos += 4;
     int y = pos[2] + (row * pos[3]);
     backgroundArea.draw(IMG_WHITEBEAD, pos[0] + (selectedVirtue * pos[1]), y);
@@ -887,6 +888,9 @@ void IntroController::finishInitiateGame(const string &nameBuffer, SexType sex)
 
     {
     uint16_t saveGroup = xu4.imageMgr->setResourceGroup(StageIntro);
+
+    ImageInfo* tree = xu4.imageMgr->get(BKGD_TREE);
+    egaGraphics = tree && (tree->getFilename().compare(0, 3, "u4/") == 0);
 
     // show the lead up story
     showStory();
@@ -1019,10 +1023,10 @@ void IntroController::showStory() {
 void IntroController::startQuestions() {
     static uint8_t originTable[6] = {
         12, 12, 218,    // EGA
-        22, 16, 218,    // VGA
+        22, 16, 218,    // Utne
     };
     uint8_t* origin = originTable;
-    if (xu4.settings->videoType == GFX_VGA)
+    if (! egaGraphics)
         origin += 3;
 
     questionRound = 0;
@@ -1791,7 +1795,7 @@ void IntroController::getTitleSourceData()
                     x = srcData[titles[i].animStepMax] - 0x4C;
                     y = 0xC0 - srcData[titles[i].animStepMax+1];
 
-                    if (xu4.settings->videoType != GFX_EGA)
+                    if (xu4.imageMgr->usingVGA())
                     {
                         // yellow gradient
                         color = info->image->setColor(255, (y == 2 ? 250 : 255), blue[y-1]);
