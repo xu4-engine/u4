@@ -3,18 +3,21 @@
 if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
   echo "Configuration Options:"
   echo "  -h, --help        Display this help and exit"
+  echo "  --allegro         Use Allegro 5 as the platform API"
 # echo "  --sdl             Use SDL 1.2 as the platform API"
   echo "  --gpu             Use GPU for rendering (experimental)"
   echo "  --prefix <dir>    Set install directory root"
   exit
 fi
 
-PLATFORM=allegro
+PLATFORM=glv
 PREFIX=/usr/local
 GPU=scale
 
 while [ "$1" != "" ]; do
   case $1 in
+    --allegro)
+      PLATFORM=allegro ;;
 #   --sdl)
 #     PLATFORM=sdl ;;
     --gpu)

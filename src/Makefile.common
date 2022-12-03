@@ -31,7 +31,6 @@ CXXSRCS=\
         dungeonview.cpp \
         error.cpp \
         event.cpp \
-        event_$(UI).cpp \
         filesystem.cpp \
         game.cpp \
         gamebrowser.cpp \
@@ -75,6 +74,12 @@ CXXSRCS=\
         lzw/u6decode.cpp \
         $(NULL)
 
+ifeq ($(UI),glv)
+	CSRCS+=$(GLV_SRC)
+else
+	CXXSRCS+=event_$(UI).cpp
+endif
+
 #ifeq ($(CONF),boron)
 	CSRCS+=module.c support/cdi.c
 	CXXSRCS+=config_boron.cpp
@@ -85,6 +90,11 @@ OBJS += $(CSRCS:.c=.o) $(CXXSRCS:.cpp=.o)
 all:: $(MAIN) mkutils
 
 mkutils::  coord$(EXEEXT) dumpmap$(EXEEXT) dumpsavegame$(EXEEXT) tlkconv$(EXEEXT) u4dec$(EXEEXT) u4enc$(EXEEXT) u4unpackexe$(EXEEXT)
+
+ifeq ($(UI),glv)
+$(GLV_SRC):
+	git submodule init glv; git submodule update
+endif
 
 $(MAIN): $(OBJS)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ $(OBJS) $(LIBS)
