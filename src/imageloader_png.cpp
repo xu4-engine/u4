@@ -19,6 +19,8 @@ static void png_read_xu4(png_structp png_ptr, png_bytep data, png_size_t length)
  * Loads in the PNG with the libpng library.
  */
 Image* loadImage_png(U4FILE *file) {
+    Image* image = NULL;
+    unsigned char* raw = NULL;
     char header[8];
     png_uint_32 width, height;
     int bit_depth, color_type, interlace_type, compression_type, filter_method;
@@ -55,59 +57,71 @@ Image* loadImage_png(U4FILE *file) {
 
     png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type, &interlace_type, &compression_type, &filter_method);
 
-    if (color_type == PNG_COLOR_TYPE_PALETTE)
-        bpp = bit_depth;
-    else if (color_type == PNG_COLOR_TYPE_RGB)
-        bpp = bit_depth * 3;
-    else if (color_type == PNG_COLOR_TYPE_RGB_ALPHA)
-        bpp = bit_depth * 4;
+    switch (color_type) {
+        case PNG_COLOR_TYPE_GRAY:
+        case PNG_COLOR_TYPE_PALETTE:
+            bpp = bit_depth;
+            break;
+        case PNG_COLOR_TYPE_RGB:
+            bpp = bit_depth * 3;
+            break;
+        case PNG_COLOR_TYPE_RGB_ALPHA:
+            bpp = bit_depth * 4;
+            break;
+        default:
+            goto cleanup;
+    }
 
-    png_byte **row_pointers = png_get_rows(png_ptr, info_ptr);
+    raw = new unsigned char[width * height * bpp / 8];
 
-    unsigned char *raw = new unsigned char[width * height * bpp / 8];
-
+    {
     unsigned char *p = raw;
+    png_byte **row_pointers = png_get_rows(png_ptr, info_ptr);
     for (unsigned int i = 0; i < height; i++) {
         for (unsigned int j = 0; j < width * bpp / 8; j++) {
             *p++ = row_pointers[i][j];
         }
     }
-
-    Image *image = Image::create(width, height);
-    if (!image) {
-        delete [] raw;
-        png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
-        return NULL;
     }
 
-    RGBA *palette = NULL;
-    if (bpp == 4 || bpp == 8 || bpp == 1) {
-        int num_pngpalette;
-        png_colorp pngpalette;
-        png_get_PLTE(png_ptr, info_ptr, &pngpalette, &num_pngpalette);
-        palette = new RGBA[num_pngpalette];
-        for (int c = 0; c < num_pngpalette; c++) {
-            palette[c].r = pngpalette[c].red;
-            palette[c].g = pngpalette[c].green;
-            palette[c].b = pngpalette[c].blue;
-            palette[c].a = IM_OPAQUE;
+    image = Image::create(width, height);
+    if (! image)
+        goto cleanup;
+
+    if (color_type == PNG_COLOR_TYPE_GRAY) {
+        setFromRawData(image, width, height, bpp, raw,
+                       xu4.imageMgr->greyPalette());
+    } else {
+        RGBA *palette = NULL;
+        if (bpp == 4 || bpp == 8 || bpp == 1) {
+            int num_pngpalette;
+            png_colorp pngpalette;
+            png_get_PLTE(png_ptr, info_ptr, &pngpalette, &num_pngpalette);
+            palette = new RGBA[num_pngpalette];
+            for (int c = 0; c < num_pngpalette; c++) {
+                palette[c].r = pngpalette[c].red;
+                palette[c].g = pngpalette[c].green;
+                palette[c].b = pngpalette[c].blue;
+                palette[c].a = IM_OPAQUE;
+            }
+
+            png_bytep trans = NULL;
+            int num_trans;
+            png_color_16p trans_color;
+            png_get_tRNS(png_ptr, info_ptr, &trans, &num_trans, &trans_color);
+            if (trans) {
+                for (int c = 0; c < num_trans; c++)
+                    palette[c].a = trans[c];
+            }
         }
 
-        png_bytep trans = NULL;
-        int num_trans;
-        png_color_16p trans_color;
-        png_get_tRNS(png_ptr, info_ptr, &trans, &num_trans, &trans_color);
-        if (trans) {
-            for (int c = 0; c < num_trans; c++)
-                palette[c].a = trans[c];
-        }
+        setFromRawData(image, width, height, bpp, raw, palette);
+        if (palette)
+            delete [] palette;
     }
 
-    setFromRawData(image, width, height, bpp, raw, palette);
-    if (palette)
-        delete [] palette;
+cleanup:
     delete [] raw;
     png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
-
     return image;
 }
