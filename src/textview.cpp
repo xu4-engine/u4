@@ -3,7 +3,6 @@
  */
 
 #include <stdarg.h>
-#include <cstring>
 
 #include "debug.h"
 #include "imagemgr.h"
@@ -12,6 +11,8 @@
 #include "textview.h"
 #include "u4.h"
 #include "xu4.h"
+
+using std::string;
 
 Image *TextView::charset = NULL;
 

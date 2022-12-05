@@ -554,7 +554,7 @@ bool loadMap(Map *map, FILE* sav) {
 
 #ifdef CONF_MODULE
     if (map->fname) {
-        string fname( xu4.config->confString(map->fname) );
+        std::string fname( xu4.config->confString(map->fname) );
         uf = u4fopen(fname);
     } else {
         const CDIEntry* ent = xu4.config->mapFile(map->id);
@@ -583,7 +583,7 @@ bool loadMap(Map *map, FILE* sav) {
             uf = NULL;
     }
 #else
-    string fname( xu4.config->confString(map->fname) );
+    std::string fname( xu4.config->confString(map->fname) );
     uf = u4fopen(fname);
 #endif
     if (uf) {

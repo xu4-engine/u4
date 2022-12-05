@@ -13,7 +13,6 @@
 #include <ctime>
 #include "xu4.h"
 #include "config.h"
-#include "debug.h"
 #include "error.h"
 #include "game.h"
 #include "gamebrowser.h"
@@ -260,8 +259,6 @@ void servicesInit(XU4GameServices* gs, Options* opt) {
         gs->settings->scale = opt->scale;
     if (opt->used & OPT_FILTER)
         gs->settings->filter = opt->filter;
-
-    Debug::initGlobal("debug/global.txt");
 
     gs->config = configInit(opt->module ? opt->module : gs->settings->game,
                             gs->settings->soundtrack);

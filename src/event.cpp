@@ -11,7 +11,6 @@
 
 #include "config.h"
 #include "context.h"
-#include "debug.h"
 #include "location.h"
 #include "savegame.h"
 #include "screen.h"
@@ -19,6 +18,8 @@
 #include "textview.h"
 #include "u4.h"
 #include "xu4.h"
+
+using std::string;
 
 static void frameSleepInit(FrameSleep* fs, int frameDuration) {
     fs->frameInterval = frameDuration;

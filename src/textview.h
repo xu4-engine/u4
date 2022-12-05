@@ -14,6 +14,7 @@
 #define CHAR_WIDTH 8
 #define CHAR_HEIGHT 8
 
+#include <string>
 #include "view.h"
 #include "image.h"
 
@@ -61,8 +62,8 @@ public:
 
     // functions to add color to strings
     void textSelectedAt(int x, int y, const char *text);
-    string colorizeStatus(char statustype);
-    string highlightKey(const string& input, unsigned int keyIndex);
+    std::string colorizeStatus(char statustype);
+    std::string highlightKey(const std::string& input, unsigned int keyIndex);
 
 protected:
     void syncCursorPos();

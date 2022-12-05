@@ -175,10 +175,7 @@ public:
  * Return true if loading is successful.
  */
 bool GameController::initContext() {
-    Debug gameDbg("debug/game.txt", "Game");
     const Settings& settings = *xu4.settings;
-
-    TRACE(gameDbg, "gameInit() running.");
 
     ProgressBar pb((320/2) - (200/2), (200/2), 200, 10, 0, 4);
     pb.setBorderColor(240, 240, 240);
@@ -194,7 +191,7 @@ bool GameController::initContext() {
             return false;
         }
     }
-    TRACE_LOCAL(gameDbg, "Save game loaded."); ++pb;
+    ++pb;
 
     /* initialize the global game context */
     delete c;
@@ -214,8 +211,6 @@ bool GameController::initContext() {
     c->lastCommandTime = c->commandTimer = 0;
     c->lastShip = NULL;
 
-    TRACE_LOCAL(gameDbg, "Global context initialized.");
-
     /* initialize our party */
     c->party = new Party(c->saveGame);
 
@@ -223,11 +218,10 @@ bool GameController::initContext() {
     setMap(xu4.config->map(MAP_WORLD), 0, NULL);
     c->location->map->clearObjects();
 
-    TRACE_LOCAL(gameDbg, "World map set."); ++pb;
+    ++pb;
 
     /* initialize our start location */
     Map *map = xu4.config->restoreMap(MapId(c->saveGame->location));
-    TRACE_LOCAL(gameDbg, "Initializing start location.");
 
     /* if our map is not the world map, then load our map */
     if (map->type != Map::WORLD)
@@ -257,7 +251,7 @@ bool GameController::initContext() {
      */
     map->putInBounds(c->location->coords);
 
-    TRACE_LOCAL(gameDbg, "Loading monsters."); ++pb;
+    ++pb;
 
     /* load in monsters.sav */
     {
@@ -285,7 +279,6 @@ bool GameController::initContext() {
 
     ++pb;
 
-    TRACE_LOCAL(gameDbg, "Settings up reagent menu.");
     c->stats->resetReagentsMenu();
 
     // When using the borderAttr draw list we need to ensure the ProgressBar
@@ -293,7 +286,6 @@ bool GameController::initContext() {
     xu4.screenImage->fill(Image::black);
 
     initScreenWithoutReloadingState();
-    TRACE(gameDbg, "gameInit() completed successfully.");
     return true;
 }
 

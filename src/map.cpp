@@ -6,7 +6,6 @@
 #include "map.h"
 
 #include "config.h"
-#include "debug.h"
 #include "event.h"
 #include "party.h"
 #include "portal.h"
