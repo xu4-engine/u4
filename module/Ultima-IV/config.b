@@ -478,10 +478,10 @@ sound: [
     %walk_combat.ogg
     %blocked_dos.ogg
     %error_dos.ogg
-    %pc_attack.ogg
-    %pc_struck.ogg
-    %npc_attack.ogg
-    %npc_struck.ogg
+    %pc_attack_dos.ogg
+    %pc_struck_dos.ogg
+    %npc_attack_dos.ogg
+    %npc_struck_dos.ogg
     %enemy_magic_proj_hit.ogg
     %enemy_magic_proj_hit.ogg
     %poison_effect.ogg
@@ -497,7 +497,7 @@ sound: [
     %party_struck.rfx
     %fx_tremor.ogg
     %spell_precast_dos.ogg
-    %spell_flash_25.ogg
+    %spell_flash_dos.ogg
     %whirlpool.rfx
     %cyclone.rfx
     %gate_open.ogg
