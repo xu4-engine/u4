@@ -288,6 +288,10 @@ bool GameController::initContext() {
     TRACE_LOCAL(gameDbg, "Settings up reagent menu.");
     c->stats->resetReagentsMenu();
 
+    // When using the borderAttr draw list we need to ensure the ProgressBar
+    // & Loading text are erased.
+    xu4.screenImage->fill(Image::black);
+
     initScreenWithoutReloadingState();
     TRACE(gameDbg, "gameInit() completed successfully.");
     return true;
