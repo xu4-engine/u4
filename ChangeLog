@@ -1,11 +1,23 @@
 		XU4 Change Log
 
+v1.2 - 2022-12-06
+  - Fixed loading of gypsy card & dungeon images from the U4-Upgrade module.
+  - Flash player stats for poison, starvation, and ship damage.
+  - Play sounds for spell failure, starvation, and land-based storms.
+  - Fullscreen mode automatically chooses the scaling factor.
+  - Fixed --help & --verbose output on Windows with Command Prmopt.
+  - Cities can now be defined using TMX maps without limits on size or number
+    of people.  Dialogue can be created without keyword limits.
+  - Added GLV backend for Linux & Android.  On Linux this saves 0.9 MiB of RAM.
+    The Android port runs but is unplayable as there are no touch controls.
+
 v1.1 - 2022-07-13
   - Implemented game module layering.
     * A game browser can be opened using the Escape key.
     * The VGA upgrade is now selected by running the U4-Upgrade module.
     * Separate soundtrack modules can be selected.
-  - Added Fuan sound backend and support sfxr (rFX) sounds.
+  - Added Faun sound backend and support sfxr (rFX) sounds.
+  - Support spoken dialogue for the gypsy, Lord British & Hawkwind.
   - Play sounds for ship cannons, storms, whirlpools, ranged attacks and
     party damage.
   - Fixed ship to stay afloat when the hull is at zero.
