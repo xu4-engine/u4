@@ -1882,30 +1882,26 @@ bool IntroController::updateTitle()
         {
             // reset the base time
             title->timeBase = timeCurrent;
-        }
-        if (title == titles.begin())
-        {
-            // clear the screen
-            xu4.screenImage->fill(Image::black);
-        }
-        if (title->method == TITLE)
-        {
-            // assume this is the first frame of "Ultima IV" and begin sound
-            soundPlay(SOUND_TITLE_FADE);
+
+            if (title == titles.begin()) {
+                // clear the screen
+                xu4.screenImage->fill(Image::black);
+            }
+
+            if (title->method == TITLE) {
+                // Begin sound on first frame of "Ultima IV".
+                soundPlay(SOUND_TITLE_FADE);
+            }
         }
     }
 
     // abort after processing all elements
     if (title == titles.end())
-    {
         return false;
-    }
 
     // delay the drawing of this phase
     if ((timeCurrent - title->timeBase) < title->timeDelay)
-    {
         return true;
-    }
 
     // determine how much of the animation should have been drawn up until now
     timePercent = float(timeCurrent - title->timeBase - title->timeDelay) / title->timeDuration;
