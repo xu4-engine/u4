@@ -1,7 +1,12 @@
 #!/usr/bin/bash
 # Container build script for xu4 Linux & Windows packages.
 
-VERSION=DR-$(git rev-parse --short HEAD)
+TAG=$(git describe --tags)
+if [[ "$TAG" == *-g* ]]; then
+	VERSION=DR-${TAG#*-g}
+else
+	VERSION=${TAG#v}
+fi
 
 if [ ! -s project.tar.gz ]; then
 	sed -i "s/DR-1.0/${VERSION}/" project.b
