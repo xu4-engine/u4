@@ -46,6 +46,7 @@ if [ ${VOCALIZE} = 1 ]; then
 	boron ${BIN}/tts-script.b ${CHARACTER}.lines >$HDIR/${SCRIPT} || exit
 
 	podman run -d -it --name=$ID xu4/larynx /bin/bash || exit
+	#podman run -d -it --name=$ID --entrypoint= xu4/coqui-tts /bin/sh || exit
 	podman cp $HDIR/${SCRIPT} $ID:$CDIR
 	podman exec -it $ID /bin/bash $CDIR/${SCRIPT}
 	#podman cp $ID:/tmp /tmp/voice-$TIME
