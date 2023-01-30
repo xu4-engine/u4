@@ -20,10 +20,19 @@ enum TalkOpcode {
     OP_PAUSE_ASK = DS_QUESTION
 };
 
+enum VoicePart {
+    VP_I_AM,
+    VP_BYE,
+    VP_KEYWORD
+};
+
 struct TalkState {
     Person* person;
-    int turnAway;
-    int nextOp;
+    int16_t turnAway;
+    int16_t nextOp;
+    uint16_t voiceStream;
+    uint16_t startVoiceLn;
+    uint16_t askVoiceLn;
 };
 
 typedef const char* (*TalkFunc)(TalkState*, int, const char*);
@@ -80,6 +89,7 @@ static void runTalkDialogue(TalkFunc func, TalkState* ts)
         screenCrLf();
         in = input.c_str();
         if (input.empty() || strncasecmp("bye", in, 3) == 0) {
+            soundSpeakLine(ts->voiceStream, ts->startVoiceLn + VP_BYE);
             message("Bye.\n");
             break;
         }
@@ -118,6 +128,7 @@ static void runTalkDialogue(TalkFunc func, TalkState* ts)
                 message("You see %s\n", DSTRING(DS_LOOK));
             } else if (inputEq("name")) {
 tell_name:
+                soundSpeakLine(ts->voiceStream, ts->startVoiceLn + VP_I_AM);
                 message("%s says: I am %s\n",
                         DSTRING(DS_PRONOUN), DSTRING(DS_NAME));
             } else if (inputEq("give")) {
@@ -378,6 +389,8 @@ void talkRunU4Tlk(const Discourse* disc, int conv, Person* person)
     ts.state.person = person;
     ts.state.turnAway = ts.tlk->turnAway;
     ts.state.nextOp = OP_NOP;
+    ts.state.voiceStream = 0;
+    ts.state.startVoiceLn = 0;
 
     runTalkDialogue(U4Talk_dialogue, &ts.state);
 }
@@ -391,7 +404,7 @@ enum BoronDialogueIndex {
     DI_NAME,
     DI_PRONOUN,
     DI_LOOK,
-    DI_TURN_AWAY,
+    DI_DATA,        // turn-away, voice-stream, voice-line
     DI_TOPICS,
     DI_COUNT
 };
@@ -417,6 +430,7 @@ static const char* dialogueBoron(TalkState* ts, int value, const char* input)
     UIndex n;
 
     if (value == DS_KEYWORD) {
+        int voiceLine = ts->startVoiceLn + VP_KEYWORD;
         const UCell* cell = bd->topics.it;
         const UCell* end  = bd->topics.end;
 
@@ -431,14 +445,18 @@ static const char* dialogueBoron(TalkState* ts, int value, const char* input)
                     ++cell;
                     if (cell != end && ur_is(cell, UT_WORD)) {
                         bd->askCell = cell;
+                        ts->askVoiceLn = voiceLine + 1;
                         ts->nextOp = OP_PAUSE_ASK;
                     }
+                    soundSpeakLine(ts->voiceStream, voiceLine);
                     goto reply;
                 }
                 cell += 2;
+                voiceLine += 1;
             } else if (ur_is(cell, UT_WORD)) {
                 // Skip (ask "Question?" ["Yes reply" "No reply"])
                 cell += 3;
+                voiceLine += 3;
             }
         }
         return NULL;
@@ -448,6 +466,7 @@ static const char* dialogueBoron(TalkState* ts, int value, const char* input)
         case DS_QUESTION:
             if (! bd->askCell)
                 return NULL;
+            soundSpeakLine(ts->voiceStream, ts->askVoiceLn);
             ur_seriesSlice(ut, &si, bd->askCell + 1);
             break;
         case DS_ANSWER_Y:
@@ -460,6 +479,7 @@ answer:
                 return NULL;
             if (wordQuestionHumility(ut, bd->askCell))
                 c->party->adjustKarma(n ? KA_HUMBLE : KA_BRAGGED);
+            soundSpeakLine(ts->voiceStream, ts->askVoiceLn + n + 1);
             {
             const UBuffer* blk = ur_bufferSer(bd->askCell + 2);
             ur_seriesSlice(ut, &si, blk->ptr.cell + n);
@@ -487,9 +507,18 @@ void talkRunBoron(int32_t discBlkN, int conv, Person* person)
     bd.askCell = NULL;
     ur_blockIt(ut, &bd.topics, bd.values + DI_TOPICS);
 
-    bd.state.person = person;
-    bd.state.turnAway = (int) ur_int(bd.values + DI_TURN_AWAY);
-    bd.state.nextOp = OP_NOP;
+    {
+    const UCell* data = bd.values + DI_DATA;
+    TalkState* ts = &bd.state;
+
+    ts->person = person;
+    ts->turnAway = data->coord.n[0];
+    ts->nextOp = OP_NOP;
+    ts->voiceStream = data->coord.n[1];
+    if (ts->voiceStream)
+        ts->voiceStream++;       // Config::musicFile() id is one based.
+    ts->startVoiceLn = data->coord.n[2];
+    }
 
     runTalkDialogue(dialogueBoron, &bd.state);
 }

@@ -571,14 +571,29 @@ npc-talk: context [
 	topics: none
 ]
 
+; Return number of spoken lines for NPC.
+spoken-lines: func [topics] [
+	count: 2
+	parse topics [some[
+		string! string! (++ count)
+	  | word! string! block! (count: add count 3)
+	]]
+	count
+]
+
 ; Return app_id of talk chunk.
-pack-talk: func [filename /local it] [
+pack-talk: func [filename voice-stream /local it] [
 	poke-id npc_id file-id filename
 	ifn file-id-seen [
 		meld-strings spec: load join root-path filename
 		tblk: make block! mul size? spec 5
+		voice-line: 0
 		foreach it spec [
-			append tblk mark-sol values-of make npc-talk it
+			npc-blk: values-of make npc-talk it
+			turn-away: pick npc-blk 4
+			poke npc-blk 4 to-coord [turn-away voice-stream voice-line]
+			append tblk mark-sol npc-blk
+			voice-line: add voice-line spoken-lines last npc-blk
 		]
 		if ge? verbose 2 [
 			print [filename '>' to-binary npc_id]
@@ -1054,7 +1069,7 @@ process-cfg [
 				either eq? ".tlk" file-ext tlk_name [
 					tlk_name: to-file tlk_name
 				][
-					tlk_name: copy pack-talk tlk_name
+					tlk_name: copy pack-talk tlk_name none-zero at2/voice
 				]
 
 				append blk reduce [at2/name at2/type tlk_name]
