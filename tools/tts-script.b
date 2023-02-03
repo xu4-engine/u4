@@ -9,12 +9,7 @@ ifn args [
 first-words: func [text] [
     parse text [thru ' ' to ' ' :text]
     lowercase construct text [
-        '^'' none
-        '!'  none
-        '?'  none
-        ','  none
-        '.'  none
-        ':'  none
+        '^'' none  '!' none  '?' none  ',' none  '.' none  ':' none
         ' ' '_'
     ]
 ]
