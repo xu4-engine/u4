@@ -1,60 +1,280 @@
-#!/usr/bin/bash
-# Create NPC voice .ogg files using Larynx TTS & oggenc.
+#!/usr/bin/boron -s
+; Create NPC voice .ogg files using Coqui (or Larynx) TTS & oggenc.
+;
+; A stream.lines file and stream/ directory must be present.
 
-if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
-	echo "Usage: vocalize [OPTIONS] <character>"
-	echo "Options:"
-	echo "  -c          Complete process; run both text-to-speech and encode."
-	echo "  -e          Encode existing .wav files as .ogg"
-	echo "  -h, --help  Display this help and exit"
-	exit
-fi
+usage: {{
+	Usage: vocalize [OPTIONS] <stream>
 
-VOCALIZE=1
-ENCODE=0
+	Options:
+	  -c          Create all files; run text-to-speech, process and encode.
+	  -d          Dry run
+	  -e          Encode existing .wav files as .ogg
+	  -h          Display this help and exit
+	  -p          Process existing .wav files only
+	  -s <name>   Process a single character only
+	  -t <script> Run custom script in tts container
+}}
 
-while [ "$1" != "" ]; do
-	case $1 in
-	-c)
-		VOCALIZE=1
-		ENCODE=1 ;;
-	-e)
-		VOCALIZE=0
-		ENCODE=1 ;;
-	*)
-		CHARACTER=${1%%.lines} ;;
-	esac
-	shift
-done
+vocalize: true
+process:
+encode: false
+dry: false
+vstream:
+single:
+script: none
 
-if [ -z ${CHARACTER} ]; then
-	echo "Please specify a character"
-	exit 64
-fi
+forall args [
+	switch first args [
+		"-d" [dry: true]
+		"-h" [print usage quit]
+		"-c" [vocalize: process: encode: true]
+		"-e" [encode:  true  vocalize: process: false]
+		"-p" [process: true  vocalize: encode:  false]
+		"-s" [single: second ++ args]
+		"-t" [script: second ++ args]
+		[vstream: first args]
+	]
+]
 
-BIN=$(dirname "$(readlink -f "$0")")
+cname: "xu4tts"
+cvars: ['&' "podman" '@' cname '$' script '#' voice_dir]
 
-if [ ${VOCALIZE} = 1 ]; then
-	# Run Larynx TTS container to generate Wave files.
+podman: func [cmd] pick [[
+	print construct cmd cvars
+][
+	ifn rc: execute construct cmd cvars [
+		quit/return rc
+	]
+]] dry
 
-	TIME=$(date +%H%M%S)
-	SCRIPT=vocal-$TIME
-	ID=${SCRIPT}
-	HDIR=/tmp
-	CDIR=/tmp
+if script [
+	podman "& cp $ @:/tmp/doit"
+	podman "& exec -it @ /bin/bash /tmp/doit"
+	quit
+]
 
-	boron ${BIN}/tts-script.b ${CHARACTER}.lines >$HDIR/${SCRIPT} || exit
+ifn vstream [
+	print "Please specify a voice stream"
+	quit/return 64
+]
 
-	podman run -d -it --name=$ID xu4/larynx /bin/bash || exit
-	#podman run -d -it --name=$ID --entrypoint= xu4/coqui-tts /bin/sh || exit
-	podman cp $HDIR/${SCRIPT} $ID:$CDIR
-	podman exec -it $ID /bin/bash $CDIR/${SCRIPT}
-	#podman cp $ID:/tmp /tmp/voice-$TIME
-	podman cp $ID:/tmp ${CHARACTER}
-	podman stop $ID
-fi
+;---------------------------------------
 
-if [ ${ENCODE} = 1 ]; then
-	rm -rf /tmp/xu4-vocalize
-	boron -s ${BIN}/tts-encode.b -c ${CHARACTER} ${CHARACTER}/*.wav
-fi
+first-words: func [text] [
+	parse text [thru ' ' to ' ' :text]
+	lowercase construct text [
+		'^'' none  '!' none  '?' none  ',' none  '.' none  ':' none
+		' ' '_'
+	]
+]
+
+gvars: [
+	"$V" voice "$L" line "$M" model "$N" name "$P" pitch
+	"$I" id2 "$F" fw '@' vstream
+]
+
+generate: func [
+	spec context!
+	out  string!
+	/extern voice line model name id2 fw pitch
+][
+	bind gvars spec
+
+	either path? vpath: spec/voice [
+		; Use Coqui TTS if voice is path! (model_name/speaker_idx)
+		model: slice vpath -1
+		spec/voice: last vpath
+		cmd: join {tts --model_name $M --speaker_idx $V --text "$L" --out_path }
+			either zero? spec/pitch
+			{/wav/@/$N-$I-$F.wav^/}
+			{/tmp/pitch.wav^/sox /tmp/pitch.wav /wav/@/$N-$I-$F.wav pitch $P^/}
+	][
+		; Otherwise use Larynx
+		cmd: either zero? spec/pitch
+			{larynx -v $V "$L" >/wav/@/$N-$I-$F.wav^/}
+			{larynx -v $V "$L" | sox - /wav/@/$N-$I-$F.wav pitch $P^/}
+	]
+
+	id: 0
+	foreach line spec/lines [
+		id2: either lt? id 10 [join '0' id] id
+		either string? line [
+			fw: first-words line
+			append out construct cmd gvars
+		][
+			append out construct
+				{ln -s ../sq_blip_22k.wav /wav/@/$N-$I-blip.wav^/} gvars
+		]
+		++ id
+	]
+]
+
+;---------------------------------------
+
+if vocalize [
+	; Run Coqui or Larynx TTS container to generate Wave files.
+
+	time: construct slice mold now/date 11,8 [':' none]		; date +%H%M%S
+	script: join "vocal-" time
+
+	tts-script: func [vlines] [
+		spec: load vlines
+		out: make string! 2048
+		either eq? 'context first spec [
+			foreach it spec [
+				if block? it [
+					if all [single ne? it/name single] [continue]
+					generate context it out
+				]
+			]
+		][
+			generate context spec out
+		]
+		out
+	]
+
+	write join %/tmp/ script tts-script join vstream %.lines
+
+	ifn zero? execute join "podman container exists " cname [
+		voice_dir: any [getenv "VOICE_DIR" current-dir]
+		podman
+		;	"& run -d -it --name=@ -v=#:/wav:z xu4/larynx /bin/bash"
+			"& run -d -it --name=@ -v=#:/wav:z dev/coqui-tts /bin/bash"
+		;	"& run -d -it --name=@ -v=#:/wav:z --entrypoint= xu4/coqui-tts /bin/sh"
+	]
+	podman "& cp /tmp/$ @:/tmp"
+	podman "& exec -it @ /bin/bash /tmp/$"
+	; podman "& stop @"
+]
+
+if process [
+	; Process Wave files with Sox using .lines pre-encode commands.
+
+	vars: ["$N" name "$I" id2 "$F" fw '@' vstream]
+
+	sox-process: func [
+		spec context!
+		/extern name id2 fw
+	][
+		ifn sox-opt: spec/pre-encode [exit]
+		if all [single ne? spec/name single] [exit]
+		bind vars spec
+
+		id: 0
+		foreach line spec/lines [
+			id2: either lt? id 10 [join '0' id] id
+			if string? line [
+				fw: first-words line
+				in:  construct "@/orig/$N-$I-$F.wav" vars
+				out: construct "@/$N-$I-$F.wav" vars
+				ifn exists? in [
+					either dry [
+						print ['mv out in]
+					][
+						rename out in
+					]
+				]
+
+				switch sox-opt [
+					ghost [
+						exec rejoin ["sox " in " /tmp/sp1.wav pitch -350"]
+						exec "sox /tmp/sp1.wav /tmp/sp2.wav reverse reverb 50 50 85 100 20 -5 reverse"
+						exec rejoin ["sox -m /tmp/sp1.wav /tmp/sp2.wav " out
+									 " chorus 0.7 0.9 55 0.4 0.25 2 -t"]
+					]
+					skeleton [
+						exec rejoin ["sox " in ' ' out " tremolo 16 70"]
+					][
+						exec rejoin ["sox " in ' ' out ' ' sox-opt]
+					]
+				]
+			]
+			++ id
+		]
+	]
+
+	either dry [
+		exec: :print
+	][
+		make-dir join vstream %/orig
+		exec: :execute
+	]
+
+	spec: load join vstream %.lines
+	either eq? 'context first spec [
+		foreach it spec [
+			if block? it [sox-process context it]
+		]
+	][
+		sox-process context spec
+	]
+]
+
+if encode [
+	; Concatenate Wave files and encode as OGG Vorbis.
+
+	wave: []
+	parts: []
+
+	in-path: terminate to-file vstream '/'
+	foreach it read in-path [
+		if eq? %.wav skip tail it -4 [
+			append wave join in-path it
+		]
+	]
+
+	character: vstream
+	out-file: join vstream %.ogg
+	sox-opt: none
+
+	cmd: make string! 1024
+	buf: make string! 64
+	append cmd "sox "
+	total: 0.0
+
+	basename: func [path] [
+		if name: find/last path '/' [return next name]
+		path
+	]
+
+	execute "rm -rf /tmp/xu4-vocalize"
+	make-dir tmp: %/tmp/xu4-vocalize/
+
+	foreach fn sort wave [
+		tn: join tmp basename fn
+		pad-cmd: construct "sox < @ ? pad 0 1.0"
+						['<' fn '@' tn '?' sox-opt]
+
+		either dry [
+			print pad-cmd
+		][
+			execute pad-cmd
+			execute/out join "soxi -D " tn buf
+			dur: to-double buf
+
+			append parts reduce [mark-sol tn sub dur 1.0 total]
+			total: add total dur
+		]
+
+		append append cmd tn ' '
+	]
+	append cmd "/tmp/xu4-vocalize.wav"
+
+	encode: "oggenc -q 0 /tmp/xu4-vocalize.wav"
+	if out-file [
+		appair encode " -o " out-file
+	]
+	either dry [
+		print cmd
+		print encode
+	][
+		either character [
+			save join character %-parts.b parts
+		][
+			probe parts
+		]
+		execute cmd
+		execute encode
+	]
+]
