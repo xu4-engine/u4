@@ -5,13 +5,13 @@
 #include <cctype>
 #include <cstring>
 #include <cstdlib>
+#include <map>
 
 #include "u4file.h"
 #include "unzip.h"
 #include "debug.h"
 #include "xu4.h"
 
-using std::map;
 using std::string;
 using std::vector;
 
@@ -35,6 +35,24 @@ private:
 };
 
 /**
+ * Represents zip files that game resources can be loaded from.
+ */
+class U4ZipPackage {
+public:
+    U4ZipPackage(const string &name, const string &path);
+    void addTranslation(const string &value, const string &translation);
+
+    const string &getFilename() const { return name; }
+    const string &getInternalPath() const { return path; }
+    const string &translate(const string &name) const;
+
+private:
+    string name;                /**< filename */
+    string path;                /**< the path within the zipfile where resources are located */
+    std::map<string, string> translations; /**< mapping from standard resource names to internal names */
+};
+
+/**
  * A specialization of U4FILE that reads files out of zip archives
  * automatically.
  */
@@ -54,20 +72,6 @@ private:
     unzFile zfile;
 };
 
-/**
- * Keeps track of available zip packages.
- */
-struct U4ZipPackageMgr {
-    U4ZipPackageMgr();
-    ~U4ZipPackageMgr();
-
-    void add(U4ZipPackage *package) {
-        packages.push_back(package);
-    }
-
-    std::vector<U4ZipPackage *> packages;
-};
-
 enum UpgradeFlags {
     UPG_PRESENT = 1,
     UPG_INST    = 2
@@ -75,11 +79,14 @@ enum UpgradeFlags {
 static int upgradeFlags = 0;
 
 static U4PATH * u4path_instance = NULL;
-static U4ZipPackageMgr * u4zip_instance = NULL;
+static U4ZipPackage * u4zip_orig = NULL;
+static U4ZipPackage * u4zip_upgrad = NULL;
 
 U4PATH * U4PATH::getInstance() {
     return u4path_instance;
 }
+
+static void u4zip_setup();
 
 /**
  * Program initialization for u4 file functions.
@@ -92,7 +99,7 @@ bool u4fsetup()
     u4path_instance = new U4PATH();
     u4path_instance->initDefaultPaths();
 
-    u4zip_instance = new U4ZipPackageMgr();
+    u4zip_setup();
 
     U4FILE* uf;
     if ((uf = u4fopen("AVATAR.EXE"))) {
@@ -104,13 +111,13 @@ bool u4fsetup()
 
     // Check if upgrade is present & installed.
     upgradeFlags = 0;
-    if ((uf = u4fopen("u4vga.pal"))) {
+    if ((uf = u4fopen_upgrade("u4vga.pal"))) {
         upgradeFlags |= UPG_PRESENT;
         u4fclose(uf);
     }
     /* See if (ega.drv > 5k).  If so, the upgrade is installed */
     /* FIXME: Is there a better way to determine this? */
-    if ((uf = u4fopen("ega.drv"))) {
+    if ((uf = u4fopen_upgrade("ega.drv"))) {
         if (uf->length() > (5 * 1024))
             upgradeFlags |= UPG_INST;
         u4fclose(uf);
@@ -123,8 +130,9 @@ void u4fcleanup()
     delete u4path_instance;
     u4path_instance = NULL;
 
-    delete u4zip_instance;
-    u4zip_instance = NULL;
+    delete u4zip_orig;
+    delete u4zip_upgrad;
+    u4zip_orig = u4zip_upgrad = NULL;
 }
 
 void U4PATH::initDefaultPaths() {
@@ -143,30 +151,6 @@ void U4PATH::initDefaultPaths() {
     /* the possible paths where the u4 zipfiles can be installed */
     u4ZipPaths.push_back(".");
     u4ZipPaths.push_back("u4");
-
-#ifndef CONF_MODULE
-    /* the possible paths where the u4 music files can be installed */
-    musicPaths.push_back(".");
-    musicPaths.push_back("mid");
-    musicPaths.push_back("../mid");
-    musicPaths.push_back("music");
-    musicPaths.push_back("../music");
-
-    /* the possible paths where the u4 sound files can be installed */
-    soundPaths.push_back(".");
-    soundPaths.push_back("./sound");
-    soundPaths.push_back("../sound");
-
-    /* the possible paths where the u4 config files can be installed */
-    configPaths.push_back(".");
-    configPaths.push_back("conf");
-    configPaths.push_back("../conf");
-
-    /* the possible paths where the u4 graphics files can be installed */
-    graphicsPaths.push_back(".");
-    graphicsPaths.push_back("graphics");
-    graphicsPaths.push_back("../graphics");
-#endif
 }
 
 /**
@@ -219,10 +203,9 @@ static bool u4fexists(const char* fname) {
 /**
  * Creates a new zip package.
  */
-U4ZipPackage::U4ZipPackage(const string &name, const string &path, bool extension) {
+U4ZipPackage::U4ZipPackage(const string &name, const string &path) {
     this->name = name;
     this->path = path;
-    this->extension = extension;
 }
 
 void U4ZipPackage::addTranslation(const string &value, const string &translation) {
@@ -259,13 +242,14 @@ static const char* u4ZipFilenames[] = {
     NULL
 };
 
-U4ZipPackageMgr::U4ZipPackageMgr() {
-    unzFile f;
+static void u4zip_setup() {
+    u4zip_orig = u4zip_upgrad = NULL;
 
     string upg_pathname(u4find_path("u4upgrad.zip", &u4Path.u4ZipPaths));
     if (!upg_pathname.empty()) {
         /* upgrade zip is present */
-        U4ZipPackage *upgrade = new U4ZipPackage(upg_pathname, "", false);
+        U4ZipPackage* upgrade = new U4ZipPackage(upg_pathname, "");
+        u4zip_upgrad = upgrade;
         upgrade->addTranslation("compassn.ega", "compassn.old");
         upgrade->addTranslation("courage.ega", "courage.old");
         upgrade->addTranslation("cove.tlk", "cove.old");
@@ -293,7 +277,6 @@ U4ZipPackageMgr::U4ZipPackageMgr() {
         upgrade->addTranslation("ultima.com", "ultima.old"); // not actually used
         upgrade->addTranslation("valor.ega", "valor.old");
         upgrade->addTranslation("yew.tlk", "yew.old");
-        add(upgrade);
     }
 
     // Check for the default zip packages
@@ -305,37 +288,25 @@ U4ZipPackageMgr::U4ZipPackageMgr() {
             break;
     }
     if (*zipFile) {
-        f = unzOpen(pathname.c_str());
+        unzFile f = unzOpen(pathname.c_str());
         if (!f)
             return;
 
         //Now we detect the folder structure inside the zipfile.
-        if (unzLocateFile(f, "charset.ega", 2) == UNZ_OK) {
-            add(new U4ZipPackage(pathname, "", false));
-
-        } else if (unzLocateFile(f, "ultima4/charset.ega", 2) == UNZ_OK) {
-            add(new U4ZipPackage(pathname, "ultima4/", false));
-
-        } else if (unzLocateFile(f, "Ultima4/charset.ega", 2) == UNZ_OK) {
-            add(new U4ZipPackage(pathname, "Ultima4/", false));
-
-        } else if (unzLocateFile(f, "ULTIMA4/charset.ega", 2) == UNZ_OK) {
-            add(new U4ZipPackage(pathname, "ULTIMA4/", false));
-
-        } else if (unzLocateFile(f, "u4/charset.ega", 2) == UNZ_OK) {
-            add(new U4ZipPackage(pathname, "u4/", false));
-
-        } else if (unzLocateFile(f, "U4/charset.ega", 2) == UNZ_OK) {
-            add(new U4ZipPackage(pathname, "U4/", false));
-
-        }
+        if (unzLocateFile(f, "charset.ega", 2) == UNZ_OK)
+            u4zip_orig = new U4ZipPackage(pathname, "");
+        else if (unzLocateFile(f, "ultima4/charset.ega", 2) == UNZ_OK)
+            u4zip_orig = new U4ZipPackage(pathname, "ultima4/");
+        else if (unzLocateFile(f, "Ultima4/charset.ega", 2) == UNZ_OK)
+            u4zip_orig = new U4ZipPackage(pathname, "Ultima4/");
+        else if (unzLocateFile(f, "ULTIMA4/charset.ega", 2) == UNZ_OK)
+            u4zip_orig = new U4ZipPackage(pathname, "ULTIMA4/");
+        else if (unzLocateFile(f, "u4/charset.ega", 2) == UNZ_OK)
+            u4zip_orig = new U4ZipPackage(pathname, "u4/");
+        else if (unzLocateFile(f, "U4/charset.ega", 2) == UNZ_OK)
+            u4zip_orig = new U4ZipPackage(pathname, "U4/");
         unzClose(f);
     }
-}
-
-U4ZipPackageMgr::~U4ZipPackageMgr() {
-    for (std::vector<U4ZipPackage *>::iterator i = packages.begin(); i != packages.end(); i++)
-        delete *i;
 }
 
 int U4FILE::getshort() {
@@ -487,10 +458,9 @@ long U4FILE_zip::length() {
  * First, it looks in the zipfiles.  Next, it tries FILENAME, Filename
  * and filename in up to four paths, meaning up to twelve or more
  * opens per file.  Seems to be ok for performance, but could be
- * getting excessive.  The presence of the zipfiles should probably be
- * cached.
+ * getting excessive.
  */
-U4FILE *u4fopen(const string &fname) {
+static U4FILE *u4fopen_zip(const string &fname, U4ZipPackage* zipPkg) {
     U4FILE *u4f = NULL;
     unsigned int i;
 
@@ -500,13 +470,12 @@ U4FILE *u4fopen(const string &fname) {
     /**
      * search for file within zipfiles (ultima4.zip, u4upgrad.zip, etc.)
      */
-    const vector<U4ZipPackage *> &packages = u4zip_instance->packages;
-    for (std::vector<U4ZipPackage *>::const_reverse_iterator j = packages.rbegin(); j != packages.rend(); j++) {
-        u4f = U4FILE_zip::open(fname, *j);
+    if (zipPkg) {
+        u4f = U4FILE_zip::open(fname, zipPkg);
         if (u4f) {
             if (xu4.verbose) {
                 printf("%s found in %s\n", fname.c_str(),
-                       (*j)->getFilename().c_str());
+                       zipPkg->getFilename().c_str());
             }
             return u4f; /* file was found, return it! */
         }
@@ -543,19 +512,23 @@ U4FILE *u4fopen(const string &fname) {
     return u4f;
 }
 
+U4FILE *u4fopen(const string &fname) {
+    return u4fopen_zip(fname, u4zip_orig);
+}
+
+/**
+ * Open a data file from the Ultima 4 upgrade.
+ */
+U4FILE *u4fopen_upgrade(const string &fname) {
+    return u4fopen_zip(fname, u4zip_upgrad);
+}
+
 /**
  * Opens a file with the standard C stdio facilities and wrap it in a
  * U4FILE.
  */
 U4FILE *u4fopen_stdio(const char* fname) {
     return U4FILE_stdio::open(fname);
-}
-
-/**
- * Opens a file from a zipfile and wraps it in a U4FILE.
- */
-U4FILE *u4fopen_zip(const string &fname, U4ZipPackage *package) {
-    return U4FILE_zip::open(fname, package);
 }
 
 /**
@@ -699,21 +672,3 @@ done:
     }
     return found ? path : "";
 }
-
-#ifndef CONF_MODULE
-string u4find_music(const string &fname) {
-    return u4find_path(fname.c_str(), &u4Path.musicPaths);
-}
-
-string u4find_sound(const string &fname) {
-    return u4find_path(fname.c_str(), &u4Path.soundPaths);
-}
-
-string u4find_conf(const string &fname) {
-    return u4find_path(fname.c_str(), &u4Path.configPaths);
-}
-
-string u4find_graphics(const string &fname) {
-    return u4find_path(fname.c_str(), &u4Path.graphicsPaths);
-}
-#endif

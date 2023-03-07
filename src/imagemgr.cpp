@@ -296,12 +296,12 @@ U4FILE * ImageMgr::getImageFile(ImageInfo *info)
     U4FILE *file;
     const char* fn = xu4.config->confString(info->filename);
 
-    if (strncmp(fn, "u4/", 3) == 0 ||
-        strncmp(fn, "u4u/", 4) == 0) {
-        // Original game data - strip off path.
-        string basename = fn + ((fn[2] == '/') ? 3 : 4);
-
-        file = u4fopen(basename);
+    if (strncmp(fn, "u4/", 3) == 0) {
+        // Original game data; strip off path.
+        file = u4fopen(string(fn + 3));
+    } else if(strncmp(fn, "u4u/", 4) == 0) {
+        // Upgrade game data; strip off path.
+        file = u4fopen_upgrade(string(fn + 4));
 #ifdef CONF_MODULE
     } else if (isImageChunkId(fn)) {
         const CDIEntry* ent = xu4.config->imageFile(fn);
@@ -669,7 +669,7 @@ void ImageMgr::freeResourceGroup(uint16_t group) {
  */
 const RGBA* ImageMgr::vgaPalette() {
     if (vgaColors == NULL) {
-        U4FILE *pal = u4fopen("u4vga.pal");
+        U4FILE *pal = u4fopen_upgrade("u4vga.pal");
         if (!pal)
             return NULL;
 
