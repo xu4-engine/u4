@@ -455,6 +455,11 @@ void CombatController::placePartyMembers() {
     }
 }
 
+void CombatController::announceActivePlayer() {
+    PartyMember* p = getCurrentPlayer();
+    screenMessage("\n%s with %s\n\020", p->getName(), p->getWeapon()->getName());
+}
+
 /**
  * Sets the active player for combat, showing which weapon they're weilding, etc.
  */
@@ -468,7 +473,7 @@ bool CombatController::setActivePlayer(int player) {
         p->focused = true;
         focus = player;
 
-        screenMessage("\n%s with %s\n\020", p->getName(), p->getWeapon()->getName());
+        announceActivePlayer();
         c->stats->highlightPlayer(focus);
         return true;
     }
@@ -888,8 +893,12 @@ bool CombatController::keyPressed(int key) {
     case U4_ESC:
         if (settings.debug)
             endCombat(false);   /* don't adjust karma */
-        else
+        else {
+bad_cmd:
             gameBadCommand();
+            announceActivePlayer();
+            endTurn = false;
+        }
         break;
 
     case ' ':
@@ -1082,7 +1091,7 @@ bool CombatController::keyPressed(int key) {
         if (settings.enhancements && settings.enhancementsOptions.activePlayer)
             gameSetActivePlayer(key - '1');
         else
-            gameBadCommand();
+            goto bad_cmd;
         break;
 
     default:

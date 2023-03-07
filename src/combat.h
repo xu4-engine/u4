@@ -102,6 +102,7 @@ private:
     bool isLost() const;
     void moveCreatures();
     void placePartyMembers();
+    void announceActivePlayer();
     bool setActivePlayer(int player);
     bool attackAt(const Coords &coords, PartyMember *attacker, int dir, int range, int distance);
     bool returnWeaponToOwner(const Coords &coords, int distance, int dir,
