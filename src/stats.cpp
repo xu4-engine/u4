@@ -45,6 +45,7 @@ StatsArea::StatsArea() :
     redrawMode = REDRAW_NONE;
     flashMask  = 0;
     flashCycle = 0;
+    avatarOnly = false;
 }
 
 StatsArea::~StatsArea() {
