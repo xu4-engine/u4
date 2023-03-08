@@ -1688,8 +1688,7 @@ static bool attackAt(const Coords &coords) {
          (m->movement != MOVEMENT_ATTACK_AVATAR)))
         c->party->adjustKarma(KA_ATTACKED_GOOD);
 
-    CombatController::engage(CombatMap::mapForTile(ground,
-                        c->party->getTransport().getTileType(), m), m);
+    CombatController::engage(xu4.game->combatMapForTile(ground, m), m);
     return true;
 }
 
@@ -3088,8 +3087,7 @@ static void gameCreatureAttack(Creature *m) {
 
     ground = battleGround(c->location->map, c->location->coords);
 
-    CombatController::engage(CombatMap::mapForTile(ground,
-                        c->party->getTransport().getTileType(), m), m);
+    CombatController::engage(xu4.game->combatMapForTile(ground, m), m);
 }
 
 /**

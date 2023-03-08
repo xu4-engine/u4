@@ -69,6 +69,7 @@ public:
     /* main game functions */
     void setMap(Map *map, bool saveLocation, const Portal *portal, TurnController *turnCompleter = NULL);
     int exitToParentMap();
+    MapId combatMapForTile(const Tile *groundTile, Object *obj);
     virtual void finishTurn();
 
     bool initContext();
@@ -81,6 +82,8 @@ public:
     Discourse vendorDisc;
     Discourse castleDisc;
     bool cutScene;
+    std::map<const Tile*, MapId> tileMap;
+    std::map<const Tile*, MapId> dungeontileMap;
 
 private:
     static void gameNotice(int, void*, void*);

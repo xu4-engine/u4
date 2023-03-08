@@ -1341,40 +1341,42 @@ static const uint8_t combatMapId[21] = {
     MAP_GRASS_CON,  // dungeon_floor
 };
 
+static void _relateMapsToTiles(std::map<const Tile*, MapId>& tmap,
+                               const uint8_t* mapIds, int count,
+                               const Symbol* tileNames)
+{
+    const Tileset* ts = xu4.config->tileset();
+    for (int i = 0; i < count; ++i)
+        tmap[ ts->getByName(tileNames[i]) ] = mapIds[i];
+}
+
 /**
  * Returns a valid combat map given the provided information
  */
-MapId CombatMap::mapForTile(const Tile *groundTile, const Tile *transport, Object *obj) {
-    static std::map<const Tile *, MapId> tileMap;
-    static std::map<const Tile *, MapId> dungeontileMap;
+MapId GameController::combatMapForTile(const Tile *groundTile, Object *obj) {
     bool fromShip, toShip;
     Location* loc = c->location;
-    const Object *objUnder = loc->map->objectAt(loc->coords);
 
     if (loc->context & CTX_DUNGEON) {
-        if (dungeontileMap.empty()) {
-            const Tileset* ts = xu4.config->tileset();
-            for (size_t i = 0; i < sizeof(dungeonMapId); ++i) {
-                dungeontileMap[ ts->getByName(Tile::sym.dungeonMaps[i]) ] =
-                    dungeonMapId[i];
-            }
-        }
+        if (dungeontileMap.empty())
+            _relateMapsToTiles(dungeontileMap,
+                               dungeonMapId, sizeof(dungeonMapId),
+                               Tile::sym.dungeonMaps);
 
-        if (dungeontileMap.find(groundTile) != dungeontileMap.end())
-            return dungeontileMap[groundTile];
-
+        auto it = dungeontileMap.find(groundTile);
+        if (it != dungeontileMap.end())
+            return it->second;
         return MAP_DNG0_CON;
     }
 
-    if (tileMap.empty()) {
-        const Tileset* ts = xu4.config->tileset();
-        for (size_t i = 0; i < sizeof(combatMapId); ++i)
-            tileMap[ ts->getByName(Tile::sym.combatMaps[i]) ] = combatMapId[i];
-    }
-
     fromShip = toShip = false;
-    if (transport->isShip() || (objUnder && objUnder->tile.getTileType()->isShip()))
+    if (c->transportContext == TRANSPORT_SHIP)
         fromShip = true;
+    else {
+        const Object* objUnder = loc->map->objectAt(loc->coords);
+        if (objUnder && objUnder->tile.getTileType()->isShip())
+            fromShip = true;
+    }
     if (obj->tile.getTileType()->isPirateShip())
         toShip = true;
 
@@ -1395,8 +1397,12 @@ MapId CombatMap::mapForTile(const Tile *groundTile, const Tile *transport, Objec
             return MAP_SHIPSHOR_CON;
     }
 
-    if (tileMap.find(groundTile) != tileMap.end())
-        return tileMap[groundTile];
+    if (tileMap.empty())
+        _relateMapsToTiles(tileMap, combatMapId, sizeof(combatMapId),
+                           Tile::sym.combatMaps);
 
+    auto it = tileMap.find(groundTile);
+    if (it != tileMap.end())
+        return it->second;
     return MAP_BRICK_CON;
 }
