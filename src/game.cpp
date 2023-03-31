@@ -3490,14 +3490,12 @@ void
 showMixturesSuper(int page = 0) {
   screenTextColor(FG_WHITE);
   for (int i = 0; i < 13; i++) {
-    char buf[4];
 
     const Spell *s = getSpell(i + 13 * page);
     int line = i + 8;
     screenTextAt(2, line, "%s", s->name);
 
-    snprintf(buf, 4, "%3u", c->saveGame->mixtures[i + 13 * page]);
-    screenTextAt(6, line, "%s", buf);
+    screenTextAt(6, line, "%3u", c->saveGame->mixtures[i + 13 * page]);
 
     screenShowChar(32, 9, line);
     int comp = s->components;
@@ -3507,8 +3505,7 @@ showMixturesSuper(int page = 0) {
     }
     screenTextColor(FG_WHITE);
 
-    snprintf(buf, 3, "%2d", s->mp);
-    screenTextAt(19, line, "%s", buf);
+    screenTextAt(19, line, "%2d", s->mp);
   }
 }
 
