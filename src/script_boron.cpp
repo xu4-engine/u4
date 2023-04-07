@@ -664,7 +664,11 @@ CFUNC(cf_pay)
         c->party->adjustGold(-price);
         code = a1+2;
     }
+#if BORON_VERSION > 0x020008
+    return (UStatus) boron_reframeDoBlock(ut, code->series.buf, res, 0);
+#else
     return boron_doBlock(ut, code, res);
+#endif
 }
 
 /*-cf-
@@ -849,7 +853,12 @@ static UIndex script_init(UThread* ut, const UCell* blkC)
                       sizeof(pfFuncSpecs)-1);
 
     boron_bindDefault(ut, blkC->series.buf);
-    if (boron_doBlock(ut, blkC, ur_stackTop(ut)) != UR_OK) {
+#if BORON_VERSION > 0x020008
+    if (boron_evalBlock(ut, blkC->series.buf, ur_stackTop(ut)) != UR_OK)
+#else
+    if (boron_doBlock(ut, blkC, ur_stackTop(ut)) != UR_OK)
+#endif
+    {
         const UCell* ex = ur_exception(ut);
         if (ur_is(ex, UT_ERROR))
             script_reportError(ut, ex);
