@@ -28,13 +28,16 @@ ifeq ($(GPU),all)
 	UIFLAGS+=-DGPU_RENDER
 endif
 
+# Uncomment this for Raspberry Pi 4.
+#UIFLAGS+=-DUSE_GLES
+
 ifeq ($(SOUND), faun)
 	UILIBS+=-lfaun
 endif
 
 #ifeq ($(CONF),boron)
 	UIFLAGS+=-DUSE_BORON -DCONF_MODULE
-	UILIBS+=-lboron
+	UILIBS+=-lboron -lpthread
 #endif
 
 CXXFLAGS=-Wall -I. -Isupport $(UIFLAGS) -DVERSION=\"$(VERSION)\"

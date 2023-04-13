@@ -261,8 +261,13 @@ void screenInit_sys(const Settings* settings, ScreenState* state, int reset) {
     int dh = U4_SCREEN_H * scale;
 #ifdef ANDROID
     const int glVersion = 0x301;
+    const int attrib = GLV_ATTRIB_DOUBLEBUFFER;
+#elif defined(USE_GLES)
+    const int glVersion = 0x301;
+    const int attrib = GLV_ATTRIB_DOUBLEBUFFER | GLV_ATTRIB_ES;
 #else
     const int glVersion = 0x303;
+    const int attrib = GLV_ATTRIB_DOUBLEBUFFER;
 #endif
 
     if (reset) {
@@ -275,7 +280,7 @@ void screenInit_sys(const Settings* settings, ScreenState* state, int reset) {
 
         memset(sa, 0, sizeof(ScreenGLView));
 
-        sa->view = glv_create(GLV_ATTRIB_DOUBLEBUFFER, glVersion);
+        sa->view = glv_create(attrib, glVersion);
         if (! sa->view)
             goto fatal;
 

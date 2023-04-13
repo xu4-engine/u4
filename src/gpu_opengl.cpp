@@ -41,6 +41,9 @@ extern uint32_t getTicks();
 #ifdef ANDROID
 #define DVERSION    "#version 310 es\n"
 #define PRECISION_F "precision mediump float;\n"
+#elif defined(USE_GLES)
+#define DVERSION    "#version 310 es\n"
+#define PRECISION_F "precision highp float;\n"
 #else
 #define DVERSION    "#version 330\n"
 #define PRECISION_F
@@ -429,7 +432,7 @@ const char* gpu_init(void* res, int w, int h, int scale, int filter)
     // Create screen, white, noise & shadow textures.
     glGenTextures(TEXTURE_COUNT, &gr->screenTex);
     gpu_defineTex(gr->screenTex, 320, 200, NULL,
-#ifdef ANDROID
+#if defined(ANDROID) || defined(USE_GLES)
                   GL_RGBA,  // Must match glTexSubImage2D format.
 #else
                   GL_RGB,
