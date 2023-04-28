@@ -8,11 +8,13 @@ UI ?= glv
 GPU ?= scale
 SOUND=faun
 
+PKG_CONFIG ?= pkg-config
+
 ifeq ($(UI), allegro)
 ifeq ($(SOUND),allegro)
-	UILIBS=-lallegro_acodec -lallegro_audio -lallegro
+	UILIBS=$(shell ${PKG_CONFIG} --libs allegro-5 allegro_acodec-5 allegro_audio-5)
 else
-	UILIBS=-lallegro
+	UILIBS=$(shell ${PKG_CONFIG} --libs allegro-5)
 endif
 endif
 
@@ -37,23 +39,25 @@ endif
 	UILIBS+=-lboron
 #endif
 
-CXXFLAGS=-Wall -I. -Isupport $(UIFLAGS) -DVERSION=\"$(VERSION)\"
+CXXFLAGS+=-Wall -I. -Isupport $(UIFLAGS) -DVERSION=\"$(VERSION)\"
 #CXXFLAGS+=-rdynamic -DHAVE_BACKTRACE=1 -DHAVE_VARIADIC_MACROS=1
 
 # Choose one of these for debug/release mode.
 #CXXFLAGS+=-g -DDEBUG
 CXXFLAGS+=-O3 -DNDEBUG
 
+CXXFLAGS+=$(shell ${PKG_CONFIG} --cflags minizip)
+
 ifeq ($(UI), glv)
 CXXFLAGS+=-Iglv/x11
 GLV_SRC=glv/x11/glv.c
-UILIBS+=-lXcursor -lX11
+UILIBS+=$(shell ${PKG_CONFIG} --libs xcursor x11)
 CFLAGS=$(CXXFLAGS) -DUSE_CURSORS
 else
 CFLAGS=$(CXXFLAGS)
 endif
 
-LIBS=$(UILIBS) -lGL -lpng -lz
+LIBS=$(UILIBS) $(shell ${PKG_CONFIG} --libs gl libpng minizip zlib)
 
 ifeq ($(STATIC_GCC_LIBS),true)
     LDFLAGS+=-L. -static-libgcc

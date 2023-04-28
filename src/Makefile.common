@@ -9,7 +9,6 @@ CSRCS=\
         support/notify.c \
         support/stringTable.c \
         support/txf_draw.c \
-        unzip.c \
         $(NULL)
 
 CXXSRCS=\

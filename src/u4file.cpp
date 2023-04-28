@@ -6,9 +6,9 @@
 #include <cstring>
 #include <cstdlib>
 #include <map>
+#include <unzip.h>
 
 #include "u4file.h"
-#include "unzip.h"
 #include "debug.h"
 #include "xu4.h"
 
