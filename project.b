@@ -176,7 +176,6 @@ exe %xu4 [
 		%tileset.cpp
 		%tileview.cpp
 		%u4file.cpp
-		%unzip.c
 		%view.cpp
 		%xu4.cpp
 
@@ -188,6 +187,7 @@ exe %xu4 [
 		%support/notify.c
 		%support/stringTable.c
 		%support/txf_draw.c
+		%support/unzip.c
 	]
 ]
 

@@ -114,7 +114,6 @@ LOCAL_SRC_FILES := app_main.c \
 	../src/tileset.cpp \
 	../src/tileview.cpp \
 	../src/u4file.cpp \
-	../src/unzip.c \
 	../src/view.cpp \
 	../src/xu4.cpp \
 	../src/lzw/hash.c \
@@ -123,7 +122,8 @@ LOCAL_SRC_FILES := app_main.c \
 	../src/lzw/u4decode.cpp \
 	../src/support/notify.c \
 	../src/support/stringTable.c \
-	../src/support/txf_draw.c
+	../src/support/txf_draw.c \
+	../src/support/unzip.c
 
 LOCAL_STATIC_LIBRARIES := boron faun vorbisfile vorbis ogg glv png
 LOCAL_LDLIBS := -llog -laaudio -landroid -lEGL -lGLESv3 -lz
