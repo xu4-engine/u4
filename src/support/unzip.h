@@ -49,6 +49,11 @@ extern "C" {
 #include <zlib.h>
 #endif
 
+#ifdef _Z_OF
+/* Handle Gentoo's non-standard zconf.h */
+#define OF  _Z_OF
+#endif
+
 #if defined(STRICTUNZIP) || defined(STRICTZIPUNZIP)
 /* like the STRICT of WIN32, we define a pointer that cannot be converted
     from (void*) without cast */
