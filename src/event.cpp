@@ -1016,7 +1016,7 @@ int EventHandler::readInt(int maxlen)
  */
 const char* EventHandler::readString(int maxlen, const char *extraChars)
 {
-    assert(maxlen < 32);
+    assert(size_t(maxlen) < sizeof(xu4.eventHandler->readStringBuf));
     ReadStringController ctrl(maxlen, TEXT_AREA_X + c->col,
                                       TEXT_AREA_Y + c->line);
     if (extraChars)
@@ -1035,7 +1035,7 @@ const char* EventHandler::readString(int maxlen, const char *extraChars)
  */
 const char* EventHandler::readStringView(int maxlen, TextView *view,
                                          const char* extraChars) {
-    assert(maxlen < 32);
+    assert(size_t(maxlen) < sizeof(xu4.eventHandler->readStringBuf));
     ReadStringController ctrl(maxlen, view->cursorX(), view->cursorY(),
                               view);
     if (extraChars)

@@ -229,7 +229,7 @@ protected:
     std::vector<Controller *> controllers;
     std::list<const _MouseArea*> mouseAreaSets;
     updateScreenCallback updateScreen;
-    char readStringBuf[32];
+    char readStringBuf[33];
 };
 
 #endif
