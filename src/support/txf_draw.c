@@ -248,6 +248,11 @@ static float txf_width2(const TxfHeader* tf, const uint8_t* it,
 
     while( it != end ) {
         ch = *it++;
+        if (ch == TC_Font || ch == TC_Color) {
+            if (++it == end)
+                break;
+            continue;
+        }
         if (ch == '\n')
             break;
         tgi = txf_glyph(tf, ch);
