@@ -890,15 +890,9 @@ bool CombatController::keyPressed(int key) {
         c->location->move(keyToDirection(key), true);
         break;
 
-    case U4_ESC:
+    case 5:         /* ctrl-E */
         if (settings.debug)
             endCombat(false);   /* don't adjust karma */
-        else {
-bad_cmd:
-            gameBadCommand();
-            announceActivePlayer();
-            endTurn = false;
-        }
         break;
 
     case ' ':
@@ -1090,13 +1084,15 @@ bad_cmd:
     case '9':
         if (settings.enhancements && settings.enhancementsOptions.activePlayer)
             gameSetActivePlayer(key - '1');
-        else
-            goto bad_cmd;
+        else {
+            gameBadCommand();
+            announceActivePlayer();
+            endTurn = false;
+        }
         break;
 
     default:
-        valid = false;
-        break;
+        return EventHandler::defaultKeyHandler(key);
     }
 
     if (valid) {

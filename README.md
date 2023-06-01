@@ -179,15 +179,15 @@ Cheat list:
         z     z-down (like the Z-down spell, but free)
 
 * ctrl-d (destroy monster/object; doesn't work on energy fields)
+* ctrl-e (end combat)
 * ctrl-h (teleport to Lord British's throne room)
 * ctrl-v (switch between 3-d and 2-d view; dungeons only)
 * F1-F8 (teleport to a dungeon entrance; surface only)
 * F9-F11 (teleport to the altar room of truth/love/courage; surface only)
 * F12 (display torch duration)
-* Escape (end combat)
 
 Note:
-Except for the Escape key, none of the cheats work during combat.
+Except for the ctrl-e command, none of the cheats work during combat.
 
 
 Misc.
