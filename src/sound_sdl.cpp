@@ -112,6 +112,10 @@ void soundDelete(void)
     //delete logger;
 }
 
+void soundSuspend(int /*halt*/)
+{
+}
+
 static bool sound_load(Sound sound) {
     if (soundChunk[sound] == NULL) {
         const char* pathname = xu4.config->soundFile(sound);

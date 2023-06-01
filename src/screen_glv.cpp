@@ -135,6 +135,9 @@ static void handleKeyDownEvent(const GLViewEvent* event,
         case KEY_Delete:
             key = U4_BACKSPACE;
             break;
+        case KEY_Pause:
+            key = U4_PAUSE;
+            break;
         default:
             if (keycode >= KEY_F1 && keycode <= KEY_F12)
                 key = U4_FKEY + (keycode - KEY_F1);

@@ -22,18 +22,15 @@
 #define U4_SPACE        ' '
 #define U4_ESC          27
 #define U4_ENTER        13
-#define U4_ALT          128
-#define U4_KEYPAD_ENTER 271
-#define U4_META         323
-#define U4_FKEY         282
-#define U4_RIGHT_SHIFT  303
-#define U4_LEFT_SHIFT   304
-#define U4_RIGHT_CTRL   305
-#define U4_LEFT_CTRL    306
-#define U4_RIGHT_ALT    307
-#define U4_LEFT_ALT     308
-#define U4_RIGHT_META   309
-#define U4_LEFT_META    310
+
+// Key modifier masks.
+#define U4_ALT          0x080
+#define U4_META         0x200   // FIXME: Not handled by RecordCommand
+
+// The following are 0x100 + USB HID Usage Ids.
+#define U4_FKEY         0x13a
+#define U4_PAUSE        0x148
+#define U4_KEYPAD_ENTER 0x158
 
 enum InputEventType {
     IE_MOUSE_MOVE,
@@ -171,6 +168,7 @@ public:
     /* Event functions */
     bool run();
     void setScreenUpdate(void (*updateScreen)(void));
+    void togglePause();
 #if defined(IOS)
     void handleEvent(UIEvent *);
     static void controllerStopped_helper();
@@ -211,6 +209,7 @@ public:
 
 protected:
     void handleInputEvents(Controller*, updateScreenCallback);
+    bool runPause();
 
     FrameSleep fs;
     uint32_t timerInterval;     // Milliseconds between timedEvents ticks.
@@ -223,6 +222,7 @@ protected:
     uint32_t recordClock;
     uint32_t recordLast;
 #endif
+    bool paused;
     bool controllerDone;
     bool ended;
     TimedEventMgr timedEvents;

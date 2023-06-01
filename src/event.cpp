@@ -39,7 +39,7 @@ EventHandler::EventHandler(int gameCycleDuration, int frameDuration) :
     runRecursion(0),
     updateScreen(NULL)
 {
-    controllerDone = ended = false;
+    controllerDone = ended = paused = false;
     anim_init(&flourishAnim, 64, NULL, NULL);
     anim_init(&fxAnim, 32, NULL, NULL);
     frameSleepInit(&fs, frameDuration);
@@ -150,7 +150,74 @@ void EventHandler::setScreenUpdate(void (*updateFunc)(void)) {
     updateScreen = updateFunc;
 }
 
+#define GPU_PAUSE
+
+void EventHandler::togglePause() {
+    if (paused) {
+        paused = false;
+    } else {
+#ifdef GPU_PAUSE
+        // Don't pause if Game Browser (or other LAYER_TOP_MENU user) is open.
+        if (screenLayerUsed(LAYER_TOP_MENU))
+            return;
+#endif
+        paused = true;
+        // Set ended to break the run loop.  runPause() resets it so that
+        // the game does not end.
+        ended = true;
+    }
+}
+
 #include "support/getTicks.c"
+
+#ifdef GPU_PAUSE
+#include "gpu.h"
+#include "gui.h"
+
+static void renderPause(ScreenState* ss, void* data)
+{
+    gpu_drawGui(xu4.gpu, GPU_DLIST_GUI);
+}
+#endif
+
+// Return true if game should end.
+bool EventHandler::runPause() {
+    Controller waitCon;
+
+    soundSuspend(1);
+    screenSetMouseCursor(MC_DEFAULT);
+#ifdef GPU_PAUSE
+    static uint8_t pauseGui[] = {
+        LAYOUT_V, BG_COLOR_CI, 128,
+        MARGIN_V_PER, 42, FONT_VSIZE, 38, LABEL_DT_S,
+        LAYOUT_END
+    };
+    const void* guiData[1];
+    guiData[0] = "\x13\xAPaused";
+    TxfDrawState ds;
+    ds.fontTable = screenState()->fontTable;
+    float* attr = gui_layout(GPU_DLIST_GUI, NULL, &ds, pauseGui, guiData);
+    gpu_endTris(xu4.gpu, GPU_DLIST_GUI, attr);
+
+    screenSetLayer(LAYER_TOP_MENU, renderPause, this);
+#else
+    screenTextAt(16, 12, "( Paused )");
+    screenUploadToGPU();
+#endif
+    screenSwapBuffers();
+
+    ended = false;
+    do {
+        msecSleep(333);
+        handleInputEvents(&waitCon, NULL);
+    } while (paused && ! ended);
+
+#ifdef GPU_PAUSE
+    screenSetLayer(LAYER_TOP_MENU, NULL, NULL);
+#endif
+    soundSuspend(0);
+    return ended;
+}
 
 /*
  * Return non-zero if waitTime has been reached or passed.
@@ -264,6 +331,7 @@ bool EventHandler::run() {
     }
     ++runRecursion;
 
+resume:
     while (! ended && ! controllerDone) {
         handleInputEvents(NULL, updateScreen);
 #ifdef DEBUG
@@ -283,6 +351,9 @@ bool EventHandler::run() {
         screenSwapBuffers();
         frameSleep(&fs, 0);
     }
+
+    if (paused && ! runPause())
+        goto resume;
 
     --runRecursion;
     return ended;
@@ -901,14 +972,16 @@ public:
  */
 bool EventHandler::globalKeyHandler(int key) {
     switch(key) {
+    case U4_PAUSE:
+    case U4_ALT + 'p':
+        xu4.eventHandler->togglePause();
+        return true;
+
 #if defined(MACOSX)
     case U4_META + 'q': /* Cmd+q */
     case U4_META + 'x': /* Cmd+x */
-    //case U4_META + 'Q':   // Handle shifted version?
-    //case U4_META + 'X':
 #endif
     case U4_ALT + 'x': /* Alt+x */
-    //case U4_ALT + 'X':    // Handle shifted version?
 #if defined(WIN32)
     case U4_ALT + U4_FKEY + 3:
 #endif

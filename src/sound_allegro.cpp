@@ -202,6 +202,23 @@ void soundDelete(void)
     audioFunctional = false;
 }
 
+void soundSuspend(int halt)
+{
+    if (audioFunctional) {
+#if 0
+        // Causes 100% CPU usage on Linux with 5.2.7 & 5.2.8.
+        al_set_mixer_playing(finalMix, ! halt);
+#else
+        // al_set_voice_playing doesn't work with mixers, so the mixer is
+        // detached instead (which doesn't actually suspend the backend).
+        if (halt)
+            al_detach_mixer(finalMix);
+        else
+            al_attach_mixer_to_voice(finalMix, voice);
+#endif
+    }
+}
+
 #ifdef CONF_MODULE
 static const char* audioExt(const CDIEntry* entry) {
     // NOTE: Using CDI_MASK_FORMAT since mod_addLayer() changes the 0xDA byte.
@@ -289,7 +306,7 @@ static ALLEGRO_AUDIO_STREAM* moduleAudioStream(const CDIEntry* ent,
                                                ALLEGRO_FILE** fileHandlePtr) {
     ALLEGRO_FILE* fh = *fileHandlePtr;
     if (! fh)
-        *fileHandlePtr = fh = al_fopen(xu4.config->modulePath(), "rb");
+        *fileHandlePtr = fh = al_fopen(xu4.config->modulePath(ent), "rb");
 
     if (fh) {
         ALLEGRO_FILE* slice;

@@ -64,6 +64,11 @@ void soundDelete()
     faun_shutdown();
 }
 
+void soundSuspend(int halt)
+{
+    faun_suspend(halt);
+}
+
 static int loadSoundBuffer(int sound)
 {
     float duration = 0.0f;

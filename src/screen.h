@@ -102,6 +102,7 @@ void screenDelete(void);
 void screenReInit(void);
 void screenSetLayer(int layer, void (*renderFunc)(ScreenState*, void*),
                     void* data);
+bool screenLayerUsed(int layer);
 void screenSwapBuffers();
 void screenWait(int numberOfAnimationFrames);
 void screenUploadToGPU();

@@ -303,6 +303,10 @@ void screenSetLayer(int layer, void (*renderFunc)(ScreenState*, void*),
     rl->data = data;
 }
 
+bool screenLayerUsed(int layer) {
+    return XU4_SCREEN->layers[layer].func ? true : false;
+}
+
 void screenTextAt(int x, int y, const char *fmt, ...) {
     char* buffer = XU4_SCREEN->msgBuffer;
     int i, buflen;

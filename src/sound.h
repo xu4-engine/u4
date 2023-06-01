@@ -67,6 +67,7 @@ enum MusicTrack {
 
 int soundInit(void);
 void soundDelete(void);
+void soundSuspend(int halt);
 
 void soundPlay(Sound sound, bool onlyOnce = true, int specificDurationInTicks = -1);
 void soundSpeakLine(int streamId, int line, bool wait = false);

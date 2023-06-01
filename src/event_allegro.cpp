@@ -43,6 +43,9 @@ static void handleKeyDownEvent(const ALLEGRO_EVENT* event,
         case ALLEGRO_KEY_DELETE:
             key = U4_BACKSPACE;
             break;
+        case ALLEGRO_KEY_PAUSE:
+            key = U4_PAUSE;
+            break;
         default:
             if (event->keyboard.unichar > 0)
                 key = event->keyboard.unichar & 0x7F;

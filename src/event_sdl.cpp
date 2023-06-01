@@ -48,6 +48,8 @@ static void handleKeyDownEvent(const SDL_Event &event, Controller *controller, u
     else if (event.key.keysym.sym == SDLK_BACKSPACE ||
              event.key.keysym.sym == SDLK_DELETE)
         key = U4_BACKSPACE;
+    else if (event.key.keysym.sym == SDLK_PAUSE)
+        key = U4_PAUSE;
 
 #if defined(MACOSX)
     // Mac OS X translates function keys weirdly too
