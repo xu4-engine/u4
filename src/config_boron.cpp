@@ -113,6 +113,7 @@ struct ConfigBoron : public Config {
     Module mod;
     UIndex configN;
     UIndex itemIdN;         // item-id context!
+    int voiceI;             // voice value index
     UIndex musicN;          // music parts block!
     size_t tocUsed;
     ConfigData xcd;
@@ -1118,6 +1119,9 @@ ConfigBoron::ConfigBoron(const char* renderPath, const char* modulePath,
     if (ur_is(cell, UT_BLOCK)) {
         itemIdN = script_init(ut, cell);
         ur_setId(cell, UT_NONE);    // Let block be recycled.
+
+        UAtom voice = ur_intern(ut, "voice", 5);
+        voiceI = ur_ctxAddWordI(ur_threadContext(ut), voice);
     }
     }
 }

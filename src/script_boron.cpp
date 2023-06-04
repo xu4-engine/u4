@@ -103,6 +103,38 @@ CFUNC(cf_music)
 }
 
 /*-cf-
+    vo
+        part    int!/coord!
+    return: unset!
+
+    Play a line from a voice stream.
+
+    An int! part is relative to the current voice start line.
+    That is set by the global 'voice variable, which is a coord! of
+    (stream id, start line).
+
+    A coord! part directly specifies the stream & line.
+*/
+CFUNC(cf_vo)
+{
+    if (ur_is(a1, UT_INT)) {
+        UBuffer* ctx = ur_threadContext(ut);
+        int vi = static_cast<const ConfigBoron*>(xu4.config)->voiceI;
+        assert(vi >= 0);
+        const UCell* voice = ur_ctxCell(ctx, vi);
+        if (ur_is(voice, UT_COORD)) {
+            int line = voice->coord.n[1] + ur_int(a1);
+            soundSpeakLine(voice->coord.n[0] + 1, line);
+        }
+    }
+    else if (ur_is(a1, UT_COORD)) {
+        soundSpeakLine(a1->coord.n[0] + 1, a1->coord.n[1]);
+    }
+    ur_setId(res, UT_UNSET);
+    return UR_OK;
+}
+
+/*-cf-
     relocate
         pos coord!
     return: unset!
@@ -784,6 +816,7 @@ CFUNC(cf_removeItems)
 static const BoronCFunc pfFuncs[] = {
     cf_gameWait,
     cf_music,
+    cf_vo,
     cf_relocate,
     cf_damagePc,
     cf_karma,
@@ -808,6 +841,7 @@ static const BoronCFunc pfFuncs[] = {
 static const char pfFuncSpecs[] =
     "game-wait n int!\n"
     "music n\n"
+    "vo n\n"
     "relocate a coord!\n"
     "damage-pc n int! hp int!\n"
     "karma n int!\n"

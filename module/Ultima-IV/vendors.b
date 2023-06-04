@@ -4,7 +4,8 @@ random/seed 'clock
 
 =>: func [msg data] [>> construct msg data]
 
-talk-to: func [vendor locale] [
+talk-to: func [vendor locale /extern voice] [
+    voice: none
     do select vendor/locale locale
     >> '^/'
     blk: vendor/intro
@@ -95,6 +96,7 @@ weapons: context [
     intro: [
         view-stats stats-weapons
         music-shopping
+        vo 0
         >> "^/^/^/"
         input-shop {{
             Welcome to
@@ -106,8 +108,8 @@ weapons: context [
             Buy or Sell? 
         }}
         [
-            'b' [>> "^/Very Good!" show_inventory]
-            's' [>> "^/Excellent! Which^/wouldst " you_sell]
+            'b' [vo 2 >> "^/Very Good!" show_inventory]
+            's' [vo 3 >> "^/Excellent! Which^/wouldst " you_sell]
             adieu
         ]
     ]
@@ -115,6 +117,7 @@ weapons: context [
     end: stats-reset
 
     adieu: [
+        vo 1
         => "^/% says:^/Fare thee well!^/" shop-vars
         end
     ]
@@ -131,6 +134,7 @@ weapons: context [
     check_money: [
         quant: 1
         either lt? party 'gold price [
+            vo 4
             >> "^/You have not the funds for even one!^/"
             anything_else_buy
         ][
@@ -140,6 +144,7 @@ weapons: context [
             either gt? party 'gold mul price 2 [
                 howmany_buy
             ][
+                vo 5
                 >> "^/Take it? "
                 input-choice ['y' buy 'n' toobad adieu]
             ]
@@ -147,6 +152,7 @@ weapons: context [
     ]
 
     toobad: [
+        vo 6
         >> "^/Too bad."
         anything_else_buy
     ]
@@ -190,6 +196,7 @@ weapons: context [
 
     ; input how many to buy
     howmany_buy: [
+        vo 7
         >> "^/How many would^/you like? "
         either quant: input-number 2 [buy] [anything_else_buy]
     ]
@@ -197,11 +204,13 @@ weapons: context [
     ; buy the weapon
     buy: [
         either lt? party 'gold mul quant price [
+            vo 8
             >> "^/I fear you have not the funds, perhaps something else."
             anything_else_buy
         ][
             pay price quant [
                 add-items type quant
+                vo 9
                 => "^/% says: A fine choice!^/" shop-vars
                 anything_else_buy
             ][
@@ -232,15 +241,17 @@ weapons: context [
         price: div price 2
         switch party type [
             0 [
+                vo 10
                 >> "^/Thou dost not own that. What else might" you_sell
             ]
             1 [
                 quant: 1
+                vo 11
                 => "^/I will give you $gp for that =.^/Deal? "
                     item-vars
                 input-choice [
                     'y' sell
-                    'n' [>> "^/Hmmph. What else^/ would " you_sell]
+                    'n' [vo 28,153 >> "^/Hmmph. What else^/ would " you_sell]
                     adieu
                 ]
             ][
@@ -254,9 +265,11 @@ weapons: context [
     sell_many_offer: [
         price: mul price quant
         either gt? quant party type [
+            vo 12
             >> "^/You don't have that many swine!^/"
             end
         ][
+            vo 11
             => "^/I will give you $gp for them.^/Deal? "
                 item-vars
             input-choice ['y' sell 'n' adieu adieu]
@@ -266,6 +279,7 @@ weapons: context [
     sell: [
         remove-items type quant
         add-items 'gold price
+        vo 13
         >> "^/Fine! What else?"
         you_sell
     ]
@@ -299,27 +313,27 @@ weapons: context [
 
     locale: [
         Britain [
-            shop: "Windsor Weaponry" owner: "Winston"
+            shop: "Windsor Weaponry"   owner: "Winston" voice: 28,139
             stock [staff 20 dagger 2 sling 25 sword 300]
         ]
         Jhelom [
-            shop: "Willard's Weaponry" owner: "Willard"
+            shop: "Willard's Weaponry" owner: "Willard" voice: 28,154
             stock [axe 225 sword 300 crossbow 600 halberd 350]
         ]
         Minoc [
-            shop: "The Iron Works" owner: "Peter"
+            shop: "The Iron Works"     owner: "Peter"   voice: 28,168
             stock [mace 100 halberd 300 magic-axe 1500 magic-sword 2500]
         ]
         Trinsic [
-            shop: "Dueling Weapons" owner: "Jumar"
+            shop: "Dueling Weapons"    owner: "Jumar"   voice: 28,182
             stock [mace 100 axe 225 sword 300 bow 250]
         ]
         Buccaneers-Den [
-            shop: "Hook's Arms" owner: "Hook"
+            shop: "Hook's Arms"        owner: "Hook"    voice: 28,196
             stock [crossbow 600 oil 5 magic-bow 2000 magic-wand 5000]
         ]
         Vesper [
-            shop: "Village Arms" owner: "Wendy"
+            shop: "Village Arms"       owner: "Wendy"   voice: 28,210
             stock [dagger 2 sling 25 bow 250 oil 5]
         ]
     ]
@@ -330,6 +344,7 @@ armor: context [
         view-stats stats-armor
         music-shopping
         >> "^/^/^/"
+        vo 0
         input-shop {{
             Welcome to
             @
@@ -349,6 +364,7 @@ armor: context [
     end: stats-reset
 
     adieu: [
+        vo 1
         => "^/% says:^/Good Bye.^/" shop-vars
         end
     ]
@@ -356,6 +372,7 @@ armor: context [
     ; Buying
 
     show_inventory: [
+        vo 2
         => "^/We've got:^/+^/What'll it^/ be? "
             ['+' inventory]
         input-choice items
@@ -365,6 +382,7 @@ armor: context [
     check_money: [
         quant: 1
         either lt? party 'gold price [
+            vo 3
             >> "^/You have not the funds for even one!^/"
             anything_else_buy
         ][
@@ -374,6 +392,7 @@ armor: context [
             either gt? party 'gold mul price 2 [
                 howmany_buy
             ][
+                vo 4
                 >> "^/Take it? "
                 input-choice ['y' buy 'n' toobad adieu]
             ]
@@ -381,6 +400,7 @@ armor: context [
     ]
 
     toobad: [
+        vo 5
         >> "^/Too bad."
         anything_else_buy
     ]
@@ -404,6 +424,7 @@ armor: context [
 
     ; input how many to buy
     howmany_buy: [
+        vo 6
         >> "^/How many would^/you like? "
         either quant: input-number 2 [buy] [anything_else_buy]
     ]
@@ -411,11 +432,13 @@ armor: context [
     ; buy the armor
     buy: [
         either lt? party 'gold mul quant price [
+            vo 7
             >> "^/You don't have enough gold. Maybe something cheaper?^/"
             anything_else_buy
         ][
             pay price quant [
                 add-items type quant
+                vo 8
                 => "^/% says: Good choice!^/" shop-vars
                 anything_else_buy
             ][
@@ -446,15 +469,18 @@ armor: context [
         price: div price 2
         switch party type [
             0 [
+                vo 9
                 >> "^/Come on, you^/don't own any."
                 you_sell
             ]
             1 [
                 quant: 1
+                vo 10
                 => "^/I will give you $gp for that =.^/Deal? "
                     item-vars
                 input-choice ['y' sell 'n' no_sale adieu]
             ][
+                vo 11
                 => "^/How many =s^/would you wish^/to sell? "
                     item-vars
                 either quant: input-number 2 [sell_many_offer] [sell]
@@ -465,9 +491,11 @@ armor: context [
     sell_many_offer: [
         price: mul price quant
         either gt? quant party type [
+            vo 12
             >> "^/You don't have that many swine!^/"
             end
         ][
+            vo 10
             => "^/I will give you $gp for them.^/Deal? "
                 item-vars
             input-choice ['y' sell 'n' no_sale adieu]
@@ -475,6 +503,7 @@ armor: context [
     ]
 
     no_sale: [
+        vo 28,82
         >> "^/Harumph. What else would "
         you_sell
     ]
@@ -482,6 +511,7 @@ armor: context [
     sell: [
         remove-items type quant
         add-items 'gold price
+        vo 13
         >> "^/Fine! What else?"
         you_sell
     ]
@@ -507,23 +537,23 @@ armor: context [
 
     locale: [
         Britain [
-            shop: "Winsdor Armour" owner: "Winston"
+            shop: "Winsdor Armour"   owner: "Winston" voice: 28,68
             stock [cloth 50 leather 200 chain 600]
         ]
         Jhelom [
-            shop: "Valiant's Armour" owner: "Valiant"
+            shop: "Valiant's Armour" owner: "Valiant" voice: 28,83
             stock [chain 600 plate 2000 magic-chain 4000 magic-plate 7000]
         ]
         Trinsic [
-            shop: "Duelling Armour" owner: "Jean"
+            shop: "Duelling Armour"  owner: "Jean"    voice: 28,97
             stock [cloth 50 chain 600 magic-chain 4000]
         ]
         Paws [
-            shop: "Light Armour" owner: "Pierre"
+            shop: "Light Armour"     owner: "Pierre"  voice: 28,111
             stock [cloth 50 leather 200]
         ]
         Buccaneers-Den [
-            shop: "Basic Armour" owner: "Limpy"
+            shop: "Basic Armour"     owner: "Limpy"   voice: 28,125
             stock [cloth 50 leather 200 chain 600]
         ]
     ]
@@ -532,12 +562,15 @@ armor: context [
 food: context [
     intro: [
         music-shopping
+        vo 0
         => "Welcome to @^/^/% says: Good day, and Welcome friend.^/"
             shop-vars
         either lt? party 'gold price [
+            vo 2
             >> "^/Come back when you have some money!^/"
             end
         ][
+            vo 3
             >> "^/May I interest you in some rations? "
             input-choice ['y' ask 'n' adieu end]
         ]
@@ -545,17 +578,19 @@ food: context [
 
     end: music-reset
 
-    adieu: [>> "^/Goodbye. Come again!^/" end]
+    adieu: [vo 1 >> "^/Goodbye. Come again!^/" end]
 
     portion: 25     ; Number of food units.
 
     ask: [
+        vo 4
         => "^/We have the best adventure rations, # for only $gp.^/"
             ['#' portion '$' price]
         howmany
     ]
 
     howmany: [
+        vo 5
         => "^/How many packs of # would you like? "
             ['#' portion]
         either quant: input-number 3 [
@@ -571,9 +606,11 @@ food: context [
             add-items 'food mul portion quant
             >> "^/Thank you. "
             either lt? party 'gold price [
+                vo 6
                 >> "Come again!^/"
                 end
             ][
+                vo 7
                 >> "Anything^/ else? "
                 input-choice ['y' howmany 'n' adieu adieu]
             ]
@@ -587,11 +624,16 @@ food: context [
     ]
 
     locale: [
-        Moonglow    [shop: "The Sage Deli"    owner: "Shaman"    price: 25]
-        Britain     [shop: "Adventure Food"   owner: "Windrick"  price: 40]
-        Yew         [shop: "The Dry Goods"    owner: "Donnar"    price: 35]
-        Skara-Brae  [shop: "Food For Thought" owner: "Mintol"    price: 20]
-        Paws        [shop: "The Market"       owner: "Max"       price: 30]
+        Moonglow    [shop: "The Sage Deli"    owner: "Shaman"    price: 25
+                     voice: 28,28]
+        Britain     [shop: "Adventure Food"   owner: "Windrick"  price: 40
+                     voice: 28,36]
+        Yew         [shop: "The Dry Goods"    owner: "Donnar"    price: 35
+                     voice: 28,44]
+        Skara-Brae  [shop: "Food For Thought" owner: "Mintol"    price: 20
+                     voice: 28,52]
+        Paws        [shop: "The Market"       owner: "Max"       price: 30
+                     voice: 28,60]
     ]
 ]
 
@@ -599,32 +641,35 @@ tavern: context [
     intro: [
         music-shopping
         ales_drunk: 0
+        vo 0
         => "% says: Welcome to @" shop-vars
         whatll_it_be
     ]
 
     end: music-reset
 
-    adieu: [>> "See ya mate!^/" end]
+    adieu: [vo 1 >> "See ya mate!^/" end]
 
     whatll_it_be: [
         input-shop "^/% says: What'll it be, Food er Ale? " [
             'f' [
+                vo 2
                 => "^/Our specialty is =, which costs $gp."
                     ['=' type '$' spec_price]
                 how_many_plates
             ]
             'a' [
                 either gt? ++ ales_drunk 2 [
+                    vo 3
                     => "^/% says: Sorry, you seem to have too many. Bye!^/"
                         shop-vars
-                    adieu
+                    end     ; DOS version also does 'adieu.
                 ][
                     price: 2
                     tip_total: 0
-                    => "^/Here's a mug of our best.^/That'll be $gp.^/ You pay? "
-                        item-vars
-                    either paying: input-number 2 [ale_buy] [adieu]
+                    vo 4
+                    >> "^/Here's a mug of our best.^/That'll be 2gp.^/You pay? "
+                    either offer: input-number 2 [ale_buy] [adieu]
                 ]
             ]
             end
@@ -635,6 +680,7 @@ tavern: context [
         >> "^/How many plates would you^/like? "
         either quant: input-number 2 [
             pay spec_price quant [
+                vo 6
                 >> "Here ye arr.^/"
                 add-items 'food quant
                 something_else
@@ -643,6 +689,7 @@ tavern: context [
                     "Ya can only afford " div party 'gold spec_price
                     " plates.^/"
                 ]
+                vo 5
                 how_many_plates
             ]
         ][
@@ -657,29 +704,32 @@ tavern: context [
 
     ales_drunk:
     spec_price:
-    paying:
+    offer:
     topic:
     topics:
     tip_total: none
 
     ale_buy: [
-        either lt? paying price [
+        either lt? offer price [
             >> "^/Won't pay, eh.^/Ya scum, be gone^/fore ey call the^/guards!^/"
             end
         ][
-            pay paying 1 [
-                either gt? paying price [
-                    tip_total: paying
+            pay offer 1 [
+                either gt? offer price [
+                    tip_total: offer
+                    vo 7
                     >> "^/What'd ya like to know friend?^/"
                     either topic: find topics input-text 0 [
                         price: second topic     ; Reuse price for topic.
                         topic: first topic
                         foggy
                     ][
+                        vo 8
                         >> "^/'fraid I can't help ya there friend!^/"
                         something_else
                     ]
                 ][
+                    vo 9
                     something_else
                 ]
             ][
@@ -690,12 +740,13 @@ tavern: context [
     ]
 
     sorry: [
+        vo 10
         >> "^/Sorry, I could^/not help ya mate!^/"
         something_else
     ]
 
     foggy: [
-        pay paying 1 [
+        pay offer 1 [
             either ge? tip_total price [
                 >> '^/'
                 switch topic rumors
@@ -706,9 +757,10 @@ tavern: context [
                ;    'y' [>> "Here ye arr.^/" something_else] 'n' adieu adieu
                ;]
             ][
+                vo 11
                 >> "^/That subject is a bit foggy, perhaps more gold will refresh my memory. You^/give: "
-                either paying: input-number 2 [
-                    tip_total: add tip_total paying
+                either offer: input-number 2 [
+                    tip_total: add tip_total offer
                     foggy
                 ][
                     sorry
@@ -722,6 +774,7 @@ tavern: context [
 
     rumors: [
         "black stone" [
+            vo 17
             => {{
             % says: Ah, the Black Stone.
             Yes I've heard of it. But, the
@@ -731,12 +784,14 @@ tavern: context [
                 shop-vars
         ]
         "sextant" [
+            vo 16
             => {{
             % says: For navigation a Sextant is vital... Ask for item "D" in the Guild shops!
             }}
                 shop-vars
         ]
         "white stone" [
+            vo 15
             >> {{
             Now let me see... Yes it was the old Hermit...
             Sloven! He is tough to find,
@@ -744,6 +799,7 @@ tavern: context [
             }}
         ]
         "mandrake" [
+            vo 14
             => {{
             % says: The last person I knew that had
             any Mandrake was an old alchemist
@@ -752,6 +808,7 @@ tavern: context [
                 shop-vars
         ]
         "skull" [
+            vo 13
             => {{
             % says: If thou must know of that evilest of all things...
             find the beggar Jude. He is very very poor!
@@ -759,6 +816,7 @@ tavern: context [
                 shop-vars
         ]
         "nightshade" [
+            vo 12
             => {{
             % says: Of Nightshade I know but this...
             Seek out Virgil or thou shalt miss! Try in Trinsic!
@@ -767,68 +825,50 @@ tavern: context [
         ]
     ]
 
+    all-topics: [
+        "black stone" 20
+        "sextant"     30
+        "white stone" 10
+        "mandrake"    40
+        "skull"       99
+        "nightshade"  25
+    ]
+
     locale: [
         Britain [
-            shop: "Jolly Spirits" owner: "Sam"
+            shop: "Jolly Spirits" owner: "Sam" voice: 29,153
             type: "Lamb Chops" spec_price: 4
-            topics: [
-                "black stone" 20
-                "sextant"     30
-                "white stone" 10
-                "mandrake"    40
-                "skull"       99
-                "nightshade"  25
-            ]
+            topics: all-topics
         ]
 
         Jhelom [
-            shop: "The Bloody Pub" owner: "Celestial"
+            shop: "The Bloody Pub" owner: "Celestial" voice: 29,171
             type: "Dragon Tartar" spec_price: 2
-            topics: [
-                "sextant"     30
-                "white stone" 10
-                "mandrake"    40
-                "skull"       99
-                "nightshade"  25
-            ]
+            topics: skip all-topics 2
         ]
 
         Trinsic [
-            shop: "The Keg Tap" owner: "Terran"
+            shop: "The Keg Tap" owner: "Terran" voice: 29,188
             type: "Brown Beans" spec_price: 3
-            topics: [
-                "white stone" 10
-                "mandrake"    40
-                "skull"       99
-                "nightshade"  25
-            ]
+            topics: skip all-topics 4
         ]
 
         Paws [
-            shop: "Folley Tavern" owner: "Greg 'n Rob"
+            shop: "Folley Tavern" owner: "Greg 'n Rob" voice: 29,204
             type: "Folley Filet" spec_price: 2
-            topics: [
-                "mandrake"   40
-                "skull"      99
-                "nightshade" 25
-            ]
+            topics: skip all-topics 6
         ]
 
         Buccaneers-Den [
-            shop: "Captain Black Tavern" owner: "The Cap'n"
+            shop: "Captain Black Tavern" owner: "The Cap'n" voice: 29,219
             type: "Dog Meat Pie" spec_price: 4
-            topics: [
-                "skull"      99
-                "nightshade" 25
-            ]
+            topics: skip all-topics 8
         ]
 
         Vesper [
-            shop: "Axe 'n Ale" owner: "Arron"
+            shop: "Axe 'n Ale" owner: "Arron" voice: 29,233
             type: "Green Granukit" spec_price: 2
-            topics: [
-                "nightshade" 25
-            ]
+            topics: skip all-topics 10
         ]
     ]
 ]
@@ -837,18 +877,20 @@ reagents: context [
     intro: [
         music-shopping
         view-stats stats-reagents
+        vo 0
         input-shop {{
             A blind woman turns to you and says: Welcome to @
 
             I am %
             Are you in need of Reagents? 
         }}
-            ['y' [>> "^/Very well," show_reagents] 'n' adieu adieu]
+            ['y' [vo 2 >> "^/Very well," show_reagents] 'n' adieu adieu]
     ]
 
     end: stats-reset
 
     adieu: [
+        vo 1
         => "^/% says:^/Perhaps another time then....^/and slowly turns away.^/"
             shop-vars
         end
@@ -885,6 +927,7 @@ reagents: context [
 
     how_many: [
         price: pick prices pindex
+        vo 3
         => "^/Very well, we sell = for $gp. How many would you^/like? "
             item-vars
         either quant: input-number 2 [you_pay] [i_see_then]
@@ -896,12 +939,14 @@ reagents: context [
             shop-vars
         either paying: input-number 4 [
             pay paying 1 [
+                vo 4
                 >> "^/Very good. "
                 add-items type quant
                 karma either lt? paying price
                     cheated_merchant
                     honest_to_merchant
             ][
+                vo 5
                 >> "^/It seems you have not the gold! "
             ]
             anything_else
@@ -911,6 +956,7 @@ reagents: context [
     ]
 
     i_see_then: [
+        vo 6
         >> "^/I see, then "
         anything_else
     ]
@@ -923,15 +969,19 @@ reagents: context [
     locale: [
         Moonglow [
             shop: "Magical Herbs"   owner: "Margot"  prices: 2,5,6,3,6,9
+            voice: 28,0
         ]
         Skara-Brae [
             shop: "Herbs and Spice" owner: "Sasha"   prices: 2,4,9,6,4,8
+            voice: 28,7
         ]
         Paws [
             shop: "The Magics"      owner: "Sheila"  prices: 3,4,2,9,6,7
+            voice: 28,14
         ]
         Buccaneers-Den [
             shop: "Magic Mentar"    owner: "Shannon" prices: 6,7,9,9,9,1
+            voice: 28,21
         ]
     ]
 ]
@@ -939,6 +989,7 @@ reagents: context [
 healer: context [
     intro: [
         music-shopping
+        vo 0
         input-shop {{
             Welcome unto
             @
@@ -953,6 +1004,7 @@ healer: context [
     end: music-reset
 
     adieu: [
+        vo 1
         => "^/% says: May thy life be guarded by the powers of good.^/"
             shop-vars
         end
@@ -960,6 +1012,7 @@ healer: context [
 
     give_blood: [
         either ge? pc-attr 1 hp 400 [
+            vo 2
             >> "^/Art thou willing to give 100pts of thy blood to aid others? "
             input-choice [
                 'y' [
@@ -995,6 +1048,7 @@ healer: context [
     ]
 
     show_services: [
+        vo 3
         => "^/% says: We can perform:^/+Your need: "
             ['%' owner '+' inventory]
         input-choice items
@@ -1005,6 +1059,7 @@ healer: context [
             pc: 1
             will_pay
         ][
+            vo 4
             => "^/% asks:^/Who is in^/need? "
                 shop-vars
             either pc: input-player [
@@ -1017,6 +1072,7 @@ healer: context [
     ]
 
     more_help: [
+        vo 5
         input-shop "^/% asks: Do you need more help? "
             ['y' show_services 'n' give_blood give_blood]
     ]
@@ -1026,9 +1082,11 @@ healer: context [
             => "^/+ will cost thee $gp.^/"
                 ['+' desc '$' price]
             either lt? party 'gold price [
+                vo 6
                 >> "^/I see by thy purse that thou hast not enough gold. I cannot aid thee.^/"
                 more_help
             ][
+                vo 7
                 >> "^/Wilt thou^/pay? "
                 input-choice ['y' heal 'n' more_help end]
             ]
@@ -1052,16 +1110,26 @@ healer: context [
     ]
 
     locale: [
-        Britannia       [shop: "The Royal Healer"   owner: "Pendragon"]
-        Moonglow        [shop: "The Healer"         owner: "Harmony"]
-        Britain         [shop: "Wound Healing"      owner: "Celest"]
-        Jhelom          [shop: "Heal and Health"    owner: "Triplet"]
-        Yew             [shop: "Just Healing"       owner: "Justin"]
-        Skara-Brae      [shop: "The Mystic Heal"    owner: "Spiran"]
-        Lycaeum         [shop: "The Truth Healer"   owner: "Starfire"]
-        Empath-Abbey    [shop: "The Love Healer"    owner: "Salle'"]
-        Serpents-Hold   [shop: "The Courage Healer" owner: "Windwalker"]
-        Cove            [shop: "The Healer Shop"    owner: "Quat"]
+        Britannia       [shop: "The Royal Healer"   owner: "Pendragon"
+                         voice: 29,73]
+        Moonglow        [shop: "The Healer"         owner: "Harmony"
+                         voice: 29,81]
+        Britain         [shop: "Wound Healing"      owner: "Celest"
+                         voice: 29,89]
+        Jhelom          [shop: "Heal and Health"    owner: "Triplet"
+                         voice: 29,97]
+        Yew             [shop: "Just Healing"       owner: "Justin"
+                         voice: 29,105]
+        Skara-Brae      [shop: "The Mystic Heal"    owner: "Spiran"
+                         voice: 29,113]
+        Lycaeum         [shop: "The Truth Healer"   owner: "Starfire"
+                         voice: 29,121]
+        Empath-Abbey    [shop: "The Love Healer"    owner: "Salle'"
+                         voice: 29,129]
+        Serpents-Hold   [shop: "The Courage Healer" owner: "Windwalker"
+                         voice: 29,137]
+        Cove            [shop: "The Healer Shop"    owner: "Quat"
+                         voice: 29,145]
     ]
 ]
 
@@ -1070,9 +1138,11 @@ inn: context [
         music-shopping
         >> "The Innkeeper says: "
         either eq? 'horse party 'transport [
+            vo 2
             >> "Get that horse out of here!!!^/"
             end
         ][
+            vo 0
             input-shop
                 "Welcome to @^/^/I am %.^/^/Are you in need of lodging? "
                 ['y' ask 'n' adieu end]
@@ -1082,6 +1152,7 @@ inn: context [
     end: music-reset
 
     adieu: [
+        vo 1
         => "^/% says: Then you have come to the wrong place!^/Good day.^/"
             shop-vars
         end
@@ -1093,26 +1164,30 @@ inn: context [
     stay: [
         pay price 1 [
             cursor false
+            vo 3
             >> "^/Very good.  Have^/a pleasant night.^/"
             relocate room-loc
             if eq? 1 random 4 [     ; 25% chance
                 game-wait 1000
+                vo 4
                 >> "^/Oh, and don't mind the strange noises, it's only rats!^/"
             ]
             inn-sleep
         ][
+            vo 5
             >> "^/If you can't pay, you can't stay! Good Bye.^/"
         ]
         end
     ]
 
     take-it?: func [msg] [
+        vo 6
         >> '^/'
         >> msg
         >> "^/^/Take it? "
         input-choice [
             'y' stay
-            'n' [>> "^/You won't find a better deal in this towne!^/" end]
+            'n' [vo 7 >> "^/You won't find a better deal in this towne!^/" end]
             end
         ]
     ]
@@ -1120,6 +1195,7 @@ inn: context [
     locale: [
         Moonglow [
             shop: "The Honest Inn" owner: "Scatu" price: 20 room-loc: 28,6
+            voice: 29,0
             ask: [
                 take-it? "We have a room with 2 beds that rents for 20gp."
             ]
@@ -1127,6 +1203,7 @@ inn: context [
 
         Britain [
             shop: "Britannia Manor" owner: "Jason" price: 15 room-loc: 29,6
+            voice: 29,8
             ask: [
                 take-it? "We have a modest sized room with 1 bed for 15 gp."
             ]
@@ -1134,6 +1211,7 @@ inn: context [
 
         Jhelom [
             shop: "The Inn of Ends" owner: "Smirk" price: 10 room-loc: 10,26
+            voice: 29,16
             ask: [
                 take-it?
                 "We have a very secure room of modest size and 1 bed for 10gp."
@@ -1141,8 +1219,9 @@ inn: context [
         ]
 
         Minoc [
-            shop: "Wayfarer's Inn" owner: "Estro"
+            shop: "Wayfarer's Inn" owner: "Estro" voice: 29,24
             ask: [
+                vo 6
                 >> "^/We have three rooms available,^/a 1, 2 and 3 bed room for 30, 60^/and 90gp each.^/1, 2 or 3^/beds? "
                 ; Note: DOS version takes any input and repeats
                 ;       "1, 2 or 3^/beds?" question when invalid.
@@ -1157,6 +1236,7 @@ inn: context [
 
         Trinsic [
             shop: "Honorable Inn" owner: "Zajac" price: 15 room-loc: 29,2
+            voice: 29,32
             ask: [
                 take-it? "We have a single bed room with a back door for 15gp."
             ]
@@ -1164,7 +1244,7 @@ inn: context [
 
         Skara-Brae [
             shop: "The Inn of the Spirits" owner: "Tyrone" price: 5
-            room-loc: 28,11
+            room-loc: 28,11 voice: 29,40
             ask: [
                 take-it? {{
                 Unfortunately, I have but only a very small room with 1 bed:
@@ -1175,6 +1255,7 @@ inn: context [
 
         Vesper [
             shop: "The Sleep Shop" owner: "Tymus" price: 1 room-loc: 25,23
+            voice: 29,48
             ask: [
                 take-it? "All we have is that cot over there. But it is comfortable, and only 1 gp."
             ]
@@ -1186,6 +1267,7 @@ guild: context [
     intro: [
         music-shopping
         view-stats stats-equipment
+        vo 0
         input-shop {{
             Avast ye mate! Shure ye wishes to buy from ol'^/%?
 
@@ -1197,6 +1279,7 @@ guild: context [
     end: stats-reset
 
     adieu: [
+        vo 1
         => "^/% says: See ya matie!^/" shop-vars
         end
     ]
@@ -1230,11 +1313,13 @@ guild: context [
 
     will_buy?: func [msg] [
         => msg shop-vars
+        vo 2
         >> "^/^/Will ya buy? "
         input-choice ['y' buy 'n' [>> "^/Hmmm...Grmbl...^/" adieu] adieu]
     ]
 
     show_goods: [
+        vo 3
         => "^/% says: Good Mate!^/Ya see I gots:^/+Wat'l it be? "
             ['%' owner '+' inventory]
         input-choice items
@@ -1242,26 +1327,33 @@ guild: context [
 
     buy: [
         pay price 1 [
+            vo 4
             >> "^/Fine... fine...^/"
             add-items type quant
 
             input-shop "^/% says: See^/more? "
                 ['y' show_goods 'n' adieu adieu]
         ][
+            vo 5
             >> "^/What? Can't pay! Buzz off swine!^/"
             end
         ]
     ]
 
     locale: [
-        Vesper         [shop: "The Guild Shop" owner: "Long John Leary"]
-        Buccaneers-Den [shop: "Pirate's Guild" owner: "One Eyed Willey"]
+        Vesper [
+            shop: "The Guild Shop" owner: "Long John Leary" voice: 29,56
+        ]
+        Buccaneers-Den [
+            shop: "Pirate's Guild" owner: "One Eyed Willey" voice: 29,62
+        ]
     ]
 ]
 
 stable: context [
     intro: [
         music-shopping
+        vo 0
         >> "Welcome friend!^/Can I interest thee in^/horses? "
         input-choice ['y' ask 'n' adieu end]
     ]
@@ -1269,11 +1361,13 @@ stable: context [
     end: music-reset
 
     adieu: [
+        vo 1
         >> "^/A shame, thou looks like thou could use a good horse!^/"
         end
     ]
 
     ask: [
+        vo 2
         input-shop "^/For only $g.p.^/Thou can have the best! Wilt thou buy? "
             ['y' buy 'n' adieu end]
     ]
@@ -1281,15 +1375,17 @@ stable: context [
     buy: [
         pay price 1 [
             add-item 'horse
+            vo 3
             >> "^/Here, a better breed thou shalt not find ever!^/"
         ][
+            vo 4
             >> "^/It seems thou hast not gold enough to pay!^/"
         ]
         end
     ]
 
     locale: [
-        Paws [price: mul party 'members 100]
+        Paws [price: mul party 'members 100  voice: 29,68]
     ]
 ]
 

@@ -57,12 +57,11 @@ enum MusicTrack {
     MUSIC_DUNGEON,
     MUSIC_COMBAT,
     MUSIC_CASTLES,
+    MUSIC_MAX,
 
-    VOICE_LB,
+    VOICE_LB = MUSIC_MAX,
     VOICE_HW,
-    VOICE_GYPSY,
-
-    MUSIC_MAX
+    VOICE_GYPSY
 };
 
 int soundInit(void);

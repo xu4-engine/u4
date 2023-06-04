@@ -123,10 +123,13 @@ if vocalize [
 		out: make string! 2048
 		either eq? 'context first spec [
 			foreach it spec [
-				if block? it [
-					if all [single ne? it/name single] [continue]
-					generate context it out
-				]
+				switch type? it [
+					block! [
+						if all [single ne? it/name single] [continue]
+						generate context it out
+					]
+					paren! [do it]
+			    ]
 			]
 		][
 			generate context spec out
@@ -204,7 +207,10 @@ if process [
 	spec: load join vstream %.lines
 	either eq? 'context first spec [
 		foreach it spec [
-			if block? it [sox-process context it]
+			switch type? it [
+				block! [sox-process context it]
+				paren! [do it]
+			]
 		]
 	][
 		sox-process context spec
