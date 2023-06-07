@@ -61,12 +61,16 @@ void screenInit_sys(const Settings* settings, ScreenState* state, int reset) {
         SDL_EnableUNICODE(1);
         atexit(SDL_Quit);
 
-        SDL_WM_SetCaption("Ultima IV", NULL);
 #ifdef ICON_FILE
         SDL_WM_SetIcon(SDL_LoadBMP(ICON_FILE), NULL);
 #endif
         xu4.screenSys = sd = new ScreenSDL;
         memset(sd, 0, sizeof(ScreenSDL));
+    }
+
+    {
+    char buf[MOD_NAME_LIMIT];
+    SDL_WM_SetCaption(settings->gameTitle(buf), NULL);
     }
 
     SDL_SetGamma(settings->gamma / 100.0f, settings->gamma / 100.0f, settings->gamma / 100.0f);

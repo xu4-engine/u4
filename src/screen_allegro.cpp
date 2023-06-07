@@ -206,7 +206,10 @@ void screenInit_sys(const Settings* settings, ScreenState* state, int reset) {
     state->aspectX = (state->displayW - dw) / 2;
     state->aspectY = (state->displayH - dh) / 2;
 
-    al_set_window_title(sa->disp, "Ultima IV");  // configService->gameName()
+    {
+    char buf[MOD_NAME_LIMIT];
+    al_set_window_title(sa->disp, settings->gameTitle(buf));
+    }
 
 #ifdef __linux__
     {

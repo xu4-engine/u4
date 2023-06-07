@@ -56,16 +56,6 @@ enum ConfigValues
 
 Config::~Config() {}
 
-#if 0
-// For future expansion...
-const char** Config::getGames() {
-    return &"Ultima IV";
-}
-
-void Config::setGame(const char* name) {
-}
-#endif
-
 //--------------------------------------
 
 #define TALK_CACHE_SIZE 2

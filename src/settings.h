@@ -8,6 +8,8 @@
 #include <string>
 #include "types.h"
 
+#define MOD_NAME_LIMIT                  40
+
 #define MIN_SHAKE_INTERVAL              50
 
 #define MAX_BATTLE_SPEED                10
@@ -125,8 +127,8 @@ public:
     uint8_t             battleDiff;     // Used by Creature
     uint8_t             filter;         // Defined by screen
     uint8_t             lineOfSight;    // Defined by screen
-    char game[40];
-    char soundtrack[40];
+    char game[MOD_NAME_LIMIT];
+    char soundtrack[MOD_NAME_LIMIT];
 
     /**
      * Strings, classes, and other objects that cannot
@@ -153,6 +155,7 @@ public:
     void setData(const SettingsData &data);
     void setGame(const char* modName);
     void setSoundtrack(const char* modName);
+    char* gameTitle(char* buf) const;
     bool write();
     const std::string &getUserPath() const { return userPath; }
 

@@ -288,12 +288,16 @@ void screenInit_sys(const Settings* settings, ScreenState* state, int reset) {
             goto fatal;
 
         sa->view->user = sa;
-        glv_setTitle(sa->view, "Ultima IV");  // configService->gameName()
         glv_setEventHandler(sa->view, eventHandler);
 
 #if defined(__linux__) && ! defined(ANDROID)
         _setX11Icon(sa->view, "/usr/share/icons/hicolor/48x48/apps/xu4.png");
 #endif
+    }
+
+    {
+    char buf[MOD_NAME_LIMIT];
+    glv_setTitle(sa->view, settings->gameTitle(buf));
     }
 
     {
