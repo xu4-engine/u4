@@ -70,14 +70,14 @@ first-words: func [text] [
 ]
 
 gvars: [
-	"$V" voice "$L" line "$M" model "$N" name "$P" pitch
+	"$V" voice "$L" line "$M" model "$N" name
 	"$I" id2 "$F" fw '@' vstream
 ]
 
 generate: func [
 	spec context!
 	out  string!
-	/extern voice line model name id2 fw pitch
+	/extern voice line model name id2 fw
 ][
 	bind gvars spec
 
@@ -85,15 +85,10 @@ generate: func [
 		; Use Coqui TTS if voice is path! (model_name/speaker_idx)
 		model: slice vpath -1
 		spec/voice: last vpath
-		cmd: join {tts --model_name $M --speaker_idx $V --text "$L" --out_path }
-			either zero? spec/pitch
-			{/wav/@/$N-$I-$F.wav^/}
-			{/tmp/pitch.wav^/sox /tmp/pitch.wav /wav/@/$N-$I-$F.wav pitch $P^/}
+		cmd: {tts --model_name $M --speaker_idx $V --text "$L" --out_path /wav/@/$N-$I-$F.wav^/}
 	][
 		; Otherwise use Larynx
-		cmd: either zero? spec/pitch
-			{larynx -v $V "$L" >/wav/@/$N-$I-$F.wav^/}
-			{larynx -v $V "$L" | sox - /wav/@/$N-$I-$F.wav pitch $P^/}
+		cmd: {larynx -v $V "$L" >/wav/@/$N-$I-$F.wav^/}
 	]
 
 	id: 0
