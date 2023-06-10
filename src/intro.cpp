@@ -1698,6 +1698,10 @@ void IntroController::preloadMap()
 //
 void IntroController::initTitles()
 {
+    int titleDur = soundDuration(SOUND_TITLE_FADE);
+    if (titleDur < 1000)
+        titleDur = 5000;
+
     // add the intro elements
     //          x,  y,   w,  h, method,  delay, duration
     //
@@ -1706,7 +1710,7 @@ void IntroController::initTitles()
     addTitle(  84, 31, 152,  1, BAR,         1000,  500 );  // <bar>
     addTitle(  86, 21, 148,  9, ORIGIN,      1000,  100 );  // "Origin Systems, Inc."
     addTitle( 133, 33,  54,  5, PRESENT,        0,  100 );  // "present"
-    addTitle(  59, 33, 202, 46, TITLE,       1000, 5000 );  // "Ultima IV"
+    addTitle(  59, 33, 202, 46, TITLE,       1000, titleDur );  // "Ultima IV"
     addTitle(  40, 80, 240, 13, SUBTITLE,    1000,  100 );  // "Quest of the Avatar"
     addTitle(   0, 96, 320, 96, MAP,         1000,  100 );  // the map
 
@@ -1887,11 +1891,6 @@ bool IntroController::updateTitle()
                 // clear the screen
                 xu4.screenImage->fill(Image::black);
             }
-
-            if (title->method == TITLE) {
-                // Begin sound on first frame of "Ultima IV".
-                soundPlay(SOUND_TITLE_FADE);
-            }
         }
     }
 
@@ -2005,6 +2004,11 @@ bool IntroController::updateTitle()
 
         case TITLE:
         {
+            if (title->animStep == 0 && !bSkipTitles) {
+                // Begin sound on first frame of "Ultima IV".
+                soundPlay(SOUND_TITLE_FADE);
+            }
+
             // blit src to the canvas in a random pixelized manner
             title->animStep = animStepTarget;
 
@@ -2143,8 +2147,6 @@ bool IntroController::updateTitle()
 
         if (title->method == TITLE)
         {
-            // assume this is "Ultima IV" and pre-load sound
-//            soundLoad(SOUND_TITLE_FADE);
             xu4.eventHandler->setTimerInterval(xu4.settings->titleSpeedRandom);
         }
         else if (title->method == MAP)

@@ -472,7 +472,7 @@ music: [
 
 sound: [
     path %sound
-    %title_fade.ogg
+    %title_fade_c64.ogg
     %walk_normal.ogg
     %walk_slowed.ogg
     %walk_combat.ogg
