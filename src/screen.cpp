@@ -761,7 +761,9 @@ void screenUploadToGPU() {
 }
 
 static void screenUploadCursor(Screen* sp, uint32_t stex) {
-    int phase = sp->state.currentCycle * SCR_CYCLE_PER_SECOND / SCR_CYCLE_MAX;
+    int phase =                             // Rotations per second
+    //  (sp->state.currentCycle >> 1) & 3;  // 0.5 DOS (normal)
+        sp->state.currentCycle & 3;         // 1.0 C64, DOS (combat)
 
     ASSERT(phase >= 0 && phase < 4, "derived an invalid cursor phase: %d", phase);
     int cursorChar = 31 - phase;
