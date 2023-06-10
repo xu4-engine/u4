@@ -473,9 +473,9 @@ music: [
 sound: [
     path %sound
     %title_fade_c64.ogg
-    %walk_normal.ogg
-    %walk_slowed.ogg
-    %walk_combat.ogg
+    %walk_normal_c64.wav
+    %walk_slowed_c64.wav
+    %walk_combat_c64.wav
     %blocked_dos.ogg
     %error_dos.ogg
     %pc_attack_dos.ogg
