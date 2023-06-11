@@ -206,6 +206,7 @@ bool GameController::initContext() {
     c->windDirection = DIR_NORTH;
     c->windCounter = 0;
     c->windLock = false;
+    c->hawkwindHack = false;
     c->horseSpeed = 0;
     c->opacity = 1;
     c->lastCommandTime = c->commandTimer = 0;

@@ -374,6 +374,39 @@ void screenMessage(const char *fmt, ...) {
     screenMessageN(buffer, buflen);
 }
 
+/*
+ * Center first line of text in message area.
+ */
+void screenMessageCenter(const char* text, int newlines) {
+    const int half = TEXT_AREA_W / 2;
+    char* buffer = XU4_SCREEN->msgBuffer;
+    char* start = buffer + half;
+    char* cp = start;
+    char* endOfLine = NULL;
+    int ch, lineLen;
+
+    memset(buffer, ' ', half);
+    while ((ch = *text++)) {
+        if (ch == '\n' && ! endOfLine)
+            endOfLine = cp;
+        *cp++ = ch;
+    }
+
+    if (! endOfLine)
+        endOfLine = cp;
+    lineLen = endOfLine - start;
+    if (lineLen > TEXT_AREA_W)
+        lineLen = TEXT_AREA_W;
+    start -= half - (lineLen+1) / 2;    // Indent
+
+    while (newlines) {
+        --newlines;
+        *cp++ = '\n';
+    }
+
+    screenMessageN(start, cp - start);
+}
+
 void screenMessageN(const char* buffer, int buflen) {
     bool colorize = xu4.settings->enhancements &&
                     xu4.settings->enhancementsOptions.textColorization;
@@ -433,7 +466,7 @@ newline:
 
                 /* don't show a space in column 1.  Helps with Hawkwind, but
                  * disables centering of endgame message. */
-                if (c->col == 0 && c->location->viewMode != VIEW_CUTSCENE)
+                if (c->col == 0 && c->hawkwindHack)
                     continue;
 
                 screenShowChar(' ', TEXT_AREA_X+c->col, TEXT_AREA_Y+c->line);

@@ -137,7 +137,9 @@ bool discourse_run(const Discourse* dis, uint16_t entry, Person* npc)
 
     switch (dis->system) {
     case DISCOURSE_CASTLE:
+        c->hawkwindHack = true;
         talked = talkRunU4Castle(dis, entry, npc);
+        c->hawkwindHack = false;
         break;
 
     case DISCOURSE_U4_TLK:

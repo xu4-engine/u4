@@ -48,6 +48,7 @@ public:
     int windDirection;
     int windCounter;
     bool windLock;
+    bool hawkwindHack;      // TODO: Check if this is still needed.
     Aura aura;
     int horseSpeed;
     int opacity;

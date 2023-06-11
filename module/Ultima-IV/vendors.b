@@ -251,7 +251,7 @@ weapons: context [
                     item-vars
                 input-choice [
                     'y' sell
-                    'n' [vo 28,153 >> "^/Hmmph. What else^/ would " you_sell]
+                    'n' [vo 28,153 >> "^/Hmmph. What else^/would " you_sell]
                     adieu
                 ]
             ][
@@ -373,7 +373,7 @@ armor: context [
 
     show_inventory: [
         vo 2
-        => "^/We've got:^/+^/What'll it^/ be? "
+        => "^/We've got:^/+^/What'll it^/be? "
             ['+' inventory]
         input-choice items
     ]
@@ -611,7 +611,7 @@ food: context [
                 end
             ][
                 vo 7
-                >> "Anything^/ else? "
+                >> "Anything^/else? "
                 input-choice ['y' howmany 'n' adieu adieu]
             ]
         ][

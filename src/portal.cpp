@@ -83,21 +83,21 @@ int usePortalAt(Location *location, const Coords& coords, PortalTriggerAction ac
                 sprintf(msg, "Klimb up!\nTo level %d\n", portal->start.z+1);
             break;
         case ACTION_ENTER:
+            // Location names are centered on the C64; on DOS they aren't.
             switch (destination->type) {
             case Map::CITY:
                 {
                     City *city = dynamic_cast<City*>(destination);
-                    screenMessage("Enter %s!\n\n%s\n\n", city->cityTypeStr(), city->getName());
+                    screenMessage("Enter %s!\n\n", city->cityTypeStr());
+                    screenMessageCenter(city->getName(), 2);
                 }
                 break;
             case Map::SHRINE:
                 screenMessage("Enter the %s!\n\n", destination->getName());
                 break;
             case Map::DUNGEON:
-#ifdef IOS
-                U4IOS::testFlightPassCheckPoint("Enter " + destination->getName());
-#endif
-                screenMessage("Enter dungeon!\n\n%s\n\n", destination->getName());
+                screenMessage("Enter dungeon!\n\n");
+                screenMessageCenter(destination->getName(), 2);
                 break;
             default:
                 break;
