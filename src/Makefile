@@ -19,9 +19,6 @@ endif
 ifeq ($(UI), sdl)
 UILIBS=$(shell sdl-config --libs)
 UIFLAGS=$(shell sdl-config --cflags)
-ifeq ($(SOUND), sdl)
-	UILIBS+=-lSDL_mixer
-endif
 endif
 
 ifeq ($(GPU),all)

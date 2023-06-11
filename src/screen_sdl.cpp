@@ -36,7 +36,7 @@ SDL_Cursor *screenInitCursor(const char * const xpm[]);
 int u4_SDL_InitSubSystem(Uint32 flags) {
     int f = SDL_WasInit(SDL_INIT_EVERYTHING);
     if (f == 0) {
-        SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
+        SDL_Init(SDL_INIT_VIDEO);
     }
     if (!SDL_WasInit(flags))
         return SDL_InitSubSystem(flags);

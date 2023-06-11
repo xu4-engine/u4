@@ -70,11 +70,11 @@ exe %xu4 [
 		]
 		sdl [
 			include_from %/usr/include/SDL
-			libs [%SDL %SDL_mixer]
+			libs [%SDL %faun]
 			sources_from %src [
 				%event_sdl.cpp
 				%screen_sdl.cpp
-				%sound_sdl.cpp
+				%sound_faun.cpp
 			]
 		]
 	]
