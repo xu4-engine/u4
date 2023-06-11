@@ -440,24 +440,22 @@ static void runTalkHawkwind(const U4TalkHawkwind* hw)
         if (v < VIRT_MAX) {
             int virtueLevel = c->saveGame->karma[v];
             if (virtueLevel == 0) {
-                message("\n\n%s\n", HW_STRING(HW_ALREADYAVATAR));
+                message("\n\n%s", HW_STRING(HW_ALREADYAVATAR));
                 soundSpeakLine(VOICE_HW, HW_ALREADYAVATAR, true);
             } else if (virtueLevel < 80) {
                 v += (virtueLevel / 20) * 8;
-                message("\n\n%s", HW_STRING(v));
+                message("\n\n%s\n", HW_STRING(v));
                 soundSpeakLine(VOICE_HW, v, true);
             } else if (virtueLevel < 99) {
                 v += 3 * 8;
-                message("\n\n%s", HW_STRING(v));
+                message("\n\n%s\n", HW_STRING(v));
                 soundSpeakLine(VOICE_HW, v, true);
             } else { /* virtueLevel >= 99 */
                 soundSpeakLine(VOICE_HW, HW_GOTOSHRINE);
                 message("\n\n%s\n%s", HW_STRING(4 * 8 + v),
                                       HW_STRING(HW_GOTOSHRINE));
                 EventHandler::waitAnyKey();
-                // FIXME: Remove extra LF here before the prompt.
             }
-            screenCrLf();
         } else {
             message("\n%s", HW_STRING(HW_DEFAULT));
             soundSpeakLine(VOICE_HW, HW_DEFAULT, true);
