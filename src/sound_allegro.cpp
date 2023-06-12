@@ -77,6 +77,7 @@ static ALLEGRO_MIXER* fxMixer = NULL;
 static ALLEGRO_AUDIO_STREAM* musicStream = NULL;
 static ALLEGRO_SAMPLE_ID fxControl[FX_CONTROL_SLOTS];
 static uint32_t fxDuration[FX_CONTROL_SLOTS];
+static uint16_t sa_resGroup[SOUND_MAX];
 static std::vector<ALLEGRO_SAMPLE *> sa_samples;
 
 #ifdef CONF_MODULE
@@ -150,6 +151,7 @@ int soundInit(void)
     soundSetVolume(xu4.settings->soundVol);
     //TRACE(*logger, string("Music initialized: volume is ") + (musicEnabled ? "on" : "off"));
 
+    memset(sa_resGroup, 0, sizeof(sa_resGroup));
     sa_samples.resize(SOUND_MAX, NULL);
     controlUsed = 0;
 
@@ -219,6 +221,19 @@ void soundSuspend(int halt)
     }
 }
 
+void soundFreeResourceGroup(uint16_t group)
+{
+    if (! audioFunctional)
+        return;
+
+    for (int i = 0; i < SOUND_MAX; ++i) {
+        if (sa_samples[i] && sa_resGroup[i] == group) {
+            al_destroy_sample(sa_samples[i]);
+            sa_samples[i] = NULL;
+        }
+    }
+}
+
 #ifdef CONF_MODULE
 static const char* audioExt(const CDIEntry* entry) {
     // NOTE: Using CDI_MASK_FORMAT since mod_addLayer() changes the 0xDA byte.
@@ -262,6 +277,7 @@ static bool sound_load(Sound sound) {
             errorWarning("Unable to load sound %d", (int) sound);
             return false;
         }
+        sa_resGroup[sound] = xu4.resGroup;
     }
     return true;
 }

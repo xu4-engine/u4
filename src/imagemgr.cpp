@@ -19,8 +19,7 @@ using std::string;
 ImageSymbols ImageMgr::sym;
 
 ImageMgr::ImageMgr() :
-    vgaColors(NULL), greyColors(NULL), visionBuf(NULL),
-    resGroup(0) {
+    vgaColors(NULL), greyColors(NULL), visionBuf(NULL) {
 
     xu4.config->internSymbols(&sym.tiles, 45,
         "tiles charset borders title options_top\n"
@@ -485,7 +484,7 @@ ImageInfo* ImageMgr::load(ImageInfo* info) {
 #ifdef CONF_MODULE
     if (info->filetype == FTYPE_ATLAS) {
         info->image = buildAtlas(this, info);
-        info->resGroup = resGroup;
+        info->resGroup = xu4.resGroup;
         return info;
     }
 #endif
@@ -493,7 +492,7 @@ ImageInfo* ImageMgr::load(ImageInfo* info) {
     U4FILE *file = getImageFile(info);
     Image *unscaled = NULL;
     if (file) {
-        //printf( "ImageMgr load %d:%s\n", resGroup, info->filename.c_str() );
+        //printf("ImageMgr load %d:%s\n", xu4.resGroup, info->filename.c_str());
 
         unscaled = loadImage(file, info->filetype, info->width, info->height,
                              (info->fixup == FIXUP_ABYSS) ? BPP_CLUT8
@@ -506,7 +505,7 @@ ImageInfo* ImageMgr::load(ImageInfo* info) {
             return info;
         }
 
-        info->resGroup = resGroup;
+        info->resGroup = xu4.resGroup;
         if (info->width == -1) {
             // Write in the values for later use.
             info->width  = unscaled->width();
@@ -630,16 +629,6 @@ const SubImage* ImageMgr::getSubImage(Symbol name, ImageInfo** infoPtr) {
         }
     }
     return NULL;
-}
-
-/**
- * Set the group loaded images will belong to.
- * Return the previously set group.
- */
-uint16_t ImageMgr::setResourceGroup(uint16_t group) {
-    uint16_t prev = resGroup;
-    resGroup = group;
-    return prev;
 }
 
 /**

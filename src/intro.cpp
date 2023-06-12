@@ -326,7 +326,7 @@ bool IntroController::init() {
     justInitiatedNewGame = false;
     introMusic = MUSIC_TOWNS;
 
-    uint16_t saveGroup = xu4.imageMgr->setResourceGroup(StageIntro);
+    uint16_t saveGroup = xu4_setResourceGroup(StageIntro);
 
     // sigData is referenced during Titles initialization
     binData = new IntroBinData();
@@ -384,7 +384,7 @@ bool IntroController::init() {
     if (bSkipTitles)
         updateScreen();
 
-    xu4.imageMgr->setResourceGroup(saveGroup);
+    xu4_setResourceGroup(saveGroup);
     return true;
 }
 
@@ -410,7 +410,7 @@ void IntroController::deleteIntro() {
     objectStateTable = NULL;
 #endif
 
-    xu4.imageMgr->freeResourceGroup(StageIntro);
+    xu4_freeResourceGroup(StageIntro);
     beastiesImg = NULL;
 }
 
@@ -887,7 +887,7 @@ void IntroController::finishInitiateGame(const string &nameBuffer, SexType sex)
 #endif
 
     {
-    uint16_t saveGroup = xu4.imageMgr->setResourceGroup(StageIntro);
+    uint16_t saveGroup = xu4_setResourceGroup(StageIntro);
 
     ImageInfo* tree = xu4.imageMgr->get(BKGD_TREE);
     egaGraphics = tree && (tree->getFilename().compare(0, 3, "u4/") == 0);
@@ -902,7 +902,7 @@ void IntroController::finishInitiateGame(const string &nameBuffer, SexType sex)
     if (xu4.stage != StageIntro)
         return;
 
-    xu4.imageMgr->setResourceGroup(saveGroup);
+    xu4_setResourceGroup(saveGroup);
     }
 
     // write out save game an segue into game

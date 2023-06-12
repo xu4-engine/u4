@@ -197,7 +197,6 @@ public:
     ImageInfo* imageInfo(Symbol name, const SubImage** subPtr);
     ImageInfo* get(Symbol name);
 
-    uint16_t setResourceGroup(uint16_t group);
     void freeResourceGroup(uint16_t group);
 
     const RGBA* vgaPalette();
@@ -221,7 +220,6 @@ private:
     RGBA* vgaColors;
     RGBA* greyColors;
     uint8_t* visionBuf;
-    uint16_t resGroup;
     bool vgaGraphics;
 };
 

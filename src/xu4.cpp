@@ -16,6 +16,7 @@
 #include "error.h"
 #include "game.h"
 #include "gamebrowser.h"
+#include "imagemgr.h"
 #include "intro.h"
 #include "progress_bar.h"
 #include "screen.h"
@@ -432,6 +433,24 @@ void xu4_selectGame() {
     if (! xu4.gameBrowser)
         xu4.gameBrowser = new GameBrowser;
     xu4.eventHandler->runController(xu4.gameBrowser);
+}
+
+/**
+ * Set the group that loaded assets will belong to.
+ * Return the previously set group.
+ */
+uint16_t xu4_setResourceGroup(uint16_t group) {
+    uint16_t prev = xu4.resGroup;
+    xu4.resGroup = group;
+    return prev;
+}
+
+/**
+ * Free all assets that are part of the specified group.
+ */
+void xu4_freeResourceGroup(uint16_t group) {
+    xu4.imageMgr->freeResourceGroup(StageIntro);
+    soundFreeResourceGroup(StageIntro);
 }
 
 //----------------------------------------------------------------------------
