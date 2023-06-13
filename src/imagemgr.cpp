@@ -21,7 +21,7 @@ ImageSymbols ImageMgr::sym;
 ImageMgr::ImageMgr() :
     vgaColors(NULL), greyColors(NULL), visionBuf(NULL) {
 
-    xu4.config->internSymbols(&sym.tiles, 45,
+    xu4.config->internSymbols(&sym.tiles, 43,
         "tiles charset borders title options_top\n"
         "options_btm tree portal outside inside\n"
         "wagon gypsy abacus honcom valjus\n"
@@ -30,7 +30,7 @@ ImageMgr::ImageMgr() :
         "spirit humility truth love courage\n"
         "stoncrcl infinity rune1 rune2 rune3\n"
         "rune4 rune5 rune6 rune7 rune8\n"
-        "gemtiles moongate items blackbead whitebead");
+        "gemtiles moongate items");
 
     baseSet = xu4.config->newImageSet();
 

@@ -169,6 +169,7 @@ graphics: [
     image (name: abacus filename: "u4/abacus.ega" width: 320 height: 200 depth: 4 filetype: u4lzw fixup: abacus) [
         whitebead  8,187, 8,12
         blackbead 24,187, 8,12
+        bead_pos  128,24, 9,15
     ]
     image (name: cards1 filename: "u4/honcom.ega" width: 320 height: 200 depth: 4 filetype: u4lzw) [
         honestycard     12,12, 90,124

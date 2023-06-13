@@ -176,10 +176,10 @@ graphics: [
     inside:  "vutne/148-inside.png"
     wagon:   "vutne/149-wagon.png"
     gypsy:   "vutne/14a-gypsy.png"
-    abacus:  "vutne/14b-abacus.png"
-    image (name: abacus-beads filename: "u4/abacus.ega" width: 320 height: 200 depth: 4 filetype: u4lzw fixup: abacus) [
-        whitebead  8,187, 8,12
-        blackbead 24,187, 8,12
+    abacus:  "vutne/14b-abacus.png" [
+        whitebead 12,181, 7,11
+        blackbead 23,181, 7,11
+        bead_pos  128,18, 8,16
     ]
     cards1: "vutne/cards1.png" [
         honestycard         0,0, 80,112

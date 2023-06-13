@@ -750,20 +750,18 @@ void IntroController::drawCard(int pos, int card, const uint8_t* origin) {
  * Draws the beads in the abacus during the character creation sequence
  */
 void IntroController::drawAbacusBeads(int row, int selectedVirtue, int rejectedVirtue) {
-    static const uint8_t positionTable[8] = {
-        128, 9, 24, 15,     // EGA
-        128, 8, 18, 16,     // Utne
-    };
     ASSERT(row >= 0 && row < 7, "invalid row: %d", row);
     ASSERT(selectedVirtue < 8 && selectedVirtue >= 0, "invalid virtue: %d", selectedVirtue);
     ASSERT(rejectedVirtue < 8 && rejectedVirtue >= 0, "invalid virtue: %d", rejectedVirtue);
 
-    const uint8_t* pos = positionTable;
-    if (! egaGraphics)
-        pos += 4;
-    int y = pos[2] + (row * pos[3]);
-    backgroundArea.draw(IMG_WHITEBEAD, pos[0] + (selectedVirtue * pos[1]), y);
-    backgroundArea.draw(IMG_BLACKBEAD, pos[0] + (rejectedVirtue * pos[1]), y);
+    const SubImage* pos = abacusImg->subImages + beadSub[2];
+    int y = pos->y + (row * pos->height);
+    Image::enableBlend(1);
+    backgroundArea.draw(abacusImg, beadSub[0],  // whitebead
+                        pos->x + (selectedVirtue * pos->width), y);
+    backgroundArea.draw(abacusImg, beadSub[1],  // blackbead
+                        pos->x + (rejectedVirtue * pos->width), y);
+    Image::enableBlend(0);
 }
 
 /**
@@ -1032,13 +1030,23 @@ void IntroController::startQuestions() {
     questionRound = 0;
     initQuestionTree();
 
+    abacusImg = xu4.imageMgr->get(BKGD_ABACUS);
+    if (! abacusImg)
+        errorLoadImage(BKGD_ABACUS);
+
+    Symbol sym[3];
+    xu4.config->internSymbols(sym, 3, "whitebead blackbead bead_pos");
+    beadSub[0] = abacusImg->subImageIndex[sym[0]];
+    beadSub[1] = abacusImg->subImageIndex[sym[1]];
+    beadSub[2] = abacusImg->subImageIndex[sym[2]];
+
     const vector<string>& gypsyText = binData->introGypsy;
     int i1, i2, n;
 
     while (xu4.stage == StageIntro) {
         // draw the abacus background, if necessary
         if (questionRound == 0) {
-            backgroundArea.draw(BKGD_ABACUS);
+            abacusImg->image->draw(0, 0);
             n = GYP_PLACES_FIRST;
         } else {
             n = (questionRound == 6) ? GYP_PLACES_LAST : GYP_PLACES_TWOMORE;
@@ -2196,12 +2204,3 @@ void IntroController::skipTitles()
     bSkipTitles = true;
     soundStop();
 }
-
-#ifdef IOS
-// Try to put the intro music back at just the correct moment on iOS;
-// don't play it at the very beginning.
-void IntroController::tryTriggerIntroMusic() {
-    if (mode == INTRO_MAP)
-        musicPlay(introMusic);
-}
-#endif

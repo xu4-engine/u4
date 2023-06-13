@@ -127,10 +127,6 @@ private:
     void initPlayers(SaveGame *saveGame);
     std::string getQuestion(int v1, int v2);
     void dispatchMenu(const Menu *menu, MenuEvent &event);
-#ifdef IOS
-public:
-    void tryTriggerIntroMusic();
-#endif
     void initiateNewGame();
     void finishInitiateGame(const string &nameBuffer, SexType sex);
     void startQuestions();
@@ -139,9 +135,6 @@ public:
     void about();
 #ifdef GPU_RENDER
     void enableMap();
-#endif
-#ifdef IOS
-private:
 #endif
     void showText(const string &text);
 
@@ -229,6 +222,7 @@ private:
     int answerInd;
     int questionRound;
     int questionTree[15];
+    int beadSub[3];
     int beastie1Cycle;
     int beastie2Cycle;
     int beastieOffset;
@@ -242,6 +236,7 @@ private:
     IntroObjectState *objectStateTable;
 #endif
     ImageInfo* beastiesImg;
+    ImageInfo* abacusImg;
 
     bool justInitiatedNewGame;
 
@@ -282,13 +277,7 @@ private:
     void compactTitle();
     void drawTitle();
     void getTitleSourceData();
-#ifdef IOS
-public:
-#endif
     void skipTitles();
-#ifdef IOS
-private:
-#endif
     std::vector<AnimElement> titles;            // list of title elements
     std::vector<AnimElement>::iterator title;   // current title element
 

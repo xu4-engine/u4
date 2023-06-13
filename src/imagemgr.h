@@ -63,8 +63,6 @@
 #define BKGD_GEMTILES       ImageMgr::sym.gemtiles
 #define IMG_MOONGATE        ImageMgr::sym.moongate
 #define IMG_ITEMS           ImageMgr::sym.items
-#define IMG_BLACKBEAD       ImageMgr::sym.blackbead
-#define IMG_WHITEBEAD       ImageMgr::sym.whitebead
 
 struct ImageSymbols {
     Symbol tiles;
@@ -118,8 +116,6 @@ struct ImageSymbols {
     Symbol gemtiles;
     Symbol moongate;
     Symbol items;
-    Symbol blackbead;
-    Symbol whitebead;
 };
 
 enum AtlasEditOpcode {
