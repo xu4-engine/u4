@@ -26,7 +26,7 @@ Developer Builds
 The following libraries are required for all targets:
 
  - Boron 2.0.8
- - Faun 0.1.2
+ - Faun 0.1.3
     - Vorbis
  - PNG
 
@@ -47,7 +47,7 @@ Ubuntu:
 
 The Boron interpreter program is needed to build game modules.
 The static binaries can be downloaded from the
-[Boron homepage](http://urlan.sourceforge.net/boron/).
+[Boron homepage](http://urlan.sourceforge.io/boron/).
 
 There are three ways the Boron library can be obtained.  It can be built from
 [source](https://sourceforge.net/p/urlan/boron/code/ci/master/tree/)
@@ -164,6 +164,6 @@ using the cbuild `-b` option after the target.
 
 
 [GNU Make]: https://www.gnu.org/software/make/manual/html_node/index.html#toc-Overview-of-make
-[Copr]: http://urlan.sourceforge.net/copr.html
+[Copr]: http://urlan.sourceforge.io/copr.html
 [Podman]: https://podman.io/getting-started/installation
 [Docker]: https://docs.docker.com/get-docker/

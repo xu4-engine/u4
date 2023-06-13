@@ -113,11 +113,60 @@ Versions are declared using strings.  A typical major/minor version should
 be used (e.g. "1.0").
 
 
+### Data Blocks
+
+The following 15 data blocks can be declared: armors, weapons, creatures,
+graphics, draw-lists, tileanim, layouts, maps, tile-rules, tileset,
+u4-save-ids, music, sound, vendors, ega-palette.
+
+> **_TODO_:** Document each data block.
+
+
+#### music
+
+The music block is an index of audio stream files.
+
+Each stream must be an Ogg Vorbis file containing either stereo or mono
+channels at either a 22050 or 44100 Hz sample rate.
+
+A path relative to the module directory can be declared for a number of files
+using the `path` keyword followed by a Boron `file!` value.
+
+Each stream is declared with a `file!` value, optionally preceded by an
+`int!` identifier value.  Any previously declared path is prepended to the
+filename.  If the identifer is not present then it will be set to that of
+the previous file plus one.  If no identifier is present the numbering starts
+at zero.
+
+The game accesses specific streams by the identifier only, so the path and
+file names may be anything the packager desires.
+
+The following example shows how to use path and identifer values:
+
+    music: [
+        path %music
+           %wander.ogg
+           %"Towns (lively).ogg"
+        6  %dungeon.ogg
+    ]
+
+
+#### sound
+
+The sound block is an index of audio files.
+
+Each sound file can be encoded as FLAC, Ogg Vorbis, [rFX], or WAVE.
+They must contain either stereo or mono channels at either a 22050 or
+44100 Hz sample rate.
+
+Paths, identifiers, and filenames are specified as in the [music block](#music).
+
+
 Soundtrack Modules
 ------------------
 
-Soundtrack modules contain only a `music` block in `config.b` and no other
-data declarations.
+Soundtrack modules contain only a [music block](#music) in `config.b` and
+no other data declarations.
 
 
 Game Rules
@@ -137,3 +186,4 @@ Each rule system would be enabled with a RULES_ macro.
 
 
 [CDI Package Format]: https://urlan.sourceforge.net/cdi-spec.html
+[rFX]: https://raylibtech.itch.io/rfxgen
