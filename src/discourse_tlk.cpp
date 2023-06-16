@@ -23,6 +23,8 @@ enum TalkOpcode {
 enum VoicePart {
     VP_I_AM,
     VP_BYE,
+    VP_GIVE,
+    VP_JOIN,
     VP_KEYWORD
 };
 
@@ -138,6 +140,8 @@ tell_name:
                     screenCrLf();
                     if (gold > 0) {
                         if (c->party->donate(gold)) {
+                            soundSpeakLine(ts->voiceStream,
+                                           ts->startVoiceLn + VP_GIVE);
                             message("%s says: Oh Thank thee! I shall never "
                                     "forget thy kindness!\n",
                                     DSTRING(DS_PRONOUN));
@@ -145,6 +149,8 @@ tell_name:
                             message("\n\nThou hast not that much gold!\n");
                     }
                 } else {
+                    soundSpeakLine(ts->voiceStream,
+                                   ts->startVoiceLn + VP_GIVE);
                     message("%s says: I do not need thy gold.  Keep it!\n",
                             DSTRING(DS_PRONOUN));
                 }
@@ -152,18 +158,27 @@ tell_name:
                 Virtue virt;
                 const char* name = DSTRING(DS_NAME);
                 if (c->party->canPersonJoin(name, &virt)) {
-					CannotJoinError join = c->party->join(name);
-					if (join == JOIN_SUCCEEDED) {
-						message("I am honored to join thee!\n");
-						c->location->map->removeObject(ts->person);
+                    CannotJoinError join = c->party->join(name);
+                    if (join == JOIN_SUCCEEDED) {
+                        soundSpeakLine(ts->voiceStream,
+                                       ts->startVoiceLn + VP_JOIN);
+                        message("I am honored to join thee!\n");
+                        c->location->map->removeObject(ts->person);
                         break;
-					}
+                    }
                     message("Thou art not %s enough for me to join thee.\n",
                             (join == JOIN_NOT_VIRTUOUS) ?
                                 getVirtueAdjective(virt) : "experienced");
-				} else
+                } else {
+                    // Here we suppress the voice for the one companion of
+                    // the player's class that cannot join.
+                    if (ts->person->getNpcType() != NPC_TALKER_COMPANION) {
+                        soundSpeakLine(ts->voiceStream,
+                                       ts->startVoiceLn + VP_JOIN);
+                    }
                     message("%s says: I cannot join thee.\n",
                             DSTRING(DS_PRONOUN));
+                }
 #if 1
             } else if (inputEq("ojna")) {
                 /*

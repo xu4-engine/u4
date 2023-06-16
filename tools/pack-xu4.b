@@ -573,7 +573,7 @@ npc-talk: context [
 
 ; Return number of spoken lines for NPC.
 spoken-lines: func [topics] [
-	count: 2
+	count: 4    ; Matches VP_KEYWORD
 	parse topics [some[
 		string! string! (++ count)
 	  | word! string! block! (count: add count 3)
