@@ -178,8 +178,7 @@ IntroController::IntroController() :
     binData(NULL),
     titles(),                   // element list
     title(titles.begin()),      // element iterator
-    bSkipTitles(false),
-    egaGraphics(true)
+    bSkipTitles(false)
 {
     // initialize menus
     confMenu.setTitle("XU4 Configuration:", 0, 0);
@@ -682,47 +681,37 @@ void IntroController::drawBeastie(int beast, int vertoffset, int frame) {
  * painted: the circle without the moongate, but with a small white
  * dot representing the anhk and history book.
  */
-void IntroController::animateTree(Symbol frame) {
+void IntroController::animateTree(ImageInfo* tree, Symbol frame) {
     int fi, fcount;
     int gateH, deltaH;
-    int x, y, ytop;
-    const SubImage* subimage;
-    ImageInfo *info = xu4.imageMgr->imageInfo(IMG_MOONGATE, &subimage);
-    if (! subimage)
-        return;
+    int x, y;
+    const SubImage* moongate = tree->subImages + treeSub[0];
+    const SubImage* gate_pos = tree->subImages + treeSub[1];
 
-    // Hack to account for different tree images.
-    if (egaGraphics) {
-        x = 72;
-        ytop = 68;
-    } else {
-        x = 84;
-        ytop = 53;
-    }
-
-    y = ytop + subimage->height;
-    fcount = subimage->height;
+    x = gate_pos->x;
+    y = gate_pos->y + moongate->height;
+    fcount = moongate->height;
 
     if (frame == IMG_MOONGATE) {
         soundPlay(SOUND_GATE_OPEN);
         gateH = 1;
         deltaH = 1;
     } else {
-        gateH = subimage->height - 1;
+        gateH = moongate->height - 1;
         deltaH = -1;
     }
 
     for (fi = 0; fi < fcount; ++fi) {
         if (deltaH < 0)
-            backgroundArea.draw(frame, x, ytop);
+            backgroundArea.draw(frame, x, gate_pos->y);
 
-        info->image->drawSubRect(x, y - gateH, subimage->x, subimage->y,
-                                 subimage->width, gateH);
+        tree->image->drawSubRect(x, y - gateH, moongate->x, moongate->y,
+                                 moongate->width, gateH);
         gateH += deltaH;
         if (gateH < 0)
             gateH = 0;
-        else if (gateH > subimage->height)
-            gateH = subimage->height;
+        else if (gateH > moongate->height)
+            gateH = moongate->height;
 
         screenUploadToGPU();
         if (EventHandler::wait_msecs(42))
@@ -733,17 +722,14 @@ void IntroController::animateTree(Symbol frame) {
 /**
  * Draws the cards in the character creation sequence with the gypsy.
  */
-void IntroController::drawCard(int pos, int card, const uint8_t* origin) {
+void IntroController::drawCard(int card, int x, int y) {
     static const char *cardNames[] = {
         "honestycard", "compassioncard", "valorcard", "justicecard",
         "sacrificecard", "honorcard", "spiritualitycard", "humilitycard"
     };
-
-    ASSERT(pos == 0 || pos == 1, "invalid pos: %d", pos);
     ASSERT(card < 8, "invalid card: %d", card);
 
-    backgroundArea.draw(xu4.config->intern(cardNames[card]),
-                        pos ? origin[2] : origin[0], origin[1]);
+    backgroundArea.draw(xu4.config->intern(cardNames[card]), x, y);
 }
 
 /**
@@ -887,9 +873,6 @@ void IntroController::finishInitiateGame(const string &nameBuffer, SexType sex)
     {
     uint16_t saveGroup = xu4_setResourceGroup(StageIntro);
 
-    ImageInfo* tree = xu4.imageMgr->get(BKGD_TREE);
-    egaGraphics = tree && (tree->getFilename().compare(0, 3, "u4/") == 0);
-
     // show the lead up story
     showStory();
     if (xu4.stage != StageIntro)
@@ -962,17 +945,26 @@ void IntroController::finishInitiateGame(const string &nameBuffer, SexType sex)
 }
 
 void IntroController::showStory() {
+    ImageInfo* treeImg = xu4.imageMgr->get(BKGD_TREE);
+    if (! treeImg)
+        errorLoadImage(BKGD_TREE);
+
+    Symbol sym[2];
+    xu4.config->internSymbols(sym, 2, "moongate gate_pos");
+    treeSub[0] = treeImg->subImageIndex[sym[0]];
+    treeSub[1] = treeImg->subImageIndex[sym[1]];
+
     beastiesVisible = false;
 
     questionArea.setCursorFollowsText(true);
 
     for (int storyInd = 0; storyInd < 24; storyInd++) {
         if (storyInd == 0)
-            backgroundArea.draw(BKGD_TREE);
+            treeImg->image->draw(0, 0);
         else if (storyInd == 6)
             backgroundArea.draw(BKGD_PORTAL);
         else if (storyInd == 11)
-            backgroundArea.draw(BKGD_TREE);
+            treeImg->image->draw(0, 0);
         else if (storyInd == 15)
             backgroundArea.draw(BKGD_OUTSIDE);
         else if (storyInd == 17)
@@ -989,11 +981,11 @@ void IntroController::showStory() {
         switch (storyInd) {
             case 3:
                 questionArea.hideCursor();
-                animateTree(IMG_MOONGATE);
+                animateTree(treeImg, IMG_MOONGATE);
                 break;
             case 5:
                 questionArea.hideCursor();
-                animateTree(IMG_ITEMS);
+                animateTree(treeImg, IMG_ITEMS);
                 break;
             case 20:
                 soundSpeakLine(VOICE_GYPSY, 0);
@@ -1019,14 +1011,6 @@ void IntroController::showStory() {
  * characters class.
  */
 void IntroController::startQuestions() {
-    static uint8_t originTable[6] = {
-        12, 12, 218,    // EGA
-        22, 16, 218,    // Utne
-    };
-    uint8_t* origin = originTable;
-    if (! egaGraphics)
-        origin += 3;
-
     questionRound = 0;
     initQuestionTree();
 
@@ -1034,11 +1018,14 @@ void IntroController::startQuestions() {
     if (! abacusImg)
         errorLoadImage(BKGD_ABACUS);
 
-    Symbol sym[3];
-    xu4.config->internSymbols(sym, 3, "whitebead blackbead bead_pos");
+    Symbol sym[4];
+    xu4.config->internSymbols(sym, 4, "whitebead blackbead bead_pos card_pos");
     beadSub[0] = abacusImg->subImageIndex[sym[0]];
     beadSub[1] = abacusImg->subImageIndex[sym[1]];
     beadSub[2] = abacusImg->subImageIndex[sym[2]];
+
+    const SubImage* cardPos =
+            abacusImg->subImages + abacusImg->subImageIndex[sym[3]];
 
     const vector<string>& gypsyText = binData->introGypsy;
     int i1, i2, n;
@@ -1065,13 +1052,13 @@ void IntroController::startQuestions() {
 
         const string& virtue1 = gypsyText[questionTree[i1] + 4];
         questionArea.textAtFmt(0, 2, "%s and", virtue1.c_str());
-        drawCard(0, questionTree[i1], origin);
+        drawCard(questionTree[i1], cardPos->x, cardPos->y);
         EventHandler::wait_msecs(1000);
 
         soundSpeakLine(VOICE_GYPSY, 3);
         questionArea.textAtFmt(virtue1.size() + 4, 2, " %s.  She says",
                                gypsyText[questionTree[i2] + 4].c_str());
-        drawCard(1, questionTree[i2], origin);
+        drawCard(questionTree[i2], cardPos->x + cardPos->width, cardPos->y);
         questionArea.textAt(0, 3, "\"Consider this:\"");
         questionArea.showCursor();
 

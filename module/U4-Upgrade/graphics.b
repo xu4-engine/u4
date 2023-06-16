@@ -170,6 +170,7 @@ graphics: [
     tree: "vutne/145-tree.png" [
         moongate  0,152, 20,24
         items    24,152, 20,24
+        gate_pos  84,53, 1,1
     ]
     portal:  "vutne/146-portal.png"
     outside: "vutne/147-outside.png"
@@ -180,6 +181,7 @@ graphics: [
         whitebead 12,181, 7,11
         blackbead 23,181, 7,11
         bead_pos  128,18, 8,16
+        card_pos   22,16, 196,1
     ]
     cards1: "vutne/cards1.png" [
         honestycard         0,0, 80,112

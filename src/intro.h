@@ -118,8 +118,8 @@ private:
     void drawMapAnimated();
     void drawBeasties();
     void drawBeastie(int beast, int vertoffset, int frame);
-    void animateTree(Symbol frame);
-    void drawCard(int pos, int card, const uint8_t* origin);
+    void animateTree(ImageInfo* tree, Symbol frame);
+    void drawCard(int card, int x, int y);
     void drawAbacusBeads(int row, int selectedVirtue, int rejectedVirtue);
 
     void initQuestionTree();
@@ -223,6 +223,7 @@ private:
     int questionRound;
     int questionTree[15];
     int beadSub[3];
+    int treeSub[2];
     int beastie1Cycle;
     int beastie2Cycle;
     int beastieOffset;
@@ -284,7 +285,6 @@ private:
     int  listenerId;
     int  introMusic;
     bool bSkipTitles;
-    bool egaGraphics;
 };
 
 #endif

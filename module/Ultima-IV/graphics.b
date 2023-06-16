@@ -160,6 +160,7 @@ graphics: [
     image (name: tree filename: "u4/tree.ega" width: 320 height: 200 depth: 4 filetype: u4lzw) [
         moongate  0,152, 24,24
         items    24,152, 24,24
+        gate_pos  72,68, 1,1
     ]
     image (name: portal filename: "u4/portal.ega" width: 320 height: 200 depth: 4 filetype: u4lzw)
     image (name: outside filename: "u4/outside.ega" width: 320 height: 200 depth: 4 filetype: u4lzw)
@@ -170,6 +171,7 @@ graphics: [
         whitebead  8,187, 8,12
         blackbead 24,187, 8,12
         bead_pos  128,24, 9,15
+        card_pos   12,12, 206,1
     ]
     image (name: cards1 filename: "u4/honcom.ega" width: 320 height: 200 depth: 4 filetype: u4lzw) [
         honestycard     12,12, 90,124
