@@ -633,6 +633,9 @@ bool musicToggle()
     return musicEnabled;
 }
 
+/*
+ * Set volume for sound effects and spoken dialogue.
+ */
 void soundSetVolume(int volume) {
     if (audioFunctional)
         al_set_mixer_gain(fxMixer, float(volume) / MAX_VOLUME);

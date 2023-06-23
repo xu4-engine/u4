@@ -20,8 +20,8 @@
 #define BUFFER_LIMIT    SOUND_MAX
 #define SOURCE_LIMIT    8
 #define SID_END         7
-#define SID_MUSIC   SOURCE_LIMIT
-#define SID_SPEECH  SOURCE_LIMIT+1
+#define SID_SPEECH  SOURCE_LIMIT
+#define SID_MUSIC   SOURCE_LIMIT+1
 #define BUFFER_MS_FAILED    1
 
 static int currentTrack;
@@ -340,9 +340,12 @@ bool musicToggle()
     return musicEnabled;
 }
 
+/*
+ * Set volume for sound effects and spoken dialogue.
+ */
 void soundSetVolume(int volume) {
     soundVolume = float(volume) / MAX_VOLUME;
-    faun_setParameter(0, SOURCE_LIMIT, FAUN_VOLUME, soundVolume);
+    faun_setParameter(0, SID_SPEECH+1, FAUN_VOLUME, soundVolume);
 }
 
 int soundVolumeDec()
