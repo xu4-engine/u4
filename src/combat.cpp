@@ -222,6 +222,9 @@ void CombatController::beginCombat() {
         c->location->turnCompleter->finishTurn();
 
     xu4.eventHandler->pushController(this);
+
+    // Mouse cannot be used in combat yet.
+    screenSetMouseCursor(MC_DEFAULT);
 }
 
 /*
