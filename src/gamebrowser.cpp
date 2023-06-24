@@ -280,6 +280,7 @@ bool GameBrowser::present()
 {
     lineHeight = screenState()->fontTable[0]->lineHeight;
     screenSetMouseCursor(MC_DEFAULT);
+    screenShowMouseCursor(true);
 
     sst_init(&modFiles, 8, 128);
     sst_init(&modFormat, 8, 50);
@@ -318,6 +319,9 @@ void GameBrowser::conclude()
     for (auto& it : infoList)
         sst_free(&it.modi);
     infoList.clear();
+
+    if (! xu4.settings->mouseOptions.enabled)
+        screenShowMouseCursor(false);
 }
 
 bool GameBrowser::keyPressed(int key)

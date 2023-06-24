@@ -125,10 +125,6 @@ void screenInit_sys(const Settings* settings, ScreenState* state, int reset) {
         gpu_free(&sa->gpu);
         al_destroy_display(sa->disp);
         sa->disp = NULL;
-
-        ALLEGRO_EVENT_SOURCE* source = al_get_mouse_event_source();
-        if (source)
-            al_unregister_event_source(sa->queue, source);
     } else {
         xu4.screenSys = sa = new ScreenAllegro;
         xu4.gpu = &sa->gpu;
@@ -140,9 +136,15 @@ void screenInit_sys(const Settings* settings, ScreenState* state, int reset) {
         if (!al_install_keyboard())
             goto fatal;
 
+        if (!al_install_mouse())
+            goto fatal;
+
         sa->queue = al_create_event_queue();
         if (!sa->queue)
             goto fatal;
+
+        al_register_event_source(sa->queue, al_get_keyboard_event_source());
+        al_register_event_source(sa->queue, al_get_mouse_event_source());
     }
 
     if (settings->fullscreen)
@@ -225,30 +227,25 @@ void screenInit_sys(const Settings* settings, ScreenState* state, int reset) {
     // Can settings->gamma be applied?
 
     /* enable or disable the mouse cursor */
-    if (settings->mouseOptions.enabled) {
-        if (!al_install_mouse())
-            goto fatal;
+    if (sa->cursors[1] == NULL) {
+        // Create a temporary bitmap to build the cursor in.
+        al_set_new_bitmap_flags(ALLEGRO_MEMORY_BITMAP);
+        ALLEGRO_BITMAP* bm = al_create_bitmap(CURSORSIZE, CURSORSIZE);
+        if (bm) {
+            sa->cursors[0] = NULL;
+            sa->cursors[1] = screenInitCursor(bm, w_xpm);
+            sa->cursors[2] = screenInitCursor(bm, n_xpm);
+            sa->cursors[3] = screenInitCursor(bm, e_xpm);
+            sa->cursors[4] = screenInitCursor(bm, s_xpm);
 
-        if (sa->cursors[1] == NULL) {
-            // Create a temporary bitmap to build the cursor in.
-            al_set_new_bitmap_flags(ALLEGRO_MEMORY_BITMAP);
-            ALLEGRO_BITMAP* bm = al_create_bitmap(CURSORSIZE, CURSORSIZE);
-            if (bm) {
-                sa->cursors[0] = NULL;
-                sa->cursors[1] = screenInitCursor(bm, w_xpm);
-                sa->cursors[2] = screenInitCursor(bm, n_xpm);
-                sa->cursors[3] = screenInitCursor(bm, e_xpm);
-                sa->cursors[4] = screenInitCursor(bm, s_xpm);
-
-                al_destroy_bitmap(bm);
-            }
+            al_destroy_bitmap(bm);
         }
-
-        al_register_event_source(sa->queue, al_get_mouse_event_source());
-        al_show_mouse_cursor(sa->disp);
-    } else {
-        al_hide_mouse_cursor(sa->disp);
     }
+
+    if (settings->mouseOptions.enabled)
+        al_show_mouse_cursor(sa->disp);
+    else
+        al_hide_mouse_cursor(sa->disp);
 
     // NOTE: The GL context is made current after creating the mouse cursors
     // as the context is lost when mucking with bitmaps.
@@ -259,9 +256,6 @@ void screenInit_sys(const Settings* settings, ScreenState* state, int reset) {
         errorFatal("Unable to obtain OpenGL resource (%s)", gpuError);
 
     sa->refreshRate = 1.0 / settings->screenAnimationFramesPerSecond;
-    if (! reset) {
-        al_register_event_source(sa->queue, al_get_keyboard_event_source());
-    }
 
     al_register_event_source(sa->queue, al_get_display_event_source(sa->disp));
     return;

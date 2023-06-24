@@ -27,6 +27,7 @@ struct ScreenGLView {
     Controller* waitCon;
     updateScreenCallback update;
     int currentCursor;
+    bool cursorShown;
     OpenGLResources gpu;
 };
 
@@ -285,6 +286,9 @@ void screenInit_sys(const Settings* settings, ScreenState* state, int reset) {
 #if defined(__linux__) && ! defined(ANDROID)
         _setX11Icon(sa->view, "/usr/share/icons/hicolor/48x48/apps/xu4.png");
 #endif
+#ifndef ANDROID
+        _loadCursors(sa->view);
+#endif
     }
 
     {
@@ -326,19 +330,8 @@ void screenInit_sys(const Settings* settings, ScreenState* state, int reset) {
     state->aspectX = (state->displayW - dw) / 2;
     state->aspectY = (state->displayH - dh) / 2;
 
-    // Can settings->gamma be applied?
-
     /* enable or disable the mouse cursor */
-    if (settings->mouseOptions.enabled) {
-#ifndef ANDROID
-        if (! sa->view->cursorCount)
-            _loadCursors(sa->view);
-#endif
-
-        glv_showCursor(sa->view, 1);
-    } else {
-        glv_showCursor(sa->view, 0);
-    }
+    screenShowMouseCursor(settings->mouseOptions.enabled);
 
     gpuError = gpu_init(&sa->gpu, dw, dh, scale, settings->filter);
     if (gpuError)
@@ -404,17 +397,29 @@ void screenSetMouseCursor(MouseCursor cursor) {
     ScreenGLView* sa = SA;
 
     if (cursor != sa->currentCursor) {
-        if (cursor == MC_DEFAULT)
-            glv_showCursor(sa->view, 1);
-        else
-            glv_setCursor(sa->view, cursor-1);
+        if (sa->cursorShown) {
+            if (cursor == MC_DEFAULT)
+                glv_showCursor(sa->view, 1);
+            else
+                glv_setCursor(sa->view, cursor - 1);
+        }
         sa->currentCursor = cursor;
     }
 #endif
 }
 
 void screenShowMouseCursor(bool visible) {
-    glv_showCursor(SA->view, visible ? 1 : 0);
+    ScreenGLView* sa = SA;
+
+    if (visible) {
+        if (sa->currentCursor == MC_DEFAULT)
+            glv_showCursor(sa->view, 1);
+        else
+            glv_setCursor(sa->view, sa->currentCursor - 1);
+    } else {
+        glv_showCursor(sa->view, 0);
+    }
+    sa->cursorShown = visible;
 }
 
 /*
