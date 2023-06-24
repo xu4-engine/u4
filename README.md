@@ -22,8 +22,8 @@ XU4 is a remake of the computer game Ultima IV.  The goal is to make
 it easy and convenient to play this classic on modern operating
 systems.  XU4 is primarily inspired by the much more ambitious project
 Exult.  Linux is the primary development platform but it gets built
-for Windows regularly.  It should be trivial to port to any system with
-[Allegro] 5.2 or SDL 1.2 support.
+for Windows regularly.  It should be easy to port to any system with
+[Allegro] 5.2 support.
 
 XU4 isn't a new game based on the Ultima IV story -- it is a faithful
 recreation of the old game, right up to the crappy graphics.  If you
@@ -55,12 +55,10 @@ Some thoughts for possible improvements:
 Compiling
 ---------
 
-To build the binary on Linux and macOS use these commands:
+To build the binary on Linux use these commands:
 
     ./configure
     make
-
-> **_NOTE_:** The macOS build is currently broken.
 
 If the required libraries & headers are present, make will create the
 executable `src/xu4`.
@@ -77,11 +75,11 @@ Fortunately, Ultima IV is available as closed-source freeware from
 https://www.gog.com/game/ultima_4.
 
 If you have the optional u4upgrad.zip, place it in the same directory as the
-u4 executable.  xu4 will read the Ultima IV data files straight out of the
+u4 executable.  XU4 will read the Ultima IV data files straight out of the
 zipfile.  To use it open the game browser with the Escape key and select
 the `U4-Upgrade` module.
 
-xu4 searches for the zipfiles, or the unpacked contents of the
+XU4 searches for the zipfiles, or the unpacked contents of the
 zipfiles in the following places:
  - The current directory when xu4 is run
  - A subdirectory named `ultima4` of the current directory
@@ -90,7 +88,7 @@ zipfiles in the following places:
  - On UNIX systems: `/usr/share/xu4` & `/usr/local/share/xu4`
  - On Windows: `%LOCALAPPDATA%\xu4`
 
-The zipfile doesn't need to be unpacked, but if it is, xu4 can handle
+The zipfile doesn't need to be unpacked, but if it is, the game can handle
 uppercase or lowercase filenames even on case-sensitive filesystems,
 so it doesn't matter whether the files are named AVATAR.EXE or
 avater.exe or even Avatar.exe.
@@ -102,7 +100,7 @@ and `%APPDATA%\xu4\xu4.cfg` on Windows.
 
 The saved game files are stored in the settings directory.
 
-xu4 also accepts the following command line options:
+XU4 also accepts the following command line options:
 
         --filter <string>   Specify display filtering mode.
                             (point, HQX, xBR-lv2)
@@ -144,9 +142,9 @@ included in the EXTRA folder.
 Debug Mode (cheats)
 -------------------
 
-xu4 has a very useful debug mode (you can also think of it as a cheat mode).
+XU4 has a very useful debug mode (you can also think of it as a cheat mode).
 To enable it:
-- press 'c' in the main xu4 menu
+- press 'c' in the main menu
 - make sure that
   1) Game Enhancements = On
   2) Enhanced Gameplay Options -> Debug Mode (Cheats) = On
@@ -160,7 +158,7 @@ Cheat list:
         c     collision (lets you walk across water, through mountains, etc.)
         e     equipment (gives the party Armour and Weapons)
         f     full stats (gives all party members 50 str, dex & intel and level 8)
-        g     goto (enter a location and xu4 teleports you there)
+        g     goto (enter a location and you will be teleported there)
         h     help (displays list of available cheats)
         i     items (gives the party Items and Equipment)
         j     joined by companions (if eligible)
@@ -170,8 +168,8 @@ Cheat list:
         o     opacity (lets you see through opaque tiles)
         p     peer (switches between normal and gem view)
         r     reagents (gives the party 99 of all reagents)
-        s     summon (enter a monster name, and xu4 creates it somewhere nearby)
-        t     transports (press b/h/s + arrow key, and xu4 creates a balloon/horse/ship)
+        s     summon (enter a monster name, and it will appear somewhere nearby)
+        t     transports (press b/h/s + arrow key to create a balloon/horse/ship)
         v     full virtues (makes you a full avatar)
         w     change wind (changes or locks the wind direction)
         x     exit map (teleports the party to where it entered the current map)
