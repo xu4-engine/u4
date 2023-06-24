@@ -135,6 +135,10 @@ mouse_event:
         case SDL_QUIT:
             quitGame();
             break;
+
+        case SDL_VIDEOEXPOSE:
+            expose();
+            break;
         }
     }
 }

@@ -168,6 +168,11 @@ void EventHandler::togglePause() {
     }
 }
 
+void EventHandler::expose() {
+    if (paused)
+        screenSwapBuffers();
+}
+
 #include "support/getTicks.c"
 
 #ifdef GPU_PAUSE

@@ -169,6 +169,7 @@ public:
     bool run();
     void setScreenUpdate(void (*updateScreen)(void));
     void togglePause();
+    void expose();
 #if defined(IOS)
     void handleEvent(UIEvent *);
     static void controllerStopped_helper();

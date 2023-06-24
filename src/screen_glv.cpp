@@ -222,17 +222,9 @@ mouse_pos:
             ie.type = IE_MOUSE_WHEEL;
             goto mouse_pos;
 
-        /*
         case GLV_EVENT_EXPOSE:
-            if (event.active.state & SDL_APPACTIVE) {
-                // Window was previously iconified and is now being restored
-                if (event.active.gain) {
-                    if (updateScreen)
-                        (*updateScreen)();
-                }
-            }
+            xu4.eventHandler->expose();
             break;
-        */
 
         case GLV_EVENT_CLOSE:
             xu4.eventHandler->quitGame();

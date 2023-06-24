@@ -137,11 +137,11 @@ mouse_event:
             ie.type = IE_MOUSE_MOVE;
             goto mouse_pos;
 
-        /*
-        case SDL_ACTIVEEVENT:
-            handleActiveEvent(event, updateScreen);
+        case ALLEGRO_EVENT_DISPLAY_EXPOSE:
+        case ALLEGRO_EVENT_DISPLAY_SWITCH_IN:
+            expose();
             break;
-        */
+
         case ALLEGRO_EVENT_DISPLAY_CLOSE:
             quitGame();
             break;
