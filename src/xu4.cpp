@@ -449,8 +449,8 @@ uint16_t xu4_setResourceGroup(uint16_t group) {
  * Free all assets that are part of the specified group.
  */
 void xu4_freeResourceGroup(uint16_t group) {
-    xu4.imageMgr->freeResourceGroup(StageIntro);
-    soundFreeResourceGroup(StageIntro);
+    xu4.imageMgr->freeResourceGroup(group);
+    soundFreeResourceGroup(group);
 }
 
 //----------------------------------------------------------------------------
