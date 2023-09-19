@@ -122,6 +122,9 @@ public:
     virtual void putToSleep();
     virtual void wakeUp();
 
+    // Used by Party to directly clear status flags.
+    void clearStatus(StatusType st) { Creature::removeStatus(st); }
+
 protected:
     static MapTile tileForClass(int klass);
 

@@ -696,6 +696,10 @@ bomb:
                 if (pc->isDisabled())
                     continue;
                 if (always || xu4_random(2) == 0) {
+                    // The original game has a single status field so sleeping
+                    // removes any poison.  Note it doesn't cure poison when
+                    // resting in camp as the status is not changed by Hole up.
+                    pc->clearStatus(STAT_POISONED);
                     pc->putToSleep();
                     flashMask |= 1 << i;
                 }
@@ -815,22 +819,23 @@ void Party::endTurn() {
     saveGame->moves++;
 
     for (i = 0; i < size(); i++) {
+        PartyMember* pc = members[i];
 
         /* Handle player status (only for non-combat turns) */
         if (nonCombat) {
 
             /* party members eat food (also non-combat) */
-            if (!members[i]->isDead())
+            if (! pc->isDead())
                 adjustFood(-1);
 
-            switch (members[i]->getStatus()) {
+            switch (pc->getStatus()) {
             case STAT_SLEEPING:
                 if (xu4_random(5) == 0)
-                    members[i]->wakeUp();
+                    pc->wakeUp();
                 break;
 
             case STAT_POISONED:
-                if (members[i]->applyDamage(loc->map, 2))
+                if (pc->applyDamage(loc->map, 2))
                     poisonedMask |= 1 << i;
                 break;
 
@@ -840,7 +845,7 @@ void Party::endTurn() {
         }
 
         /* regenerate magic points */
-        if (!members[i]->isDisabled() && members[i]->getMp() < members[i]->getMaxMp())
+        if (! pc->isDisabled() && pc->getMp() < pc->getMaxMp())
             saveGame->players[i].mp++;
     }
 

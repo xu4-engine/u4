@@ -37,6 +37,7 @@ CampController::CampController() {
 
 void CampController::beginCombat() {
     // make sure everyone's asleep
+    // NOTE: Player status are set to sleeping, unlike in the C64/DOS games.
     for (int i = 0; i < c->party->size(); i++)
         c->party->member(i)->putToSleep();
 

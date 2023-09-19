@@ -633,7 +633,7 @@ static int spellSleep(int unused) {
         if ((m->getResists() != EFFECT_SLEEP) &&
             xu4_random(0xFF) >= m->getHp())
         {
-            soundPlay(SOUND_POISON_EFFECT);
+            soundPlay(SOUND_SLEEP);
             m->putToSleep();
             GameController::flashTile(coords, SYM_SLEEP_FIELD, 3);
         }
