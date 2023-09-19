@@ -57,6 +57,7 @@ static bool getChestTrapHandler(int player);
 static bool jimmyAt(const Coords &coords);
 static bool openAt(const Coords &coords);
 static void wearArmor(int player = -1);
+static void exitTransport();
 static void ztatsFor(int player = -1);
 
 /* creature functions */
@@ -966,14 +967,19 @@ bool GameController::keyPressed(int key) {
 
         case 8:                     /* ctrl-H */
             if (settings.debug) {
-                screenMessage("Help!\n");
-                screenPrompt();
-
                 /* Help! send me to Lord British (who conveniently is right around where you are)! */
+                screenMessage("Help!\n");
+
+                // Avoid having a horse stuck in the castle.
+                if (c->transportContext == TRANSPORT_HORSE)
+                    exitTransport();
+
+                screenPrompt();
                 setMap(xu4.config->map(MAP_CASTLE_LB2), 1, NULL);
-                c->location->coords.x = 19;
-                c->location->coords.y = 8;
-                c->location->coords.z = 0;
+                Coords& pos = c->location->coords;
+                pos.x = 19;
+                pos.y = 8;
+                pos.z = 0;
             }
             else valid = false;
             break;
@@ -1224,18 +1230,7 @@ bool GameController::keyPressed(int key) {
             break;
 
         case 'x':
-            if ((c->transportContext != TRANSPORT_FOOT) && !c->party->isFlying()) {
-                Object *obj = c->location->map->addObject(c->party->getTransport(), c->party->getTransport(), c->location->coords);
-                if (c->transportContext == TRANSPORT_SHIP)
-                    c->lastShip = obj;
-
-                const Tile *avatar = c->location->map->tileset->getByName(Tile::sym.avatar);
-                ASSERT(avatar, "no avatar tile found in tileset");
-                c->party->setTransport(avatar->getId());
-                c->horseSpeed = 0;
-                screenMessage("X-it\n");
-            } else
-                screenMessage("%cX-it What?%c\n", FG_GREY, FG_WHITE);
+            exitTransport();
             break;
 
         case 'y':
@@ -2860,6 +2855,22 @@ static void wearArmor(int player) {
         screenMessage("\n%cA %s may NOT use %s%c\n", FG_GREY, getClassName(p->getClass()), a->getName(), FG_WHITE);
         break;
     }
+}
+
+static void exitTransport()
+{
+    if ((c->transportContext != TRANSPORT_FOOT) && !c->party->isFlying()) {
+        Object *obj = c->location->map->addObject(c->party->getTransport(), c->party->getTransport(), c->location->coords);
+        if (c->transportContext == TRANSPORT_SHIP)
+            c->lastShip = obj;
+
+        const Tile *avatar = c->location->map->tileset->getByName(Tile::sym.avatar);
+        ASSERT(avatar, "no avatar tile found in tileset");
+        c->party->setTransport(avatar->getId());
+        c->horseSpeed = 0;
+        screenMessage("X-it\n");
+    } else
+        screenMessage("%cX-it What?%c\n", FG_GREY, FG_WHITE);
 }
 
 /**
