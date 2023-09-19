@@ -199,8 +199,7 @@ void dungeonDrinkFountain() {
     /* poison fountain */
     case FOUNTAIN_POISON:
         if (pc->getStatus() != STAT_POISONED) {
-            soundPlay(SOUND_POISON_DAMAGE);
-            pc->applyEffect(dungeon, EFFECT_POISON);
+            c->party->applyEffect(player, dungeon, EFFECT_POISON);
             pc->applyDamage(dungeon, 100);  /* 100 damage to drinker also */
             screenMessage("\nArgh-Choke-Gasp!\n");
         }
@@ -277,15 +276,12 @@ bool dungeonHandleTrap(TrapType trap) {
         c->party->quenchTorch();
         break;
     case TRAP_FALLING_ROCK:
-        // Treat falling rocks and pits like bomb traps
-        // XXX: That's a little harsh.
         screenMessage("\nFalling Rocks!\n");
         goto pit_damage;
     case TRAP_PIT:
         screenMessage("\nPit!\n");
 pit_damage:
-        soundPlay(SOUND_STONE_FALLING);
-        c->party->applyEffect(dungeon, EFFECT_LAVA);
+        c->party->applyEffect(ALL_PLAYERS, dungeon, EFFECT_ROCKS);
         screenShake(3);     // NOTE: In the DOS version only the view shakes.
         break;
     default: break;

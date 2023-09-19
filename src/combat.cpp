@@ -747,7 +747,8 @@ void CombatController::finishTurn() {
     /* make sure the player with the focus is still in battle (hasn't fled or died) */
     if (player) {
         /* apply effects from tile player is standing on */
-        player->applyEffect(map, map->tileTypeAt(player->coords, WITH_GROUND_OBJECTS)->getEffect());
+        c->party->applyEffect(focus, map,
+            map->tileTypeAt(player->coords, WITH_GROUND_OBJECTS)->getEffect());
     }
 
     quick = (c->aura.getType() == Aura::QUICKNESS) && player && (xu4_random(2) == 0) ? 1 : 0;

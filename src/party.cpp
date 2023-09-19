@@ -199,43 +199,6 @@ void PartyMember::advanceLevel() {
 }
 
 /**
- * Apply an effect to the party member
- */
-void PartyMember::applyEffect(Map* map, TileEffect effect) {
-    if (isDead())
-        return;
-
-    switch (effect) {
-    case EFFECT_NONE:
-        break;
-    case EFFECT_LAVA:
-    case EFFECT_FIRE:
-        applyDamage(map, 16 + (xu4_random(32)));
-
-        /*else if (player == ALL_PLAYERS && xu4_random(2) == 0)
-            playerApplyDamage(&(c->saveGame->players[i]), 10 + (xu4_random(25)));*/
-        break;
-    case EFFECT_SLEEP:
-        soundPlay(SOUND_SLEEP, false);
-        putToSleep();
-        break;
-    case EFFECT_POISONFIELD:
-    case EFFECT_POISON:
-        if (getStatus() != STAT_POISONED) {
-            soundPlay(SOUND_POISON_EFFECT, false);
-            addStatus(STAT_POISONED);
-        }
-        break;
-    case EFFECT_ELECTRICITY: break;
-    default:
-        ASSERT(0, "invalid effect: %d", effect);
-    }
-
-    if (effect != EFFECT_NONE)
-        notifyOfChange();
-}
-
-/**
  * Award a player experience points.  Maxs out the players xp at 9999.
  */
 void PartyMember::awardXp(int xp) {
@@ -688,29 +651,82 @@ void Party::adjustKarma(KarmaAction action) {
 }
 
 /**
- * Apply effects to the entire party
+ * Apply effects to a player or the entire party.
  */
-void Party::applyEffect(Map* map, TileEffect effect) {
-    int i;
+void Party::applyEffect(int player, Map* map, TileEffect effect) {
+    PartyMember* pc;
+    int flashMask = 0;
+    int damageSound = SOUND_POISON_EFFECT;
+    int i, end;
+    bool always;
 
-    for (i = 0; i < size(); i++) {
-        switch(effect) {
+    if (player == ALL_PLAYERS) {
+        always = false;
+        i = 0;
+        end = size();
+    } else {
+        always = true;
+        i = player;
+        end = i + 1;
+    }
+
+    switch(effect) {
         case EFFECT_NONE:
         case EFFECT_ELECTRICITY:
-            members[i]->applyEffect(map, effect);
-            break;
+            return;
+
         case EFFECT_LAVA:
         case EFFECT_FIRE:
-        case EFFECT_SLEEP:
-            if (xu4_random(2) == 0)
-                members[i]->applyEffect(map, effect);
+bomb:
+            for (; i < end; i++) {
+                pc = members[i];
+                if (pc->isDead())
+                    continue;
+                if (always || xu4_random(2) == 0) {
+                    pc->applyDamage(map, 16 + xu4_random(32));
+                    flashMask |= 1 << i;
+                }
+            }
             break;
+
+        case EFFECT_SLEEP:
+            damageSound = SOUND_SLEEP;
+            for (; i < end; i++) {
+                pc = members[i];
+                if (pc->isDisabled())
+                    continue;
+                if (always || xu4_random(2) == 0) {
+                    pc->putToSleep();
+                    flashMask |= 1 << i;
+                }
+            }
+            break;
+
         case EFFECT_POISONFIELD:
         case EFFECT_POISON:
-            if (xu4_random(5) == 0)
-                members[i]->applyEffect(map, effect);
+            for (; i < end; i++) {
+                pc = members[i];
+                if (pc->isDead() || pc->getStatus() == STAT_POISONED)
+                    continue;
+                if (always || xu4_random(5) == 0) {
+                    pc->addStatus(STAT_POISONED);
+                    flashMask |= 1 << i;
+                }
+            }
             break;
-        }
+
+        case EFFECT_ROCKS:
+            // The DOS game flashes all player stats, even for those not
+            // damaged.  Xu4 will only flash those affected.
+            soundPlay(SOUND_STONE_FALLING);
+            damageSound = SOUND_PARTY_STRUCK;
+            // Treat falling rocks and pits like bomb traps.
+            goto bomb;
+    }
+
+    if (flashMask) {
+        soundPlay(Sound(damageSound));
+        c->stats->flashPlayers(flashMask);
     }
 }
 

@@ -8,15 +8,10 @@
 #include <vector>
 
 #include "creature.h"
-#ifdef IOS
-#include "ios_helpers.h"
-#endif
 
 class Party;
 struct Weapon;
 struct Armor;
-
-typedef std::vector<class PartyMember *> PartyMemberVector;
 
 #define ALL_PLAYERS -1
 
@@ -108,7 +103,6 @@ public:
     virtual void addStatus(StatusType status);
     void adjustMp(int pts);
     void advanceLevel();
-    void applyEffect(Map*, TileEffect effect);
     void awardXp(int xp);
     bool heal(HealType type);
     virtual void removeStatus(StatusType status);
@@ -172,7 +166,7 @@ public:
     void adjustFood(int food);
     void adjustGold(int gold);
     void adjustKarma(KarmaAction action);
-    void applyEffect(Map*, TileEffect effect);
+    void applyEffect(int player, Map*, TileEffect effect);
     bool attemptElevation(Virtue virtue);
     bool burnTorch(int turns = 1);
     bool canEnterShrine(Virtue virtue);
@@ -219,9 +213,6 @@ private:
     MapTile transport;
     int torchduration;
     int activePlayer;
-#ifdef IOS
-    friend void U4IOS::syncPartyMembersWithSaveGame();
-#endif
 };
 
 bool isPartyMember(const Object *punknown);

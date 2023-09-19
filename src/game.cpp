@@ -570,7 +570,7 @@ void GameController::finishTurn() {
         if (!c->party->isFlying()) {
 
             // apply effects from tile avatar is standing on
-            c->party->applyEffect(map, map->tileTypeAt(c->location->coords, WITH_GROUND_OBJECTS)->getEffect());
+            c->party->applyEffect(ALL_PLAYERS, map, map->tileTypeAt(c->location->coords, WITH_GROUND_OBJECTS)->getEffect());
 
             // Move creatures and see if something is attacking the avatar
             Creature* attacker = map->moveObjects(c->location->coords);
@@ -2051,16 +2051,9 @@ static bool getChestTrapHandler(int player) {
         if ((player >= 0) &&
             (c->saveGame->players[player].dex + 25 < xu4_random(100)))
         {
-            Map* map = c->location->map;
-
-            // Play sound for acid & bomb since applyEffect does not.
-            if (trapType == EFFECT_LAVA || trapType == EFFECT_FIRE)
-                soundPlay(SOUND_POISON_EFFECT);
-
-            if (trapType == EFFECT_LAVA) /* bomb trap */
-                c->party->applyEffect(map, trapType);
-            else
-                c->party->member(player)->applyEffect(map, trapType);
+            c->party->applyEffect(
+                        (trapType == EFFECT_LAVA) ? ALL_PLAYERS : player,
+                        c->location->map, trapType);
         } else {
             soundPlay(SOUND_EVADE);
             screenMessage("Evaded!\n");
