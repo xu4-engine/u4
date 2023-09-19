@@ -308,12 +308,11 @@ void Creature::act(CombatController *controller) {
     CombatMap* map = controller->getMap();
 
     /* see if creature wakes up if it is asleep */
-    if ((getStatus() == STAT_SLEEPING) && (xu4_random(8) == 0))
+    if (getStatus() == STAT_SLEEPING) {
+        if (xu4_random(8) != 0)
+            return;     // Still asleep, do nothing
         wakeUp();
-
-    /* if the creature is still asleep, then do nothing */
-    if (getStatus() == STAT_SLEEPING)
-        return;
+    }
 
     if (negates())
         c->aura.set(Aura::NEGATE, 2);
@@ -599,7 +598,7 @@ Creature *Creature::nearestOpponent(Map* map, int *dist, bool ranged) const {
 }
 
 void Creature::putToSleep() {
-    if (getStatus() != STAT_DEAD) {
+    if (! isDead()) {
         addStatus(STAT_SLEEPING);
         animated = false;   /* freeze creature */
     }
