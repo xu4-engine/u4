@@ -31,7 +31,7 @@ typedef enum {
 
 class MenuItem {
 public:
-    MenuItem(string text, short x, short y, int shortcutKey = -1);
+    MenuItem(const char* text, short x, short y, int shortcutKey = -1);
     virtual ~MenuItem() {}
 
     virtual void activate(MenuEvent &event) {}
@@ -52,7 +52,6 @@ public:
     void setId(int id);
     void setX(int xpos);
     void setY(int ypos);
-    void setText(string text);
     void setHighlighted(bool h = true);
     void setSelected(bool s = true);
     void setVisible(bool v = true);
@@ -77,7 +76,7 @@ protected:
  */
 class BoolMenuItem : public MenuItem {
 public:
-    BoolMenuItem(string text, short x, short y, int shortcutKey, bool *val);
+    BoolMenuItem(const char* text, short x, short y, int shortcutKey, bool *val);
 
     BoolMenuItem *setValueStrings(const string &onString, const string &offString);
 
@@ -95,7 +94,7 @@ protected:
  */
 class EnumMenuItem : public MenuItem {
 public:
-    EnumMenuItem(string text, short x, short y, int shortcutKey, uint8_t *val, const char** valueNames);
+    EnumMenuItem(const char* text, short x, short y, int shortcutKey, uint8_t *val, const char** valueNames);
 
     virtual void activate(MenuEvent &event);
     virtual string getText() const;
@@ -112,8 +111,8 @@ protected:
  */
 class StringMenuItem : public MenuItem {
 public:
-    StringMenuItem(string text, short x, short y, int shortcutKey, string *val, const vector<string> &validSettings);
-    StringMenuItem(string text, short x, short y, int shortcutKey, string *val, const char** validStrings);
+    StringMenuItem(const char* text, short x, short y, int shortcutKey, string *val, const vector<string> &validSettings);
+    StringMenuItem(const char* text, short x, short y, int shortcutKey, string *val, const char** validStrings);
 
     virtual void activate(MenuEvent &event);
     virtual string getText() const;
@@ -129,7 +128,7 @@ protected:
  */
 class IntMenuItem : public MenuItem {
 public:
-    IntMenuItem(string text, short x, short y, int shortcutKey, int *val, int min, int max, int increment, menuOutputType output=MENU_OUTPUT_INT);
+    IntMenuItem(const char* text, short x, short y, int shortcutKey, int *val, int min, int max, int increment, menuOutputType output=MENU_OUTPUT_INT);
 
     virtual void activate(MenuEvent &event);
     virtual string getText() const;

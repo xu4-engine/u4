@@ -12,7 +12,7 @@
 /**
  * MenuItem class
  */
-MenuItem::MenuItem(string t, short xpos, short ypos, int sc) :
+MenuItem::MenuItem(const char* t, short xpos, short ypos, int sc) :
     id(-1),
     x(xpos),
     y(ypos),
@@ -51,10 +51,6 @@ void MenuItem::setY(int ypos) {
     y = ypos;
 }
 
-void MenuItem::setText(string t) {
-    text = t;
-}
-
 void MenuItem::setHighlighted(bool h) {
     highlighted = h;
 }
@@ -77,7 +73,7 @@ void MenuItem::setClosesMenu(bool closesMenu) {
 
 //--------------------------------------
 
-BoolMenuItem::BoolMenuItem(string text, short x, short y, int shortcutKey, bool *val) :
+BoolMenuItem::BoolMenuItem(const char* text, short x, short y, int shortcutKey, bool *val) :
     MenuItem(text, x, y, shortcutKey),
     val(val),
     on("On"),
@@ -106,7 +102,7 @@ void BoolMenuItem::activate(MenuEvent &event) {
 
 //--------------------------------------
 
-EnumMenuItem::EnumMenuItem(string text, short x, short y, int shortcutKey, uint8_t *val, const char** valueNames) :
+EnumMenuItem::EnumMenuItem(const char* text, short x, short y, int shortcutKey, uint8_t *val, const char** valueNames) :
     MenuItem(text, x, y, shortcutKey),
     val(val), stringList(valueNames)
 {
@@ -147,14 +143,14 @@ void EnumMenuItem::activate(MenuEvent &event) {
 
 //--------------------------------------
 
-StringMenuItem::StringMenuItem(string text, short x, short y, int shortcutKey, string *val, const vector<string> &validSettings) :
+StringMenuItem::StringMenuItem(const char* text, short x, short y, int shortcutKey, string *val, const vector<string> &validSettings) :
     MenuItem(text, x, y, shortcutKey),
     val(val),
     validSettings(validSettings)
 {
 }
 
-StringMenuItem::StringMenuItem(string text, short x, short y, int shortcutKey, string *val, const char** validStrings) :
+StringMenuItem::StringMenuItem(const char* text, short x, short y, int shortcutKey, string *val, const char** validStrings) :
     MenuItem(text, x, y, shortcutKey),
     val(val)
 {
@@ -192,7 +188,7 @@ void StringMenuItem::activate(MenuEvent &event) {
 
 //--------------------------------------
 
-IntMenuItem::IntMenuItem(string text, short x, short y, int shortcutKey, int *val, int min, int max, int increment, menuOutputType output) :
+IntMenuItem::IntMenuItem(const char* text, short x, short y, int shortcutKey, int *val, int min, int max, int increment, menuOutputType output) :
     MenuItem(text, x, y, shortcutKey),
     val(val),
     min(min),

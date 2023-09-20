@@ -6,11 +6,8 @@
 #define MENU_H
 
 #include <list>
-#include <string>
 #include "event.h"
 #include "menuitem.h"
-
-using std::string;
 
 class Menu;
 class TextView;
@@ -49,7 +46,7 @@ public:
 
     void                    removeAll();
 
-    void                    add(int id, string text, short x, short y, int shortcutKey = -1);
+    void                    add(int id, const char* text, short x, short y, int shortcutKey = -1);
     MenuItem *              add(int id, MenuItem *item);
     void                    addShortcutKey(int id, int shortcutKey);
     void                    setClosesMenu(int id);
@@ -71,14 +68,14 @@ public:
     bool                    activateItemByShortcut(int key, MenuEvent::Type action);
     bool                    getClosed() const;
     void                    setClosed(bool closed);
-    void                    setTitle(const string &text, int x, int y);
+    void                    setTitle(const char* text, int x, int y);
 
 private:
     MenuItemList items;
     MenuItemList::iterator current;
     MenuItemList::iterator selected;
     bool closed;
-    string title;
+    const char* title;
     int titleX, titleY;
 };
 

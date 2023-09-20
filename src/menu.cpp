@@ -12,7 +12,7 @@
 
 Menu::Menu() :
     closed(false),
-    title(""),
+    title(NULL),
     titleX(0),
     titleY(0)
 {
@@ -30,7 +30,7 @@ void Menu::removeAll() {
 /**
  * Adds an item to the menu list and returns the menu
  */
-void Menu::add(int id, string text, short x, short y, int sc) {
+void Menu::add(int id, const char* text, short x, short y, int sc) {
     MenuItem *item = new MenuItem(text, x, y, sc);
     item->setId(id);
     items.push_back(item);
@@ -84,8 +84,8 @@ void Menu::setCurrent(int id) {
 
 void Menu::show(TextView *view)
 {
-    if (title.length() > 0)
-        view->textAt(titleX, titleY, title.c_str());
+    if (title)
+        view->textAt(titleX, titleY, title);
 
     for (current = items.begin(); current != items.end(); current++)
     {
@@ -318,7 +318,11 @@ void Menu::setClosed(bool closed) {
     this->closed = closed;
 }
 
-void Menu::setTitle(const string &text, int x, int y) {
+/**
+ * The text argument pointer must remain valid throughout the life of the Menu;
+ * the string is not copied.
+ */
+void Menu::setTitle(const char* text, int x, int y) {
     title = text;
     titleX = x;
     titleY = y;
