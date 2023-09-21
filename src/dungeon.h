@@ -70,6 +70,7 @@ public:
     // Members
     virtual const char* getName() const;
 
+    void unloadRooms();
     DungeonToken tokenForTile(TileId tid) const;
     DungeonToken currentToken();
     uint8_t currentSubToken();

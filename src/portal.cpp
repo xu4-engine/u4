@@ -13,6 +13,7 @@
 /**
  * Creates a dungeon ladder portal based on the action given
  */
+static
 void createDngLadder(Location *location, PortalTriggerAction action, Portal *p) {
     if (p) {
         p->destid = location->map->id;

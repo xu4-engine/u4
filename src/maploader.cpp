@@ -344,6 +344,8 @@ static bool loadDungeonMap(Map *map, U4FILE *uf, FILE *sav) {
     uint8_t* rawMap;
     size_t bytes;
 
+    // NOTE: Changes here must work in tandem with Dungeon::unloadRooms()!
+
     /* the map must be 11x11 to be read from an .CON file */
     ASSERT(dungeon->width == DNG_WIDTH, "map width is %d, should be %d", dungeon->width, DNG_WIDTH);
     ASSERT(dungeon->height == DNG_HEIGHT, "map height is %d, should be %d", dungeon->height, DNG_HEIGHT);
@@ -376,7 +378,6 @@ static bool loadDungeonMap(Map *map, U4FILE *uf, FILE *sav) {
     }
 
     /* read in the dungeon rooms */
-    /* FIXME: needs a cleanup function to free this memory later */
     dungeon->rooms = new DngRoom[dungeon->n_rooms];
 
     for (i = 0; i < dungeon->n_rooms; i++) {

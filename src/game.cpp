@@ -498,6 +498,10 @@ int GameController::exitToParentMap() {
             currentMap->annotations.clear();
             currentMap->clearObjects();
 
+            // Dungeons reset on exit.
+            if (isDungeon(currentMap))
+                static_cast<Dungeon *>(currentMap)->unloadRooms();
+
             /* quench the torch of we're on the world map */
             if (prevMap->isWorldMap())
                 c->party->quenchTorch();

@@ -15,6 +15,23 @@
 #include "xu4.h"
 
 Dungeon::~Dungeon() {
+    unloadRooms();
+}
+
+/**
+ * Used to reset the dungeon when leaving it.
+ * Map::data is freed to trigger a reload (via loadMap) upon reentry.
+ */
+void Dungeon::unloadRooms()
+{
+    // Free base class data to force a reload.
+    delete[] data;
+    data = NULL;
+
+    // Rooms are created in loadDungeonMap() so they must be deleted.
+    // The rawMap is left as is and will simply be refilled.
+    // n_rooms is not touched as it only gets set once by Config.
+
     if (roomMaps) {
         CombatMap** it  = roomMaps;
         CombatMap** end = it + n_rooms;
@@ -22,9 +39,11 @@ Dungeon::~Dungeon() {
             delete *it;
 
         delete[] roomMaps;
+        roomMaps = NULL;
     }
 
     delete[] rooms;
+    rooms = NULL;
 }
 
 /**

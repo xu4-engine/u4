@@ -39,7 +39,6 @@ struct Portal {
     bool exitPortal;
 };
 
-void createDngLadder(Location *location, PortalTriggerAction action, Portal *p);
 int usePortalAt(Location *location, const Coords& coords, PortalTriggerAction action);
 
 #endif
