@@ -10,6 +10,7 @@
 #include "item.h"
 #include "mapmgr.h"
 #include "screen.h"
+#include "stats.h"
 #include "tileset.h"
 #include "utils.h"
 #include "xu4.h"
@@ -184,7 +185,9 @@ void dungeonDrinkFountain() {
 
     /* acid fountain */
     case FOUNTAIN_ACID:
+        soundPlay(SOUND_ACID);
         pc->applyDamage(dungeon, 100);      /* 100 damage to drinker */
+        c->stats->flashPlayers(1 << player);
         screenMessage("\nBleck--Nasty!\n");
         break;
 
@@ -257,7 +260,9 @@ void dungeonTouchOrb() {
     }
 
     /* deal damage to the party member who touched the orb */
+    soundPlay(SOUND_PC_STRUCK);
     c->party->member(player)->applyDamage(loc->map, damage);
+    c->stats->flashPlayers(1 << player);
 
     /* remove the orb from the map */
     loc->map->setTileAt(loc->coords,
