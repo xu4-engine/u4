@@ -388,12 +388,15 @@ void Creature::act(CombatController *controller) {
 
         gameSpellEffect('s', -1, static_cast<Sound>(SOUND_MAGIC)); /* show the sleep spell effect */
 
-        /* Apply the sleep spell to party members still in combat */
+        /* Apply the sleep spell to party members still in combat.
+           Note that poisoned characters are immune in the original game! */
         if (!isPartyMember(this)) {
             PartyMemberVector party = map->getPartyMembers();
             PartyMemberVector::iterator j;
 
             for (j = party.begin(); j != party.end(); j++) {
+                if ((*j)->status & (StatPoisoned | StatSleeping | StatDead))
+                    continue;
                 if (xu4_random(2) == 0)
                     (*j)->putToSleep();
             }

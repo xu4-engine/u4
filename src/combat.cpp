@@ -614,6 +614,7 @@ static bool rangedAttack(const Coords &coords, CombatMap* map,
                          Creature *attacker,
                          const MapTile& hittile, const MapTile& misstile) {
 
+    bool effective;
     Creature *target = isCreature(attacker) ? map->partyMemberAt(coords)
                                             : map->creatureAt(coords);
 
@@ -632,45 +633,67 @@ static bool rangedAttack(const Coords &coords, CombatMap* map,
     /* show the 'hit' tile */
     GameController::flashTile(coords, hittile, 3);
 
+#define EFFECT_MSG(fmt, color) screenMessage(fmt, target->getName(), color, FG_WHITE)
+
+    // TODO: Add status flash (even if not effective).
+
     /* These effects happen whether or not the opponent was hit */
     switch(effect) {
 
     case EFFECT_ELECTRICITY:
         /* FIXME: are there any special effects here? */
-        soundPlay(SOUND_PC_STRUCK, false);
-        screenMessage("\n%s %cElectrified%c!\n", target->getName(), FG_BLUE, FG_WHITE);
+        soundPlay(SOUND_PC_STRUCK);
+        EFFECT_MSG("\n%s %cElectrified%c!\n", FG_BLUE);
         attacker->dealDamage(map, target, attacker->getDamage());
         break;
 
     case EFFECT_POISON:
     case EFFECT_POISONFIELD:
+        // POISON_EFFECT, ranged hit
+        soundPlay(SOUND_POISON_EFFECT);
+
         /* see if the player is poisoned */
-        if ((xu4_random(2) == 0) && (target->getStatus() != STAT_POISONED))
-        {
-            // POISON_EFFECT, ranged hit
-            soundPlay(SOUND_POISON_EFFECT, false);
-            screenMessage("\n%s %cPoisoned%c!\n", target->getName(), FG_GREEN, FG_WHITE);
+        effective = (target->getStatus() == STAT_GOOD && xu4_random(2) == 0);
+
+#ifdef U4_ORIGINAL
+        EFFECT_MSG("\n%s %cPoisoned%c!\n", FG_GREEN);
+        if (effective)
+            target->addStatus(STAT_POISONED);
+        else
+            screenMessage("Failed.\n");
+#else
+        if (effective) {
+            EFFECT_MSG("\n%s %cPoisoned%c!\n", FG_GREEN);
             target->addStatus(STAT_POISONED);
         }
-        // else screenMessage("Failed.\n");
+#endif
         break;
 
     case EFFECT_SLEEP:
+        // SLEEP, ranged hit, plays even if sleep failed or PC already asleep
+        soundPlay(SOUND_SLEEP);
+
         /* see if the player is put to sleep */
-        if (xu4_random(2) == 0)
-        {
-            // SLEEP, ranged hit, plays even if sleep failed or PC already asleep
-            soundPlay(SOUND_SLEEP, false);
-            screenMessage("\n%s %cSlept%c!\n", target->getName(), FG_PURPLE, FG_WHITE);
+        effective = (target->getStatus() == STAT_GOOD && xu4_random(2) == 0);
+
+#ifdef U4_ORIGINAL
+        EFFECT_MSG("\n%s %cSlept%c!\n", FG_PURPLE);
+        if (effective)
+            target->putToSleep();
+        else
+            screenMessage("Failed.\n");
+#else
+        if (effective) {
+            EFFECT_MSG("\n%s %cSlept%c!\n", FG_PURPLE);
             target->putToSleep();
         }
-        // else screenMessage("Failed.\n");
+#endif
         break;
 
     case EFFECT_LAVA:
     case EFFECT_FIRE:
         /* FIXME: are there any special effects here? */
-        soundPlay(SOUND_PC_STRUCK, false);
+        soundPlay(SOUND_PC_STRUCK);
         screenMessage("\n%s %c%s Hit%c!\n", target->getName(), FG_RED,
                       effect == EFFECT_LAVA ? "Lava" : "Fiery", FG_WHITE);
         attacker->dealDamage(map, target, attacker->getDamage());
@@ -678,10 +701,11 @@ static bool rangedAttack(const Coords &coords, CombatMap* map,
 
     default:
         /* show the appropriate 'hit' message */
-        // soundPlay(SOUND_PC_STRUCK, false);
+        // soundPlay(SOUND_PC_STRUCK);
         if (hittile == Tileset::findTileByName(Tile::sym.magicFlash)->getId())
-            screenMessage("\n%s %cMagical Hit%c!\n", target->getName(), FG_BLUE, FG_WHITE);
-        else screenMessage("\n%s Hit!\n", target->getName());
+            EFFECT_MSG("\n%s %cMagical Hit%c!\n", FG_BLUE);
+        else
+            screenMessage("\n%s Hit!\n", target->getName());
         attacker->dealDamage(map, target, attacker->getDamage());
         break;
     }
