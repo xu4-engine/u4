@@ -111,9 +111,8 @@ static int loadSoundBuffer(int sound)
     return ms;
 }
 
-void soundPlay(Sound sound, bool onlyOnce, int limitMSec)
+void soundPlay(Sound sound, int limitMSec)
 {
-    (void) onlyOnce;
     ASSERT(sound < SOUND_MAX, "Invalid soundPlay() id");
 
     // Do nothing if muted or soundInit failed.

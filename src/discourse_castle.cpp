@@ -275,7 +275,7 @@ static void lordBritishHeal(char answer) {
         message("\n\nHe says: Let me heal thy wounds!\n");
 
         // Same spell effect as 'r'esurrect.
-        soundPlay(SOUND_PREMAGIC_MANA_JUMBLE, false, 1000);
+        soundPlay(SOUND_PREMAGIC_MANA_JUMBLE, 1000);
         EventHandler::wait_msecs(1000);
         gameSpellEffect('r', -1, SOUND_MAGIC);
 

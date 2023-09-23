@@ -355,10 +355,10 @@ void Creature::act(CombatController *controller) {
 
     switch(action) {
     case CA_ATTACK:
-        soundPlay(SOUND_NPC_ATTACK, false);                                    // NPC_ATTACK, melee
+        soundPlay(SOUND_NPC_ATTACK);    // NPC_ATTACK, melee
 
         if (controller->attackHit(this, target)) {
-            soundPlay(SOUND_PC_STRUCK, false);                                 // PC_STRUCK, melee and ranged
+            soundPlay(SOUND_PC_STRUCK); // PC_STRUCK, melee and ranged
             GameController::flashTile(target->coords, Tile::sym.hitFlash, 4);
 
 
@@ -368,13 +368,13 @@ void Creature::act(CombatController *controller) {
             if (target && isPartyMember(target)) {
                 /* steal gold if the creature steals gold */
                 if (stealsGold() && xu4_random(4) == 0) {
-                    soundPlay(SOUND_ITEM_STOLEN, false);                       // ITEM_STOLEN, gold
+                    soundPlay(SOUND_ITEM_STOLEN);   // ITEM_STOLEN, gold
                     c->party->adjustGold(-(xu4_random(0x3f)));
                 }
 
                 /* steal food if the creature steals food */
                 if (stealsFood()) {
-                    soundPlay(SOUND_ITEM_STOLEN, false);                       // ITEM_STOLEN, food
+                    soundPlay(SOUND_ITEM_STOLEN);   // ITEM_STOLEN, food
                     c->party->adjustFood(-2500);
                 }
             }
@@ -435,7 +435,7 @@ void Creature::act(CombatController *controller) {
         if (hasRandomRanged())
             setRandomRanged();
 
-        soundPlay(SOUND_NPC_ATTACK, false);
+        soundPlay(SOUND_NPC_ATTACK);
 
         // figure out which direction to fire the weapon
         int dir = map_getRelativeDirection(coords, target->coords);

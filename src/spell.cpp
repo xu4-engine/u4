@@ -303,7 +303,7 @@ bool spellCast(unsigned int spell, int character, int param, SpellCastError *err
         float MP_OF_LARGEST_SPELL = 45;
         int spellMp = spells[spell].mp;
         time = int(10000.0 / xu4.settings->spellEffectSpeed  *  spellMp / MP_OF_LARGEST_SPELL);
-        soundPlay(SOUND_PREMAGIC_MANA_JUMBLE, false, time);
+        soundPlay(SOUND_PREMAGIC_MANA_JUMBLE, time);
         EventHandler::wait_msecs(time);
 
         (*spellEffectCallback)(spell + 'a', subject, SOUND_MAGIC);

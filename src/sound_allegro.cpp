@@ -282,8 +282,7 @@ static bool sound_load(Sound sound) {
     return true;
 }
 
-void soundPlay(Sound sound, bool onlyOnce, int durationLimitMSec) {
-    (void) onlyOnce;
+void soundPlay(Sound sound, int durationLimitMSec) {
     ASSERT(sound < SOUND_MAX, "Attempted to play an invalid sound in soundPlay()");
 
     // If audio didn't initialize correctly, then we can't play it anyway

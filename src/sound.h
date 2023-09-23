@@ -69,7 +69,7 @@ void soundDelete(void);
 void soundSuspend(int halt);
 void soundFreeResourceGroup(uint16_t group);
 
-void soundPlay(Sound sound, bool onlyOnce = true, int specificDurationInTicks = -1);
+void soundPlay(Sound sound, int specificDurationInTicks = -1);
 void soundSpeakLine(int streamId, int line, bool wait = false);
 
 int  soundDuration(Sound sound);

@@ -596,7 +596,7 @@ bool CombatController::attackAt(const Coords &coords, PartyMember *attacker, int
 
         /* show the 'hit' tile */
         GameController::flashTile(coords, misstile, 1);
-        soundPlay(SOUND_NPC_STRUCK, false,-1);                                    // NPC_STRUCK, melee hit
+        soundPlay(SOUND_NPC_STRUCK);    // NPC_STRUCK, melee hit
         GameController::flashTile(coords, hittile, 3);
 
         /* apply the damage to the creature */
@@ -1160,7 +1160,7 @@ void CombatController::attack() {
 
     // the attack was already made, even if there is no valid target
     // so play the attack sound
-    soundPlay(SOUND_PC_ATTACK, false);
+    soundPlay(SOUND_PC_ATTACK);
 
 
     vector<Coords> path =
@@ -1211,7 +1211,7 @@ void CombatController::attack() {
             break;
         case AR_Hit:
             GameController::flashTile(targetCoords, missTile, 1);
-            soundPlay(SOUND_NPC_STRUCK, false, -1);
+            soundPlay(SOUND_NPC_STRUCK);
 
             MapTile hitTile = map->tileset->getByName(weapon->hitTile)->getId();
             GameController::flashTile(targetCoords, hitTile, 3);

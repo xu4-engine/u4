@@ -728,7 +728,7 @@ void gameSpellEffect(int spell, int player, Sound sound) {
         c->stats->highlightPlayer(player);
 
     time = xu4.settings->spellEffectSpeed * 800 / xu4.settings->gameCyclesPerSecond;
-    soundPlay(sound, false, time);
+    soundPlay(sound, time);
 
     ///The following effect multipliers are not accurate
     switch(spell)
@@ -758,7 +758,7 @@ void gameSpellEffect(int spell, int player, Sound sound) {
 
         if (effect == Spell::SFX_TREMOR) {
             gameUpdateScreen();
-            soundPlay(SOUND_RUMBLE, false);
+            soundPlay(SOUND_RUMBLE);
             screenShake(8);
         }
         break;
@@ -2271,7 +2271,7 @@ horse_moved:
 
             /* if we're still blocked */
             if ((event.result & MOVE_BLOCKED) && !xu4.settings->filterMoveMessages) {
-                soundPlay(SOUND_BLOCKED, false);
+                soundPlay(SOUND_BLOCKED);
                 screenMessage("%cBlocked!%c\n", FG_GREY, FG_WHITE);
             }
         }
