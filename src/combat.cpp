@@ -635,8 +635,6 @@ static bool rangedAttack(const Coords &coords, CombatMap* map,
 
 #define EFFECT_MSG(fmt, color) screenMessage(fmt, target->getName(), color, FG_WHITE)
 
-    // TODO: Add status flash (even if not effective).
-
     /* These effects happen whether or not the opponent was hit */
     switch(effect) {
 
@@ -709,6 +707,11 @@ static bool rangedAttack(const Coords &coords, CombatMap* map,
         attacker->dealDamage(map, target, attacker->getDamage());
         break;
     }
+
+    int player = c->party->memberIndex(target);
+    if (player >= 0)
+        c->stats->flashPlayers(1 << player);
+
     GameController::flashTile(coords, hittile, 1);
     return true;
 }

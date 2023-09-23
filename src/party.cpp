@@ -1184,3 +1184,12 @@ int Party::size() const {
 PartyMember *Party::member(int index) const {
     return members[index];
 }
+
+int Party::memberIndex(Creature* person) const {
+    int count = members.size();
+    for (int i = 0; i < count; ++i) {
+        if (person == members[i])
+            return i;
+    }
+    return -1;
+}

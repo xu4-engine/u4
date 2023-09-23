@@ -207,6 +207,7 @@ public:
 
     int size() const;
     PartyMember *member(int index) const;
+    int memberIndex(Creature* person) const;
 
 private:
     void initTransport(const MapTile& tile);
