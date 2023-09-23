@@ -111,13 +111,12 @@ void CombatController::initCreature(const Creature *m) {
  * Initializes dungeon room combat
  */
 void CombatController::initDungeonRoom(int room, Direction from) {
-    int offset, i;
     ASSERT(c->location->prev->context & CTX_DUNGEON, "Error: called initDungeonRoom from non-dungeon context");
     {
-        Dungeon *dng = dynamic_cast<Dungeon*>(c->location->prev->map);
-        unsigned char
-            *party_x = &dng->rooms[room].party_north_start_x[0],
-            *party_y = &dng->rooms[room].party_north_start_y[0];
+        const Dungeon *dng = dynamic_cast<Dungeon*>(c->location->prev->map);
+        const DngRoom *dngRoom = dng->rooms + room;
+        const unsigned char *party_x, *party_y;
+        int offset, i;
 
         /* load the dungeon room properties */
         winOrLose = false;
@@ -125,30 +124,31 @@ void CombatController::initDungeonRoom(int room, Direction from) {
         exitDir = DIR_NONE;
 
         /* FIXME: this probably isn't right way to see if you're entering an altar room... but maybe it is */
-        if ((c->location->prev->map->id != MAP_ABYSS) && (room == 0xF)) {
+        if ((dng->id != MAP_ABYSS) && (room == 0xF)) {
             /* figure out which dungeon room they're entering */
             if (c->location->prev->coords.x == 3)
                 map->setAltarRoom(VIRT_LOVE);
             else if (c->location->prev->coords.x <= 2)
                 map->setAltarRoom(VIRT_TRUTH);
-            else map->setAltarRoom(VIRT_COURAGE);
+            else
+                map->setAltarRoom(VIRT_COURAGE);
         }
 
         /* load in creatures and creature start coordinates */
         for (i = 0; i < AREA_CREATURES; i++) {
-            if (dng->rooms[room].creature_tiles[i] > 0) {
+            if (dngRoom->creature_tiles[i] > 0) {
                 placeCreaturesOnMap = true;
-                creatureTable[i] = Creature::getByTile(dng->rooms[room].creature_tiles[i]);
+                creatureTable[i] = Creature::getByTile(dngRoom->creature_tiles[i]);
             }
-            map->creature_start[i].x = dng->rooms[room].creature_start_x[i];
-            map->creature_start[i].y = dng->rooms[room].creature_start_y[i];
+            map->creature_start[i].x = dngRoom->creature_start_x[i];
+            map->creature_start[i].y = dngRoom->creature_start_y[i];
         }
 
         /* figure out party start coordinates */
         switch(from) {
-        case DIR_WEST: offset = 3; break;
+        case DIR_WEST:  offset = 3; break;
         case DIR_NORTH: offset = 0; break;
-        case DIR_EAST: offset = 1; break;
+        case DIR_EAST:  offset = 1; break;
         case DIR_SOUTH: offset = 2; break;
         case DIR_ADVANCE:
         case DIR_RETREAT:
@@ -156,10 +156,13 @@ void CombatController::initDungeonRoom(int room, Direction from) {
             ASSERT(0, "Invalid 'from' direction passed to initDungeonRoom()");
             return;
         }
+        offset *= AREA_PLAYERS * 2;
+        party_x = dngRoom->party_north_start_x + offset;
+        party_y = dngRoom->party_north_start_y + offset;
 
         for (i = 0; i < AREA_PLAYERS; i++) {
-            map->player_start[i].x = *(party_x + (offset * AREA_PLAYERS * 2) + i);
-            map->player_start[i].y = *(party_y + (offset * AREA_PLAYERS * 2) + i);
+            map->player_start[i].x = party_x[i];
+            map->player_start[i].y = party_y[i];
         }
     }
 }
@@ -319,30 +322,36 @@ void CombatController::endCombat(bool adjustKarma) {
  * *where* they are placed (by position in the table).  Information like
  * hit points and creature status will be created when the creature is actually placed
  */
-void CombatController::fillCreatureTable(const Creature *creature) {
-    int i, j;
-
-    if (creature != NULL) {
-        const Creature *baseCreature = creature, *current;
-        int numCreatures = initialNumberOfCreatures(creature);
+void CombatController::fillCreatureTable(const Creature *baseCreature) {
+    if (baseCreature) {
+        const Creature *baseLeader;
+        const Creature *grandLeader;
+        const Creature *current;
+        int numCreatures = initialNumberOfCreatures(baseCreature);
+        int i, j;
 
         if (baseCreature->getId() == PIRATE_ID)
             baseCreature = xu4.config->creature(ROGUE_ID);
+
+        baseLeader  = xu4.config->creature(baseCreature->getLeader());
+        grandLeader = xu4.config->creature(baseLeader->getLeader());
 
         for (i = 0; i < numCreatures; i++) {
             current = baseCreature;
 
             /* find a free spot in the creature table */
-            do {j = xu4_random(AREA_CREATURES) ;} while (creatureTable[j] != NULL);
+            do {
+                j = xu4_random(AREA_CREATURES);
+            } while (creatureTable[j]);
 
             /* see if creature is a leader or leader's leader */
-            if (xu4.config->creature(baseCreature->getLeader()) != baseCreature && /* leader is a different creature */
+            if (baseLeader != baseCreature && /* leader is a different creature */
                 i != (numCreatures - 1)) { /* must have at least 1 creature of type encountered */
 
                 if (xu4_random(32) == 0)       /* leader's leader */
-                    current = xu4.config->creature(xu4.config->creature(baseCreature->getLeader())->getLeader());
+                    current = grandLeader;
                 else if (xu4_random(8) == 0)   /* leader */
-                    current = xu4.config->creature(baseCreature->getLeader());
+                    current = baseLeader;
             }
 
             /* place this creature in the creature table */
@@ -356,16 +365,18 @@ void CombatController::fillCreatureTable(const Creature *creature) {
  */
 int  CombatController::initialNumberOfCreatures(const Creature *creature) const {
     int ncreatures;
-    Map *map = c->location->prev ? c->location->prev->map : c->location->map;
+    int groupSize;
+    const Location* prev = c->location->prev;
+    Map *map = prev ? prev->map : c->location->map;
 
     /* if in an unusual combat situation, generally we stick to normal encounter sizes,
        (such as encounters from sleeping in an inn, etc.) */
-    if (forceStandardEncounterSize || map->isWorldMap() || (c->location->prev && c->location->prev->context & CTX_DUNGEON)) {
+    if (forceStandardEncounterSize || map->isWorldMap() || (prev && prev->context & CTX_DUNGEON)) {
         ncreatures = xu4_random(8) + 1;
 
         if (ncreatures == 1) {
-            if (creature && creature->getEncounterSize() > 0)
-                ncreatures = xu4_random(creature->getEncounterSize()) + creature->getEncounterSize() + 1;
+            if (creature && (groupSize = creature->getEncounterSize()) > 0)
+                ncreatures = xu4_random(groupSize) + groupSize + 1;
             else
                 ncreatures = 8;
         }
@@ -449,7 +460,7 @@ void CombatController::placePartyMembers() {
         p->focused = false; // take the focus off of everyone
 
         /* don't place dead party members */
-        if (p->getStatus() != STAT_DEAD) {
+        if (! p->isDead()) {
             /* add the party member to the map */
             p->placeOnMap(map, map->player_start[i]);
             map->objects.push_back(p);
