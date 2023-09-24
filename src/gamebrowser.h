@@ -38,11 +38,17 @@ private:
     uint16_t selMusic;          // 0 = none
     GuiArea gbox[ WI_COUNT ];
     void* atree;
+    float listScroll;
+    float listScrollTarget;
     float lineHeight;
     float psizeList;            // List font point size.
+    float descenderList;        // List font descender * point size.
 
     void selectModule(const GuiArea* area, int y);
     void layout();
+    void generateListItems();
+    void animateScroll();
+    float calcScrollTarget();
 
     static void renderBrowser(ScreenState* ss, void* data);
     static void displayReset(int, void*, void*);

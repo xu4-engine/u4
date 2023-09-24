@@ -47,7 +47,7 @@ enum GuiOpcode {
     ARRAY_DT_AREA,  // initial-wid, DATA GuiArea*
     BUTTON_DT_S,    // DATA const char*
     LABEL_DT_S,     // DATA const char*
-    LIST_DT_ST,     // DATA StringTable*
+    LIST_DIM,       // columns, rows
     STORE_DT_AREA,  // DATA int16_t[4]
     STORE_AREA
 };
@@ -64,9 +64,12 @@ typedef struct {
 } GuiArea;
 
 struct TxfDrawState;
+struct StringTable;
 
 float* gui_layout(int primList, const GuiRect* root, TxfDrawState*,
                   const uint8_t* bytecode, const void** data);
+float* gui_emitListItems(float* attr, TxfDrawState*, StringTable* st,
+                         int select, float selectColorIndex);
 void*  gui_areaTree(const GuiArea* areas, int count);
 const GuiArea* gui_pick(const void* tree, const GuiArea* areas,
                         uint16_t x, uint16_t y);

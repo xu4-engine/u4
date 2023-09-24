@@ -1,3 +1,4 @@
+#include <math.h>
 #include <cstring>
 #include <algorithm>
 
@@ -20,6 +21,10 @@ extern "C" {
 
 #define ATTR_COUNT  7
 
+#define CI_TX_BLACK 2
+#define CI_LT_GREEN 33
+#define CI_LT_BLUE  44
+
 void GameBrowser::renderBrowser(ScreenState* ss, void* data)
 {
     GameBrowser* gb = (GameBrowser*) data;
@@ -29,17 +34,19 @@ void GameBrowser::renderBrowser(ScreenState* ss, void* data)
     if (gb->modFormat.used) {
         const GuiArea* area = gb->gbox + WI_LIST;
         int box[4];
-        float selY = gb->lineHeight * gb->psizeList * (gb->sel + 1.0f);
 
-        box[0] = area->x;
-        box[1] = area->y2 - 1 - int(selY);
-        box[0] += ss->aspectX;
-        box[1] += ss->aspectY;
+        gb->animateScroll();
 
+        // Draw list items.
+        box[0] = ss->aspectX + area->x;
+        box[1] = ss->aspectY + area->y;
         box[2] = area->x2 - area->x;
-        box[3] = gb->psizeList + 2;
+        box[3] = area->y2 - area->y;
+
         gpu_setScissor(box);
-        gpu_invertColors(xu4.gpu);
+        gpu_guiSetOrigin(xu4.gpu, area->x, area->y2 + gb->listScroll);
+        gpu_drawTris(xu4.gpu, GPU_DLIST_HUD);
+        gpu_guiSetOrigin(xu4.gpu, 0.0f, 0.0f);
         gpu_setScissor(NULL);
     }
 }
@@ -47,8 +54,39 @@ void GameBrowser::renderBrowser(ScreenState* ss, void* data)
 GameBrowser::GameBrowser()
 {
     sel = selMusic = 0;
+    listScroll = listScrollTarget = 0.0f;
     psizeList = 20.0f;
     atree = NULL;
+}
+
+void GameBrowser::animateScroll()
+{
+    if (listScrollTarget != listScroll) {
+        listScroll += (listScrollTarget - listScroll) * 0.2f;
+        if (fabs(listScrollTarget - listScroll) < 0.5f)
+            listScroll = listScrollTarget;
+    }
+}
+
+float GameBrowser::calcScrollTarget()
+{
+    const GuiArea* area = gbox + WI_LIST;
+    float areaH = area->y2 - area->y;
+    float selY = lineHeight * psizeList * sel;
+    float targ = selY - (areaH * 0.5f);
+    if (targ < 0.0f) {
+        targ = 0.0f;
+    } else {
+        float endY = (lineHeight * psizeList * modFiles.used) - descenderList;
+        if (endY < areaH) {
+            targ = 0.0f;
+        } else {
+            endY -= areaH;
+            if (targ > endY)
+                targ = endY;
+        }
+    }
+    return listScrollTarget = targ;
 }
 
 #define NO_PARENT   255
@@ -282,7 +320,7 @@ void GameBrowser::layout()
 {
     static uint8_t browserGui[] = {
         LAYOUT_V, BG_COLOR_CI, 128,
-        MARGIN_V_PER, 10, MARGIN_H_PER, 16, SPACING_PER, 12,
+        MARGIN_V_PER, 10, MARGIN_H_PER, 16, SPACING_PER, 6,
         BG_COLOR_CI, 17,
         ARRAY_DT_AREA, WI_LIST,
         MARGIN_V_PER, 6,
@@ -290,7 +328,7 @@ void GameBrowser::layout()
                 FONT_VSIZE, 38, LABEL_DT_S,
                 FONT_N, 1,      LABEL_DT_S,
             LAYOUT_END,
-            FONT_N, 0, FONT_VSIZE, 20, LIST_DT_ST, STORE_AREA,
+            FONT_N, 0, FONT_VSIZE, 20, LIST_DIM, 32, 9, STORE_AREA,
             FROM_BOTTOM,
             FONT_N, 1, FONT_VSIZE, 22,
             LAYOUT_H, SPACING_PER, 10, FIX_WIDTH_EM, 50,
@@ -300,46 +338,79 @@ void GameBrowser::layout()
             LAYOUT_END,
         LAYOUT_END
     };
-    const void* guiData[7];
+    const void* guiData[6];
     const void** data = guiData;
+    const ScreenState* ss = screenState();
 
     // Set psizeList to match list FONT_VSIZE.
-    psizeList = 20.0f * screenState()->aspectH / 480.0f;
+    psizeList = 20.0f * ss->aspectH / 480.0f;
+    descenderList = ss->fontTable[0]->descender * psizeList;
 
     *data++ = gbox;
     *data++ = "xu4 | ";
     *data++ = "Game Modules";
-    *data++ = &modFormat;
     *data++ = "Play";
     *data++ = "Quit";
     *data   = "Cancel";
 
     TxfDrawState ds;
-    ds.fontTable = screenState()->fontTable;
+    ds.fontTable = ss->fontTable;
     float* attr = gui_layout(GPU_DLIST_GUI, NULL, &ds, browserGui, guiData);
     if (attr) {
-        if (selMusic) {
-            // Draw green checkmark.
-            const GuiArea* area = gbox + WI_LIST;
-
-            ds.tf = ds.fontTable[2];
-            ds.colorIndex = 33.0f;
-            ds.x = area->x;
-            ds.y = area->y2 -
-                   lineHeight * psizeList * (selMusic + 1.0f) -
-                   ds.tf->descender * psizeList;
-            txf_setFontSize(&ds, psizeList);
-
-            int quads = txf_genText(&ds, attr + 3, attr, ATTR_COUNT,
-                                    (const uint8_t*) "c", 1);
-            attr += quads * 6 * ATTR_COUNT;
-        }
-
         gpu_endTris(xu4.gpu, GPU_DLIST_GUI, attr);
 
         free(atree);
         atree = gui_areaTree(gbox, WI_COUNT);
+
+        generateListItems();
     }
+}
+
+/*
+ * Generate primitives for items in the module list.
+ * The top of the list is at 0,0 to be placed with gpu_guiSetOrigin().
+ */
+void GameBrowser::generateListItems()
+{
+    TxfDrawState ds;
+    const GuiArea* area = gbox + WI_LIST;
+    float* attr;
+    float rect[4], uvs[4];
+
+    ds.fontTable = screenState()->fontTable;
+    txf_begin(&ds, 0, psizeList, 0.0f, 0.0f);
+    ds.colorIndex = 1.0f;
+
+    // Highlight for selected item background.
+    rect[0] = 0.0f;
+    rect[1] = ds.lineSpacing * -(sel + 1) + descenderList;
+    rect[2] = area->x2 - area->x;
+    rect[3] = ds.lineSpacing;
+
+    gpu_guiClutUV(xu4.gpu, uvs, CI_LT_BLUE);
+    uvs[2] = uvs[0];
+    uvs[3] = uvs[1];
+
+    attr = gpu_beginTris(xu4.gpu, GPU_DLIST_HUD);
+    if (! attr)
+        return;
+    attr = gpu_emitQuad(attr, rect, uvs);
+    attr = gui_emitListItems(attr, &ds, &modFormat, sel, CI_TX_BLACK);
+
+    if (selMusic) {
+        // Draw green checkmark.
+        ds.x = 0.0f;
+        ds.y = ds.lineSpacing * -(selMusic + 1.0f);
+
+        ds.tf = ds.fontTable[2];
+        txf_setFontSize(&ds, psizeList);
+        ds.colorIndex = CI_LT_GREEN;
+
+        int quads = txf_genText(&ds, attr + 3, attr, ATTR_COUNT,
+                                (const uint8_t*) "c", 1);
+        attr += quads * 6 * ATTR_COUNT;
+    }
+    gpu_endTris(xu4.gpu, GPU_DLIST_HUD, attr);
 }
 
 bool GameBrowser::present()
@@ -369,6 +440,7 @@ bool GameBrowser::present()
     }
 
     layout();
+    listScroll = calcScrollTarget();
     screenSetLayer(LAYER_TOP_MENU, renderBrowser, this);
     return true;
 }
@@ -429,18 +501,24 @@ bool GameBrowser::keyPressed(int key)
         case U4_SPACE:
             if (infoList[sel].category == MOD_SOUNDTRACK) {
                 selMusic = (selMusic == sel) ? 0 : sel;
-                layout();
+                generateListItems();
             }
             return true;
 
         case U4_UP:
-            if (sel > 0)
+            if (sel > 0) {
                 --sel;
+                calcScrollTarget();
+                generateListItems();
+            }
             return true;
 
         case U4_DOWN:
-            if (sel < modFormat.used - 1)
+            if (sel < modFormat.used - 1) {
                 ++sel;
+                calcScrollTarget();
+                generateListItems();
+            }
             return true;
 
         case U4_ESC:
@@ -450,8 +528,9 @@ bool GameBrowser::keyPressed(int key)
     return false;
 }
 
-void GameBrowser::selectModule(const GuiArea* area, int y)
+void GameBrowser::selectModule(const GuiArea* area, int screenY)
 {
+    float y = screenY - listScroll - descenderList;
     float row = (float) (area->y2 - y) / (lineHeight * psizeList);
     int n = (int) row;
     if (n >= 0 && n < (int) modFormat.used) {
@@ -468,9 +547,11 @@ void GameBrowser::selectModule(const GuiArea* area, int y)
                 sel = n;
                 */
             }
-            layout();
-        } else {
+            generateListItems();
+        } else if (sel != n) {
             sel = n;
+            calcScrollTarget();
+            generateListItems();
         }
     }
 }

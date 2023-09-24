@@ -121,59 +121,50 @@ static float* widget_label(float* attr, const GuiRect* wbox, TxfDrawState* ds,
     return attr + (quadCount * 6 * ATTR_COUNT);
 }
 
-static void list_size(SizeCon* size, TxfDrawState* ds, StringTable* st)
+static void list_size(SizeCon* size, TxfDrawState* ds, int cols, int rows)
 {
     float fsize[2];
-    int rows;
-    const char* longText = "<empty>";
-    int maxLen = 0;
+    float averageW = txf_emWidth(ds->tf, (const uint8_t*) "Aa", 2) * 0.5f;
 
-    if (st->used) {
-        const char* text;
-        int len;
+    fsize[0] = ds->psize * averageW;
+    fsize[1] = ds->psize * ds->tf->lineHeight;
 
-        for (uint32_t i = 0; i < st->used; ++i) {
-            text = sst_stringL(st, i, &len);
-            if (len > maxLen) {
-                maxLen = len;
-                longText = text;
-            }
-        }
-    }
-
-    if (! maxLen)
-        maxLen = 7;
-    txf_emSize(ds->tf, (const uint8_t*) longText, maxLen, fsize);
-
-    fsize[0] *= ds->psize;
-    fsize[1] *= ds->psize;
-
-    rows = (st->used < 3) ? 3 : st->used;
-
-    size->minW = (int16_t) (ds->psize * 4.0f);
+    size->minW = (int16_t) (fsize[0] * 4.0f);
     size->minH = 3 * (int16_t) fsize[1];
-    size->prefW = (int16_t) fsize[0];
+    size->prefW = (int16_t) (fsize[0] * cols);
     size->prefH = (int16_t) (fsize[1] * rows);
 }
 
-static float* widget_list(float* attr, const GuiRect* wbox, TxfDrawState* ds,
-                          StringTable* st)
+/*
+ * Emit triangles for each line of text in a StringTable.
+ *
+ * \param select            Index of selected item (-1 for none).
+ * \param selectColorIndex  Shader CLUT index or zero for default foreground.
+ */
+float* gui_emitListItems(float* attr, TxfDrawState* ds, StringTable* st,
+                         int select, float selectColorIndex)
 {
     const uint8_t* strings = (const uint8_t*) sst_strings(st);
     const StringEntry* it  = st->table;
     const StringEntry* end = it + st->used;
-    float left = (float) wbox->x;
+    const StringEntry* sel = it + select;
+    float left = 0.0f;
+    float origColor;
     int quadCount;
 
-    //attr = gui_drawRect(attr, &wbox->x, 3.0f);
-
-    ds->y = (float) (wbox->y + wbox->h) - ds->tf->descender * ds->psize;
+    ds->y = 0.0f;
 
     for (; it != end; ++it) {
         ds->x = left;
         ds->y -= ds->lineSpacing;
+        if (it == sel) {
+            origColor = ds->colorIndex;
+            ds->colorIndex = selectColorIndex;
+        }
         quadCount = txf_genText(ds, attr + 3, attr, ATTR_COUNT,
                                 strings + it->start, it->len);
+        if (it == sel)
+            ds->colorIndex = origColor;
         attr += quadCount * 6 * ATTR_COUNT;
         ds->x = left;
     }
@@ -501,8 +492,9 @@ layout_inc:
             label_size(scon, ds, (const uint8_t*) *dp++);
             goto layout_inc;
 
-        case LIST_DT_ST:
-            list_size(scon, ds, (StringTable*) *dp++);
+        case LIST_DIM:
+            list_size(scon, ds, pc[0], pc[1]);
+            pc += 2;
             goto layout_inc;
 
         case STORE_DT_AREA:
@@ -719,9 +711,9 @@ layout_done:
             ++scon;
             break;
 
-        case LIST_DT_ST:
+        case LIST_DIM:
+            pc += 2;
             gui_align(&wbox, lo, scon);
-            attr = widget_list(attr, &wbox, ds, (StringTable*) *dp++);
             ++scon;
             break;
 
