@@ -108,6 +108,56 @@ static bool isExtensionOf(const char* name, const char* /*version*/,
     return (pver && memcmp(name, rules, pver - rules) == 0);
 }
 
+//#define TEST_LIST
+#ifdef TEST_LIST
+#define TEST_COUNT 6
+static const char* testFile[TEST_COUNT] = {
+    "Dark_Magic.mod",
+    "Dark_Magic-Onward!.mod",
+    "DM-SomeSoundtrack.mod",
+    "DM-Music_1.mod",
+    "DM-Music_2.mod",
+    "Light_Magic.mod"
+};
+static const char testCategory[TEST_COUNT] = {
+    MOD_BASE,
+    MOD_EXTENSION,
+    MOD_SOUNDTRACK,
+    MOD_SOUNDTRACK,
+    MOD_SOUNDTRACK,
+    MOD_BASE
+};
+static const char* testInfo[TEST_COUNT*4] = {
+    // about, author, rules, version
+    "Dark Magic the adventure.\nIn the mists of time...",
+    "xu4 developers", "Dark-Magic", "1.0",
+
+    "The Dark Magic adventure continues...",
+    "xu4 developers", "Dark_Magic/1.0", "1.0",
+
+    "Dark Magic alternative music by Some Composer",
+    "Some Composer", "Dark_Magic/1.0", "1.0",
+
+    "Dark Magic alternative music by Another Composer",
+    "Another Composer", "Dark_Magic/1.0", "1.0",
+
+    "Dark Magic alternative music by Another Composer",
+    "Another Composer", "Dark_Magic/1.0", "2.0",
+
+    "Light Magic the adventure.\nIn the mists of time...",
+    "xu4 developers", "Dark-Magic", "1.0-beta"
+};
+
+static int test_query(int n, StringTable* modInfo)
+{
+    int i = n * 4;
+    int end = i + 4;
+    for (; i < end; ++i)
+        sst_append(modInfo, testInfo[i], -1);
+    return testCategory[n];
+}
+#endif
+
 /*
  * Fill modFiles with module names and infoList with sorted information.
  * The modFormat strings match the infoList order and are edited for display
@@ -122,6 +172,9 @@ static void readModuleList(StringTable* modFiles, StringTable* modFormat,
     const char* rpath;
     const char* files;
     uint32_t i, m;
+#ifdef TEST_LIST
+    uint32_t testM;
+#endif
     int len;
 
     // Collect .mod files from resourcePaths.
@@ -130,6 +183,14 @@ static void readModuleList(StringTable* modFiles, StringTable* modFormat,
         m = modFiles->used;
         rpath = sst_stringL(rp, i, &len);
         processDir(rpath, collectModFiles, modFiles);
+
+#ifdef TEST_LIST
+        testM = modFiles->used;
+        if (i == 0) {
+            for (int t = 0; t < TEST_COUNT; ++t)
+                sst_append(modFiles, testFile[t], -1);
+        }
+#endif
 
         memcpy(modulePath, rpath, len);
         modulePath[len] = '/';
@@ -140,6 +201,11 @@ static void readModuleList(StringTable* modFiles, StringTable* modFormat,
             sst_init(&info.modi, 4, 80);
             info.resPathI = i;
             info.modFileI = m;
+#ifdef TEST_LIST
+            if (m >= testM)
+                info.category = test_query(m - testM, &info.modi);
+            else
+#endif
             info.category = mod_query(modulePath, &info.modi);
             info.parent   = NO_PARENT;
 
