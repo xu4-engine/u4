@@ -543,6 +543,7 @@ const char* gpu_init(void* res, int w, int h, int scale, int filter)
         return "msdf.glsl";
 
     gr->glyphTrans  = glGetUniformLocation(sh, "transform");
+    gr->glyphOrigin = glGetUniformLocation(sh, "origin");
     cmap            = glGetUniformLocation(sh, "cmap");
     mmap            = glGetUniformLocation(sh, "msdf");
     //gr->glyphRange  = glGetUniformLocation(sh, "screenPxRange");
@@ -554,6 +555,7 @@ const char* gpu_init(void* res, int w, int h, int scale, int filter)
     float ortho[16];
     m4_ortho(ortho, 0.0f, (float) w, 0.0f, (float) h, -1.0f, 1.0f);
     glUniformMatrix4fv(gr->glyphTrans, 1, GL_FALSE, ortho);
+    glUniform3f(gr->glyphOrigin, 0.0f, 0.0f, 0.0f);
     glUniform1i(cmap, GTU_CMAP);
     glUniform1i(mmap, GTU_MATERIAL);
     glUniform4f(gr->glyphBg, 0.0, 0.0, 0.0, 0.0);
@@ -852,6 +854,12 @@ void gpu_guiClutUV(void* res, float* uv, float colorIndex)
     OpenGLResources* gr = (OpenGLResources*) res;
     uv[0] = (colorIndex + 0.5f) / gr->guiTexSize[0];
     uv[1] = 0.5f / gr->guiTexSize[1];
+}
+
+void gpu_guiSetOrigin(void* res, float x, float y)
+{
+    OpenGLResources* gr = (OpenGLResources*) res;
+    glUniform3f(gr->glyphOrigin, x, y, 0.0f);
 }
 
 float* gpu_emitQuad(float* attr, const float* drawRect, const float* uvRect)

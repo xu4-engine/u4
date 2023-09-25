@@ -6,13 +6,14 @@
 #if defined(VERTEX)
 
 uniform mat4 transform;
+uniform vec3 origin;
 layout(location = 0) in vec3 position;
 layout(location = 1) in vec4 uv;
 out vec4 texCoord;
 
 void main() {
 	texCoord = uv;
-	gl_Position = transform * vec4(position, 1.0);
+	gl_Position = transform * vec4(position + origin, 1.0);
 }
 
 #elif defined(FRAGMENT)

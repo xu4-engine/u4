@@ -29,6 +29,7 @@ void     gpu_clearTris(void* res, int list);
 void     gpu_drawTris(void* res, int list);
 void     gpu_drawGui(void* res, int list);
 void     gpu_guiClutUV(void* res, float* uv, float colorIndex);
+void     gpu_guiSetOrigin(void* res, float x, float y);
 float*   gpu_emitQuad(float* attr, const float* drawRect, const float* uvRect);
 void     gpu_resetMap(void* res, const Map* map);
 void     gpu_drawMap(void* res, const TileView* view, const float* tileUVs,
