@@ -7,6 +7,17 @@ enum GpuDrawList {
     GPU_DLIST_VIEW_FX
 };
 
+enum GpuClutValues {
+    COL_BLACK    = 0,
+    COL_WHITE    = 1,
+    COL_TX_BLACK = 2,
+    COL_BROWN    = 17,
+    COL_LT_GREEN = 33,
+    COL_LT_BLUE  = 44
+};
+
+#define WID_NONE    -1
+
 struct BlockingGroups;
 class Map;
 class TileView;
@@ -27,10 +38,12 @@ float*   gpu_beginTris(void* res, int list);
 void     gpu_endTris(void* res, int list, float* attr);
 void     gpu_clearTris(void* res, int list);
 void     gpu_drawTris(void* res, int list);
-void     gpu_drawGui(void* res, int list);
+void     gpu_drawGui(void* res, int list, int wid, int mode);
 void     gpu_guiClutUV(void* res, float* uv, float colorIndex);
 void     gpu_guiSetOrigin(void* res, float x, float y);
 float*   gpu_emitQuad(float* attr, const float* drawRect, const float* uvRect);
+float*   gpu_emitQuadPq(float* attr, const float* drawRect, const float* uvRect,
+                        float texP, float texQ);
 void     gpu_resetMap(void* res, const Map* map);
 void     gpu_drawMap(void* res, const TileView* view, const float* tileUVs,
                      const BlockingGroups* blocks,

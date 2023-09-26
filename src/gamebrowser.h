@@ -36,6 +36,8 @@ private:
     std::vector<ModuleInfo> infoList;
     uint16_t sel;
     uint16_t selMusic;          // 0 = none
+    uint16_t buttonMode;
+    int16_t  buttonDown;
     GuiArea gbox[ WI_COUNT ];
     void* atree;
     float listScroll;

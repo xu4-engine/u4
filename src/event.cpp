@@ -181,7 +181,7 @@ void EventHandler::expose() {
 
 static void renderPause(ScreenState* ss, void* data)
 {
-    gpu_drawGui(xu4.gpu, GPU_DLIST_GUI);
+    gpu_drawGui(xu4.gpu, GPU_DLIST_GUI, WID_NONE, 0);
 }
 #endif
 

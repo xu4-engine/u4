@@ -21,15 +21,11 @@ extern "C" {
 
 #define ATTR_COUNT  7
 
-#define CI_TX_BLACK 2
-#define CI_LT_GREEN 33
-#define CI_LT_BLUE  44
-
 void GameBrowser::renderBrowser(ScreenState* ss, void* data)
 {
     GameBrowser* gb = (GameBrowser*) data;
 
-    gpu_drawGui(xu4.gpu, GPU_DLIST_GUI);
+    gpu_drawGui(xu4.gpu, GPU_DLIST_GUI, gb->buttonDown, gb->buttonMode);
 
     if (gb->modFormat.used) {
         const GuiArea* area = gb->gbox + WI_LIST;
@@ -54,6 +50,8 @@ void GameBrowser::renderBrowser(ScreenState* ss, void* data)
 GameBrowser::GameBrowser()
 {
     sel = selMusic = 0;
+    buttonMode = 0;
+    buttonDown = WID_NONE;
     listScroll = listScrollTarget = 0.0f;
     psizeList = 20.0f;
     atree = NULL;
@@ -319,9 +317,9 @@ static void readModuleList(StringTable* modFiles, StringTable* modFormat,
 void GameBrowser::layout()
 {
     static uint8_t browserGui[] = {
-        LAYOUT_V, BG_COLOR_CI, 128,
+        LAYOUT_V, BG_COLOR_CI, COL_BLACK + 128,
         MARGIN_V_PER, 10, MARGIN_H_PER, 16, SPACING_PER, 6,
-        BG_COLOR_CI, 17,
+        BG_COLOR_CI, COL_BROWN,
         ARRAY_DT_AREA, WI_LIST,
         MARGIN_V_PER, 6,
             LAYOUT_H,
@@ -387,7 +385,7 @@ void GameBrowser::generateListItems()
     rect[2] = area->x2 - area->x;
     rect[3] = ds.lineSpacing;
 
-    gpu_guiClutUV(xu4.gpu, uvs, CI_LT_BLUE);
+    gpu_guiClutUV(xu4.gpu, uvs, COL_LT_BLUE);
     uvs[2] = uvs[0];
     uvs[3] = uvs[1];
 
@@ -395,7 +393,7 @@ void GameBrowser::generateListItems()
     if (! attr)
         return;
     attr = gpu_emitQuad(attr, rect, uvs);
-    attr = gui_emitListItems(attr, &ds, &modFormat, sel, CI_TX_BLACK);
+    attr = gui_emitListItems(attr, &ds, &modFormat, sel, COL_TX_BLACK);
 
     if (selMusic) {
         // Draw green checkmark.
@@ -404,7 +402,7 @@ void GameBrowser::generateListItems()
 
         ds.tf = ds.fontTable[2];
         txf_setFontSize(&ds, psizeList);
-        ds.colorIndex = CI_LT_GREEN;
+        ds.colorIndex = COL_LT_GREEN;
 
         int quads = txf_genText(&ds, attr + 3, attr, ATTR_COUNT,
                                 (const uint8_t*) "c", 1);
@@ -556,32 +554,62 @@ void GameBrowser::selectModule(const GuiArea* area, int screenY)
     }
 }
 
+// Translate event mouse position to used area of screen.
+static void screenMousePos(const InputEvent* ev, int& x, int& y)
+{
+    const ScreenState* ss = screenState();
+    x = ev->x - ss->aspectX;
+    y = (ss->displayH - ev->y) - ss->aspectY;
+}
+
 bool GameBrowser::inputEvent(const InputEvent* ev)
 {
+    int x, y;
+
     switch (ev->type) {
         case IE_MOUSE_PRESS:
+        case IE_MOUSE_RELEASE:
             if (ev->n == CMOUSE_LEFT) {
-                const ScreenState* ss = screenState();
-                int x = ev->x - ss->aspectX;
-                int y = (ss->displayH - ev->y) - ss->aspectY;
-
+                screenMousePos(ev, x, y);
                 const GuiArea* hit = gui_pick(atree, gbox, x, y);
                 if (hit) {
-                    switch (hit->wid) {
-                        case WI_LIST:
+                    if (ev->type == IE_MOUSE_PRESS) {
+                        buttonDown = hit->wid;
+                        buttonMode = 1;
+
+                        if (hit->wid == WI_LIST)
                             selectModule((const GuiArea*) hit, y);
-                            break;
-                        case WI_OK:
-                            keyPressed(U4_ENTER);
-                            break;
-                        case WI_CANCEL:
-                            keyPressed(U4_ESC);
-                            break;
-                        case WI_QUIT:
-                            xu4.eventHandler->quitGame();
-                            break;
+                    } else {
+                        if (buttonDown == hit->wid) {
+                            switch (hit->wid) {
+                            case WI_OK:
+                                keyPressed(U4_ENTER);
+                                break;
+                            case WI_CANCEL:
+                                keyPressed(U4_ESC);
+                                break;
+                            case WI_QUIT:
+                                xu4.eventHandler->quitGame();
+                                break;
+                            }
+                        }
+                        buttonDown = WID_NONE;
                     }
+                } else {
+                    buttonDown = WID_NONE;
                 }
+            }
+            break;
+
+        case IE_MOUSE_MOVE:
+            if (buttonDown >= WI_OK) {
+                const GuiArea* box = gbox + buttonDown;
+                screenMousePos(ev, x, y);
+                if (x >= box->x && x < box->x2 &&
+                    y >= box->y && y < box->y2)
+                    buttonMode = 1;
+                else
+                    buttonMode = 0;
             }
             break;
 

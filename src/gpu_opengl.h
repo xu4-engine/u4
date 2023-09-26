@@ -88,6 +88,7 @@ struct OpenGLResources {
     GLuint shadeGlyph;
     GLint  glyphTrans;
     GLint  glyphOrigin;
+    GLint  glyphWidget;
     GLint  glyphBg;
     GLint  glyphFg;
 

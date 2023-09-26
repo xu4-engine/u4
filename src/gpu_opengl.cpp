@@ -549,6 +549,7 @@ const char* gpu_init(void* res, int w, int h, int scale, int filter)
     //gr->glyphRange  = glGetUniformLocation(sh, "screenPxRange");
     gr->glyphBg     = glGetUniformLocation(sh, "bgColor");
     gr->glyphFg     = glGetUniformLocation(sh, "fgColor");
+    gr->glyphWidget = glGetUniformLocation(sh, "widgetFx");
 
     glUseProgram(sh);
     {
@@ -558,9 +559,10 @@ const char* gpu_init(void* res, int w, int h, int scale, int filter)
     glUniform3f(gr->glyphOrigin, 0.0f, 0.0f, 0.0f);
     glUniform1i(cmap, GTU_CMAP);
     glUniform1i(mmap, GTU_MATERIAL);
+    //glUniform1f(gr->glyphRange, 2.0);
     glUniform4f(gr->glyphBg, 0.0, 0.0, 0.0, 0.0);
     glUniform4f(gr->glyphFg, 1.0, 1.0, 1.0, 1.0);
-    //glUniform1f(gr->glyphRange, 2.0);
+    glUniform3f(gr->glyphWidget, -999.0f, 0.0f, 0.0f);
     }
 
 
@@ -830,7 +832,7 @@ void gpu_drawTris(void* res, int list)
     glDrawArrays(GL_TRIANGLES, 0, dl->count / ATTR_COUNT);
 }
 
-void gpu_drawGui(void* res, int list)
+void gpu_drawGui(void* res, int list, int wid, int mode)
 {
     OpenGLResources* gr = (OpenGLResources*) res;
 
@@ -845,6 +847,7 @@ void gpu_drawGui(void* res, int list)
     glBindTexture(GL_TEXTURE_2D, gr->fontTex);
 
     glEnable(GL_BLEND);
+    glUniform3f(gr->glyphWidget, (wid < 0) ? -999.0f : -1.0f - wid, mode, 0.0f);
 
     gpu_drawTris(gr, list);
 }
@@ -862,7 +865,8 @@ void gpu_guiSetOrigin(void* res, float x, float y)
     glUniform3f(gr->glyphOrigin, x, y, 0.0f);
 }
 
-float* gpu_emitQuad(float* attr, const float* drawRect, const float* uvRect)
+float* gpu_emitQuadPq(float* attr, const float* drawRect, const float* uvRect,
+                      float texP, float texQ)
 {
     float w = drawRect[2];
     float h = drawRect[3];
@@ -891,8 +895,8 @@ float* gpu_emitQuad(float* attr, const float* drawRect, const float* uvRect)
 #define EMIT_UV(u,v) \
     *attr++ = u; \
     *attr++ = v; \
-    *attr++ = 0.0f; \
-    *attr++ = 0.0f
+    *attr++ = texP; \
+    *attr++ = texQ
 
     // NOTE: We only do writes to attr here (avoid memcpy).
 
@@ -919,6 +923,11 @@ float* gpu_emitQuad(float* attr, const float* drawRect, const float* uvRect)
     EMIT_UV(uvRect[0], uvRect[3]);
 
     return attr;
+}
+
+float* gpu_emitQuad(float* attr, const float* drawRect, const float* uvRect)
+{
+    return gpu_emitQuadPq(attr, drawRect, uvRect, 0.0f, 0.0f);
 }
 
 #ifdef GPU_RENDER
