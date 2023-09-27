@@ -503,6 +503,8 @@ sound: [
     %gate_open.ogg
     %stone_falling.ogg
     %wind_gust.ogg
+    %ui_click.rfx
+    %ui_tick.rfx
 ]
 
 layouts: [

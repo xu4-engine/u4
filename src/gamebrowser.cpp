@@ -9,6 +9,7 @@
 #include "module.h"
 #include "settings.h"
 #include "screen.h"
+#include "sound.h"
 #include "u4file.h"
 #include "xu4.h"
 
@@ -499,6 +500,7 @@ bool GameBrowser::keyPressed(int key)
         case U4_SPACE:
             if (infoList[sel].category == MOD_SOUNDTRACK) {
                 selMusic = (selMusic == sel) ? 0 : sel;
+                soundPlay(SOUND_UI_CLICK);
                 generateListItems();
             }
             return true;
@@ -506,6 +508,7 @@ bool GameBrowser::keyPressed(int key)
         case U4_UP:
             if (sel > 0) {
                 --sel;
+                soundPlay(SOUND_UI_TICK);
                 calcScrollTarget();
                 generateListItems();
             }
@@ -514,6 +517,7 @@ bool GameBrowser::keyPressed(int key)
         case U4_DOWN:
             if (sel < modFormat.used - 1) {
                 ++sel;
+                soundPlay(SOUND_UI_TICK);
                 calcScrollTarget();
                 generateListItems();
             }
@@ -545,9 +549,11 @@ void GameBrowser::selectModule(const GuiArea* area, int screenY)
                 sel = n;
                 */
             }
+            soundPlay(SOUND_UI_CLICK);
             generateListItems();
         } else if (sel != n) {
             sel = n;
+            soundPlay(SOUND_UI_TICK);
             calcScrollTarget();
             generateListItems();
         }
@@ -581,11 +587,14 @@ bool GameBrowser::inputEvent(const InputEvent* ev)
                             selectModule((const GuiArea*) hit, y);
                     } else {
                         if (buttonDown == hit->wid) {
+                            // NOTE: Sound is only played on Cancel to avoid
+                            //       abrupt cutoff during reset/quit.
                             switch (hit->wid) {
                             case WI_OK:
                                 keyPressed(U4_ENTER);
                                 break;
                             case WI_CANCEL:
+                                soundPlay(SOUND_UI_CLICK);
                                 keyPressed(U4_ESC);
                                 break;
                             case WI_QUIT:

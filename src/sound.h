@@ -39,10 +39,9 @@ enum Sound {
     SOUND_GATE_OPEN,        // Intro moongate opening
     SOUND_STONE_FALLING,
     SOUND_WIND_GUST,
+    SOUND_UI_CLICK,
+    SOUND_UI_TICK,
 
-    //    SOUND_MISSED,
-    //    SOUND_CREATUREATTACK,
-    //    SOUND_PLAYERHIT,
     SOUND_MAX
 };
 
