@@ -16,9 +16,9 @@ DLL_MINGW=allegro-faun-dll.tar.bz2
 ALLEGRO_DL=https://github.com/liballeg/allegro5/releases/download/5.2.7.0
 ALLEGRO_SDK_MINGW=allegro-x86_64-w64-mingw32-gcc-10.2.0-posix-seh-static-5.2.7.0.zip
 
-FAUN_DL=https://github.com/WickedSmoke/faun/releases/download/v0.1.3
-FAUN_SDK_LINUX=faun-x86_64-static-0.1.3.tar.bz2
-FAUN_SDK_MINGW=faun-x86_64-w64-mingw32-static-0.1.3.zip
+FAUN_DL=https://github.com/WickedSmoke/faun/releases/download/v0.1.4
+FAUN_SDK_LINUX=faun-x86_64-static-0.1.4.tar.bz2
+FAUN_SDK_MINGW=faun-x86_64-w64-mingw32-static-0.1.4.zip
 
 sdk:
 	mkdir sdk
