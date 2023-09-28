@@ -29,6 +29,7 @@
 #define ATTR_COUNT  7
 #define LO_DEPTH    6
 #define MAX_SIZECON 24
+#define WIDGET_SHADER_ID(wid)   ((wid < 0) ? 0.0f : -1.0f - wid)
 
 enum AlignBits {
     ALIGN_L = 1,
@@ -53,17 +54,18 @@ typedef struct {
     int16_t prefW, prefH;
 } SizeCon;
 
+static const float button_uvs[4] = { 2.0f, 3.0f, 90.0f, 35.0f };
+
 //----------------------------------------------------------------------------
 
 /*
  * \param widgetId  Zero based identifier or WID_NONE if not a widget.
  */
-static float* gui_drawRect(float* attr, const int16_t* wbox, float colorIndex,
+static float* gui_emitRect(float* attr, const int16_t* wbox, float colorIndex,
                            int widgetId)
 {
     float rect[4];
     float uvs[4];
-    float widf = (widgetId < 0) ? 0.0f : -1.0f - widgetId;
 
     rect[0] = (float) wbox[0];
     rect[1] = (float) wbox[1];
@@ -74,7 +76,31 @@ static float* gui_drawRect(float* attr, const int16_t* wbox, float colorIndex,
     uvs[2] = uvs[0];
     uvs[3] = uvs[1];
 
-    return gpu_emitQuadPq(attr, rect, uvs, widf, 0.0f);
+    return gpu_emitQuadPq(attr, rect, uvs, WIDGET_SHADER_ID(widgetId), 0.0f);
+}
+
+/*
+ * \param widgetId  Zero based identifier or WID_NONE if not a widget.
+ */
+static float* gui_emitRectTex(float* attr, const int16_t* wbox,
+                              const float* pixelUVs, int widgetId)
+{
+    float rect[4];
+    float uvs[4];
+    const float texW = 256.0f;
+    const float texH = 128.0f;
+
+    rect[0] = (float) wbox[0];
+    rect[1] = (float) wbox[1];
+    rect[2] = (float) wbox[2];
+    rect[3] = (float) wbox[3];
+
+    uvs[0] =  pixelUVs[0] / texW;
+    uvs[1] =  pixelUVs[1] / texH;
+    uvs[2] =  pixelUVs[2] / texW;
+    uvs[3] =  pixelUVs[3] / texH;
+
+    return gpu_emitQuadPq(attr, rect, uvs, WIDGET_SHADER_ID(widgetId), 0.0f);
 }
 
 static void button_size(SizeCon* size, TxfDrawState* ds, const uint8_t* text)
@@ -95,15 +121,36 @@ static float* widget_button(float* attr, int wid, const GuiRect* wbox,
 {
     int textW;
     int quadCount;
+    float saveCol;
+    float tx, ty;
+    size_t tlen;
+    int i;
 
-    attr = gui_drawRect(attr, &wbox->x, 40.0f, wid);
+    attr = gui_emitRectTex(attr, &wbox->x, button_uvs, wid);
+    //attr = gui_emitRect(attr, &wbox->x, 40.0f, wid);
 
     textW = scon->prefW - (int16_t) (1.2f * ds->psize);
-    ds->x = (float) (wbox->x + ((wbox->w - textW) / 2));
-    ds->y = (float) wbox->y - ds->tf->descender * ds->psize + 0.3f * ds->psize;
-    quadCount = txf_genText(ds, attr + 3, attr, ATTR_COUNT,
-                            text, strlen((const char*) text));
-    return attr + (quadCount * 6 * ATTR_COUNT);
+    tx = (float) (wbox->x + ((wbox->w - textW) / 2));
+    ty = (float) (wbox->y + wbox->h / 2) - ds->lineSpacing * 0.3f;
+    tlen = strlen((const char*) text);
+    saveCol = ds->colorIndex;
+
+    for (i = 0; i < 2; ++i) {
+        if (i == 0) {
+            ds->x = tx + 2.0f;
+            ds->y = ty - 2.0f;
+            ds->colorIndex = COL_BLACK + COL_TRANS;
+        } else {
+            ds->x = tx;
+            ds->y = ty;
+            ds->colorIndex = COL_BEIGE;
+        }
+        quadCount = txf_genText(ds, attr + 3, attr, ATTR_COUNT, text, tlen);
+        attr += quadCount * 6 * ATTR_COUNT;
+    }
+
+    ds->colorIndex = saveCol;
+    return attr;
 }
 
 static void label_size(SizeCon* size, TxfDrawState* ds, const uint8_t* text)
@@ -695,7 +742,7 @@ layout_done:
 
         case BG_COLOR_CI:   // color-index
             arg = *pc++;
-            attr = gui_drawRect(attr, &lo->x, (float) arg, WID_NONE);
+            attr = gui_emitRect(attr, &lo->x, (float) arg, WID_NONE);
             break;
 
         // Widgets

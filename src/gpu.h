@@ -11,9 +11,13 @@ enum GpuClutValues {
     COL_BLACK    = 0,
     COL_WHITE    = 1,
     COL_TX_BLACK = 2,
+    COL_DK_BROWN = 5,
+    COL_BEIGE    = 9,
     COL_BROWN    = 17,
+    COL_YELLOW   = 19,
     COL_LT_GREEN = 33,
-    COL_LT_BLUE  = 44
+    COL_LT_BLUE  = 44,
+    COL_TRANS    = 128
 };
 
 #define WID_NONE    -1

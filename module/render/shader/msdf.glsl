@@ -41,7 +41,7 @@ void main() {
 		fragColor = texture(cmap, texCoord.st);
 		if (widgetId == widgetFx.x) {
 			if (widgetFx.y > 0.9)
-				fragColor.rgb = mix(fragColor.rgb, vec3(1.0), 0.4);
+				fragColor.rgb = mix(fragColor.rgb, vec3(1.0), 0.2);
 		}
 	} else {
 		vec4 msd = texture(msdf, texCoord.st);
