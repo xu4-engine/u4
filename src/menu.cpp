@@ -7,6 +7,7 @@
 #include "error.h"
 #include "textview.h"
 #include "xu4.h"
+#include "sound.h"
 
 #define NOTIFY(ev)  gs_emitMessage(SENDER_MENU, ev)
 
@@ -145,6 +146,7 @@ void Menu::next() {
             if (++i == items.end())
                 i = items.begin();
         }
+        soundPlay(SOUND_UI_TICK);
     }
 
     setCurrent(i);
@@ -164,6 +166,7 @@ void Menu::prev() {
                 i = items.end();
             i--;
         }
+        soundPlay(SOUND_UI_TICK);
     }
 
     setCurrent(i);
@@ -281,6 +284,7 @@ void Menu::activateItem(int id, MenuEvent::Type action) {
     if (mi->getClosesMenu())
         setClosed(true);
 
+    soundPlay(SOUND_UI_CLICK);
     MenuEvent event(this, (MenuEvent::Type) action, mi);
     mi->activate(event);
     NOTIFY(&event);
