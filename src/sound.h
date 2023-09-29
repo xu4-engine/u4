@@ -41,6 +41,8 @@ enum Sound {
     SOUND_WIND_GUST,
     SOUND_UI_CLICK,
     SOUND_UI_TICK,
+    SOUND_FIZZLE,
+    SOUND_IGNITE,
 
     SOUND_MAX
 };

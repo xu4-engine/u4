@@ -1536,9 +1536,10 @@ bool gameSpellMixHowMany(int spell, int num, Ingredients *ingredients) {
         ingredients->multiply(num);
         for (i = 0; i < num-1; i++)
             spellMix(spell, ingredients);
-    }
-    else
+    } else {
+        soundPlay(SOUND_FIZZLE);
         screenMessage("It Fizzles!\n\n");
+    }
 
     return true;
 }
@@ -2336,8 +2337,10 @@ void GameController::avatarMovedInDungeon(MoveEvent &event) {
             screenMessage(msg);
         }
 
-        if (event.result & MOVE_BLOCKED)
+        if (event.result & MOVE_BLOCKED) {
+            soundPlay(SOUND_BLOCKED);
             screenMessage("%cBlocked!%c\n", FG_GREY, FG_WHITE);
+        }
     }
 
     /* if we're exiting the map, do this */
@@ -2630,8 +2633,10 @@ static bool mixReagentsForSpellU4(int spell) {
 
             if (spellMix(spell, &ingredients))
                 screenMessage("Success!\n\n");
-            else
+            else {
+                soundPlay(SOUND_FIZZLE);
                 screenMessage("It Fizzles!\n\n");
+            }
 
             return false;
         }

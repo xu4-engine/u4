@@ -505,6 +505,8 @@ sound: [
     %wind_gust.ogg
     %ui_click.rfx
     %ui_tick.rfx
+    %fizzle.rfx
+    %ignite.rfx
 ]
 
 layouts: [

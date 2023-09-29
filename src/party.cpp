@@ -1019,6 +1019,7 @@ bool Party::lightTorch(int duration, bool loseTorch) {
     torchduration += duration;
     saveGame->torchduration = torchduration;
 
+    soundPlay(SOUND_IGNITE);
     notifyOfChange();
 
     return true;
