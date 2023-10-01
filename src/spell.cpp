@@ -16,8 +16,6 @@
 #include "utils.h"
 #include "xu4.h"
 
-SpellEffectCallback spellEffectCallback = NULL;
-
 CombatController *spellCombatController();
 bool spellMagicAttackAt(const Coords &coords, MapTile attackTile, int attackDamage);
 
@@ -107,10 +105,6 @@ static const Spell spells[] = {
 };
 
 #define N_SPELLS (sizeof(spells) / sizeof(spells[0]))
-
-void spellSetEffectCallback(SpellEffectCallback callback) {
-    spellEffectCallback = callback;
-}
 
 Ingredients::Ingredients() {
     memset(reagents, 0, sizeof(reagents));
@@ -272,7 +266,7 @@ SpellCastError spellCheckPrerequisites(unsigned int spell, int character) {
  * Casts spell.  Fails and returns false if the spell cannot be cast.
  * The error code is updated with the reason for failure.
  */
-bool spellCast(unsigned int spell, int character, int param, SpellCastError *error, bool spellEffect) {
+bool spellCast(unsigned int spell, int character, int param, SpellCastError *error, bool spellCastEffect) {
     int subject = (spells[spell].paramType == Spell::PARAM_PLAYER) ? param : -1;
     PartyMember *p = c->party->member(character);
 
@@ -297,17 +291,9 @@ bool spellCast(unsigned int spell, int character, int param, SpellCastError *err
     // subtract the mp needed for the spell
     p->adjustMp(-spells[spell].mp);
 
-    if (spellEffect) {
-        int time;
-        /* recalculate spell speed - based on 5/sec */
-        float MP_OF_LARGEST_SPELL = 45;
-        int spellMp = spells[spell].mp;
-        time = int(10000.0 / xu4.settings->spellEffectSpeed  *  spellMp / MP_OF_LARGEST_SPELL);
-        soundPlay(SOUND_PREMAGIC_MANA_JUMBLE, time);
-        EventHandler::wait_msecs(time);
-
-        (*spellEffectCallback)(spell + 'a', subject, SOUND_MAGIC);
-    }
+    if (spellCastEffect)
+        xu4.game->spellCastCallback(spell + 'a', character, subject,
+                                    spells[spell].mp);
 
     if (!(*spells[spell].spellFunc)(param)) {
         soundPlay(SOUND_EVADE);

@@ -634,8 +634,6 @@ CFUNC(cf_pcNeedsQ)
     return UR_OK;
 }
 
-extern SpellEffectCallback spellEffectCallback;
-
 /*-cf-
     pc-heal
         who         int! Player number (1-8)
@@ -654,7 +652,7 @@ CFUNC(cf_pcHeal)
     if (player > 0) {
         if (CFUNC_OPTIONS & 1) {
             screenHideCursor();
-            (*spellEffectCallback)('r', -1, SOUND_MAGIC);
+            gameSpellEffect('r', -1, SOUND_MAGIC);
             screenShowCursor();
        }
 

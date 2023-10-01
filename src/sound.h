@@ -62,7 +62,8 @@ enum MusicTrack {
 
     VOICE_LB = MUSIC_MAX,
     VOICE_HW,
-    VOICE_GYPSY
+    VOICE_GYPSY,
+    VOICE_SPELL = 31
 };
 
 int soundInit(void);

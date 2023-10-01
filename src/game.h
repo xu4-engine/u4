@@ -84,6 +84,7 @@ public:
     bool cutScene;
     std::map<const Tile*, MapId> tileMap;
     std::map<const Tile*, MapId> dungeontileMap;
+    void (*spellCastCallback)(int spell, int caster, int subject, int spellMp);
 
 private:
     static void gameNotice(int, void*, void*);

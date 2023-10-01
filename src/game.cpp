@@ -46,6 +46,8 @@ static bool mixReagentsForSpellU4(int spell);
 static bool mixReagentsForSpellU5(int spell);
 //static void mixReagentsSuper();
 static void newOrder();
+static void gameSpellCastSfx(int spell, int caster, int subject, int spellMp);
+static void gameSpellCastVoc(int spell, int caster, int subject, int spellMp);
 
 /* conversation functions */
 static bool talkAt(const Coords &coords, int distance);
@@ -276,7 +278,8 @@ bool GameController::initContext() {
     }
     }
 
-    spellSetEffectCallback(&gameSpellEffect);
+    spellCastCallback = xu4.config->voiceParts(VOICE_SPELL) ?
+                        gameSpellCastVoc : gameSpellCastSfx;
     itemSetDestroyAllCreaturesCallback(&gameDestroyAllCreatures);
 
     ++pb;
@@ -717,6 +720,29 @@ void GameController::gameNotice(int sender, void* eventData, void* user) {
             break;
         }
     }
+}
+
+static void gameSpellCastSfx(int spell, int caster, int subject, int spellMp) {
+    /* recalculate spell speed - based on 5/sec */
+    const float MP_OF_LARGEST_SPELL = 45;
+    int time = int(10000.0 / xu4.settings->spellEffectSpeed  *
+                   spellMp / MP_OF_LARGEST_SPELL);
+    soundPlay(SOUND_PREMAGIC_MANA_JUMBLE, time);
+    EventHandler::wait_msecs(time);
+
+    gameSpellEffect(spell, subject, SOUND_MAGIC);
+}
+
+static void gameSpellCastVoc(int spell, int caster, int subject, int spellMp) {
+    PartyMember* pc = c->party->member(caster);
+    const int spellCount = 26;
+    int s0 = spell - 'a';
+    if(s0 < spellCount) {
+        int sexOffset = (pc->getSex() == SEX_MALE) ? spellCount+1 : 1;
+        soundSpeakLine(VOICE_SPELL, sexOffset + s0, true);
+    }
+
+    gameSpellEffect(spell, subject, SOUND_MAGIC);
 }
 
 void gameSpellEffect(int spell, int player, Sound sound) {
