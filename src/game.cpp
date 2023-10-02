@@ -278,6 +278,7 @@ bool GameController::initContext() {
     }
     }
 
+    uniqueSpellSounds = soundDuration(SOUND_SPELL_A) > 0;
     spellCastCallback = xu4.config->voiceParts(VOICE_SPELL) ?
                         gameSpellCastVoc : gameSpellCastSfx;
     itemSetDestroyAllCreaturesCallback(&gameDestroyAllCreatures);
@@ -747,47 +748,35 @@ static void gameSpellCastVoc(int spell, int caster, int subject, int spellMp) {
 
 void gameSpellEffect(int spell, int player, Sound sound) {
 
-    int time;
-    Spell::SpecialEffects effect = Spell::SFX_INVERT;
+    int playLimit, time;
+
+    if (sound == SOUND_MAGIC && xu4.game->uniqueSpellSounds) {
+        sound = Sound(SOUND_SPELL_A + spell - 'a');
+        time = soundDuration(sound);
+        playLimit = -1;
+    } else {
+        time = xu4.settings->spellEffectSpeed * 800 /
+               xu4.settings->gameCyclesPerSecond;
+        playLimit = time;
+    }
+    soundPlay(sound, playLimit);
 
     if (player >= 0)
         c->stats->highlightPlayer(player);
 
-    time = xu4.settings->spellEffectSpeed * 800 / xu4.settings->gameCyclesPerSecond;
-    soundPlay(sound, time);
+    // Invert the screen while the sound plays.
+    gameUpdateScreen();
+    xu4.game->mapArea.highlight(0, 0, VIEWPORT_W * TILE_WIDTH, VIEWPORT_H * TILE_HEIGHT);
+    EventHandler::wait_msecs(time);
+    xu4.game->mapArea.unhighlight();
 
-    ///The following effect multipliers are not accurate
-    switch(spell)
-    {
-    case 'g': /* gate */
-    case 'r': /* resurrection */
-        break;
-    case 't': /* tremor */
-        effect = Spell::SFX_TREMOR;
-        break;
-    default:
-        /* default spell effect */
-        break;
-    }
-
-    switch(effect)
-    {
-    case Spell::SFX_NONE:
-        break;
-    case Spell::SFX_TREMOR:
-    case Spell::SFX_INVERT:
-        gameUpdateScreen();
-        xu4.game->mapArea.highlight(0, 0, VIEWPORT_W * TILE_WIDTH, VIEWPORT_H * TILE_HEIGHT);
-        EventHandler::wait_msecs(time);
-        xu4.game->mapArea.unhighlight();
+    if (player >= 0)
         c->stats->highlightPlayer(-1);
 
-        if (effect == Spell::SFX_TREMOR) {
-            gameUpdateScreen();
-            soundPlay(SOUND_RUMBLE);
-            screenShake(8);
-        }
-        break;
+    if (spell == 't') {     // Tremor
+        gameUpdateScreen();
+        soundPlay(SOUND_RUMBLE);
+        screenShake(8);
     }
 }
 

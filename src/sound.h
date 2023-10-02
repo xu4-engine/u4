@@ -43,6 +43,8 @@ enum Sound {
     SOUND_UI_TICK,
     SOUND_FIZZLE,
     SOUND_IGNITE,
+    SOUND_SPELL_A,
+    SOUND_SPELL_Z = SOUND_SPELL_A+25,
 
     SOUND_MAX
 };

@@ -82,6 +82,7 @@ public:
     Discourse vendorDisc;
     Discourse castleDisc;
     bool cutScene;
+    bool uniqueSpellSounds;
     std::map<const Tile*, MapId> tileMap;
     std::map<const Tile*, MapId> dungeontileMap;
     void (*spellCastCallback)(int spell, int caster, int subject, int spellMp);
