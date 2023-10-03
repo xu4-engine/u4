@@ -9,6 +9,7 @@ typedef struct
     UBuffer entries;            // Master CDIEntry array
     UBuffer fileIndex;          // Master FNAM index into entries
     StringTable modulePaths;    // Layer file names
+    uint8_t category[4];        // ModuleCategory for each modulePaths entry.
 }
 Module;
 

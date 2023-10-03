@@ -210,7 +210,7 @@ void screenInit_sys(const Settings* settings, ScreenState* state, int reset) {
 
     {
     char buf[MOD_NAME_LIMIT];
-    al_set_window_title(sa->disp, settings->gameTitle(buf));
+    al_set_window_title(sa->disp, xu4.config->gameTitle(buf));
     }
 
 #ifdef __linux__

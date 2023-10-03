@@ -12,7 +12,11 @@ extern int u4find_pathc(const char*, const char*, char*, size_t);
 #define hashFunc(str,len)   murmurHash3_32((const uint8_t*)(str), len, 0x554956)
 
 // The high 0xDA byte of the CDIEntry::cdi is replaced with the layer number.
-#define CDI_MASK_DA     CDI32(0xFF,0x00,0x00,0x00)
+#define CDI_MASK_DA     CDI32(0xff, 0, 0, 0)
+
+// For checking music chunks.
+#define CDI_MASK_MU     CDI32(0xff,0xff, 0, 0)
+#define APPID_MU        CDI32('M','U', 0, 0)
 
 #define APPID_CONF      CDI32('C','O','N','F')
 #define APPID_MODI      CDI32('M','O','D','I')
@@ -32,6 +36,7 @@ void mod_init(Module* mod, int layers)
     ur_arrInit(&mod->entries, sizeof(CDIEntry), 128);
     ur_arrInit(&mod->fileIndex, sizeof(HashEntry), 64);
     sst_init(&mod->modulePaths, layers, 128);
+    memset(&mod->category, MOD_UNKNOWN, 4);
 }
 
 void mod_free(Module* mod)
@@ -211,6 +216,7 @@ const char* mod_addLayer(Module* mod, const char* filename,
     const char* error;
     const char* str;
     int start;
+    int cat = MOD_FILE_PACKAGE;
     int extIdMask = 0;
 
     //printf("mod_addLayer %s\n", filename);
@@ -242,6 +248,9 @@ const char* mod_addLayer(Module* mod, const char* filename,
             }
 
             extIdMask = 0x20;       // Match module-layer in pack-xu4.b
+            cat = MOD_EXTENSION;
+        } else {
+            cat = MOD_BASE;
         }
     }
 
@@ -252,6 +261,8 @@ const char* mod_addLayer(Module* mod, const char* filename,
     CDIEntry* it;
     uint8_t* layer;
     int n;
+    uint8_t hasMusic = 0;
+    uint8_t nonMusic = 0;
     int layerNum = mod->modulePaths.used;
 
     ur_arrExpand(&mod->entries, start, ml.tocLen);
@@ -260,10 +271,20 @@ const char* mod_addLayer(Module* mod, const char* filename,
 
     // Replace high 0xDA byte with layer number in all entries.
     layer = (uint8_t*) &it->cdi;
-    for (n = 0; n < ml.tocLen; ++n) {
+    for (n = 0; n < ml.tocLen; ++it, ++n) {
         *layer = layerNum;
         layer += sizeof(CDIEntry);
+
+        // Check if music module.
+        if (it->appId == APPID_CONF || it->appId == APPID_MODI)
+            continue;
+        if ((it->appId & CDI_MASK_MU) == APPID_MU)
+            hasMusic = 1;
+        else
+            nonMusic = 1;
     }
+
+    mod->category[layerNum] = (hasMusic && ! nonMusic) ? MOD_SOUNDTRACK : cat;
     }
 
     // Append module path.
@@ -370,8 +391,8 @@ int mod_query(const char* filename, StringTable* modInfo)
 {
     ModuleLoader ml;
     CDIStringTable modi;
-    const uint32_t muMask = CDI32(0xff,0xff,0,0);
-    const uint32_t muId   = CDI32('M','U',0,0);
+    const uint32_t muMask = CDI_MASK_MU;
+    const uint32_t muId   = APPID_MU;
     int cat;
 
     if (mod_openModule(&ml, filename, NULL, &modi))

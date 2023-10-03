@@ -293,7 +293,7 @@ void screenInit_sys(const Settings* settings, ScreenState* state, int reset) {
 
     {
     char buf[MOD_NAME_LIMIT];
-    glv_setTitle(sa->view, settings->gameTitle(buf));
+    glv_setTitle(sa->view, xu4.config->gameTitle(buf));
     }
 
     {

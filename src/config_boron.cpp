@@ -1177,6 +1177,50 @@ void configFree(Config* conf) {
     delete conf;
 }
 
+/*
+ * Convert module file to game title in provided buffer of size MOD_NAME_LIMIT.
+ * Returns buf.
+ */
+char* Config::gameTitle(char* buf) const {
+    const Module& mod = CX->mod;
+    const char* in;
+    const char* inEnd;
+    char* out = buf;
+    int len, ch, layer;
+
+    // Find extension (or base) layer.
+    for (layer = mod.modulePaths.used - 1; layer >= 0; --layer) {
+        ch = mod.category[layer];
+        if (ch == MOD_EXTENSION || ch == MOD_BASE)
+            break;
+    }
+    if (layer < 0)
+        goto none;
+
+    in = sst_stringL(&mod.modulePaths, layer, &len);
+    inEnd = in + len;
+
+    // Find start of filename (exclude directories).
+    for (const char* cp = inEnd; cp != in; ) {
+        ch = *--cp;
+        if (ch == '/' || ch == '\\') {
+            in = cp + 1;
+            break;
+        }
+    }
+
+    // Convert dash & underbar to spaces, drop ".mod" extension.
+    while (in != inEnd) {
+        ch = *in++;
+        if (ch == '.')
+            break;
+        *out++ = (ch == '-' || ch == '_') ? ' ' : ch;
+    }
+none:
+    *out = '\0';
+    return buf;
+}
+
 const char* Config::symbolName( Symbol s ) const {
     return ur_atomCStr(CX->ut, s);
 }

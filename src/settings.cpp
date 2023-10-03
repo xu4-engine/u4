@@ -154,23 +154,6 @@ void Settings::setSoundtrack(const char* modName) {
 }
 
 /*
- * Convert module file to game title in provided buffer of size MOD_NAME_LIMIT.
- * Returns buf.
- */
-char* Settings::gameTitle(char* buf) const {
-    const char* in = game;
-    char* out = buf;
-    int ch;
-    while ((ch = *in++) != '\0') {
-        if (ch == '.')
-            break;
-        *out++ = (ch == '-' || ch == '_') ? ' ' : ch;
-    }
-    *out = '\0';
-    return buf;
-}
-
-/*
  * Return index of value in the names string list, or zero (the first name) if
  * there is no matching name.
  */

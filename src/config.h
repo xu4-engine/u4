@@ -39,6 +39,7 @@ class Config {
 public:
     virtual ~Config();
 
+    char* gameTitle(char* buf) const;
     const char* symbolName( Symbol s ) const;
     Symbol intern( const char* name );
     void internSymbols( Symbol* table, uint16_t count, const char* name );

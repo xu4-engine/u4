@@ -155,7 +155,6 @@ public:
     void setData(const SettingsData &data);
     void setGame(const char* modName);
     void setSoundtrack(const char* modName);
-    char* gameTitle(char* buf) const;
     bool write();
     const std::string &getUserPath() const { return userPath; }
 
