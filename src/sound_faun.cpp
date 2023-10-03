@@ -261,6 +261,7 @@ void musicPlayLocale()
 
 void musicStop()
 {
+    currentTrack = MUSIC_NONE;
     faun_control(SID_MUSIC, 1, FC_STOP);
 }
 

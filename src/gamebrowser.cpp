@@ -5,6 +5,7 @@
 #include "config.h"
 #include "event.h"
 #include "image32.h"
+#include "intro.h"
 #include "gpu.h"
 #include "module.h"
 #include "settings.h"
@@ -484,9 +485,20 @@ bool GameBrowser::keyPressed(int key)
             }
             //printf( "KR Game '%s' '%s'\n", game, music);
 
-            if (mod_namesEqual(xu4.settings->game, game) &&
-                mod_namesEqual(xu4.settings->soundtrack, music)) {
-                xu4.eventHandler->setControllerDone(true);
+            if (mod_namesEqual(xu4.settings->game, game)) {
+                if (mod_namesEqual(xu4.settings->soundtrack, music)) {
+                    xu4.eventHandler->setControllerDone(true);
+                } else {
+                    musicStop();
+                    xu4.settings->setSoundtrack(music);
+                    xu4.settings->write();
+                    xu4.config->changeSoundtrack(music);
+                    if (xu4.stage == StagePlay)
+                        musicPlayLocale();
+                    else
+                        musicPlay(xu4.intro->selectedMusic());
+                    xu4.eventHandler->setControllerDone(true);
+                }
             } else {
                 xu4.settings->setGame(game);
                 xu4.settings->setSoundtrack(music);

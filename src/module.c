@@ -348,6 +348,32 @@ fail_layer:
     return error;
 }
 
+/*
+ * Remove last layer.
+ * The caller must insure that at least two layers are present.
+ *
+ * NOTE: Any configuration changes done by mod_addLayer() remain, so this
+ *       should really only be used on MOD_SOUNDTRACK layers.
+ */
+void mod_removeLayer(Module* mod)
+{
+    StringTable* paths = &mod->modulePaths;
+    int layer = --paths->used;
+    paths->storeUsed = paths->table[layer].start;
+
+    mod->category[layer] = MOD_UNKNOWN;
+
+    const CDIEntry* ent = (CDIEntry*) mod->entries.ptr.v;
+    const CDIEntry* it  = ent + mod->entries.used;
+    while (it != ent) {
+        --it;
+        if (((uint8_t*) &it->cdi)[0] != layer) {
+            mod->entries.used = (it - ent) + 1;
+            break;
+        }
+    }
+}
+
 const char* mod_path(const Module* mod, const CDIEntry* ent)
 {
     int i = ent->cdi & CDI_MASK_DA;

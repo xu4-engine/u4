@@ -1221,6 +1221,21 @@ none:
     return buf;
 }
 
+void Config::changeSoundtrack(const char* musicPath) {
+    Module& mod = static_cast<ConfigBoron*>(this)->mod;
+    int layer = mod.modulePaths.used - 1;
+
+    if (mod.category[layer] == MOD_SOUNDTRACK)
+        mod_removeLayer(&mod);
+
+    if (musicPath && musicPath[0] != '\0') {
+        const char* error;
+        error = mod_addLayer(&mod, musicPath, NULL, NULL, NULL);
+        if (error)
+            fprintf(stderr, "%s (%s)\n", error, musicPath);
+    }
+}
+
 const char* Config::symbolName( Symbol s ) const {
     return ur_atomCStr(CX->ut, s);
 }

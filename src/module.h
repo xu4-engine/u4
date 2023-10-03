@@ -43,6 +43,7 @@ const char*     mod_addLayer(Module*, const char* filename,
                          const char* version,
                          const char* (*config)(FILE*, const CDIEntry*, void*),
                          void* user);
+void            mod_removeLayer(Module*);
 const char*     mod_path(const Module*, const CDIEntry* ent);
 const CDIEntry* mod_findAppId(const Module*, uint32_t id);
 const CDIEntry* mod_fileEntry(const Module*, const char* filename);

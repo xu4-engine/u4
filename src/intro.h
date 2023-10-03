@@ -86,6 +86,7 @@ public:
     ~IntroController();
 
     bool hasInitiatedNewGame();
+    int  selectedMusic() const { return introMusic; }
 
     bool present();
     void conclude();

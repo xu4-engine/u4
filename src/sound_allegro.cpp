@@ -497,6 +497,7 @@ void musicPlayLocale()
 
 void musicStop()
 {
+    currentTrack = MUSIC_NONE;
     if (musicStream)
         al_set_audio_stream_playing(musicStream, 0);
 }
