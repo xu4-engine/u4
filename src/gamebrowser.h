@@ -45,6 +45,7 @@ private:
     float lineHeight;
     float psizeList;            // List font point size.
     float descenderList;        // List font descender * point size.
+    float itemHeightP;
 
     void selectModule(const GuiArea* area, int y);
     void layout();

@@ -72,14 +72,13 @@ float GameBrowser::calcScrollTarget()
 {
     const GuiArea* area = gbox + WI_LIST;
     float areaH = area->y2 - area->y;
-    float selY = lineHeight * psizeList * sel;
-    float targ = selY - (areaH * 0.5f);
+    float targ = (itemHeightP * sel) - (areaH * 0.5f);
     if (targ < 0.0f) {
         targ = 0.0f;
     } else {
-        float endY = (lineHeight * psizeList * modFiles.used) - descenderList;
+        float endY = (itemHeightP * modFiles.used) - descenderList;
         if (endY < areaH) {
-            targ = 0.0f;
+            targ = 0.0f;    // All items fit in view; don't scroll.
         } else {
             endY -= areaH;
             if (targ > endY)
@@ -345,6 +344,7 @@ void GameBrowser::layout()
     // Set psizeList to match list FONT_VSIZE.
     psizeList = 20.0f * ss->aspectH / 480.0f;
     descenderList = ss->fontTable[0]->descender * psizeList;
+    itemHeightP = lineHeight * psizeList;
 
     *data++ = gbox;
     *data++ = "xu4 | ";
@@ -545,7 +545,7 @@ bool GameBrowser::keyPressed(int key)
 void GameBrowser::selectModule(const GuiArea* area, int screenY)
 {
     float y = screenY - listScroll - descenderList;
-    float row = (float) (area->y2 - y) / (lineHeight * psizeList);
+    float row = (float) (area->y2 - y) / itemHeightP;
     int n = (int) row;
     if (n >= 0 && n < (int) modFormat.used) {
         if (infoList[n].category == MOD_SOUNDTRACK) {
@@ -635,10 +635,19 @@ bool GameBrowser::inputEvent(const InputEvent* ev)
             break;
 
         case IE_MOUSE_WHEEL:
-            if (ev->y < 0)
-                keyPressed(U4_DOWN);
-            else if (ev->y > 0)
-                keyPressed(U4_UP);
+            if (ev->y < 0) {
+                const GuiArea* area = gbox + WI_LIST;
+                float areaH = area->y2 - area->y;
+                float endY = (itemHeightP * modFiles.used) - descenderList;
+                endY -= areaH;
+                listScrollTarget += itemHeightP * 2.0f;     // Scroll down.
+                if (listScrollTarget > endY)
+                    listScrollTarget = endY;
+            } else if (ev->y > 0) {
+                listScrollTarget -= itemHeightP * 2.0f;     // Scroll up.
+                if (listScrollTarget < 0.0f)
+                    listScrollTarget = 0.0f;
+            }
             break;
     }
     return true;
