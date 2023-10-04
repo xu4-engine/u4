@@ -232,6 +232,11 @@ int txf_genText(TxfDrawState* ds, float* uvs, float* vertex, int stride,
             it = ds->lowChar(ds, it, end);
             if( ! it )
                 break;
+            // Track font size changes.
+            if (scale != ds->psize) {
+                scale = ds->psize;
+                pixelRange = scale * ds->prScale;
+            }
         }
     }
 

@@ -320,10 +320,13 @@ static void readModuleList(StringTable* modFiles, StringTable* modFormat,
         {
         int vlen;
         const char* version = sst_stringL(&it.modi, MI_VERSION, &vlen);
-        memcpy(itemText + len, "\tv", 2);
-        len += 2;
-        memcpy(itemText + len, version, vlen);
-        len += vlen;
+        char* it = itemText + len;
+        *it++ = '\t';
+        *it++ = 'v';
+        memcpy(it, version, vlen);
+        it += vlen;
+        *it = '\t';
+        len += vlen + 3;
         }
 
         sst_append(modFormat, itemText, len);
@@ -384,13 +387,25 @@ void GameBrowser::layout()
 struct TabTxfState : public TxfDrawState
 {
     float tabStop;
+    float psizeList;
+    uint8_t cellBegin;
 };
 
 static const uint8_t* gb_controlChar(TxfDrawState* ds, const uint8_t* it,
                                      const uint8_t* end)
 {
     if (*it == '\t') {
-        ds->x = ((TabTxfState*) ds)->tabStop;
+        TabTxfState* ts = (TabTxfState*) ds;
+        ts->cellBegin ^= 1;
+        if (ts->cellBegin) {
+            ds->x = ts->tabStop;
+            ds->prev = NULL;
+            //ds->colorIndex = COL_LT_GRAY;
+            ds->psize = ts->psizeList * 0.66f;
+        } else {
+            //ds->colorIndex = COL_WHITE;
+            ds->psize = ts->psizeList;
+        }
         return it+1;
     }
     return txf_controlChar(ds, it, end);
@@ -409,7 +424,7 @@ void GameBrowser::generateListItems()
 
     ds.fontTable = screenState()->fontTable;
     txf_begin(&ds, 0, psizeList, 0.0f, 0.0f);
-    ds.colorIndex = 1.0f;
+    ds.colorIndex = COL_WHITE;
     ds.lowChar = gb_controlChar;
 
     // Highlight for selected item background.
@@ -417,7 +432,10 @@ void GameBrowser::generateListItems()
     rect[1] = ds.lineSpacing * -(sel + 1) + descenderList;
     rect[2] = area->x2 - area->x;
     rect[3] = ds.lineSpacing;
-    ds.tabStop = rect[2] - (psizeList * 3.0f);
+
+    ds.tabStop = rect[2] - (psizeList * 2.0f);
+    ds.psizeList = psizeList;
+    ds.cellBegin = 0;
 
     gpu_guiClutUV(xu4.gpu, uvs, COL_LT_BLUE);
     uvs[2] = uvs[0];

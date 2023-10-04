@@ -17,6 +17,8 @@ enum GpuClutValues {
     COL_YELLOW   = 19,
     COL_LT_GREEN = 33,
     COL_LT_BLUE  = 44,
+    COL_LT_GRAY  = 63,
+    COL_DK_GRAY  = 66,
     COL_TRANS    = 128
 };
 
