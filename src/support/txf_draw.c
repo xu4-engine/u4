@@ -71,8 +71,8 @@ float txf_kerning(const TxfHeader* tf, const TxfGlyph* left,
     return 0.0f;
 }
 
-static const uint8_t* drawTextReturn(TxfDrawState* ds, const uint8_t* it,
-                                     const uint8_t* end)
+const uint8_t* txf_controlChar(TxfDrawState* ds, const uint8_t* it,
+                               const uint8_t* end)
 {
     if (*it == '\n')
     {
@@ -109,7 +109,7 @@ void txf_begin(TxfDrawState* ds, int fontN, float pointSize, float x, float y)
     const TxfHeader* tf = ds->fontTable[fontN];
 
     ds->tf      = tf;
-    ds->lowChar = drawTextReturn;
+    ds->lowChar = txf_controlChar;
     ds->prev    = NULL;
     ds->prScale = tf->pixelRange / tf->fontSize;
     ds->x       = x;

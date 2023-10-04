@@ -59,6 +59,8 @@ int  txf_genText(TxfDrawState* ds, float* uvs, float* vertex, int stride,
 float txf_emWidth(const TxfHeader*, const uint8_t* it, unsigned int len);
 void  txf_emSize(const TxfHeader*, const uint8_t* it, unsigned int len,
                  float* size);
+const uint8_t* txf_controlChar(TxfDrawState* ds, const uint8_t* it,
+                               const uint8_t* end);
 
 #ifdef __cplusplus
 }

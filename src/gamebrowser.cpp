@@ -294,10 +294,14 @@ static void readModuleList(StringTable* modFiles, StringTable* modFormat,
         // Strip .mod suffix.
         len = sst_len(modFiles, it.modFileI) - 4;
 
-        // Indent child modules.
-        if (it.category != MOD_BASE) {
-            memcpy(modulePath + indentLen, rpath, len);
-            rpath = modulePath;
+        memcpy(modulePath + indentLen, rpath, len);
+        char* itemText;
+
+        if (it.category == MOD_BASE) {
+            itemText = modulePath + indentLen;
+        } else {
+            // Indent child modules.
+            itemText = modulePath;
             len += indentLen;
             if (it.category == MOD_SOUNDTRACK) {
 #if 1
@@ -311,7 +315,18 @@ static void readModuleList(StringTable* modFiles, StringTable* modFormat,
 #endif
             }
         }
-        sst_append(modFormat, rpath, len);
+
+        // Add module version number.
+        {
+        int vlen;
+        const char* version = sst_stringL(&it.modi, MI_VERSION, &vlen);
+        memcpy(itemText + len, "\tv", 2);
+        len += 2;
+        memcpy(itemText + len, version, vlen);
+        len += vlen;
+        }
+
+        sst_append(modFormat, itemText, len);
     }
 }
 
@@ -366,13 +381,28 @@ void GameBrowser::layout()
     }
 }
 
+struct TabTxfState : public TxfDrawState
+{
+    float tabStop;
+};
+
+static const uint8_t* gb_controlChar(TxfDrawState* ds, const uint8_t* it,
+                                     const uint8_t* end)
+{
+    if (*it == '\t') {
+        ds->x = ((TabTxfState*) ds)->tabStop;
+        return it+1;
+    }
+    return txf_controlChar(ds, it, end);
+}
+
 /*
  * Generate primitives for items in the module list.
  * The top of the list is at 0,0 to be placed with gpu_guiSetOrigin().
  */
 void GameBrowser::generateListItems()
 {
-    TxfDrawState ds;
+    TabTxfState ds;
     const GuiArea* area = gbox + WI_LIST;
     float* attr;
     float rect[4], uvs[4];
@@ -380,12 +410,14 @@ void GameBrowser::generateListItems()
     ds.fontTable = screenState()->fontTable;
     txf_begin(&ds, 0, psizeList, 0.0f, 0.0f);
     ds.colorIndex = 1.0f;
+    ds.lowChar = gb_controlChar;
 
     // Highlight for selected item background.
     rect[0] = 0.0f;
     rect[1] = ds.lineSpacing * -(sel + 1) + descenderList;
     rect[2] = area->x2 - area->x;
     rect[3] = ds.lineSpacing;
+    ds.tabStop = rect[2] - (psizeList * 3.0f);
 
     gpu_guiClutUV(xu4.gpu, uvs, COL_LT_BLUE);
     uvs[2] = uvs[0];
