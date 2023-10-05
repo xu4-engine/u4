@@ -710,7 +710,7 @@ static bool rangedAttack(const Coords &coords, CombatMap* map,
 
     default:
         /* show the appropriate 'hit' message */
-        // soundPlay(SOUND_PC_STRUCK);
+        soundPlay(SOUND_PC_STRUCK);
         if (hittile == Tileset::findTileByName(Tile::sym.magicFlash)->getId())
             EFFECT_MSG("\n%s %cMagical Hit%c!\n", FG_BLUE);
         else
