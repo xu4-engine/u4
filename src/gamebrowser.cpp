@@ -307,7 +307,7 @@ static void readModuleList(StringTable* modFiles, StringTable* modFormat,
 #if 1
                 // Blue musical note symbol.
                 memcpy(modulePath + len,
-                       " \x12\x02\x13\x2cN\x12\x00\x13\x00", 10);
+                       " \x12\x02\x13\x2dN\x12\x00\x13\x00", 10);
                 len += 10;
 #else
                 memcpy(modulePath + len, " (music)", 8);

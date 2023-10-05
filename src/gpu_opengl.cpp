@@ -547,7 +547,7 @@ const char* gpu_init(void* res, int w, int h, int scale, int filter)
     cmap            = glGetUniformLocation(sh, "cmap");
     mmap            = glGetUniformLocation(sh, "msdf");
     //gr->glyphRange  = glGetUniformLocation(sh, "screenPxRange");
-    gr->glyphBg     = glGetUniformLocation(sh, "bgColor");
+    //gr->glyphBg     = glGetUniformLocation(sh, "bgColor");
     gr->glyphFg     = glGetUniformLocation(sh, "fgColor");
     gr->glyphWidget = glGetUniformLocation(sh, "widgetFx");
 
@@ -560,7 +560,7 @@ const char* gpu_init(void* res, int w, int h, int scale, int filter)
     glUniform1i(cmap, GTU_CMAP);
     glUniform1i(mmap, GTU_MATERIAL);
     //glUniform1f(gr->glyphRange, 2.0);
-    glUniform4f(gr->glyphBg, 0.0, 0.0, 0.0, 0.0);
+    //glUniform4f(gr->glyphBg, 0.0, 0.0, 0.0, 0.0);
     glUniform4f(gr->glyphFg, 1.0, 1.0, 1.0, 1.0);
     glUniform3f(gr->glyphWidget, -999.0f, 0.0f, 0.0f);
     }

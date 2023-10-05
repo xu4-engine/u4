@@ -20,7 +20,7 @@ void main() {
 
 uniform sampler2D msdf;
 uniform sampler2D cmap;
-uniform vec4 bgColor;
+//uniform vec4 bgColor;
 uniform vec4 fgColor;
 uniform vec3 widgetFx;	// x: widget-id, y: mode (0=normal, 1=pressed)
 //uniform float screenPxRange;
@@ -41,7 +41,7 @@ void main() {
 		fragColor = texture(cmap, texCoord.st);
 		if (widgetId == widgetFx.x) {
 			if (widgetFx.y > 0.9)
-				fragColor.rgb = mix(fragColor.rgb, vec3(1.0), 0.2);
+				fragColor.rgb = mix(fragColor.rgb, vec3(0.0), 0.2);
 		}
 	} else {
 		vec4 msd = texture(msdf, texCoord.st);
@@ -53,7 +53,7 @@ void main() {
 			color = texelFetch(cmap, ivec2(clutIndex, 0), 0);
 		else
 			color = fgColor;
-		fragColor = mix(bgColor, color, opacity);
+		fragColor = vec4(color.rgb, opacity);
 	}
 }
 

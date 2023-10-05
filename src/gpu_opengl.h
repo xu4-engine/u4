@@ -89,7 +89,6 @@ struct OpenGLResources {
     GLint  glyphTrans;
     GLint  glyphOrigin;
     GLint  glyphWidget;
-    GLint  glyphBg;
     GLint  glyphFg;
 
 #ifdef GPU_RENDER
