@@ -6,6 +6,8 @@
   the GNU General Public License (see gui.cpp).
 */
 
+#include "txf_draw.h"
+
 enum GuiOpcode {
     GUI_END,
 
@@ -63,13 +65,29 @@ typedef struct {
     int wid;
 } GuiArea;
 
+struct ListCellStyle
+{
+    float   tabStop;
+    float   fontScale;
+    uint8_t color;
+    uint8_t selColor;
+};
+
+struct ListDrawState : public TxfDrawState
+{
+    float   psizeList;
+    uint8_t selected;
+    uint8_t tabCount;
+    ListCellStyle cell[4];
+};
+
 struct TxfDrawState;
 struct StringTable;
 
 float* gui_layout(int primList, const GuiRect* root, TxfDrawState*,
                   const uint8_t* bytecode, const void** data);
-float* gui_emitListItems(float* attr, TxfDrawState*, StringTable* st,
-                         int select, float selectColorIndex);
+float* gui_emitListItems(float* attr, ListDrawState*, StringTable* st,
+                         int select);
 void*  gui_areaTree(const GuiArea* areas, int count);
 const GuiArea* gui_pick(const void* tree, const GuiArea* areas,
                         uint16_t x, uint16_t y);

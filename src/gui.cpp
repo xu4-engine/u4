@@ -187,39 +187,58 @@ static void list_size(SizeCon* size, TxfDrawState* ds, int cols, int rows)
     size->prefH = (int16_t) (fsize[1] * rows);
 }
 
+static void list_applyCellStyle(ListDrawState* ds, int col)
+{
+    const ListCellStyle* cell = ds->cell + col;
+    ds->x = cell->tabStop;
+    ds->prev = NULL;
+    ds->colorIndex = (float) (ds->selected ? cell->selColor : cell->color);
+    ds->psize = ds->psizeList * cell->fontScale;
+}
+
+static const uint8_t* list_controlChar(TxfDrawState* ds, const uint8_t* it,
+                                       const uint8_t* end)
+{
+    if (*it == '\t') {
+        ListDrawState* ls = (ListDrawState*) ds;
+        list_applyCellStyle(ls, ++ls->tabCount);
+        return it+1;
+    }
+    return txf_controlChar(ds, it, end);
+}
+
 /*
  * Emit triangles for each line of text in a StringTable.
  *
  * \param select            Index of selected item (-1 for none).
  * \param selectColorIndex  Shader CLUT index or zero for default foreground.
  */
-float* gui_emitListItems(float* attr, TxfDrawState* ds, StringTable* st,
-                         int select, float selectColorIndex)
+float* gui_emitListItems(float* attr, ListDrawState* ds, StringTable* st,
+                         int select)
 {
     const uint8_t* strings = (const uint8_t*) sst_strings(st);
     const StringEntry* it  = st->table;
     const StringEntry* end = it + st->used;
     const StringEntry* sel = it + select;
-    float left = 0.0f;
-    float origColor;
+    TxfControlFunc origCtrl;
     int quadCount;
 
+    origCtrl = ds->lowChar;
+    ds->lowChar = list_controlChar;
     ds->y = 0.0f;
 
     for (; it != end; ++it) {
-        ds->x = left;
         ds->y -= ds->lineSpacing;
-        if (it == sel) {
-            origColor = ds->colorIndex;
-            ds->colorIndex = selectColorIndex;
-        }
+        ds->selected = (it == sel);
+        ds->tabCount = 0;
+        list_applyCellStyle(ds, 0);
+
         quadCount = txf_genText(ds, attr + 3, attr, ATTR_COUNT,
                                 strings + it->start, it->len);
-        if (it == sel)
-            ds->colorIndex = origColor;
         attr += quadCount * 6 * ATTR_COUNT;
-        ds->x = left;
     }
+
+    ds->lowChar = origCtrl;
     return attr;
 }
 

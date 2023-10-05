@@ -320,13 +320,11 @@ static void readModuleList(StringTable* modFiles, StringTable* modFormat,
         {
         int vlen;
         const char* version = sst_stringL(&it.modi, MI_VERSION, &vlen);
-        char* it = itemText + len;
-        *it++ = '\t';
-        *it++ = 'v';
-        memcpy(it, version, vlen);
-        it += vlen;
-        *it = '\t';
-        len += vlen + 3;
+        char* vp = itemText + len;
+        *vp++ = '\t';
+        *vp++ = 'v';
+        memcpy(vp, version, vlen);
+        len += vlen + 2;
         }
 
         sst_append(modFormat, itemText, len);
@@ -384,40 +382,13 @@ void GameBrowser::layout()
     }
 }
 
-struct TabTxfState : public TxfDrawState
-{
-    float tabStop;
-    float psizeList;
-    uint8_t cellBegin;
-};
-
-static const uint8_t* gb_controlChar(TxfDrawState* ds, const uint8_t* it,
-                                     const uint8_t* end)
-{
-    if (*it == '\t') {
-        TabTxfState* ts = (TabTxfState*) ds;
-        ts->cellBegin ^= 1;
-        if (ts->cellBegin) {
-            ds->x = ts->tabStop;
-            ds->prev = NULL;
-            //ds->colorIndex = COL_LT_GRAY;
-            ds->psize = ts->psizeList * 0.66f;
-        } else {
-            //ds->colorIndex = COL_WHITE;
-            ds->psize = ts->psizeList;
-        }
-        return it+1;
-    }
-    return txf_controlChar(ds, it, end);
-}
-
 /*
  * Generate primitives for items in the module list.
  * The top of the list is at 0,0 to be placed with gpu_guiSetOrigin().
  */
 void GameBrowser::generateListItems()
 {
-    TabTxfState ds;
+    ListDrawState ds;
     const GuiArea* area = gbox + WI_LIST;
     float* attr;
     float rect[4], uvs[4];
@@ -425,7 +396,6 @@ void GameBrowser::generateListItems()
     ds.fontTable = screenState()->fontTable;
     txf_begin(&ds, 0, psizeList, 0.0f, 0.0f);
     ds.colorIndex = COL_WHITE;
-    ds.lowChar = gb_controlChar;
 
     // Highlight for selected item background.
     rect[0] = 0.0f;
@@ -433,19 +403,28 @@ void GameBrowser::generateListItems()
     rect[2] = area->x2 - area->x;
     rect[3] = ds.lineSpacing;
 
-    ds.tabStop = rect[2] - (psizeList * 2.0f);
-    ds.psizeList = psizeList;
-    ds.cellBegin = 0;
-
     gpu_guiClutUV(xu4.gpu, uvs, COL_LT_BLUE);
     uvs[2] = uvs[0];
     uvs[3] = uvs[1];
+
+    ListCellStyle* cell = ds.cell;
+    cell->tabStop   = 0.0f;
+    cell->fontScale = 1.0f;
+    cell->color     = COL_WHITE;
+    cell->selColor  = COL_TX_BLACK;
+    ++cell;
+    cell->tabStop   = rect[2] - (psizeList * 2.0f);
+    cell->fontScale = 0.66f;
+    cell->color     = COL_LT_GRAY;
+    cell->selColor  = COL_TX_BLACK;
+
+    ds.psizeList = psizeList;
 
     attr = gpu_beginTris(xu4.gpu, GPU_DLIST_HUD);
     if (! attr)
         return;
     attr = gpu_emitQuad(attr, rect, uvs);
-    attr = gui_emitListItems(attr, &ds, &modFormat, sel, COL_TX_BLACK);
+    attr = gui_emitListItems(attr, &ds, &modFormat, sel);
 
     if (selMusic) {
         // Draw green checkmark.
