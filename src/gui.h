@@ -43,6 +43,7 @@ enum GuiOpcode {
     FONT_N,         // font-index
     FONT_SIZE,      // point-size
     FONT_VSIZE,     // scaled-vga-height (480 pixels)
+    FONT_COLOR,     // color-index
     BG_COLOR_CI,    // color-index
 
     // Widgets

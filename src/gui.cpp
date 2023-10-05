@@ -542,6 +542,10 @@ float* gui_layout(int primList, const GuiRect* root, TxfDrawState* ds,
             txf_setFontSize(ds, vgaScale * (float) *pc++);
             break;
 
+        case FONT_COLOR:    // color-index
+            pc++;
+            break;
+
         case BG_COLOR_CI:   // color-index
             pc++;
             break;
@@ -757,6 +761,10 @@ layout_done:
 
         case FONT_VSIZE:     // scaled-vga-height
             txf_setFontSize(ds, vgaScale * (float) *pc++);
+            break;
+
+        case FONT_COLOR:    // color-index
+            ds->colorIndex = (float) *pc++;
             break;
 
         case BG_COLOR_CI:   // color-index

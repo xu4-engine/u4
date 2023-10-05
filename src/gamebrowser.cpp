@@ -305,9 +305,9 @@ static void readModuleList(StringTable* modFiles, StringTable* modFormat,
             len += indentLen;
             if (it.category == MOD_SOUNDTRACK) {
 #if 1
-                // Blue musical note symbol.
+                // Green musical note symbol.
                 memcpy(modulePath + len,
-                       " \x12\x02\x13\x2dN\x12\x00\x13\x00", 10);
+                       " \x12\x02\x13\x21N\x12\x00\x13\x00", 10);
                 len += 10;
 #else
                 memcpy(modulePath + len, " (music)", 8);
@@ -340,6 +340,7 @@ void GameBrowser::layout()
         ARRAY_DT_AREA, WI_LIST,
         MARGIN_V_PER, 6,
             LAYOUT_H,
+                FONT_COLOR, COL_BEIGE,
                 FONT_VSIZE, 38, LABEL_DT_S,
                 FONT_N, 1,      LABEL_DT_S,
             LAYOUT_END,
@@ -395,7 +396,6 @@ void GameBrowser::generateListItems()
 
     ds.fontTable = screenState()->fontTable;
     txf_begin(&ds, 0, psizeList, 0.0f, 0.0f);
-    ds.colorIndex = COL_WHITE;
 
     // Highlight for selected item background.
     rect[0] = 0.0f;
