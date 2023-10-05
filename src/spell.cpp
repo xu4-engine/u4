@@ -61,8 +61,8 @@ static const struct {
     SpellCastError err;
     const char *msg;
 } spellErrorMsgs[] = {
-    { CASTERR_NOMIX, "None Mixed!\n" },
-    { CASTERR_MPTOOLOW, "Not Enough MP!\n" },
+    { CASTERR_NOMIX, "None Mixed!\n" },         // DOS: "None left!"
+    { CASTERR_MPTOOLOW, "Not Enough MP!\n" },   // DOS: "M.P. too low!"
     { CASTERR_FAILED, "Failed!\n" },
     { CASTERR_WRONGCONTEXT, "Not here!\n" },
     { CASTERR_COMBATONLY, "Combat only!\nFailed!\n" },
@@ -278,14 +278,17 @@ bool spellCast(unsigned int spell, int character, int param, SpellCastError *err
     // subtract the mixture for even trying to cast the spell
     AdjustValueMin(c->saveGame->mixtures[spell], -1, 0);
 
-    if (*error != CASTERR_NOERROR)
-        return false;
+    if (*error != CASTERR_NOERROR) {
+        // _NOMIX is silent; all other errors play sound.
+        if (*error == CASTERR_NOMIX)
+            return false;
+        goto failed;
+    }
 
     // If there's a negate magic aura, spells fail!
     if (c->aura.getType() == Aura::NEGATE) {
-        soundPlay(SOUND_EVADE);     // TODO: Check if this should be played.
         *error = CASTERR_FAILED;
-        return false;
+        goto failed;
     }
 
     // subtract the mp needed for the spell
@@ -296,12 +299,15 @@ bool spellCast(unsigned int spell, int character, int param, SpellCastError *err
                                     spells[spell].mp);
 
     if (!(*spells[spell].spellFunc)(param)) {
-        soundPlay(SOUND_EVADE);
         *error = CASTERR_FAILED;
-        return false;
+        goto failed;
     }
 
     return true;
+
+failed:
+    soundPlay(SOUND_EVADE);
+    return false;
 }
 
 CombatController *spellCombatController() {
