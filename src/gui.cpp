@@ -370,17 +370,16 @@ static void gui_setRootArea(LayoutBox* lo, const GuiRect* root)
   The layout program must begin with a LAYOUT_* instruction and ends with a
   paired LAYOUT_END instruction.
 
-  \param primList   The list identifier used with gpu_beginTris()/gpu_endTris().
+  \param attr       Buffer for vertex attributes.
   \param root       A rectangular pixel area for this layout, or NULL to
                     use screen size.
   \param txfArr     Font list.
   \param bytecode   A program of GuiOpcode instructions.
   \param data       A pointer array of data referenced by bytecode program.
 
-  \return End primitive attribute pointer which caller must pass to
-          gpu_endTris().
+  \return End vertex attribute pointer.
 */
-float* gui_layout(int primList, const GuiRect* root, TxfDrawState* ds,
+float* gui_layout(float* attr, const GuiRect* root, TxfDrawState* ds,
                   const uint8_t* bytecode, const void** data)
 {
     SizeCon sconStack[MAX_SIZECON];
@@ -388,7 +387,6 @@ float* gui_layout(int primList, const GuiRect* root, TxfDrawState* ds,
     LayoutBox* lo;
     SizeCon* scon;
     GuiRect wbox;
-    float* attr;
     int arg;
     int areaWid = WID_NONE;
     GuiArea* areaArr = NULL;
@@ -585,8 +583,6 @@ layout_done:
 
     // Second pass to create widget draw list.
     RESET_LAYOUT;
-
-    attr = gpu_beginTris(xu4.gpu, primList);
 
     for(;;) {
         switch (*pc++) {

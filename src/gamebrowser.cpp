@@ -23,11 +23,21 @@ extern "C" {
 
 #define ATTR_COUNT  7
 
+enum GuiBufferRegions {
+    REGION_PANEL,
+    REGION_LIST
+};
+
 void GameBrowser::renderBrowser(ScreenState* ss, void* data)
 {
     GameBrowser* gb = (GameBrowser*) data;
+    WorkBuffer* work = gb->work;
 
-    gpu_drawGui(xu4.gpu, GPU_DLIST_GUI, gb->buttonDown, gb->buttonMode);
+    if (work->dirty)
+        gpu_updateWorkBuffer(xu4.gpu, GPU_DLIST_GUI, work);
+
+    gpu_enableGui(xu4.gpu, gb->buttonDown, gb->buttonMode);
+    gpu_drawTrisRegion(xu4.gpu, GPU_DLIST_GUI, work->region + REGION_PANEL);
 
     if (gb->modFormat.used) {
         const GuiArea* area = gb->gbox + WI_LIST;
@@ -43,7 +53,7 @@ void GameBrowser::renderBrowser(ScreenState* ss, void* data)
 
         gpu_setScissor(box);
         gpu_guiSetOrigin(xu4.gpu, area->x, area->y2 + gb->listScroll);
-        gpu_drawTris(xu4.gpu, GPU_DLIST_HUD);
+        gpu_drawTrisRegion(xu4.gpu, GPU_DLIST_GUI, work->region + REGION_LIST);
         gpu_guiSetOrigin(xu4.gpu, 0.0f, 0.0f);
         gpu_setScissor(NULL);
     }
@@ -51,12 +61,23 @@ void GameBrowser::renderBrowser(ScreenState* ss, void* data)
 
 GameBrowser::GameBrowser()
 {
+    int wsize[2];
+
     sel = selMusic = 0;
     buttonMode = 0;
     buttonDown = WID_NONE;
     listScroll = listScrollTarget = 0.0f;
     psizeList = 20.0f;
     atree = NULL;
+
+    wsize[0] = ATTR_COUNT * 6 * 400;
+    wsize[1] = ATTR_COUNT * 6 * 400;
+    work = gpu_allocWorkBuffer(wsize, 2);
+}
+
+GameBrowser::~GameBrowser()
+{
+    gpu_freeWorkBuffer(work);
 }
 
 void GameBrowser::animateScroll()
@@ -372,15 +393,14 @@ void GameBrowser::layout()
 
     TxfDrawState ds;
     ds.fontTable = ss->fontTable;
-    float* attr = gui_layout(GPU_DLIST_GUI, NULL, &ds, browserGui, guiData);
-    if (attr) {
-        gpu_endTris(xu4.gpu, GPU_DLIST_GUI, attr);
+    float* attr = gpu_beginRegion(work, REGION_PANEL);
+    attr = gui_layout(attr, NULL, &ds, browserGui, guiData);
+    gpu_endRegion(work, REGION_PANEL, attr);
 
-        free(atree);
-        atree = gui_areaTree(gbox, WI_COUNT);
+    free(atree);
+    atree = gui_areaTree(gbox, WI_COUNT);
 
-        generateListItems();
-    }
+    generateListItems();
 }
 
 /*
@@ -420,9 +440,7 @@ void GameBrowser::generateListItems()
 
     ds.psizeList = psizeList;
 
-    attr = gpu_beginTris(xu4.gpu, GPU_DLIST_HUD);
-    if (! attr)
-        return;
+    attr = gpu_beginRegion(work, REGION_LIST);
     attr = gpu_emitQuad(attr, rect, uvs);
     attr = gui_emitListItems(attr, &ds, &modFormat, sel);
 
@@ -439,7 +457,7 @@ void GameBrowser::generateListItems()
                                 (const uint8_t*) "c", 1);
         attr += quads * 6 * ATTR_COUNT;
     }
-    gpu_endTris(xu4.gpu, GPU_DLIST_HUD, attr);
+    gpu_endRegion(work, REGION_LIST, attr);
 }
 
 bool GameBrowser::present()

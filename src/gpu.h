@@ -24,9 +24,27 @@ enum GpuClutValues {
 
 #define WID_NONE    -1
 
+struct WorkRegion {
+    uint32_t start;
+    uint32_t avail;
+    uint32_t used;
+};
+
+struct WorkBuffer {
+    float*   attr;
+    uint32_t dirty;         // LIMIT: 32 regions.
+    uint16_t regionCount;
+    WorkRegion region[2];
+};
+
 struct BlockingGroups;
 class Map;
 class TileView;
+
+WorkBuffer* gpu_allocWorkBuffer(const int* regionSizes, int regionCount);
+void        gpu_freeWorkBuffer(WorkBuffer*);
+float*      gpu_beginRegion(WorkBuffer*, int regionN);
+void        gpu_endRegion(WorkBuffer* work, int regionN, float* attr);
 
 const char* gpu_init(void* res, int w, int h, int scale, int filter);
 void     gpu_free(void* res);
@@ -40,10 +58,13 @@ void     gpu_drawTextureScaled(void* res, uint32_t tex);
 void     gpu_clear(void* res, const float* color);
 void     gpu_invertColors(void* res);
 void     gpu_setScissor(int* box);
+void     gpu_updateWorkBuffer(void* res, int list, WorkBuffer*);
+void     gpu_drawTrisRegion(void* res, int list, const WorkRegion*);
 float*   gpu_beginTris(void* res, int list);
 void     gpu_endTris(void* res, int list, float* attr);
 void     gpu_clearTris(void* res, int list);
 void     gpu_drawTris(void* res, int list);
+void     gpu_enableGui(void* res, int wid, int mode);
 void     gpu_drawGui(void* res, int list, int wid, int mode);
 void     gpu_guiClutUV(void* res, float* uv, float colorIndex);
 void     gpu_guiSetOrigin(void* res, float x, float y);

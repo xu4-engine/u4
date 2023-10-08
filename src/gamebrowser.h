@@ -11,10 +11,12 @@ struct ModuleInfo {
 
 struct TxfHeader;
 struct ScreenState;
+struct WorkBuffer;
 
 class GameBrowser : public Controller {
 public:
     GameBrowser();
+    ~GameBrowser();
 
     /* controller functions */
     virtual bool present();
@@ -40,6 +42,7 @@ private:
     int16_t  buttonDown;
     GuiArea gbox[ WI_COUNT ];
     void* atree;
+    WorkBuffer* work;
     float listScroll;
     float listScrollTarget;
     float lineHeight;

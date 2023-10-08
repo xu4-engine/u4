@@ -85,7 +85,7 @@ struct ListDrawState : public TxfDrawState
 struct TxfDrawState;
 struct StringTable;
 
-float* gui_layout(int primList, const GuiRect* root, TxfDrawState*,
+float* gui_layout(float* attr, const GuiRect* root, TxfDrawState*,
                   const uint8_t* bytecode, const void** data);
 float* gui_emitListItems(float* attr, ListDrawState*, StringTable* st,
                          int select);

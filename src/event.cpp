@@ -201,7 +201,8 @@ bool EventHandler::runPause() {
     guiData[0] = "\x13\xAPaused";
     TxfDrawState ds;
     ds.fontTable = screenState()->fontTable;
-    float* attr = gui_layout(GPU_DLIST_GUI, NULL, &ds, pauseGui, guiData);
+    float* attr = gpu_beginTris(xu4.gpu, GPU_DLIST_GUI);
+    attr = gui_layout(attr, NULL, &ds, pauseGui, guiData);
     gpu_endTris(xu4.gpu, GPU_DLIST_GUI, attr);
 
     screenSetLayer(LAYER_TOP_MENU, renderPause, this);
