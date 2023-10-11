@@ -58,6 +58,21 @@ static const float button_uvs[4] = { 2.0f, 3.0f, 90.0f, 35.0f };
 
 //----------------------------------------------------------------------------
 
+float* gui_emitText(TxfDrawState* ds, float* attr, const char* text,
+                    uint32_t len)
+{
+    int quads = txf_genText(ds, attr + 3, attr, ATTR_COUNT,
+                            (const uint8_t*) text, len);
+    return attr + (quads * 6 * ATTR_COUNT);
+}
+
+float* gui_emitQuadCi(float* attr, const float* rect, float colorIndex)
+{
+    float uvs[4];
+    gpu_guiClutUV(xu4.gpu, uvs, colorIndex);
+    return gpu_emitQuadPq(attr, rect, uvs, 0.0f, 0.0f);
+}
+
 /*
  * \param widgetId  Zero based identifier or WID_NONE if not a widget.
  */
@@ -73,8 +88,6 @@ static float* gui_emitRect(float* attr, const int16_t* wbox, float colorIndex,
     rect[3] = (float) wbox[3];
 
     gpu_guiClutUV(xu4.gpu, uvs, colorIndex);
-    uvs[2] = uvs[0];
-    uvs[3] = uvs[1];
 
     return gpu_emitQuadPq(attr, rect, uvs, WIDGET_SHADER_ID(widgetId), 0.0f);
 }

@@ -89,6 +89,8 @@ float* gui_layout(float* attr, const GuiRect* root, TxfDrawState*,
                   const uint8_t* bytecode, const void** data);
 float* gui_emitListItems(float* attr, ListDrawState*, StringTable* st,
                          int select);
+float* gui_emitQuadCi(float* attr, const float* rect, float colorIndex);
+float* gui_emitText(TxfDrawState*, float* attr, const char* text, uint32_t len);
 void*  gui_areaTree(const GuiArea* areas, int count);
 const GuiArea* gui_pick(const void* tree, const GuiArea* areas,
                         uint16_t x, uint16_t y);

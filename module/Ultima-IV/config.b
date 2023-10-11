@@ -1,7 +1,8 @@
 module [
     author: "xu4 developers"
     about: {{
-        Ultima IV with original graphics.
+        Ultima IV with original EGA graphics and music by
+        Markus Brenner (Minstrel Dragon).
     }}
     version: "1.3"
     rules: 'Ultima-IV

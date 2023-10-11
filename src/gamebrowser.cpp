@@ -25,14 +25,25 @@ extern "C" {
 
 enum GuiBufferRegions {
     REGION_PANEL,
+    REGION_POPUP,
     REGION_LIST
 };
+
+static inline bool insideArea(const GuiArea* area, int x, int y)
+{
+    return (x >= area->x && x < area->x2 &&
+            y >= area->y && y < area->y2);
+}
 
 void GameBrowser::renderBrowser(ScreenState* ss, void* data)
 {
     GameBrowser* gb = (GameBrowser*) data;
     WorkBuffer* work = gb->work;
 
+    if (gb->tipTimer) {
+        if (--gb->tipTimer == 0)
+            gb->updateWidgetTip(ss);
+    }
     if (work->dirty)
         gpu_updateWorkBuffer(xu4.gpu, GPU_DLIST_GUI, work);
 
@@ -57,22 +68,29 @@ void GameBrowser::renderBrowser(ScreenState* ss, void* data)
         gpu_guiSetOrigin(xu4.gpu, 0.0f, 0.0f);
         gpu_setScissor(NULL);
     }
+
+    if (gb->tipId >= 0)
+        gpu_drawTrisRegion(xu4.gpu, GPU_DLIST_GUI, work->region + REGION_POPUP);
 }
 
 GameBrowser::GameBrowser()
 {
-    int wsize[2];
+    int rsize[3];
 
     sel = selMusic = 0;
     buttonMode = 0;
     buttonDown = WID_NONE;
+    tipId      = WID_NONE;
+    tipTimer   = 0;
+    tipX = tipY = 0;
     listScroll = listScrollTarget = 0.0f;
     psizeList = 20.0f;
     atree = NULL;
 
-    wsize[0] = ATTR_COUNT * 6 * 400;
-    wsize[1] = ATTR_COUNT * 6 * 400;
-    work = gpu_allocWorkBuffer(wsize, 2);
+    rsize[REGION_PANEL] = ATTR_COUNT * 6 * 100;
+    rsize[REGION_POPUP] = ATTR_COUNT * 6 * 300;
+    rsize[REGION_LIST]  = ATTR_COUNT * 6 * 400;
+    work = gpu_allocWorkBuffer(rsize, 3);
 }
 
 GameBrowser::~GameBrowser()
@@ -107,6 +125,56 @@ float GameBrowser::calcScrollTarget()
         }
     }
     return listScrollTarget = targ;
+}
+
+void GameBrowser::updateWidgetTip(const ScreenState* ss)
+{
+    // Similar to screenMousePos().
+    int x = tipX - ss->aspectX;
+    int y = (ss->displayH - tipY) - ss->aspectY;
+
+    tipId = WID_NONE;
+    const GuiArea* area = gbox + WI_LIST;
+    if (insideArea(area, x, y)) {
+        int n = listRowAt(area, y);
+        if (n >= 0 && n < (int) modFormat.used) {
+            int len;
+            const char* about = sst_stringL(&infoList[n].modi, MI_ABOUT, &len);
+            //printf("about: %s\n", about);
+            if (len > 290)
+                len = 290;
+            if (about[len-1] == '\n')
+                --len;
+
+            n = ss->displayW / 3;
+            if (x > n)
+                x = n;
+
+            {
+            float rect[4];
+            TxfDrawState ds;
+            ds.fontTable = ss->fontTable;
+            float ox = float(x);
+            float oy = float(y) - (itemHeightP * 1.3f);
+            txf_begin(&ds, 0, psizeList * 0.66f, ox, oy);
+            ds.colorIndex = COL_WHITE;
+
+            float pad = psizeList * 0.3f;
+            float* attr = gpu_beginRegion(work, REGION_POPUP);
+            float* astart = attr;
+            attr += 6 * ATTR_COUNT;
+            attr = gui_emitText(&ds, attr, about, len);
+            rect[0] = ox - pad;
+            rect[1] = ds.y - pad;
+            rect[2] = (ds.xMax - ox) + pad + pad;
+            rect[3] = (oy + ds.lineSpacing - ds.y) + pad;
+            gui_emitQuadCi(astart, rect, COL_SD_BROWN);
+            gpu_endRegion(work, REGION_POPUP, attr);
+            }
+
+            tipId = WI_LIST;
+        }
+    }
 }
 
 #define NO_PARENT   255
@@ -412,7 +480,7 @@ void GameBrowser::generateListItems()
     ListDrawState ds;
     const GuiArea* area = gbox + WI_LIST;
     float* attr;
-    float rect[4], uvs[4];
+    float rect[4];
 
     ds.fontTable = screenState()->fontTable;
     txf_begin(&ds, 0, psizeList, 0.0f, 0.0f);
@@ -422,10 +490,6 @@ void GameBrowser::generateListItems()
     rect[1] = ds.lineSpacing * -(sel + 1) + descenderList;
     rect[2] = area->x2 - area->x;
     rect[3] = ds.lineSpacing;
-
-    gpu_guiClutUV(xu4.gpu, uvs, COL_LT_BLUE);
-    uvs[2] = uvs[0];
-    uvs[3] = uvs[1];
 
     ListCellStyle* cell = ds.cell;
     cell->tabStop   = 0.0f;
@@ -441,7 +505,7 @@ void GameBrowser::generateListItems()
     ds.psizeList = psizeList;
 
     attr = gpu_beginRegion(work, REGION_LIST);
-    attr = gpu_emitQuad(attr, rect, uvs);
+    attr = gui_emitQuadCi(attr, rect, COL_LT_BLUE);
     attr = gui_emitListItems(attr, &ds, &modFormat, sel);
 
     if (selMusic) {
@@ -453,9 +517,7 @@ void GameBrowser::generateListItems()
         txf_setFontSize(&ds, psizeList);
         ds.colorIndex = COL_LT_GREEN;
 
-        int quads = txf_genText(&ds, attr + 3, attr, ATTR_COUNT,
-                                (const uint8_t*) "c", 1);
-        attr += quads * 6 * ATTR_COUNT;
+        attr = gui_emitText(&ds, attr, "c", 1);
     }
     gpu_endRegion(work, REGION_LIST, attr);
 }
@@ -589,11 +651,16 @@ bool GameBrowser::keyPressed(int key)
     return false;
 }
 
-void GameBrowser::selectModule(const GuiArea* area, int screenY)
+int GameBrowser::listRowAt(const GuiArea* area, int screenY)
 {
     float y = screenY - listScroll - descenderList;
     float row = (float) (area->y2 - y) / itemHeightP;
-    int n = (int) row;
+    return (int) row;
+}
+
+void GameBrowser::selectModule(const GuiArea* area, int screenY)
+{
+    int n = listRowAt(area, screenY);
     if (n >= 0 && n < (int) modFormat.used) {
         if (infoList[n].category == MOD_SOUNDTRACK) {
             // Toggle selected soundrack.
@@ -671,13 +738,16 @@ bool GameBrowser::inputEvent(const InputEvent* ev)
 
         case IE_MOUSE_MOVE:
             if (buttonDown >= WI_OK) {
-                const GuiArea* box = gbox + buttonDown;
                 screenMousePos(ev, x, y);
-                if (x >= box->x && x < box->x2 &&
-                    y >= box->y && y < box->y2)
+                if (insideArea(gbox + buttonDown, x, y))
                     buttonMode = 1;
                 else
                     buttonMode = 0;
+            } else {
+                tipId = WID_NONE;
+                tipTimer = 24+5;   // ~1.2 seconds
+                tipX = ev->x;
+                tipY = ev->y;
             }
             break;
 

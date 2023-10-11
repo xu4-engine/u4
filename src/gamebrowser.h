@@ -40,6 +40,10 @@ private:
     uint16_t selMusic;          // 0 = none
     uint16_t buttonMode;
     int16_t  buttonDown;
+    int16_t  tipId;
+    uint16_t tipTimer;
+    uint16_t tipX;
+    uint16_t tipY;
     GuiArea gbox[ WI_COUNT ];
     void* atree;
     WorkBuffer* work;
@@ -55,6 +59,8 @@ private:
     void generateListItems();
     void animateScroll();
     float calcScrollTarget();
+    void updateWidgetTip(const ScreenState*);
+    int listRowAt(const GuiArea*, int screenY);
 
     static void renderBrowser(ScreenState* ss, void* data);
     static void displayReset(int, void*, void*);

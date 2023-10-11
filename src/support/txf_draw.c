@@ -76,6 +76,8 @@ const uint8_t* txf_controlChar(TxfDrawState* ds, const uint8_t* it,
 {
     if (*it == '\n')
     {
+        if (ds->xMax < ds->x)
+            ds->xMax = ds->x;
         ds->x = ds->marginL;
         ds->y -= ds->lineSpacing;
         ds->prev = 0;
@@ -112,6 +114,7 @@ void txf_begin(TxfDrawState* ds, int fontN, float pointSize, float x, float y)
     ds->lowChar = txf_controlChar;
     ds->prev    = NULL;
     ds->prScale = tf->pixelRange / tf->fontSize;
+    ds->xMax    =
     ds->x       = x;
     ds->y       = y;
     ds->psize   = pointSize;
@@ -240,6 +243,8 @@ int txf_genText(TxfDrawState* ds, float* uvs, float* vertex, int stride,
         }
     }
 
+    if (ds->xMax < ds->x)
+        ds->xMax = ds->x;
     return drawn;
 }
 

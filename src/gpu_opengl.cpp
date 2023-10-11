@@ -1036,8 +1036,8 @@ void gpu_drawGui(void* res, int list, int wid, int mode)
 void gpu_guiClutUV(void* res, float* uv, float colorIndex)
 {
     OpenGLResources* gr = (OpenGLResources*) res;
-    uv[0] = (colorIndex + 0.5f) / gr->guiTexSize[0];
-    uv[1] = 0.5f / gr->guiTexSize[1];
+    uv[0] = uv[2] = (colorIndex + 0.5f) / gr->guiTexSize[0];
+    uv[1] = uv[3] = 0.5f / gr->guiTexSize[1];
 }
 
 void gpu_guiSetOrigin(void* res, float x, float y)
@@ -1046,6 +1046,9 @@ void gpu_guiSetOrigin(void* res, float x, float y)
     glUniform3f(gr->glyphOrigin, x, y, 0.0f);
 }
 
+/*
+ * \param drawRect  Four values of (x, y, width, height).
+ */
 float* gpu_emitQuadPq(float* attr, const float* drawRect, const float* uvRect,
                       float texP, float texQ)
 {

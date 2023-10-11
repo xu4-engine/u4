@@ -35,6 +35,7 @@ struct TxfDrawState {
     TxfControlFunc lowChar;
     const TxfGlyph* prev;
     float prScale;
+    float xMax;
     float x;
     float y;
     float psize;
