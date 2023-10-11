@@ -130,10 +130,9 @@ static void button_size(SizeCon* size, TxfDrawState* ds, const uint8_t* text)
 
 static float* widget_button(float* attr, int wid, const GuiRect* wbox,
                             const SizeCon* scon, TxfDrawState* ds,
-                            const uint8_t* text)
+                            const char* text)
 {
     int textW;
-    int quadCount;
     float saveCol;
     float tx, ty;
     size_t tlen;
@@ -145,7 +144,7 @@ static float* widget_button(float* attr, int wid, const GuiRect* wbox,
     textW = scon->prefW - (int16_t) (1.2f * ds->psize);
     tx = (float) (wbox->x + ((wbox->w - textW) / 2));
     ty = (float) (wbox->y + wbox->h / 2) - ds->lineSpacing * 0.3f;
-    tlen = strlen((const char*) text);
+    tlen = strlen(text);
     saveCol = ds->colorIndex;
 
     for (i = 0; i < 2; ++i) {
@@ -158,8 +157,7 @@ static float* widget_button(float* attr, int wid, const GuiRect* wbox,
             ds->y = ty;
             ds->colorIndex = COL_BEIGE;
         }
-        quadCount = txf_genText(ds, attr + 3, attr, ATTR_COUNT, text, tlen);
-        attr += quadCount * 6 * ATTR_COUNT;
+        attr = gui_emitText(ds, attr, text, tlen);
     }
 
     ds->colorIndex = saveCol;
@@ -175,15 +173,11 @@ static void label_size(SizeCon* size, TxfDrawState* ds, const uint8_t* text)
 }
 
 static float* widget_label(float* attr, const GuiRect* wbox, TxfDrawState* ds,
-                           const uint8_t* text)
+                           const char* text)
 {
-    int quadCount;
-
     ds->x = (float) wbox->x;
     ds->y = (float) wbox->y - ds->tf->descender * ds->psize;
-    quadCount = txf_genText(ds, attr + 3, attr, ATTR_COUNT,
-                            text, strlen((const char*) text));
-    return attr + (quadCount * 6 * ATTR_COUNT);
+    return gui_emitText(ds, attr, text, strlen(text));
 }
 
 static void list_size(SizeCon* size, TxfDrawState* ds, int cols, int rows)
@@ -229,12 +223,11 @@ static const uint8_t* list_controlChar(TxfDrawState* ds, const uint8_t* it,
 float* gui_emitListItems(float* attr, ListDrawState* ds, StringTable* st,
                          int select)
 {
-    const uint8_t* strings = (const uint8_t*) sst_strings(st);
+    const char* strings = sst_strings(st);
     const StringEntry* it  = st->table;
     const StringEntry* end = it + st->used;
     const StringEntry* sel = it + select;
     TxfControlFunc origCtrl;
-    int quadCount;
 
     origCtrl = ds->lowChar;
     ds->lowChar = list_controlChar;
@@ -246,9 +239,7 @@ float* gui_emitListItems(float* attr, ListDrawState* ds, StringTable* st,
         ds->tabCount = 0;
         list_applyCellStyle(ds, 0);
 
-        quadCount = txf_genText(ds, attr + 3, attr, ATTR_COUNT,
-                                strings + it->start, it->len);
-        attr += quadCount * 6 * ATTR_COUNT;
+        attr = gui_emitText(ds, attr, strings + it->start, it->len);
     }
 
     ds->lowChar = origCtrl;
@@ -790,13 +781,13 @@ layout_done:
         case BUTTON_DT_S:
             gui_align(&wbox, lo, scon);
             attr = widget_button(attr, areaWid, &wbox, scon, ds,
-                                 (const uint8_t*) *dp++);
+                                 (const char*) *dp++);
             ++scon;
             break;
 
         case LABEL_DT_S:
             gui_align(&wbox, lo, scon);
-            attr = widget_label(attr, &wbox, ds, (const uint8_t*) *dp++);
+            attr = widget_label(attr, &wbox, ds, (const char*) *dp++);
             ++scon;
             break;
 
