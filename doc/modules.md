@@ -95,22 +95,34 @@ module [
         The Avatar must seek the holy grail in order to bring peace
         to the land.
     }}
-    version: "1.0-beta"
+    version: "1.0b"
     rules: 'Ultima-IV
 ]
 ```
 
-In extension modules the `rules` entry is a string that contains the base
+The `author` entry names the person (or group) who created the configuration
+scripts and packaged the module.  It does not refer to the creators of other
+assets (such as image or audio files) that get packaged.
+
+The `about` entry is shown as a tool tip in the game browser so it should
+be relatively short.  Try to keep it around 5 lines of 60 characters each.
+
+#### Game Rules
+
+The `rules` entry declares what built-in game rule system to use.
+The only existing rule system is `Ultima-IV`.
+
+For extension modules this entry is a string that contains the base
 module name and version separated by a slash.  For an extention of the
 previous examples the entry would look like this:
 
-    rules: "Quest-for-the-Grail/1.0-beta"
+    rules: "Quest-for-the-Grail/1.0b"
 
-
-### Module Versions
+#### Module Versions
 
 Versions are declared using strings.  A typical major/minor version should
-be used (e.g. "1.0").
+be used (e.g. "1.0").  If it's an Alpha or Beta append a lowercase 'a' or 'b'.
+This keeps the version short enough to fit in the game browser list.
 
 
 ### Data Blocks
@@ -119,7 +131,7 @@ The following 15 data blocks can be declared: armors, weapons, creatures,
 graphics, draw-lists, tileanim, layouts, maps, tile-rules, tileset,
 u4-save-ids, music, sound, vendors, ega-palette.
 
-> **_TODO_:** Document each data block.
+> **_NOTE_:** Most of these aren't documented yet as they are subject to change.
 
 
 #### music
@@ -167,22 +179,6 @@ Soundtrack Modules
 
 Soundtrack modules contain only a [music block](#music) in `config.b` and
 no other data declarations.
-
-
-Game Rules
-----------
-
-The only existing rule system is `Ultima-IV`.
-
-> **_NOTE_:** The following macros are not currently used as the code only
-  implements Ultima-IV.
-
-The xu4 program could be compiled to support a number of game rule systems.
-Each rule system would be enabled with a RULES_ macro.
-
-    RULES_U4
-    RULES_U5
-    RULES_DARK_MAGIC
 
 
 [CDI Package Format]: https://urlan.sourceforge.net/cdi-spec.html
