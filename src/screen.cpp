@@ -514,7 +514,7 @@ const vector<string>& screenGetGemLayoutNames() {
 
 const char** screenGetFilterNames() {
     static const char* filterNames[] = {
-        "point", "HQX", "xBR-lv2", NULL
+        "point", "HQX", "xBR-lv2", "xBRZ", NULL
     };
     return filterNames;
 }

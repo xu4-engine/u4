@@ -613,7 +613,8 @@ const char* gpu_init(void* res, int w, int h, int scale, int filter)
 
 
     // Create scaler shader.
-    if (filter == 1 && scale > 1) {
+    if (scale > 1) {
+    if (filter == 1) {
         if (scale > 4)
             scale = 4;
 
@@ -627,28 +628,41 @@ const char* gpu_init(void* res, int w, int h, int scale, int filter)
 
         gr->slocScMat = glGetUniformLocation(sh, "MVPMatrix");
         gr->slocScDim = glGetUniformLocation(sh, "TextureSize");
-        gr->slocScTex = glGetUniformLocation(sh, "Texture");
-        gr->slocScLut = glGetUniformLocation(sh, "LUT");
+        cmap          = glGetUniformLocation(sh, "Texture");
+        mmap          = glGetUniformLocation(sh, "LUT");
 
         glUseProgram(sh);
         glUniformMatrix4fv(gr->slocScMat, 1, GL_FALSE, m4_identity);
         glUniform2f(gr->slocScDim, (float) (w / scale), (float) (h / scale));
-        glUniform1i(gr->slocScTex, GTU_CMAP);
-        glUniform1i(gr->slocScLut, GTU_SCALER_LUT);
+        glUniform1i(cmap, GTU_CMAP);
+        glUniform1i(mmap, GTU_SCALER_LUT);
     }
-    else if (filter == 2 && scale > 1) {
+    else if (filter == 2) {
         gr->scaler = sh = glCreateProgram();
         if (compileSLFile(sh, "xbr-lv2.glsl", scale))
             return "xbr-lv2.glsl";
 
-        gr->slocScMat = 0;
         gr->slocScDim = glGetUniformLocation(sh, "TextureSize");
-        gr->slocScTex = glGetUniformLocation(sh, "Texture");
-        gr->slocScLut = 0;
+        cmap          = glGetUniformLocation(sh, "Texture");
 
         glUseProgram(sh);
         glUniform2f(gr->slocScDim, (float) (w / scale), (float) (h / scale));
-        glUniform1i(gr->slocScTex, GTU_CMAP);
+        glUniform1i(cmap, GTU_CMAP);
+    }
+    else if (filter == 3) {
+        gr->scaler = sh = glCreateProgram();
+        if (compileSLFile(sh, "xbrz-freescale.glsl", scale))
+            return "xbr-freescale.glsl";
+
+        mmap          = glGetUniformLocation(sh, "OutputSize");
+        gr->slocScDim = glGetUniformLocation(sh, "TextureSize");
+        cmap          = glGetUniformLocation(sh, "Texture");
+
+        glUseProgram(sh);
+        glUniform2f(mmap, (float) w, (float) h);
+        glUniform2f(gr->slocScDim, (float) (w / scale), (float) (h / scale));
+        glUniform1i(cmap, GTU_CMAP);
+    }
     }
 
 

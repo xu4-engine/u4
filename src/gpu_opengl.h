@@ -75,8 +75,6 @@ struct OpenGLResources {
     GLuint scaler;
     GLint  slocScMat;
     GLint  slocScDim;
-    GLint  slocScTex;
-    GLint  slocScLut;
 
     GLuint shadeColor;
     GLint  slocTrans;

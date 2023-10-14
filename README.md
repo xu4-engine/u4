@@ -103,7 +103,7 @@ The saved game files are stored in the settings directory.
 XU4 also accepts the following command line options:
 
         --filter <string>   Specify display filtering mode.
-                            (point, HQX, xBR-lv2)
+                            (point, HQX, xBR-lv2, xBRZ)
     -f, --fullscreen        Run in fullscreen mode.
     -h, --help              Print this message and quit.
     -i, --skip-intro        Skip the intro. and load the last saved game.
