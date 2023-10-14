@@ -26,24 +26,23 @@ Developer Builds
 The following libraries are required for all targets:
 
  - Boron 2.0.8
- - Faun 0.1.3
+ - Faun 0.1.4
     - Vorbis
  - PNG
 
 Allegro 5.2.7 (or later) is also required for Windows.  This is optional
-for Linux, which uses the src/glv Git submodule by default.
+for Linux, which uses the src/glv Git submodule (X11) by default.
 
-Linux distributions will provide the Allegro, Vorbis, & PNG libraries.
+Linux distributions will provide the PNG, Vorbis, & X11 libraries.
 Below are example install commands for a few flavors of Linux.
 
 Fedora:
 
-    sudo dnf install allegro5-devel libvorbis-devel libpng-devel
+    sudo dnf install libpng-devel libvorbis-devel libXcursor-devel
 
 Ubuntu:
 
-    sudo add-apt-repository ppa:allegro/5.2
-    sudo apt install liballegro5-dev libvorbis-dev libpng-dev
+    sudo apt install libpng-dev libvorbis-dev libxcursor-dev
 
 The Boron interpreter program is needed to build game modules.
 The static binaries can be downloaded from the
@@ -51,7 +50,7 @@ The static binaries can be downloaded from the
 
 There are three ways the Boron library can be obtained.  It can be built from
 [source](https://sourceforge.net/p/urlan/boron/code/ci/master/tree/)
-or a pre-built SDK can be downloaded from the
+or a pre-built x86_64 SDK can be downloaded from the
 [xu4 download](http://xu4.sourceforge.net/download.php#devel) page.
 On UNIX systems the following commands will checkout the source using Git,
 properly configure it for xu4, build `libboron.a`, and install it:
