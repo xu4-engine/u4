@@ -22,6 +22,7 @@
 DungeonView::DungeonView(int x, int y, int columns, int rows) : TileView(x, y, rows, columns)
 , screen3dDungeonViewEnabled(true)
 {
+    viewBottom = y + height;
     spotTrapRange = -1;
 
     black  = tileset->getByName(Tile::sym.black)->getId();
@@ -209,6 +210,11 @@ void DungeonView::drawInDungeon(const MapTile& mt, int x_offset, int distance, D
         int y_offset = std::max(0,(dscale[distance] - offset_adj) * offset_multiplier);
         int x = ((VIEWPORT_W * tileWidth / 2) + this->x) - (scaled->width() / 2);
         int y = ((VIEWPORT_H * tileHeight / 2) + this->y + y_offset) - (scaled->height() / 8);
+
+        // Clip VGA tiles at distance 0 to bottom of view.
+        int bottom = y + scaled->h;
+        if (bottom > viewBottom)
+            scaled->h -= bottom - viewBottom;
 
         Image::enableBlend(1);
         scaled->draw(x, y);

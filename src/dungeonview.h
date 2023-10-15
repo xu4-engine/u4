@@ -56,6 +56,7 @@ private:
     TileId up_ladder;
     TileId down_ladder;
     TileId updown_ladder;
+    int      viewBottom;
     int      spotTrapRange;
     uint32_t spotTrapTime;
     bool screen3dDungeonViewEnabled;
