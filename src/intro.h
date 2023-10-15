@@ -279,6 +279,7 @@ private:
     void compactTitle();
     void drawTitle();
     void getTitleSourceData();
+    void shufflePlot(AnimPlot*, int count);
     void skipTitles();
     std::vector<AnimElement> titles;            // list of title elements
     std::vector<AnimElement>::iterator title;   // current title element

@@ -1865,6 +1865,23 @@ void IntroController::getTitleSourceData()
 }
 
 
+void IntroController::shufflePlot(AnimPlot* it, int count)
+{
+    AnimPlot tmp;
+    AnimPlot* randomPick;
+    AnimPlot* last = it + count - 1;
+
+    for (; it != last; ++it) {
+        randomPick = it + xu4_randomFx(count--);
+        if (randomPick != it) {
+            tmp = *it;
+            *it = *randomPick;
+            *randomPick = tmp;
+        }
+    }
+}
+
+
 //
 // Update the title element, drawing the appropriate frame of animation
 //
@@ -2007,7 +2024,7 @@ bool IntroController::updateTitle()
             // blit src to the canvas in a random pixelized manner
             title->animStep = animStepTarget;
 
-            random_shuffle(title->plotData.begin(), title->plotData.end());
+            shufflePlot(title->plotData.data(), title->plotData.size());
             title->destImage->fillRect(1, 1, title->rw, title->rh, 0, 0, 0);
 
             // @TODO: animStepTarget (for this loop) should not exceed
