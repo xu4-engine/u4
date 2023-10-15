@@ -16,6 +16,7 @@ XU4
 > such encounters only by strategic use of weapons and terrain.
 > Earthly victories over seemingly impossible odds lead to the final
 > conflict, where the ultimate challenge -- the self -- awaits...
+>
 >   -- Back cover of Ultima IV box
 
 XU4 is a remake of the computer game Ultima IV.  The goal is to make
@@ -39,8 +40,11 @@ and vice versa, at least in theory.
 Status
 ------
 
-The game is fully playable and can display the original DOS EGA and
+The game is fully playable and can use the original DOS EGA and
 upgraded VGA graphics.
+
+Some optional features have been added such as reagent mixing similar to
+Ultima 5, speech for non-player characters, and unique spell sounds.
 
 Some thoughts for possible improvements:
  - Ultima 5 style aiming in combat (i.e. allow angle shots)
@@ -70,28 +74,27 @@ Running
 -------
 
 The actual data files from Ultima 4 are loaded at runtime, which means
-that a copy of Ultima 4 for DOS must be present at runtime.
-Fortunately, Ultima IV is available as closed-source freeware from
-https://www.gog.com/game/ultima_4.
+that a copy of Ultima 4 for DOS must be present.  Fortunately, Ultima IV is
+available as closed-source freeware from [www.gog.com].
 
-If you have the optional u4upgrad.zip, place it in the same directory as the
-u4 executable.  XU4 will read the Ultima IV data files straight out of the
-zipfile.  To use it open the game browser with the Escape key and select
-the `U4-Upgrade` module.
+Some graphics and sounds are stored in module files which have a `.mod`
+extension.  Soundtrack modules that only contain music streams are also
+available.  One game module and one soundtrack module can be selected using
+the Game Module Browser, which is opened with the Escape key.  Modules can be
+found on the [XU4 Download] page.
 
-XU4 searches for the zipfiles, or the unpacked contents of the
-zipfiles in the following places:
+If you have the optional u4upgrad.zip XU4 can read the data files straight
+out of the zipfile.  To use it select the U4-Upgrade module.
+
+XU4 searches for data, modules and zipfiles in the following places:
  - The current directory when xu4 is run
- - A subdirectory named `ultima4` of the current directory
- - On Linux: `$HOME/.local/share/xu4`
- - On macOS: `$HOME/Library/Application Support/xu4`
- - On UNIX systems: `/usr/share/xu4` & `/usr/local/share/xu4`
+ - On Linux: `$HOME/.local/share/xu4`, `/usr/share/xu4` & `/usr/local/share/xu4`
  - On Windows: `%LOCALAPPDATA%\xu4`
 
-The zipfile doesn't need to be unpacked, but if it is, the game can handle
-uppercase or lowercase filenames even on case-sensitive filesystems,
-so it doesn't matter whether the files are named AVATAR.EXE or
-avater.exe or even Avatar.exe.
+The DOS game zipfiles (ultima4.zip & u4upgrad.zip) don't need to be unpacked,
+but if they are the contents may be in a subdirectory named `ultima4` or `u4`.
+
+### Settings & Options
 
 At the title screen, a configuration menu can be accessed by pressing
 'c'.  Here, the screen scale, filter, volume and other settings can be
@@ -199,3 +202,5 @@ interested in helping.
 
 
 [Allegro]: https://liballeg.org/
+[www.gog.com]: https://www.gog.com/game/ultima_4
+[XU4 Download]: https://xu4.sourceforge.net/download.php#release
