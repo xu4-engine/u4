@@ -739,8 +739,9 @@ static void gameSpellCastVoc(int spell, int caster, int subject, int spellMp) {
     const int spellCount = 26;
     int s0 = spell - 'a';
     if(s0 < spellCount) {
-        int sexOffset = (pc->getSex() == SEX_MALE) ? spellCount+1 : 1;
-        soundSpeakLine(VOICE_SPELL, sexOffset + s0, true);
+        if (pc->getSex() == SEX_MALE)
+            s0 += spellCount;
+        soundSpeakLine(VOICE_SPELL, s0, true);
     }
 
     gameSpellEffect(spell, subject, SOUND_MAGIC);

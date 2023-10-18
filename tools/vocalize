@@ -116,7 +116,7 @@ if vocalize [
 	tts-script: func [vlines] [
 		spec: load vlines
 		out: make string! 2048
-		either eq? 'context first spec [
+		either ne? 'name first spec [
 			foreach it spec [
 				switch type? it [
 					block! [
@@ -200,7 +200,7 @@ if process [
 	]
 
 	spec: load join vstream %.lines
-	either eq? 'context first spec [
+	either ne? 'name first spec [
 		foreach it spec [
 			switch type? it [
 				block! [sox-process context it]
