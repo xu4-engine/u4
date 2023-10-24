@@ -1157,20 +1157,34 @@ ConfigBoron::~ConfigBoron()
 
 extern "C" int u4find_pathc(const char*, const char*, char*, size_t);
 
+static int findModule(const char* name, char* path, size_t pathMax) {
+    int len = strlen(name) - 4;
+    const char* ext =
+        (len > 0 && strcmp(name + len, ".mod") == 0) ? "" : ".mod";
+    return u4find_pathc(name, ext, path, pathMax);
+}
+
 // Create Config service.
 Config* configInit(const char* module, const char* soundtrack) {
-    const char* ext;
+    int renderFound, stFound;
     char rpath[512];
     char mpath[512];
+    char spath[512];
 
-    int renderFound = u4find_pathc("render.pak", "", rpath, sizeof(rpath));
+    renderFound = u4find_pathc("render.pak", "", rpath, sizeof(rpath));
 
-    int len = strlen(module) - 4;
-    ext = (len > 0 && strcmp(module + len, ".mod") == 0) ? "" : ".mod";
-    if (! u4find_pathc(module, ext, mpath, sizeof(mpath)))
+    if (! findModule(module, mpath, sizeof(mpath)))
         errorFatal("Cannot find module %s", module);
 
-    return new ConfigBoron(renderFound ? rpath : NULL, mpath, soundtrack);
+    stFound = 0;
+    if (soundtrack && soundtrack[0] != '\0') {
+        stFound = findModule(soundtrack, spath, sizeof(spath));
+        if (! stFound)
+            errorWarning("Cannot find module %s", soundtrack);
+    }
+
+    return new ConfigBoron(renderFound ? rpath : NULL, mpath,
+                           stFound ? spath : NULL);
 }
 
 void configFree(Config* conf) {
@@ -1221,18 +1235,23 @@ none:
     return buf;
 }
 
-void Config::changeSoundtrack(const char* musicPath) {
+void Config::changeSoundtrack(const char* modName) {
     Module& mod = static_cast<ConfigBoron*>(this)->mod;
     int layer = mod.modulePaths.used - 1;
 
     if (mod.category[layer] == MOD_SOUNDTRACK)
         mod_removeLayer(&mod);
 
-    if (musicPath && musicPath[0] != '\0') {
+    if (modName && modName[0] != '\0') {
+        char spath[512];
         const char* error;
-        error = mod_addLayer(&mod, musicPath, NULL, NULL, NULL);
+
+        if (findModule(modName, spath, sizeof(spath)))
+            modName = spath;
+
+        error = mod_addLayer(&mod, modName, NULL, NULL, NULL);
         if (error)
-            fprintf(stderr, "%s (%s)\n", error, musicPath);
+            fprintf(stderr, "%s (%s)\n", error, modName);
     }
 }
 
