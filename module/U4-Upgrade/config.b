@@ -6,7 +6,7 @@ module [
     }}
     author: "xu4 team"
     version: "1.0"
-    rules: "Ultima-IV/1.3"
+    rules: "Ultima-IV/1.4"
 ]
 
 include %graphics.b

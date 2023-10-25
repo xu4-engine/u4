@@ -4,7 +4,7 @@ module [
         Ultima IV with original EGA graphics and music by
         Markus Brenner (Minstrel Dragon).
     }}
-    version: "1.3"
+    version: "1.4"
     rules: 'Ultima-IV
 ]
 
