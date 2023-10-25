@@ -1,5 +1,15 @@
 		XU4 Change Log
 
+v1.4 - 2023-10-27
+  - Support unique spell effect sounds & spoken casting incantations.
+  - Improved game browser UI.  The soundtrack can be changed without a reset.
+  - Reset dungeons on exit to world.
+  - Poison & sleep effects are applied more like the original game.
+  - Play sounds & flash player stats for more damage effects.
+  - Added sounds for mixture fizzle & torch ignite.
+  - Added xBRZ scaling filter.
+  - Fixed a few bugs.
+
 v1.3 - 2023-06-24
   - Support NPC voice streams (provided by a new U4-Recreated module).
   - Game can now be paused with Alt-P & Pause keys.
