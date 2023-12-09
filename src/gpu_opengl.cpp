@@ -855,8 +855,10 @@ void gpu_drawTextureScaled(void* res, uint32_t tex)
 
     if (gr->scaler) {
         glUseProgram(gr->scaler);
-        glActiveTexture(GL_TEXTURE0 + GTU_SCALER_LUT);
-        glBindTexture(GL_TEXTURE_2D, gr->scalerLut);
+        if (gr->scalerLut) {
+            glActiveTexture(GL_TEXTURE0 + GTU_SCALER_LUT);
+            glBindTexture(GL_TEXTURE_2D, gr->scalerLut);
+        }
     } else {
         glUseProgram(gr->shadeColor);
         glUniformMatrix4fv(gr->slocTrans, 1, GL_FALSE, m4_identity);
