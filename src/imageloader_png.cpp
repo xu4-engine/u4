@@ -47,6 +47,8 @@ Image* loadImage_png(U4FILE *file) {
     }
 
     if (setjmp(png_jmpbuf(png_ptr))) {
+cleanup:
+        delete [] raw;
         png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
         return NULL;
     }
@@ -120,7 +122,6 @@ Image* loadImage_png(U4FILE *file) {
             delete [] palette;
     }
 
-cleanup:
     delete [] raw;
     png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
     return image;
