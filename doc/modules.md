@@ -80,6 +80,9 @@ This would create a `Quest-for-the-Grail.mod` file in the current directory.
 
 The pack-xu4 `-h` option will print some brief usage information.
 
+> **_NOTE_:** The tools needed to build modules are available together in the
+[Module Tools] archive.
+
 
 Configuration
 -------------
@@ -182,4 +185,5 @@ no other data declarations.
 
 
 [CDI Package Format]: https://urlan.sourceforge.net/cdi-spec.html
+[Module Tools]: https://xu4.sourceforge.net/download.php#devel
 [rFX]: https://raylibtech.itch.io/rfxgen
