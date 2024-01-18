@@ -1,5 +1,5 @@
 #!/usr/bin/boron -s
-; Create NPC voice .ogg files using Coqui (or Larynx) TTS & oggenc.
+; Create NPC voice .ogg files using Coqui or Piper TTS & oggenc.
 ;
 ; A stream.lines file and stream/ directory must be present.
 
@@ -14,6 +14,7 @@ usage: {{
 	  -p          Process existing .wav files only
 	  -s <name>   Process a single character only
 	  -t <script> Run custom script in tts container
+	  --version   Print version and exit
 }}
 
 vocalize: true
@@ -33,6 +34,7 @@ forall args [
 		"-p" [process: true  vocalize: encode:  false]
 		"-s" [single: second ++ args]
 		"-t" [script: second ++ args]
+		"--version" [print "vocalize 1.1" quit]
 		[vstream: first args]
 	]
 ]
@@ -77,15 +79,24 @@ gvars: [
 generate: func [
 	spec context!
 	out  string!
+	execute-out string!
 	/extern voice line model name id2 fw
 ][
 	bind gvars spec
 
 	either path? vpath: spec/voice [
-		; Use Coqui TTS if voice is path! (model_name/speaker_idx)
-		model: slice vpath -1
-		spec/voice: last vpath
-		cmd: {tts --model_name $M --speaker_idx $V --text "$L" --out_path /wav/@/$N-$I-$F.wav^/}
+		either eq? 'piper vpath/1 [
+			model: vpath/2
+			ifn spec/voice: vpath/3 [spec/voice: '0']
+			cmd: {echo "$L" | piper -m $PIPER_VDIR/$M -s $V -f @/$N-$I-$F.wav^/}
+			out: execute-out
+		][
+			; Use Coqui TTS if voice is path! (model_name/speaker_idx)
+			vpath: to-string vpath
+			model: slice vpath pos: find/last vpath '/'
+			spec/voice: next pos
+			cmd: {tts --model_name $M --speaker_idx $V --text "$L" --out_path /wav/@/$N-$I-$F.wav^/}
+		]
 	][
 		; Otherwise use Larynx
 		cmd: {larynx -v $V "$L" >/wav/@/$N-$I-$F.wav^/}
@@ -98,8 +109,8 @@ generate: func [
 			fw: first-words line
 			append out construct cmd gvars
 		][
-			append out construct
-				{ln -s ../sq_blip_22k.wav /wav/@/$N-$I-blip.wav^/} gvars
+			append execute-out construct
+				{ln -s ../sq_blip_22k.wav @/$N-$I-blip.wav^/} gvars
 		]
 		++ id
 	]
@@ -108,42 +119,48 @@ generate: func [
 ;---------------------------------------
 
 if vocalize [
-	; Run Coqui or Larynx TTS container to generate Wave files.
+	; Run Piper, Coqui or Larynx TTS container to generate Wave files.
 
-	time: construct slice mold now/date 11,8 [':' none]		; date +%H%M%S
-	script: join "vocal-" time
+	spec: load join vstream %.lines
 
-	tts-script: func [vlines] [
-		spec: load vlines
-		out: make string! 2048
-		either ne? 'name first spec [
-			foreach it spec [
-				switch type? it [
-					block! [
-						if all [single ne? it/name single] [continue]
-						generate context it out
-					]
-					paren! [do it]
-			    ]
+	tts-script: make string! 2048
+	tts-exec:   make string! 1024
+	either ne? 'name first spec [
+		foreach it spec [
+			switch type? it [
+				block! [
+					if all [single ne? it/name single] [continue]
+					generate context it tts-script tts-exec
+				]
+				paren! [do it]
 			]
-		][
-			generate context spec out
 		]
-		out
+	][
+		generate context spec tts-script tts-exec
 	]
 
-	write join %/tmp/ script tts-script join vstream %.lines
+	time: construct slice mold now/date 11,8 [':' none]		; date +%H%M%S
 
-	ifn zero? execute join "podman container exists " cname [
-		voice_dir: any [getenv "VOICE_DIR" current-dir]
-		podman
+	ifn empty? tts-exec [
+		write fn: join %/tmp/vocal_exec- time tts-exec
+		cmd: join "bash " fn
+		either dry [print cmd] [execute cmd]
+	]
+
+	ifn empty? tts-script [
+		write join %/tmp/vocal- time tts-script
+
+		ifn zero? execute join "podman container exists " cname [
+			voice_dir: any [getenv "VOICE_DIR" current-dir]
+			podman
 		;	"& run -d -it --name=@ -v=#:/wav:z xu4/larynx /bin/bash"
 			"& run -d -it --name=@ -v=#:/wav:z dev/coqui-tts /bin/bash"
 		;	"& run -d -it --name=@ -v=#:/wav:z --entrypoint= xu4/coqui-tts /bin/sh"
+		]
+		podman "& cp /tmp/$ @:/tmp"
+		podman "& exec -it @ /bin/bash /tmp/$"
+		; podman "& stop @"
 	]
-	podman "& cp /tmp/$ @:/tmp"
-	podman "& exec -it @ /bin/bash /tmp/$"
-	; podman "& stop @"
 ]
 
 if process [
