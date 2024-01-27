@@ -340,6 +340,7 @@ static void initDungeonRoom(Dungeon *dng, int room) {
 static bool loadDungeonMap(Map *map, U4FILE *uf, FILE *sav) {
     Dungeon *dungeon = dynamic_cast<Dungeon*>(map);
     const UltimaSaveIds* usaveIds = xu4.config->usaveIds();
+    char padding[7];
     unsigned int i, j;
     uint8_t* rawMap;
     size_t bytes;
@@ -419,7 +420,7 @@ static bool loadDungeonMap(Map *map, U4FILE *uf, FILE *sav) {
         u4fread(dungeon->rooms[i].party_west_start_x, sizeof(dungeon->rooms[i].party_west_start_x), 1, uf);
         u4fread(dungeon->rooms[i].party_west_start_y, sizeof(dungeon->rooms[i].party_west_start_y), 1, uf);
         u4fread(room_tiles, sizeof(room_tiles), 1, uf);
-        u4fread(dungeon->rooms[i].buffer, sizeof(dungeon->rooms[i].buffer), 1, uf);
+        u4fread(padding, 7, 1, uf);
 
         /* translate each creature tile to a tile id */
         uint8_t* ct = dungeon->rooms[i].creature_tiles;
