@@ -111,7 +111,7 @@ Offset | Tile  | Description
 0x4700 |142-143| Storm (2)
 0x4800 |144-147| Rat (4)
 0x4a00 |148-151| Bat (4)
-0x4c00 |152-156| Giant Spider (4)
+0x4c00 |152-155| Giant Spider (4)
 0x4e00 |156-159| Ghost (4)
 0x5000 |160-163| Slime (4)
 0x5200 |164-167| Troll (4)
