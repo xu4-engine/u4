@@ -76,9 +76,9 @@ int map_getRelativeDirection(const Coords& a, const Coords& b, const Map *map) {
         else if (abs(int(c.x - b.x)) > abs(int(c.x - map->width - b.x)))
             c.x -= map->width;
 
-        if (abs(int(c.y - b.y)) > abs(int(c.y + map->width - b.y)))
+        if (abs(int(c.y - b.y)) > abs(int(c.y + map->height - b.y)))
             c.y += map->height;
-        else if (abs(int(c.y - b.y)) > abs(int(c.y - map->width - b.y)))
+        else if (abs(int(c.y - b.y)) > abs(int(c.y - map->height - b.y)))
             c.y -= map->height;
 
         dx = c.x - b.x;
