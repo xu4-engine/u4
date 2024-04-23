@@ -24,6 +24,7 @@ NOTE: The ultima4.zip (or ultima4-1.01.zip) must be installed manually.
 mv boron-2.0.8 boron
 mkdir boron/include/boron
 cp boron/include/*.h boron/include/boron
+sed -i -e 's~<zlib.h>~<zlib.h>\n#define USE_ZLIB~' -e 's~ZLIB_H~USE_ZLIB~' boron/eval/compress.c
 sed -i s~DR-1.0~%{version}~ src/Makefile.common
 sed -i -e 's~-Isupp~-I../boron/include -Isupp~' -e 's~-lboron~-L../boron -lboron~' -e 's~-O3~-fPIE -O3~' src/Makefile
 
