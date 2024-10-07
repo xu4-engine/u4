@@ -15,7 +15,8 @@ enum ItemClass {
     IC_ARMOR,
     IC_WEAPON,
     IC_REAGENT,
-    IC_PARTY
+    IC_PARTY,
+    IC_VIRTUE
 };
 
 enum ItemMiscId {
@@ -182,15 +183,42 @@ CFUNC(cf_damagePc)
 
 /*-cf-
     karma
-        action  int!
+        virtue  word!/block!
+        amount  int!
     return: unset!
 
-    Adjust avatar's karma level for an action.
+    Adjust avatar's karma levels.
 */
 CFUNC(cf_karma)
 {
-    (void) ut;
-    c->party->adjustKarma((KarmaAction) ur_int(a1));
+    UBlockIt bi;
+    uint32_t virtues = 0;
+    int adj = ur_int(a1+1);
+
+    if (! adj)
+        goto done;
+
+    if (ur_is(a1, UT_BLOCK)) {
+        ur_blockIt(ut, &bi, a1);
+    } else {
+        bi.it  = a1;
+        bi.end = a1 + 1;
+    }
+
+    // Convert virtue names to bitmask.
+    ur_foreach(bi) {
+        if (ur_is(bi.it, UT_WORD)) {
+            int id = xu4.config->scriptItemId(ur_atom(bi.it));
+            int ic = SCRIPT_ITEM_CLASS(id);
+            if (ic != IC_VIRTUE)
+                goto done;
+            virtues |= 1 << SCRIPT_ITEM_INDEX(id);
+        }
+    }
+
+    c->party->adjustVirtues(virtues, adj);
+
+done:
     ur_setId(res, UT_UNSET);
     return UR_OK;
 }
@@ -461,7 +489,7 @@ CFUNC(cf_inputPlayer)
         'attr        word!
     return: Specified value.
 
-    Get a party attribute (food, gold, keys, members, or transport).
+    Get a party attribute (food, gold, keys, members, transport, or virtue).
 */
 CFUNC(cf_party)
 {
@@ -525,6 +553,8 @@ CFUNC(cf_party)
                 return ur_error(ut, UR_ERR_SCRIPT,
                                 "Invalid party attribute '%s", ur_wordCStr(a1));
         }
+    } else if (ic == IC_VIRTUE) {
+        n = c->saveGame->karma[id];
     }
 
     ur_setId(res, UT_INT);
@@ -842,7 +872,7 @@ static const char pfFuncSpecs[] =
     "vo n\n"
     "relocate a coord!\n"
     "damage-pc n int! hp int!\n"
-    "karma n int!\n"
+    "karma a word!/block! n int!\n"
     "inn-sleep\n"
     "cursor n logic!\n"
     "view-stats n int!\n"
@@ -898,9 +928,10 @@ static UIndex script_init(UThread* ut, const UCell* blkC)
     }
 
     // Create a context which will map item names to internal script ids.
-    // This simplifies the implementation of party, add-items & remove-items.
+    // This simplifies the implementation of karma, party, add-items &
+    // remove-items.
 
-    const int icount = 38;
+    const int icount = 46;
     UAtom atoms[icount];
     UIndex itemIdN = ur_makeContext(ut, icount);
     ur_hold(itemIdN);   // Hold forever.
@@ -918,7 +949,10 @@ static UIndex script_init(UThread* ut, const UCell* blkC)
         "ash ginseng garlic silk moss\n"
         "pearl nightshade mandrake\n"
 
-        "members transport\n",
+        "members transport\n"
+
+        "honesty compassion valor justice sacrifice honor\n"
+        "spirituality humility\n",
         atoms);
 
     UBuffer* ctx = ur_buffer(itemIdN);
@@ -927,6 +961,7 @@ static UIndex script_init(UThread* ut, const UCell* blkC)
     enumItems(ctx, atoms+13, IC_WEAPON,  1, 15);
     enumItems(ctx, atoms+28, IC_REAGENT, 0,  8);
     enumItems(ctx, atoms+36, IC_PARTY,   0,  2);
+    enumItems(ctx, atoms+38, IC_VIRTUE,  0,  8);
     ur_ctxSort(ctx);
     assert(ctx->used == icount);
 

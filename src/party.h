@@ -169,6 +169,7 @@ public:
     void adjustFood(int food);
     void adjustGold(int gold);
     void adjustKarma(KarmaAction action);
+    void adjustVirtues(uint32_t virtues, int adjust);
     void applyEffect(int player, Map*, TileEffect effect);
     bool attemptElevation(Virtue virtue);
     bool burnTorch(int turns = 1);
@@ -210,6 +211,7 @@ public:
     int memberIndex(Creature* person) const;
 
 private:
+    bool virtueIncreaseTimeout();
     void initTransport(const MapTile& tile);
     void syncMembers();
     PartyMemberVector members;

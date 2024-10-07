@@ -516,138 +516,149 @@ void Party::adjustGold(int gold) {
     notifyOfChange();
 }
 
+/*
+ * Check if enough time has passed since last virtue award if a karma
+ * action is time limited.
+ */
+bool Party::virtueIncreaseTimeout() {
+    if (((saveGame->moves / 16) >= 0x10000) ||
+        (((saveGame->moves / 16) & 0xFFFF) != saveGame->lastvirtue)) {
+        saveGame->lastvirtue = (saveGame->moves / 16) & 0xFFFF;
+        return true;
+    }
+    return false;
+}
+
 /**
  * Adjusts the avatar's karma level for the given action.  Notify
- * observers with a lost eighth event if the player has lost
- * avatarhood.
+ * observers with a lost eighth event if the player has lost avatarhood.
  */
 void Party::adjustKarma(KarmaAction action) {
-    int timeLimited = 0;
-    int v, newKarma[VIRT_MAX], maxVal[VIRT_MAX];
-
-    /*
-     * make a local copy of all virtues, and adjust it according to
-     * the game rules
-     */
-    for (v = 0; v < VIRT_MAX; v++) {
-        newKarma[v] = saveGame->karma[v] == 0 ? 100 : saveGame->karma[v];
-        maxVal[v] = saveGame->karma[v] == 0 ? 100 : 99;
-    }
+#define VMASK_1(a)      (1<<a)
+#define VMASK_2(a,b)    ((1<<a) | (1<<b))
+#define VMASK_3(a,b,c)  ((1<<a) | (1<<b) | (1<<c))
 
     switch (action) {
     case KA_FOUND_ITEM:
-        AdjustValueMax(newKarma[VIRT_HONOR], 5, maxVal[VIRT_HONOR]);
+        adjustVirtues(VMASK_1(VIRT_HONOR), 5);
         break;
     case KA_STOLE_CHEST:
-        AdjustValueMin(newKarma[VIRT_HONESTY], -1, 1);
-        AdjustValueMin(newKarma[VIRT_JUSTICE], -1, 1);
-        AdjustValueMin(newKarma[VIRT_HONOR], -1, 1);
+        adjustVirtues(VMASK_3(VIRT_HONESTY, VIRT_JUSTICE, VIRT_HONOR), -1);
         break;
     case KA_GAVE_ALL_TO_BEGGAR:
         //  When donating all, you get +3 HONOR in Apple 2, but not in in U4DOS.
         //  TODO: Make this a configuration option.
-        //  AdjustValueMax(newKarma[VIRT_HONOR], 3, maxVal[VIRT_HONOR]);
+        //  adjustVirtues(VMASK_1(VIRT_HONOR), 3);
     case KA_GAVE_TO_BEGGAR:
         //  In U4DOS, we only get +2 COMPASSION, no HONOR or SACRIFICE even if
         //  donating all.
-        timeLimited = 1;
-        AdjustValueMax(newKarma[VIRT_COMPASSION], 2, maxVal[VIRT_COMPASSION]);
+        if (virtueIncreaseTimeout())
+            adjustVirtues(VMASK_1(VIRT_COMPASSION), 2);
         break;
     case KA_BRAGGED:
-        AdjustValueMin(newKarma[VIRT_HUMILITY], -5, 1);
+        adjustVirtues(VMASK_1(VIRT_HUMILITY), -5);
         break;
     case KA_HUMBLE:
-        timeLimited = 1;
-        AdjustValueMax(newKarma[VIRT_HUMILITY], 10, maxVal[VIRT_HUMILITY]);
+        if (virtueIncreaseTimeout())
+            adjustVirtues(VMASK_1(VIRT_HUMILITY), 10);
         break;
     case KA_HAWKWIND:
     case KA_MEDITATION:
-        timeLimited = 1;
-        AdjustValueMax(newKarma[VIRT_SPIRITUALITY], 3, maxVal[VIRT_SPIRITUALITY]);
+        if (virtueIncreaseTimeout())
+            adjustVirtues(VMASK_1(VIRT_SPIRITUALITY), 3);
         break;
     case KA_BAD_MANTRA:
-        AdjustValueMin(newKarma[VIRT_SPIRITUALITY], -3, 1);
+        adjustVirtues(VMASK_1(VIRT_SPIRITUALITY), -3);
         break;
     case KA_ATTACKED_GOOD:
-        AdjustValueMin(newKarma[VIRT_COMPASSION], -5, 1);
-        AdjustValueMin(newKarma[VIRT_JUSTICE], -5, 1);
-        AdjustValueMin(newKarma[VIRT_HONOR], -5, 1);
+        adjustVirtues(VMASK_3(VIRT_COMPASSION, VIRT_JUSTICE, VIRT_HONOR), -5);
         break;
     case KA_FLED_EVIL:
-        AdjustValueMin(newKarma[VIRT_VALOR], -2, 1);
+        adjustVirtues(VMASK_1(VIRT_VALOR), -2);
         break;
     case KA_HEALTHY_FLED_EVIL:
-        AdjustValueMin(newKarma[VIRT_VALOR], -2, 1);
-        AdjustValueMin(newKarma[VIRT_SACRIFICE], -2, 1);
+        adjustVirtues(VMASK_2(VIRT_VALOR, VIRT_SACRIFICE), -2);
         break;
     case KA_KILLED_EVIL:
-        AdjustValueMax(newKarma[VIRT_VALOR], xu4_random(2), maxVal[VIRT_VALOR]); /* gain one valor half the time, zero the rest */
+         /* gain one valor half the time, zero the rest */
+        if (xu4_random(2))
+            adjustVirtues(VMASK_1(VIRT_VALOR), 1);
         break;
     case KA_FLED_GOOD:
-        AdjustValueMax(newKarma[VIRT_COMPASSION], 2, maxVal[VIRT_COMPASSION]);
-        AdjustValueMax(newKarma[VIRT_JUSTICE], 2, maxVal[VIRT_JUSTICE]);
+        adjustVirtues(VMASK_2(VIRT_COMPASSION, VIRT_JUSTICE), 2);
         break;
     case KA_SPARED_GOOD:
-        AdjustValueMax(newKarma[VIRT_COMPASSION], 1, maxVal[VIRT_COMPASSION]);
-        AdjustValueMax(newKarma[VIRT_JUSTICE], 1, maxVal[VIRT_JUSTICE]);
+        adjustVirtues(VMASK_2(VIRT_COMPASSION, VIRT_JUSTICE), 1);
         break;
+#if 0
+    // These are handled by the vendor script.
     case KA_DONATED_BLOOD:
-        AdjustValueMax(newKarma[VIRT_SACRIFICE], 5, maxVal[VIRT_SACRIFICE]);
+        adjustVirtues(VMASK_1(VIRT_SACRIFICE), 5);
         break;
     case KA_DIDNT_DONATE_BLOOD:
-        AdjustValueMin(newKarma[VIRT_SACRIFICE], -5, 1);
+        adjustVirtues(VMASK_1(VIRT_SACRIFICE), -5);
         break;
     case KA_CHEAT_REAGENTS:
-        AdjustValueMin(newKarma[VIRT_HONESTY], -10, 1);
-        AdjustValueMin(newKarma[VIRT_JUSTICE], -10, 1);
-        AdjustValueMin(newKarma[VIRT_HONOR], -10, 1);
+        // This doesn't match the penalty in U4DOS, which is based on price.
+        adjustVirtues(VMASK_3(VIRT_HONESTY, VIRT_JUSTICE, VIRT_HONOR), -10);
         break;
     case KA_DIDNT_CHEAT_REAGENTS:
-        timeLimited = 1;
-        AdjustValueMax(newKarma[VIRT_HONESTY], 2, maxVal[VIRT_HONESTY]);
-        AdjustValueMax(newKarma[VIRT_JUSTICE], 2, maxVal[VIRT_JUSTICE]);
-        AdjustValueMax(newKarma[VIRT_HONOR], 2, maxVal[VIRT_HONOR]);
+        adjustVirtues(VMASK_3(VIRT_HONESTY, VIRT_JUSTICE, VIRT_HONOR), 2);
         break;
+#endif
     case KA_USED_SKULL:
         /* using the skull is very, very bad... */
-        for (v = 0; v < VIRT_MAX; v++)
-            AdjustValueMin(newKarma[v], -5, 1);
+        adjustVirtues(0xff, -5);
         break;
     case KA_DESTROYED_SKULL:
         /* ...but destroying it is very, very good */
-        for (v = 0; v < VIRT_MAX; v++)
-            AdjustValueMax(newKarma[v], 10, maxVal[v]);
+        adjustVirtues(0xff, 10);
+        break;
+    default:
         break;
     }
+}
 
-    /*
-     * check if enough time has passed since last virtue award if
-     * action is time limited -- if not, throw away new values
-     */
-    if (timeLimited) {
-        if (((saveGame->moves / 16) >= 0x10000) || (((saveGame->moves / 16) & 0xFFFF) != saveGame->lastvirtue))
-            saveGame->lastvirtue = (saveGame->moves / 16) & 0xFFFF;
-        else
-            return;
+/**
+ * Adjusts the avatar's virtue levels by a fixed amount.
+ * Notify observers with a lost eighth event if the player has lost avatarhood.
+ */
+void Party::adjustVirtues(uint32_t virtueMask, int adjust) {
+    const int enlightened = 0;  // DOS save game enlightenment value.
+    int v, level;
+    int modified = 0;
+
+    for (v = 0; v < VIRT_MAX && virtueMask; v++) {
+        if (virtueMask & 1) {
+            level = saveGame->karma[v];
+            if (adjust > 0) {
+                if (level != enlightened) {
+                    level += adjust;
+                    if (level > 99)
+                        level = 99;
+                    saveGame->karma[v] = level;
+                    ++modified;
+                }
+            } else {
+                if (level == enlightened) {
+                    level = 99;
+                    PartyEvent event(PartyEvent::LOST_EIGHTH, 0);
+                    gs_emitMessage(SENDER_PARTY, &event);
+                }
+                level += adjust;
+                if (level < 1)
+                    level = 1;
+                saveGame->karma[v] = level;
+                ++modified;
+            }
+            //printf("AV %d %d:%d\n", saveGame->moves, v, saveGame->karma[v]);
+        }
+        virtueMask >>= 1;
     }
 
     /* something changed */
-    notifyOfChange();
-
-    /*
-     * return to u4dos compatibility and handle losing of eighths
-     */
-    for (v = 0; v < VIRT_MAX; v++) {
-        if (maxVal[v] == 100) { /* already an avatar */
-            if (newKarma[v] < 100) { /* but lost it */
-                saveGame->karma[v] = newKarma[v];
-                PartyEvent event(PartyEvent::LOST_EIGHTH, 0);
-                gs_emitMessage(SENDER_PARTY, &event);
-            }
-            else saveGame->karma[v] = 0; /* return to u4dos compatibility */
-        }
-        else saveGame->karma[v] = newKarma[v];
-    }
+    if (modified)
+        notifyOfChange();
 }
 
 /**

@@ -39,14 +39,6 @@ enum 9 [
     stats-items     stats-reagents  stats-mixtures
 ]
 
-; Matches KarmaAction in player.h
-enum 15 [
-    gave_blood
-    didnt_give_blood
-    cheated_merchant
-    honest_to_merchant
-]
-
 ; Shared vendor variables.
 shop: owner: price: quant: none
 shop-vars: ['@' shop '%' owner '$' price '#' quant]
@@ -942,9 +934,9 @@ reagents: context [
                 vo 4
                 >> "^/Very good. "
                 add-items type quant
-                karma either lt? paying price
-                    cheated_merchant
-                    honest_to_merchant
+                karma [honesty justice honor] either lt? paying price
+                    [either lt? d: sub price paying 12 -4 [div d -3]]
+                    2
             ][
                 vo 5
                 >> "^/It seems you have not the gold! "
@@ -1017,13 +1009,13 @@ healer: context [
             input-choice [
                 'y' [
                     damage-pc 1 100
-                    karma gave_blood
+                    karma sacrifice 5
                     >> "^/Thou art a great help. We are in dire need!^/"
                     game-wait 1000
                     adieu
                 ]
                 'n' [
-                    karma didnt_give_blood
+                    karma sacrifice -5
                     adieu
                 ]
                 end
