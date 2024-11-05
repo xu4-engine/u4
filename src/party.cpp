@@ -19,10 +19,6 @@
 
 #define strequ(A, B)    (strcmp(A, B) == 0)
 
-#ifdef IOS
-#include "ios_helpers.h"
-#endif
-
 bool isPartyMember(const Object *punknown) {
     const PartyMember *pm;
     if ((pm = dynamic_cast<const PartyMember*>(punknown)) != NULL)

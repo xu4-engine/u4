@@ -76,10 +76,6 @@ void EventHandler::runController(Controller* con) {
 void EventHandler::setControllerDone(bool done)
 {
     controllerDone = done;
-#if defined(IOS)
-    if (done)
-        controllerStopped_helper();
-#endif
 }
 
 /** Returns the current value of the controller exit flag */
@@ -652,12 +648,6 @@ public:
 
     virtual bool keyPressed(int key);
 
-#ifdef IOS
-    void setValue(const string &utf8StringValue) {
-        value = utf8StringValue;
-    }
-#endif
-
 protected:
     int maxlen, screenX, screenY;
     TextView *view;
@@ -889,15 +879,9 @@ public:
 };
 
 ReadPlayerController::ReadPlayerController() : ReadChoiceController("12345678 \033\n") {
-#ifdef IOS
-    U4IOS::beginCharacterChoiceDialog();
-#endif
 }
 
 ReadPlayerController::~ReadPlayerController() {
-#ifdef IOS
-    U4IOS::endCharacterChoiceDialog();
-#endif
 }
 
 bool ReadPlayerController::keyPressed(int key) {
@@ -1068,9 +1052,6 @@ char EventHandler::readChoice(const char* choices)
 Direction EventHandler::readDir()
 {
     ReadDirController ctrl;
-#ifdef IOS
-    U4IOS::IOSDirectionHelper directionPopup;
-#endif
     xu4.eventHandler->pushController(&ctrl);
     return ctrl.waitFor();
 }

@@ -78,9 +78,6 @@ void TileView::drawTile(const MapTile &mapTile, int x, int y) {
     // draw the tile to the screen
     if (tile->getAnim()) {
         // First, create our animated version of the tile
-#ifdef IOS
-        animated->clearImageContents();
-#endif
         tile->getAnim()->draw(animated, tile, mapTile, DIR_NONE);
 
         // Then draw it to the screen

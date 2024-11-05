@@ -26,10 +26,6 @@
 #include "xu4.h"
 #include "gpu.h"
 
-#ifdef IOS
-#include "ios_helpers.h"
-#endif
-
 using std::vector;
 
 static const int MsgBufferSize = 1024;
@@ -366,10 +362,6 @@ void screenMessage(const char *fmt, ...) {
     va_end(args);
     if (buflen < 1)
         return;
-
-#ifdef IOS
-    U4IOS::drawMessageOnLabel(string(buffer, MsgBufferSize));
-#endif
 
     screenMessageN(buffer, buflen);
 }
@@ -1675,8 +1667,3 @@ void screenGemUpdate() {
 const ScreenState* screenState() {
     return &XU4_SCREEN->state;
 }
-
-#ifdef IOS
-//Unsure if implementation required in iOS.
-void inline screenWait(int numberOfAnimationFrames){};
-#endif

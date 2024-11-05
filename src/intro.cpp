@@ -26,10 +26,6 @@ extern bool loadMapData(Map *map, U4FILE *uf, Symbol borderTile);
 #endif
 #include "gpu.h"
 
-#ifdef IOS
-#include "ios_helpers.h"
-#endif
-
 extern uint32_t getTicks();
 
 using namespace std;
@@ -345,11 +341,7 @@ bool IntroController::init() {
         // the init() method is called again from within the
         // game via ALT-Q, so return to the menu
         //
-#ifndef IOS
-        mode = INTRO_MENU;
-#else
         mode = INTRO_MAP;
-#endif
         beastiesVisible = true;
         beastieOffset = 0;
 
@@ -866,10 +858,6 @@ void IntroController::initiateNewGame() {
 
 void IntroController::finishInitiateGame(const string &nameBuffer, SexType sex)
 {
-#ifdef IOS
-    mode = INTRO_MENU; // ensure we are now in the menu mode, (i.e., stop drawing the map).
-#endif
-
     {
     uint16_t saveGroup = xu4_setResourceGroup(StageIntro);
 
@@ -928,9 +916,6 @@ void IntroController::finishInitiateGame(const string &nameBuffer, SexType sex)
     // show the text thats segues into the main game
     showText(binData->introGypsy[GYP_SEGUE1]);
     soundSpeakLine(VOICE_GYPSY, 4);
-#ifdef IOS
-    U4IOS::switchU4IntroControllerToContinueButton();
-#endif
     EventHandler::waitAnyKey();
 
     showText(binData->introGypsy[GYP_SEGUE2]);
@@ -1062,18 +1047,12 @@ void IntroController::startQuestions() {
         questionArea.textAt(0, 3, "\"Consider this:\"");
         questionArea.showCursor();
 
-#ifdef IOS
-        U4IOS::switchU4IntroControllerToContinueButton();
-#endif
         // wait for a key
         EventHandler::waitAnyKey();
 
         // show the question to choose between virtues
         showText(getQuestion(questionTree[i1], questionTree[i2]));
 
-#ifdef IOS
-        U4IOS::switchU4IntroControllerToABButtons();
-#endif
         // wait for an answer
         int choice = EventHandler::readChoice("ab");
 
@@ -1398,9 +1377,6 @@ void IntroController::updateInputMenu(MenuEvent &event) {
 
             // re-initialize keyboard
             EventHandler::setKeyRepeat(settingsChanged.keydelay, settingsChanged.keyinterval);
-#ifndef IOS
-            screenShowMouseCursor(xu4.settings->mouseOptions.enabled);
-#endif
             break;
         case CANCEL:
             // discard settings

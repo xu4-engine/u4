@@ -18,9 +18,6 @@
 #include "u4.h"
 #include "u4file.h"
 #include "xu4.h"
-#ifdef IOS
-#include "ios_helpers.h"
-#endif
 
 struct Codex {
     vector<std::string> virtueQuestions;
@@ -86,9 +83,6 @@ void codexStart() {
     c->stats->showAvatarOnly(true);
 
     // disable the whirlpool cursor and black out the screen
-#ifdef IOS
-    U4IOS::IOSHideGameControllerHelper hideControllsHelper;
-#endif
     screenHideCursor();
     screenUpdate(&xu4.game->mapArea, false, true);
 
@@ -220,15 +214,9 @@ static bool codexHandleWOP(Codex* codex) {
     for (i = 0; i < 3; ++i) {
         if (i == 0) {
             screenMessage("\nA voice rings out:\n");
-#ifdef IOS
-            U4IOS::IOSConversationHelper::setIntroString("What is the Word of Passage?");
-#endif
         } else {
             /* entered incorrectly - try again */
             codexImpureThoughts();
-#ifdef IOS
-            U4IOS::IOSConversationHelper::setIntroString("Which virtue?");
-#endif
         }
 
         screenMessage("\"What is the Word of Passage?\"\n\n");
@@ -277,9 +265,6 @@ ask_next:
     codexSlightPause();
     pausedMessage(2, "\n\nThe voice asks:\n");
     screenMessage("\n%s\n\n", codex->virtueQuestions[current].c_str());
-#ifdef IOS
-    U4IOS::IOSConversationHelper::setIntroString((current < VIRT_MAX) ? "Which virtue?" : "Which principle?");
-#endif
     codex->word = gameGetInput();
     screenHideCursor();
 
@@ -324,9 +309,6 @@ ask_next:
 
         codexImpureThoughts();
         screenMessage("%s\n\n", codex->virtueQuestions[current].c_str());
-#ifdef IOS
-        U4IOS::IOSConversationHelper::setIntroString("Which virtue?");
-#endif
         goto ask_next;
     }
 
@@ -349,13 +331,7 @@ static bool codexHandleInfinity(Codex* codex) {
         EventHandler::waitAnyKey();
 
         screenMessage("\n\nThen what is the one thing which encompasses and is the whole of all undeniable Truth, unending Love, and unyielding Courage?\n\n");
-#ifdef IOS
-        U4IOS::IOSConversationHelper::setIntroString("What is the whole of all undeniable Truth, unending Love, and unyielding Courage?");
-#endif
         codex->word = gameGetInput();
-#ifdef IOS
-        U4IOS::IOSHideGameControllerHelper hideControllsHelper;
-#endif
         codexSlightPause();
         if (strcasecmp(codex->word.c_str(), "infinity") == 0)
             goto correct;
@@ -406,14 +382,6 @@ static void codexHandleEndgame(Codex* codex) {
 
     screenShowCursor();
 
-#ifdef IOS
-    // Ugh, we now enter happy callback land, so I know how to do these things manually. Good thing I kept these separate functions.
-    U4IOS::hideGameButtons();
-    U4IOS::beginChoiceConversation();
-    U4IOS::updateChoicesInDialog(" ", "", -1);
-    U4IOS::testFlightPassCheckPoint("Game won!");
-#endif
-
     for (i = 0; i < 10; ++i) {
         if (i == 0) {
             screenMessage("\n\n%s", codex->endgameText1[0].c_str());
@@ -449,8 +417,5 @@ static void codexHandleEndgame(Codex* codex) {
                   "the XU4 team at\nSourceForge.net!"
 #endif
                             );
-#ifdef IOS
-    U4IOS::endChoiceConversation();
-#endif
     screenUploadToGPU();
 }

@@ -21,10 +21,6 @@
 #include "weapon.h"
 #include "xu4.h"
 
-#ifdef IOS
-#include "ios_helpers.h"
-#endif
-
 /**
  * Returns a CombatMap pointer to the map
  * passed, or a CombatMap pointer to the current map
@@ -1010,9 +1006,6 @@ bool CombatController::keyPressed(int key) {
         castSpell(focus);
         break;
 
-#ifdef IOS
-    case U4_ENTER: // Fall through and get the chest.
-#endif
     case 'g':
         screenMessage("Get Chest!\n");
         getChest(focus);
@@ -1060,9 +1053,6 @@ bool CombatController::keyPressed(int key) {
     case 'u':
         screenMessage("Use which item:\n");
         c->stats->setView(STATS_ITEMS);
-#ifdef IOS
-        U4IOS::IOSConversationHelper::setIntroString("Use which item?");
-#endif
         itemUse(gameGetInput());
         break;
 

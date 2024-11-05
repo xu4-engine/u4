@@ -78,16 +78,6 @@ protected:
     int current;
 };
 
-#if defined(IOS)
-#ifndef __OBJC__
-typedef void *TimedManagerHelper;
-typedef void *UIEvent;
-#else
-@class TimedManagerHelper;
-@class UIEvent;
-#endif
-#endif
-
 
 /**
  * A class for managing timed events
@@ -170,11 +160,6 @@ public:
     void setScreenUpdate(void (*updateScreen)(void));
     void togglePause();
     void expose();
-#if defined(IOS)
-    void handleEvent(UIEvent *);
-    static void controllerStopped_helper();
-    updateScreenCallback screenCallback() { return updateScreen; }
-#endif
 
     /* Controller functions */
     void runController(Controller*);

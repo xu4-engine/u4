@@ -16,10 +16,6 @@
 #include "u4.h"
 #include "xu4.h"
 
-#ifdef IOS
-#include "ios_helpers.h"
-#endif
-
 /**
  * Returns true if the player can use the portal to the shrine
  */
@@ -60,9 +56,6 @@ void Shrine::enter() {
     }
 
     gameSetViewMode(VIEW_CUTSCENE_MAP);
-#ifdef IOS
-    U4IOS::IOSHideGameControllerHelper hideControllsHelper;
-#endif
     if (xu4.settings->enhancements &&
         xu4.settings->enhancementsOptions.u5shrines)
         enhancedSequence();
@@ -70,26 +63,10 @@ void Shrine::enter() {
         screenMessage("You enter the ancient shrine and sit before the altar...");
 
     screenMessage("\nUpon which virtue dost thou meditate?\n");
-#ifdef IOS
-    {
-    U4IOS::IOSConversationHelper inputVirture;
-    inputVirture.beginConversation(U4IOS::UIKeyboardTypeDefault, "Upon which virtue dost thou meditate?");
-#endif
     input = EventHandler::readString(32);
-#ifdef IOS
-    }
-#endif
 
     screenMessage("\n\nFor how many Cycles (0-3)? ");
-#ifdef IOS
-    {
-    U4IOS::IOSConversationChoiceHelper cyclesChoice;
-    cyclesChoice.updateChoices("0123 \015\033");
-#endif
     choice = EventHandler::readChoice("0123\015\033");
-#ifdef IOS
-    }
-#endif
     if (choice == '\033' || choice == '\015')
         ss->cycles = 0;
     else
@@ -176,16 +153,8 @@ void Shrine::askMantra() {
     screenShowCursor();
     screenMessage("\nMantra: ");
 
-#ifdef IOS
-    {
-    U4IOS::IOSConversationHelper mantraHelper;
-    mantraHelper.beginConversation(U4IOS::UIKeyboardTypeASCIICapable, "Mantra?");
-#endif
     input = EventHandler::readString(4);
     screenMessage("\n");
-#ifdef IOS
-    }
-#endif
 
     if (strcasecmp(input, mantraStr()) != 0) {
         c->party->adjustKarma(KA_BAD_MANTRA);
@@ -210,12 +179,6 @@ void Shrine::askMantra() {
             screenMessage("\nThy thoughts are pure. "
                           "Thou art granted a vision!\n");
 
-#ifdef IOS
-        U4IOS::IOSConversationChoiceHelper choiceDialog;
-        choiceDialog.updateChoices(" ");
-        U4IOS::testFlightPassCheckPoint(std::string("Gained avatarhood in: ")
-                                        + getVirtueName(virtue));
-#endif
         EventHandler::waitAnyKey();
         showVision(elevated);
         EventHandler::waitAnyKey();

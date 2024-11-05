@@ -33,10 +33,6 @@
 #include "weapon.h"
 #include "xu4.h"
 
-#ifdef IOS
-#include "ios_helpers.h"
-#endif
-
 /*-----------------*/
 /* Functions BEGIN */
 
@@ -470,9 +466,6 @@ void GameController::setMap(Map *map, bool saveLocation, const Portal *portal, T
     }
     c->location = new Location(coords, map, viewMode, context, turnCompleter, c->location);
     c->party->setActivePlayer(activePlayer);
-#ifdef IOS
-    U4IOS::updateGameControllerContext(c->location->context);
-#endif
 
     if (isCity(map)) {
         City *city = dynamic_cast<City*>(map);
@@ -512,9 +505,6 @@ int GameController::exitToParentMap() {
         }
 
         locationFree(&c->location);
-#ifdef IOS
-        U4IOS::updateGameControllerContext(c->location->context);
-#endif
         gameStampCommandTime();     // Restart turn Pass timer.
         return 1;
     }
@@ -828,12 +818,7 @@ bool GameController::keyPressed(int key) {
             if (c->party->isFlying())
                 key = 'd';
             else {
-#ifdef IOS
-                U4IOS::IOSSuperButtonHelper superHelper;
-                key = EventHandler::readChoice("xk \033\n");
-#else
                 key = 'k';
-#endif
             }
         }
         /* X-it transport */
@@ -851,12 +836,7 @@ bool GameController::keyPressed(int key) {
             bool up = dungeon->ladderUpAt(c->location->coords);
             bool down = dungeon->ladderDownAt(c->location->coords);
             if (up && down) {
-#ifdef IOS
-                U4IOS::IOSClimbHelper climbHelper;
-                key = EventHandler::readChoice("kd \033\n");
-#else
                 key = 'k'; // This is consistent with the previous code. Ideally, I would have a UI here as well.
-#endif
             } else if (up) {
                 key = 'k';
             } else {
@@ -1162,11 +1142,6 @@ bool GameController::keyPressed(int key) {
 
         case 'm':
             mixReagents();
-#ifdef IOS
-            // The iOS MixSpell dialog needs control of the event loop, so it is its
-            // job to complete the turn.
-            endTurn = false;
-#endif
             break;
 
         case 'n':
@@ -1228,9 +1203,6 @@ bool GameController::keyPressed(int key) {
                 /* a little xu4 enhancement: show items in inventory when prompted for an item to use */
                 c->stats->setView(STATS_ITEMS);
             }
-#ifdef IOS
-            U4IOS::IOSConversationHelper::setIntroString("Use which item?");
-#endif
             itemUse(gameGetInput());
             if (settings.enhancements)
                 c->stats->setView(STATS_PARTY_OVERVIEW);
@@ -1285,9 +1257,6 @@ bool GameController::keyPressed(int key) {
             break;
 
         case 'h' + U4_ALT: {
-#ifdef IOS
-            U4IOS::IOSHideActionKeysHelper hideActionKeys;
-#endif
 
             screenMessage("Key Reference:\n"
                           "Arrow Keys: Move\n"
@@ -1452,11 +1421,6 @@ bool GameController::inputEvent(const InputEvent* ev) {
 
 const char* gameGetInput(int maxlen) {
     screenShowCursor();
-#ifdef IOS
-    U4IOS::IOSConversationHelper helper;
-    helper.beginConversation(U4IOS::UIKeyboardTypeDefault);
-#endif
-
     return EventHandler::readString(maxlen, NULL);
 }
 
@@ -1752,10 +1716,6 @@ void castSpell(int player) {
     // get the spell to cast
     c->stats->setView(STATS_MIXTURES);
     screenMessage("Spell: ");
-    // ### Put the iPad thing too.
-#ifdef IOS
-    U4IOS::IOSCastSpellHelper castSpellController;
-#endif
     int spell = EventHandler::readAlphaAction('z', "Spell: ");
     if (spell == -1)
         return;
@@ -1777,11 +1737,6 @@ void castSpell(int player) {
         break;
     case Spell::PARAM_PHASE: {
         screenMessage("To Phase: ");
-#ifdef IOS
-        U4IOS::IOSConversationChoiceHelper choiceController;
-        choiceController.fullSizeChoicePanel();
-        choiceController.updateGateSpellChoices();
-#endif
         int choice = EventHandler::readChoice("12345678 \033\n");
         if (choice < '1' || choice > '8')
             screenMessage("None\n");
@@ -1810,11 +1765,6 @@ void castSpell(int player) {
         break;
     case Spell::PARAM_TYPEDIR: {
         screenMessage("Energy type? ");
-#ifdef IOS
-        U4IOS::IOSConversationChoiceHelper choiceController;
-        choiceController.fullSizeChoicePanel();
-        choiceController.updateEnergyFieldSpellChoices();
-#endif
         EnergyFieldType fieldType = ENERGYFIELD_NONE;
         char key = EventHandler::readChoice("flps \033\n\r");
         switch(key) {
@@ -2575,10 +2525,6 @@ static void mixReagents() {
 
     while (!done) {
         screenMessage("Mix reagents\n");
-#ifdef IOS
-        U4IOS::beginMixSpellController();
-        return; // Just return, the dialog takes control from here.
-#endif
 
         // Verify that there are reagents remaining in the inventory
         bool found = false;
@@ -2745,11 +2691,6 @@ bool gamePeerCity(int city, void *data) {
         gameSetViewMode(VIEW_GEM);
         screenHideCursor();
 
-#ifdef IOS
-        U4IOS::IOSConversationChoiceHelper continueHelper;
-        continueHelper.updateChoices(" ");
-        continueHelper.fullSizeChoicePanel();
-#endif
         EventHandler::readChoice("\015 \033");
 
         xu4.game->exitToParentMap();
@@ -2778,11 +2719,6 @@ void peer(bool useGem) {
     screenHideCursor();
     gameSetViewMode(VIEW_GEM);
 
-#ifdef IOS
-    U4IOS::IOSConversationChoiceHelper continueHelper;
-    continueHelper.updateChoices(" ");
-    continueHelper.fullSizeChoicePanel();
-#endif
     EventHandler::readChoice("\015 \033");
 
     screenShowCursor();
@@ -2909,9 +2845,6 @@ static void ztatsFor(int player) {
     c->stats->resetReagentsMenu();
 
     c->stats->setView(StatsView(STATS_CHAR1 + player));
-#ifdef IOS
-    U4IOS::IOSHideActionKeysHelper hideExtraControls;
-#endif
     ZtatsController ctrl;
     xu4.eventHandler->pushController(&ctrl);
     ctrl.waitFor();
@@ -3321,11 +3254,7 @@ void GameController::creatureCleanup() {
 void GameController::checkRandomCreatures() {
     const Location* loc = c->location;
     int canSpawnHere = loc->map->isWorldMap() || loc->context & CTX_DUNGEON;
-#ifdef IOS
-    int spawnDivisor = loc->context & CTX_DUNGEON ? (53 - (loc->coords.z << 2)) : 53;
-#else
     int spawnDivisor = loc->context & CTX_DUNGEON ? (32 - (loc->coords.z << 2)) : 32;
-#endif
 
     /* If there are too many creatures already,
        or we're not on the world map, don't worry about it! */

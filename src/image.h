@@ -8,10 +8,6 @@
 #include <cstddef>
 #include "image32.h"
 
-#if defined(IOS)
-typedef struct CGImage *CGImageRef;
-typedef struct CGLayer *CGLayerRef;
-#endif
 
 #define IM_OPAQUE       255
 #define IM_TRANSPARENT  0
@@ -87,19 +83,6 @@ public:
         image32_savePPM(this, filename);
     }
     void drawHighlight(int rx, int ry, int rw, int rh);
-
-#ifdef IOS
-    CGLayerRef getSurface() { return surface; }
-    void initWithImage(CGImageRef image);
-    void clearImageContents();
-
-private:
-    mutable char *cachedImageData;
-    CGLayerRef surface;
-    void clearCachedImageData() const;
-    void createCachedImage() const;
-    friend Image *screenScale(Image *src, int scale, int n, int filter);
-#endif
 
 private:
     static int blending;
