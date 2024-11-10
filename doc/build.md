@@ -38,11 +38,11 @@ Below are example install commands for a few flavors of Linux.
 
 Fedora:
 
-    sudo dnf install libpng-devel libvorbis-devel libXcursor-devel
+    sudo dnf install libpng-devel libvorbis-devel libXcursor-devel pulseaudio-libs-devel
 
 Ubuntu:
 
-    sudo apt install libpng-dev libvorbis-dev libxcursor-dev
+    sudo apt install libpng-dev libvorbis-dev libxcursor-dev libpulse-dev
 
 The Boron interpreter program is needed to build game modules.
 The static binaries can be downloaded from the
@@ -53,16 +53,19 @@ There are three ways the Boron library can be obtained.  It can be built from
 or a pre-built x86_64 SDK can be downloaded from the
 [xu4 download](http://xu4.sourceforge.net/download.php#devel) page.
 On UNIX systems the following commands will checkout the source using Git,
-properly configure it for xu4, build `libboron.a`, and install it:
+properly configure it for xu4, build `libboron.a` and `boron`, and install it:
 
     make -C dist boron
-    make -C dist/boron libboron.a
-    sudo make -C dist/boron DESTDIR=/usr install-dev
+    make -C dist/boron
+    sudo make -C dist/boron DESTDIR=/usr install install-dev
 
 Faun SDKs and source can be downloaded from the
 [Faun Releases](https://github.com/WickedSmoke/faun/releases) page.  The
-source is also available via the src/faun Git submodule.
+source is also available via the src/faun Git submodule:
 
+    git submodule update --init
+    make -C src/faun/
+    sudo make -C src/faun/ DESTDIR=/usr install
 
 ### configure
 
