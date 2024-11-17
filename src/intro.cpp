@@ -1111,7 +1111,7 @@ void IntroController::about() {
     menuArea.textAt(1, 4, "ribute it and/or modify it under the");
     menuArea.textAt(1, 5, "terms of the GNU GPL as published by");
     menuArea.textAt(1, 6, "the FSF.  See COPYING.");
-    menuArea.textAt(4, 8, "Copyright \011 2002-2023, xu4 Team");
+    menuArea.textAt(4, 8, "Copyright \011 2002-2024, xu4 Team");
     menuArea.textAt(4, 9, "Copyright \011 1987, Lord British");
     drawBeasties();
 

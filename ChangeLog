@@ -1,5 +1,12 @@
 		XU4 Change Log
 
+v1.4.1 - 2024-12-18
+  - Update license to GPL-3.0-or-later.
+  - Added GLFW 3 backend which is now used on Windows.
+  - Show title bar icon on Windows.
+  - Karma adjustments from buying reagents match DOS version.
+  - A few minor code fixes.
+
 v1.4 - 2023-10-27
   - Support unique spell effect sounds & spoken casting incantations.
   - Improved game browser UI.  The soundtrack can be changed without a reset.
@@ -22,7 +29,7 @@ v1.2 - 2022-12-06
   - Flash player stats for poison, starvation, and ship damage.
   - Play sounds for spell failure, starvation, and land-based storms.
   - Fullscreen mode automatically chooses the scaling factor.
-  - Fixed --help & --verbose output on Windows with Command Prmopt.
+  - Fixed --help & --verbose output on Windows with Command Prompt.
   - Cities can now be defined using TMX maps without limits on size or number
     of people.  Dialogue can be created without keyword limits.
   - Added GLV backend for Linux & Android.  On Linux this saves 0.9 MiB of RAM.
