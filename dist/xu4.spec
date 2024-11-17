@@ -2,7 +2,7 @@ Name:      xu4
 Version:   1.4
 Release:   %autorelease
 Summary:   Ultima IV Recreated
-License:   GPL-2.0-or-later
+License:   GPL-3.0-or-later
 URL:       https://xu4.sourceforge.net/
 Source0:   https://downloads.sourceforge.net/xu4/1.4/xu4-%{version}.tar.gz
 Source1:   https://downloads.sourceforge.net/urlan/Boron/boron-2.0.8.tar.gz
