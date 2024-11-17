@@ -1,0 +1,24 @@
+#!/usr/bin/bash
+# Build release source archive.
+
+# Obtain version from Git tag.
+TAG=$(git describe --tags)
+VERSION=${TAG#v}
+ADIR=xu4-${VERSION}
+
+# Clone from local developer project to /tmp.
+DEV_DIR=$(pwd)
+cd /tmp
+git clone ${DEV_DIR} ${ADIR} || exit
+
+# Include glv for X11.
+cd ${ADIR}
+git submodule update --init src/glv
+mv src/glv src/g0
+mkdir src/glv
+mv src/g0/LICENSE src/g0/x11 src/glv
+
+# Remove Git files and make archive.
+rm -rf src/g0 .git*
+cd ..
+tar czf ${ADIR}.tar.gz ${ADIR}
