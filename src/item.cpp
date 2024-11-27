@@ -23,7 +23,7 @@ void itemSetDestroyAllCreaturesCallback(DestroyAllCreaturesCallback callback) {
 }
 
 int needStoneNames = 0;
-unsigned char stoneMask = 0;
+uint8_t stoneMask = 0;
 
 bool isRuneInInventory(int virt);
 void putRuneInInventory(int virt);
@@ -250,12 +250,12 @@ void useSkull(int item) {
  */
 void useStone(int item) {
     Coords coords;
-    unsigned char stone = static_cast<unsigned char>(item);
+    uint8_t stone = static_cast<uint8_t>(item);
 
-    static unsigned char truth   = STONE_WHITE | STONE_PURPLE | STONE_GREEN  | STONE_BLUE;
-    static unsigned char love    = STONE_WHITE | STONE_YELLOW | STONE_GREEN  | STONE_ORANGE;
-    static unsigned char courage = STONE_WHITE | STONE_RED    | STONE_PURPLE | STONE_ORANGE;
-    static unsigned char *attr   = NULL;
+    static const uint8_t truth   = STONE_WHITE | STONE_PURPLE | STONE_GREEN  | STONE_BLUE;
+    static const uint8_t love    = STONE_WHITE | STONE_YELLOW | STONE_GREEN  | STONE_ORANGE;
+    static const uint8_t courage = STONE_WHITE | STONE_RED    | STONE_PURPLE | STONE_ORANGE;
+    static const uint8_t *attr   = NULL;
 
     c->location->getCurrentPosition(&coords);
 
@@ -460,7 +460,7 @@ void putReagentInInventory(int reag) {
 /**
  * Returns true if the specified conditions are met to be able to get the item
  */
-bool itemConditionsMet(unsigned char conditions) {
+bool itemConditionsMet(uint8_t conditions) {
     int i;
 
     if ((conditions & SC_NEWMOONS) &&

@@ -111,7 +111,7 @@ bool IntroBinData::load() {
 
     if (sigData)
         delete sigData;
-    sigData = new unsigned char[533];
+    sigData = new uint8_t[533];
     u4fseek(title, INTRO_FIXUPDATA_OFFSET, SEEK_SET);
     u4fread(sigData, 1, 533, title);
 
@@ -131,7 +131,7 @@ bool IntroBinData::load() {
 #endif
 
     u4fseek(title, INTRO_SCRIPT_TABLE_OFFSET, SEEK_SET);
-    scriptTable = new unsigned char[INTRO_SCRIPT_TABLE_SIZE];
+    scriptTable = new uint8_t[INTRO_SCRIPT_TABLE_SIZE];
     u4fread(scriptTable, 1, INTRO_SCRIPT_TABLE_SIZE, title);
 
     u4fseek(title, INTRO_BASETILE_TABLE_OFFSET, SEEK_SET);
@@ -144,7 +144,7 @@ bool IntroBinData::load() {
     /* --------------------------
        load beastie frame table 1
        -------------------------- */
-    beastie1FrameTable = new unsigned char[BEASTIE1_FRAMES];
+    beastie1FrameTable = new uint8_t[BEASTIE1_FRAMES];
     u4fseek(title, BEASTIE_FRAME_TABLE_OFFSET + BEASTIE1_FRAMES_OFFSET, SEEK_SET);
     for (i = 0; i < BEASTIE1_FRAMES; i++) {
         beastie1FrameTable[i] = u4fgetc(title);
@@ -153,7 +153,7 @@ bool IntroBinData::load() {
     /* --------------------------
        load beastie frame table 2
        -------------------------- */
-    beastie2FrameTable = new unsigned char[BEASTIE2_FRAMES];
+    beastie2FrameTable = new uint8_t[BEASTIE2_FRAMES];
     u4fseek(title, BEASTIE_FRAME_TABLE_OFFSET + BEASTIE2_FRAMES_OFFSET, SEEK_SET);
     for (i = 0; i < BEASTIE2_FRAMES; i++) {
         beastie2FrameTable[i] = u4fgetc(title);
@@ -405,7 +405,7 @@ void IntroController::deleteIntro() {
     beastiesImg = NULL;
 }
 
-unsigned char *IntroController::getSigData() {
+uint8_t *IntroController::getSigData() {
     ASSERT(binData->sigData != NULL, "intro sig data not loaded");
     return binData->sigData;
 }
@@ -520,9 +520,9 @@ void IntroController::drawMap() {
         TileId tileId;
         int frame;
         int x, y;
-        unsigned char commandNibble;
-        unsigned char dataNibble;
-        const unsigned char* script = binData->scriptTable;
+        uint8_t commandNibble;
+        uint8_t dataNibble;
+        const uint8_t* script = binData->scriptTable;
 
         do {
             commandNibble = script[scrPos] >> 4;
@@ -1725,7 +1725,7 @@ void IntroController::addTitle(int x, int y, int w, int h, AnimType method, int 
 void IntroController::getTitleSourceData()
 {
     unsigned int r, g, b, a;        // color values
-    unsigned char *srcData;         // plot data
+    uint8_t *srcData;               // plot data
 
     // The BKGD_INTRO image is assumed to have not been
     // loaded yet.  The unscaled version will be loaded

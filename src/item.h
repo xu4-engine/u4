@@ -25,7 +25,7 @@ struct ItemLocation {
     void (*putItemInInventory)(int item);
     void (*useItem)(int item);
     int data;
-    unsigned char conditions;
+    uint8_t conditions;
 };
 
 typedef void (*DestroyAllCreaturesCallback)(void);

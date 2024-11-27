@@ -197,7 +197,7 @@ void StatsArea::redrawAura() {
     if (type > Aura::NONE && type <= Aura::QUICKNESS) {
         summary.drawChar(auraChar[type], STATS_AREA_WIDTH/2, 0);
     } else {
-        unsigned char mask = 0xff;
+        uint8_t mask = 0xff;
         for (int i = 0; i < VIRT_MAX; i++) {
             if (c->saveGame->karma[i] == 0)
                 mask &= ~(1 << i);

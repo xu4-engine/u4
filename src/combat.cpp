@@ -111,7 +111,7 @@ void CombatController::initDungeonRoom(int room, Direction from) {
     {
         const Dungeon *dng = dynamic_cast<Dungeon*>(c->location->prev->map);
         const DngRoom *dngRoom = dng->rooms + room;
-        const unsigned char *party_x, *party_y;
+        const uint8_t *party_x, *party_y;
         int offset, i;
 
         /* load the dungeon room properties */

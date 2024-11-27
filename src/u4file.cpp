@@ -424,7 +424,7 @@ size_t U4FILE_zip::read(void *ptr, size_t size, size_t nmemb) {
 
 int U4FILE_zip::getc() {
     int retval;
-    unsigned char c;
+    uint8_t c;
 
     if (unzReadCurrentFile(zfile, &c, 1) > 0)
         retval = c;

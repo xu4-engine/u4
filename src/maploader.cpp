@@ -382,7 +382,7 @@ static bool loadDungeonMap(Map *map, U4FILE *uf, FILE *sav) {
     dungeon->rooms = new DngRoom[dungeon->n_rooms];
 
     for (i = 0; i < dungeon->n_rooms; i++) {
-        unsigned char room_tiles[121];
+        uint8_t room_tiles[121];
 
         for (j = 0; j < DNGROOM_NTRIGGERS; j++) {
             int tmp;
@@ -451,28 +451,28 @@ static bool loadDungeonMap(Map *map, U4FILE *uf, FILE *sav) {
             if (i == 0x7)
             {
                 // update party start positions when entering from the east
-                const unsigned char x1[8] = { 0x8, 0x8, 0x9, 0x9, 0x9, 0xA, 0xA, 0xA },
-                                    y1[8] = { 0x3, 0x2, 0x3, 0x2, 0x1, 0x3, 0x2, 0x1 };
+                const uint8_t x1[8] = {0x8, 0x8, 0x9, 0x9, 0x9, 0xA, 0xA, 0xA},
+                              y1[8] = {0x3, 0x2, 0x3, 0x2, 0x1, 0x3, 0x2, 0x1};
                 memcpy(dungeon->rooms[i].party_east_start_x, x1, sizeof(x1));
                 memcpy(dungeon->rooms[i].party_east_start_y, y1, sizeof(y1));
 
                 // update party start positions when entering from the south
-                const unsigned char x2[8] = { 0x3, 0x2, 0x3, 0x2, 0x1, 0x3, 0x2, 0x1 },
-                                    y2[8] = { 0x8, 0x8, 0x9, 0x9, 0x9, 0xA, 0xA, 0xA };
+                const uint8_t x2[8] = {0x3, 0x2, 0x3, 0x2, 0x1, 0x3, 0x2, 0x1},
+                              y2[8] = {0x8, 0x8, 0x9, 0x9, 0x9, 0xA, 0xA, 0xA};
                 memcpy(dungeon->rooms[i].party_south_start_x, x2, sizeof(x2));
                 memcpy(dungeon->rooms[i].party_south_start_y, y2, sizeof(y2));
             }
             else if (i == 0x9)
             {
                 // update the starting position of monsters 7, 8, and 9
-                const unsigned char x1[3] = { 0x4, 0x6, 0x5 },
-                                    y1[3] = { 0x5, 0x5, 0x6 };
+                const uint8_t x1[3] = {0x4, 0x6, 0x5},
+                              y1[3] = {0x5, 0x5, 0x6};
                 memcpy(dungeon->rooms[i].creature_start_x+7, x1, sizeof(x1));
                 memcpy(dungeon->rooms[i].creature_start_y+7, y1, sizeof(y1));
 
                 // update party start positions when entering from the west
-                const unsigned char x2[8] = { 0x2, 0x2, 0x1, 0x1, 0x1, 0x0, 0x0, 0x0 },
-                                    y2[8] = { 0x9, 0x8, 0x9, 0x8, 0x7, 0x9, 0x8, 0x7 };
+                const uint8_t x2[8] = {0x2, 0x2, 0x1, 0x1, 0x1, 0x0, 0x0, 0x0},
+                              y2[8] = {0x9, 0x8, 0x9, 0x8, 0x7, 0x9, 0x8, 0x7};
                 memcpy(dungeon->rooms[i].party_west_start_x, x2, sizeof(x2));
                 memcpy(dungeon->rooms[i].party_west_start_y, y2, sizeof(y2));
 

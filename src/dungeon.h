@@ -18,24 +18,24 @@ enum StatsBonusType {
 };
 
 struct Trigger {
-    unsigned char tile;
-    unsigned char x, y;
-    unsigned char change_x1, change_y1, change_x2, change_y2;
+    uint8_t tile;
+    uint8_t x, y;
+    uint8_t change_x1, change_y1, change_x2, change_y2;
 };
 
 struct DngRoom {
     Trigger triggers[DNGROOM_NTRIGGERS];
-    unsigned char creature_tiles[16];
-    unsigned char creature_start_x[16];
-    unsigned char creature_start_y[16];
-    unsigned char party_north_start_x[8];
-    unsigned char party_north_start_y[8];
-    unsigned char party_east_start_x[8];
-    unsigned char party_east_start_y[8];
-    unsigned char party_south_start_x[8];
-    unsigned char party_south_start_y[8];
-    unsigned char party_west_start_x[8];
-    unsigned char party_west_start_y[8];
+    uint8_t creature_tiles[16];
+    uint8_t creature_start_x[16];
+    uint8_t creature_start_y[16];
+    uint8_t party_north_start_x[8];
+    uint8_t party_north_start_y[8];
+    uint8_t party_east_start_x[8];
+    uint8_t party_east_start_y[8];
+    uint8_t party_south_start_x[8];
+    uint8_t party_south_start_y[8];
+    uint8_t party_west_start_x[8];
+    uint8_t party_west_start_y[8];
     std::vector<TileId> map_data;
 };
 

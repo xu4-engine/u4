@@ -152,7 +152,7 @@ public:
     virtual Symbol getWorldrangedtile() const {return worldrangedtile;}
     SlowedType getSlowedType() const    {return (SlowedType) slowedType;}
     int getEncounterSize() const                {return encounterSize;}
-    unsigned char getResists() const            {return resists;}
+    uint8_t getResists() const                  {return resists;}
 
     // Setters
     void setHitTile(Symbol t)           {rangedhittile = t;}

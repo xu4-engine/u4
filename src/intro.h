@@ -50,11 +50,11 @@ public:
 #else
     std::vector<MapTile> introMap;
 #endif
-    unsigned char *sigData;
-    unsigned char *scriptTable;
+    uint8_t *sigData;
+    uint8_t *scriptTable;
     const Tile **baseTileTable;
-    unsigned char *beastie1FrameTable;
-    unsigned char *beastie2FrameTable;
+    uint8_t *beastie1FrameTable;
+    uint8_t *beastie2FrameTable;
     std::vector<std::string> introText;
     std::vector<std::string> introQuestions;
     std::vector<std::string> introGypsy;
@@ -92,7 +92,7 @@ public:
     void conclude();
     bool keyPressed(int key);
     bool inputEvent(const InputEvent*);
-    unsigned char *getSigData();
+    uint8_t *getSigData();
     void updateScreen();
     void timerFired();
 

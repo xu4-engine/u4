@@ -47,7 +47,7 @@ public:
     int columns() const { return _cols; }
 
     void drawChar(int chr, int x, int y);
-    void drawCharMasked(int chr, int x, int y, unsigned char mask);
+    void drawCharMasked(int chr, int x, int y, uint8_t mask);
     void textAt(int x, int y, const char *text);
     void textAtFmt(int x, int y, const char *fmt, ...) PRINTF_LIKE(4, 5);
     void textAtKey(int x, int y, const char *text, int keyIndex);

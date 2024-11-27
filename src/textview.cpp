@@ -93,7 +93,7 @@ void TextView::drawChar(int chr, int x, int y) {
  * statistics area, where a line is masked out for each virtue in
  * which the player is not an avatar.
  */
-void TextView::drawCharMasked(int chr, int x, int y, unsigned char mask) {
+void TextView::drawCharMasked(int chr, int x, int y, uint8_t mask) {
     drawChar(chr, x, y);
     int mx = this->x + (x * CHAR_WIDTH);
     int my = this->y + (y * CHAR_HEIGHT);

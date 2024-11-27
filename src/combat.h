@@ -49,7 +49,7 @@ public:
     bool isCamping()         const { return camping; }
     bool isWinOrLose()       const { return winOrLose; }
     Direction getExitDir()   const { return exitDir; }
-    unsigned char getFocus() const { return focus; }
+    uint8_t getFocus()       const { return focus; }
     CombatMap* getMap()      const { return map; }
     const Creature* getCreature() const { return creature; }
     PartyMemberVector* getParty()   { return &party; }
@@ -76,7 +76,7 @@ protected:
     // Properties
     CombatMap *map;
     PartyMemberVector party;
-    unsigned char focus;
+    uint8_t focus;
 
     const Creature *creatureTable[AREA_CREATURES];
     const Creature *creature;
