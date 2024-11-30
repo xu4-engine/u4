@@ -215,22 +215,6 @@ static bool music_start(int music, int mode) {
     // Track already loaded
     if (music == currentTrack)
         return false;
-#if 0
-    {
-        if (! musicStream)
-            return false;       // Handles MUSIC_NONE; nothing to load.
-
-        if (al_get_audio_stream_playing(musicStream))
-            return false;       // Already playing; nothing to load.
-
-        // Restart streaming.
-        musicGain = newGain;
-        al_set_audio_stream_gain(musicStream, musicVolume * musicGain);
-        al_rewind_audio_stream(musicStream);
-        al_set_audio_stream_playing(musicStream, 1);
-        return true;
-    }
-#endif
 
 #ifdef CONF_MODULE
     const CDIEntry* ent = config_musicFile(music);
@@ -309,7 +293,11 @@ void musicUpdate() {}
 void musicSetVolume(int volume)
 {
     musicVolume = float(volume) / MAX_VOLUME;
+#if FAUN_VERSION >= 0x000200
+    faun_setParameter(SID_MUSIC, 1, FAUN_VOLUME_APPLY, musicVolume);
+#else
     faun_setParameter(SID_MUSIC, 1, FAUN_VOLUME, musicVolume);
+#endif
 }
 
 int musicVolumeDec()

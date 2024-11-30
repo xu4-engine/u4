@@ -26,7 +26,7 @@ Developer Builds
 The following libraries are required for all targets:
 
  - Boron 2.0.8
- - Faun 0.1.4
+ - Faun 0.1.5 or 0.2.0
     - Vorbis
  - PNG
 
@@ -69,8 +69,9 @@ Faun SDKs and source can be downloaded from the
 source is also available via the src/faun Git submodule:
 
     git submodule update --init
-    make -C src/faun
-    sudo make -C src/faun DESTDIR=/usr install
+    cd src/faun
+    ./configure --no_flac && make
+    sudo make DESTDIR=/usr install
 
 ### configure
 
