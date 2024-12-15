@@ -13,6 +13,10 @@
 #include "controller.h"
 #include "types.h"
 
+#ifdef DEBUG
+#include "irecord.h"
+#endif
+
 #define U4_UP           '['
 #define U4_DOWN         '/'
 #define U4_LEFT         ';'
@@ -25,7 +29,7 @@
 
 // Key modifier masks.
 #define U4_ALT          0x080
-#define U4_META         0x200   // FIXME: Not handled by RecordCommand
+#define U4_META         0x200
 
 // The following are 0x100 + USB HID Usage Ids.
 #define U4_FKEY         0x13a
@@ -178,12 +182,21 @@ public:
     const _MouseArea* mouseAreaForPoint(int x, int y) const;
 
 #ifdef DEBUG
-    bool beginRecording(const char* file, uint32_t seed);
-    void endRecording();
-    void recordKey(int key);
-    int  recordedKey();
-    void recordTick() { ++recordClock; }
-    uint32_t replay(const char* file);
+    bool beginRecording(const char* file, uint32_t seed) {
+        return irec_beginRecording(&inputRec, file, seed);
+    }
+    void recordKey(int key) {
+        const int modMask = U4_ALT | U4_META;
+        irec_recordKey(&inputRec, key & ~modMask, (key & modMask) >> 4);
+    }
+    int  recordedKey() {
+        uint32_t keym = irec_recordedKey(&inputRec);
+        return IREC_KEY(keym) | (IREC_MOD(keym) << 4);
+    }
+    void recordTick() { irec_recordTick(&inputRec); }
+    uint32_t replay(const char* file) {
+        return irec_replay(&inputRec, file);
+    }
 #endif
 
     void advanceFlourishAnim() {
@@ -201,16 +214,12 @@ protected:
     uint32_t timerInterval;     // Milliseconds between timedEvents ticks.
     uint32_t runTime;
     int runRecursion;
-#ifdef DEBUG
-    int recordFP;
-    int recordMode;
-    int replayKey;
-    uint32_t recordClock;
-    uint32_t recordLast;
-#endif
     bool paused;
     bool controllerDone;
     bool ended;
+#ifdef DEBUG
+    InputRecorder inputRec;
+#endif
     TimedEventMgr timedEvents;
     std::vector<Controller *> controllers;
     std::list<const _MouseArea*> mouseAreaSets;

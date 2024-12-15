@@ -21,6 +21,10 @@
 
 using std::string;
 
+#ifdef DEBUG
+#include "irecord.c"
+#endif
+
 static void frameSleepInit(FrameSleep* fs, int frameDuration) {
     fs->frameInterval = frameDuration;
     fs->realTime = 0;
@@ -45,14 +49,13 @@ EventHandler::EventHandler(int gameCycleDuration, int frameDuration) :
     frameSleepInit(&fs, frameDuration);
 
 #ifdef DEBUG
-    recordFP = -1;
-    recordMode = 0;
+    irec_init(&inputRec);
 #endif
 }
 
 EventHandler::~EventHandler() {
 #ifdef DEBUG
-    endRecording();
+    irec_endRecording(&inputRec);
 #endif
     anim_free(&flourishAnim);
     anim_free(&fxAnim);
@@ -360,165 +363,6 @@ resume:
     --runRecursion;
     return ended;
 }
-
-//----------------------------------------------------------------------------
-
-#ifdef DEBUG
-#include <fcntl.h>
-
-#ifdef _WIN32
-#include <io.h>
-#include <sys/stat.h>
-#define close   _close
-#define read    _read
-#define write   _write
-#else
-#include <unistd.h>
-#endif
-
-#ifndef CDI32
-#include "cdi.h"
-#endif
-
-#define RECORD_CDI  CDI32(0xDA,0x7A,0x4F,0xC0)
-#define HDR_SIZE    8
-
-enum RecordMode {
-    MODE_DISABLED,
-    MODE_RECORD,
-    MODE_REPLAY,
-};
-
-enum RecordCommand {
-    RECORD_NOP,
-    RECORD_KEY,
-    RECORD_KEY1,
-    RECORD_END = 0xff
-};
-
-struct RecordKey {
-    uint8_t op, key;
-    uint16_t delay;
-};
-
-bool EventHandler::beginRecording(const char* file, uint32_t seed) {
-    uint32_t head[2];
-
-    recordClock = recordLast = 0;
-    recordMode = MODE_DISABLED;
-
-    if (recordFP >= 0)
-        close(recordFP);
-#ifdef _WIN32
-    recordFP = _open(file, _O_WRONLY | _O_CREAT, _S_IWRITE);
-#else
-    recordFP = open(file, O_WRONLY | O_CREAT,
-                    S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-#endif
-    if (recordFP < 0)
-        return false;
-
-    head[0] = RECORD_CDI;
-    head[1] = seed;
-    if (write(recordFP, head, HDR_SIZE) != HDR_SIZE)
-        return false;
-    recordMode = MODE_RECORD;
-    return true;
-}
-
-/**
- * Stop either recording or playback.
- */
-void EventHandler::endRecording() {
-    if (recordFP >= 0) {
-        if (recordMode == MODE_RECORD) {
-            char op = RECORD_END;
-            write(recordFP, &op, 1);
-        }
-        close(recordFP);
-        recordFP = -1;
-        recordMode = MODE_DISABLED;
-    }
-}
-
-//void EventHandler::recordMouse(int x, int y, int button) {}
-
-void EventHandler::recordKey(int key) {
-    if (recordMode == MODE_RECORD) {
-        RecordKey rec;
-        rec.op    = (key > 0xff) ? RECORD_KEY1 : RECORD_KEY;
-        rec.key   = key & 0xff;
-        rec.delay = recordClock - recordLast;
-
-        recordLast = recordClock;
-        write(recordFP, &rec, 4);
-    }
-}
-
-/**
- * Update for both recording and playback modes.
- *
- * \return XU4 key code or zero if no key was pressed. When recording, a zero
- *         is always returned.
- */
-int EventHandler::recordedKey() {
-    int key = 0;
-    if (recordMode == MODE_REPLAY) {
-        if (replayKey) {
-            if (recordClock >= recordLast) {
-                key = replayKey;
-                replayKey = 0;
-            }
-        } else {
-            RecordKey rec;
-            if (read(recordFP, &rec, 4) == 4 &&
-                (rec.op == RECORD_KEY || rec.op == RECORD_KEY1)) {
-                int fullKey = rec.key;
-                if (rec.op == RECORD_KEY1)
-                    fullKey |= 0x100;
-
-                if (rec.delay)
-                    replayKey = fullKey;
-                else
-                    key = fullKey;
-                recordLast = recordClock + rec.delay;
-            } else {
-                endRecording();
-            }
-        }
-    }
-
-    return key;
-}
-
-/**
- * Begin playback from recorded input file.
- *
- * \return Random seed or zero if the recording file could not be opened.
- */
-uint32_t EventHandler::replay(const char* file) {
-    uint32_t head[2];
-
-    recordClock = recordLast = 0;
-    recordMode = MODE_DISABLED;
-    replayKey = 0;
-
-    if (recordFP >= 0)
-        close(recordFP);
-#ifdef _WIN32
-    recordFP = _open(file, _O_RDONLY);
-#else
-    recordFP = open(file, O_RDONLY);
-#endif
-    if (recordFP < 0)
-        return 0;
-    if (read(recordFP, head, HDR_SIZE) != HDR_SIZE || head[0] != RECORD_CDI)
-        return 0;
-
-    recordMode = MODE_REPLAY;
-    return head[1];
-}
-#endif
 
 //----------------------------------------------------------------------------
 
