@@ -1,5 +1,5 @@
 options [
-	os_api: 'allegro	"Platform API ('allegro 'glv 'sdl)"
+	os_api: 'glfw	 	"Platform API ('allegro 'glfw 'glv 'sdl)"
 	use_faun: true
 	sdk_dir: none		"Path to Boron/Faun headers and libraries (UNIX only)"
 	gpu_render: false
@@ -54,6 +54,14 @@ exe %xu4 [
 				either use_faun
 					%sound_faun.cpp
 					%sound_allegro.cpp
+			]
+		]
+		glfw [
+			win32 [libs [%glfw3 %faun %vorbisfile %ole32]]
+			unix  [libs [%glfw %faun]]
+			sources_from %src [
+				%screen_glfw.cpp
+				%sound_faun.cpp
 			]
 		]
 		glv [
@@ -204,7 +212,7 @@ if make_util [
 	]
 ]
 
-; cbuild makes the archive for mingw & allegro so add the Linux files as well.
+; cbuild makes the archive for mingw & glfw so add the Linux files as well.
 dist [
 	%src/screen_glv.cpp
 	%src/glv/x11/glv.c

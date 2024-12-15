@@ -24,7 +24,7 @@ it easy and convenient to play this classic on modern operating
 systems.  XU4 is primarily inspired by the much more ambitious project
 Exult.  Linux is the primary development platform but it gets built
 for Windows regularly.  It should be easy to port to any system with
-[Allegro] 5.2 support.
+[Allegro] 5.2 or [GLFW] 3 support.
 
 XU4 isn't a new game based on the Ultima IV story -- it is a faithful
 recreation of the old game, right up to the crappy graphics.  If you
@@ -202,5 +202,6 @@ interested in helping.
 
 
 [Allegro]: https://liballeg.org/
+[GLFW]: https://www.glfw.org
 [www.gog.com]: https://www.gog.com/game/ultima_4
 [XU4 Download]: https://xu4.sourceforge.net/download.php#release

@@ -16,6 +16,10 @@ else
 endif
 endif
 
+ifeq ($(UI), glfw)
+UILIBS=-lglfw
+endif
+
 ifeq ($(UI), sdl)
 UILIBS=$(shell sdl-config --libs)
 UIFLAGS=$(shell sdl-config --cflags)
