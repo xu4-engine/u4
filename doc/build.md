@@ -30,7 +30,7 @@ The following libraries are required for all targets:
     - Vorbis
  - PNG
 
-Allegro 5.2.7 (or later) is also required for Windows.  This is optional
+GLFW 3.3 (or later) is also required for Windows.  This is optional
 for Linux, which uses the src/glv Git submodule (X11) by default.
 
 Linux distributions will provide the PNG, Vorbis, & X11 libraries.

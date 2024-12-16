@@ -10,7 +10,7 @@ fi
 
 if [ ! -s project.tar.gz ]; then
 	sed -i "s/DR-1.0/${VERSION}/" project.b
-	copr -a -t mingw "os_api:'allegro"
+	copr -a -t mingw "os_api:'glfw"
 fi
 
 
@@ -35,8 +35,9 @@ clean_dir () {
 case $1 in
 windows)
 	echo '
-  unzip /tmp/allegro-x86_64-w64-mingw32-gcc-10.2.0-posix-seh-static-5.2.7.0.zip
-  mv allegro usr
+  unzip /tmp/glfw-3.4.bin.WIN64.zip
+  mv glfw-3.4.bin.WIN64 usr
+  mv usr/lib-mingw-w64 usr/lib
   unzip /tmp/boron-x86_64-w64-mingw32-static-2.0.8.zip
   unzip /tmp/faun-x86_64-w64-mingw32-static-0.1.5.zip -d usr
   mkdir u4
@@ -46,7 +47,7 @@ windows)
 ' >$HDIR/${SCRIPT}
 
 	podman run -d -it --name=$ID xu4/f33-mingw /bin/bash || exit
-	podman cp ${SDK_DIR}/allegro-x86_64-w64-mingw32-gcc-10.2.0-posix-seh-static-5.2.7.0.zip $ID:$CDIR
+	podman cp ${SDK_DIR}/glfw-3.4.bin.WIN64.zip $ID:$CDIR
 	podman cp ${SDK_DIR}/boron-x86_64-w64-mingw32-static-2.0.8.zip $ID:$CDIR
 	podman cp ${SDK_DIR}/faun-x86_64-w64-mingw32-static-0.1.5.zip $ID:$CDIR
 	podman cp project.tar.gz $ID:$CDIR
@@ -59,6 +60,7 @@ windows)
 		clean_dir ${ARC_DIR}
 		FN=`readlink -f ${SDK_DIR}/allegro-faun-dll.tar.bz2`
 		tar xf $FN -C ${ARC_DIR}
+		rm ${ARC_DIR}/allegro-5.2.dll
 		cp /tmp/xu4.exe-$TIME ${ARC_DIR}/xu4.exe
 		cp render.pak Ultima-IV.mod U4-Upgrade.mod ${ARC_DIR}
 		cp COPYING ${ARC_DIR}/COPYING.txt
