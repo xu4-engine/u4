@@ -11,6 +11,7 @@ endif
 DESTDIR ?= /usr/local
 
 MODULES=render.pak Ultima-IV.mod U4-Upgrade.mod
+BORON=boron
 REND=module/render
 
 
@@ -20,13 +21,13 @@ src/xu4:
 	make -C src -f $(MFILE_OS) xu4
 
 render.pak: $(REND)/shader/*.glsl $(REND)/shader/*.png $(REND)/font/cfont.png
-	boron -s tools/pack-xu4.b -f $(REND) -o $@
+	$(BORON) -s tools/pack-xu4.b -f $(REND) -o $@
 
 Ultima-IV.mod: module/Ultima-IV/*.b
-	boron -s tools/pack-xu4.b module/Ultima-IV
+	$(BORON) -s tools/pack-xu4.b module/Ultima-IV
 
 U4-Upgrade.mod: module/U4-Upgrade/*.b
-	boron -s tools/pack-xu4.b module/U4-Upgrade
+	$(BORON) -s tools/pack-xu4.b module/U4-Upgrade
 
 .PHONY: clean download mod snapshot
 
