@@ -341,7 +341,7 @@ bool IntroController::init() {
         // the init() method is called again from within the
         // game via ALT-Q, so return to the menu
         //
-        mode = INTRO_MAP;
+        mode = INTRO_MENU;
         beastiesVisible = true;
         beastieOffset = 0;
 
@@ -1377,6 +1377,7 @@ void IntroController::updateInputMenu(MenuEvent &event) {
 
             // re-initialize keyboard
             EventHandler::setKeyRepeat(settingsChanged.keydelay, settingsChanged.keyinterval);
+            screenShowMouseCursor(xu4.settings->mouseOptions.enabled);
             break;
         case CANCEL:
             // discard settings
