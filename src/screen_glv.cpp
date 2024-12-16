@@ -139,6 +139,9 @@ static void handleKeyDownEvent(const GLViewEvent* event,
         case KEY_Pause:
             key = U4_PAUSE;
             break;
+        case KEY_KP_Enter:
+            key = U4_KEYPAD_ENTER;
+            break;
         default:
             if (keycode >= KEY_F1 && keycode <= KEY_F12)
                 key = U4_FKEY + (keycode - KEY_F1);
@@ -149,10 +152,10 @@ static void handleKeyDownEvent(const GLViewEvent* event,
                 key += U4_ALT;
             else if (event->state & GLV_MASK_CMD)
                 key += U4_META;
-#ifdef _WIN32
+            /*
             else if (event->state & GLV_MASK_CTRL)
-                key = keycode;  // On Linux unichar is the same as keycode here
-#endif
+                key += U4_CTRL:
+            */
             break;
     }
 
