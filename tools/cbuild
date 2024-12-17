@@ -46,7 +46,7 @@ windows)
   copr -t mingw make_util:false
 ' >$HDIR/${SCRIPT}
 
-	podman run -d -it --name=$ID xu4/f33-mingw /bin/bash || exit
+	podman run -d -it --name=$ID xu4/f41-mingw /bin/bash || exit
 	podman cp ${SDK_DIR}/glfw-3.4.bin.WIN64.zip $ID:$CDIR
 	podman cp ${SDK_DIR}/boron-x86_64-w64-mingw32-static-2.0.8.zip $ID:$CDIR
 	podman cp ${SDK_DIR}/faun-x86_64-w64-mingw32-static-0.1.5.zip $ID:$CDIR

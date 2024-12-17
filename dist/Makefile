@@ -4,9 +4,8 @@ DBUILD=buildah bud
 .PHONY: cbuild-images cbuild-sdks clean-sdks
 
 cbuild-images:
-	$(DBUILD) -f Dockerfile.fedora33 -t xu4/fedora33:base .
 	$(DBUILD) -f Dockerfile.gcc -t xu4/f33-gcc .
-	$(DBUILD) -f Dockerfile.mingw -t xu4/f33-mingw .
+	$(DBUILD) -f Dockerfile.mingw -t xu4/f41-mingw .
 
 XU4_DL=http://xu4.sourceforge.net/download
 BORON_SDK_LINUX=boron-x86_64-static-2.0.8.tar.bz2

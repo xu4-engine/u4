@@ -1,8 +1,19 @@
 # Image for building Windows programs using the MinGW cross compiler.
 
-FROM xu4/fedora33:base
+FROM fedora:41
 
-USER root
-RUN dnf -y install mingw64-gcc-c++ mingw64-zlib mingw64-zlib-static mingw64-libogg mingw64-libvorbis mingw64-libpng mingw64-freetype mingw32-openal-soft
+RUN dnf -y install bzip2 diffutils git make tree mingw64-gcc-c++ mingw64-zlib mingw64-zlib-static mingw64-libogg mingw64-libvorbis mingw64-libpng mingw64-freetype
+RUN useradd build
+
+ADD http://urlan.sourceforge.net/boron/static/boron-2.1.0-Linux.x86_64 /usr/bin/boron
+RUN chmod +x /usr/bin/boron
 
 USER build
+WORKDIR /home/build
+
+RUN mkdir /home/build/bin /home/build/.cache \
+    && curl -sL -o /home/build/bin/copr "https://sourceforge.net/p/urlan/boron/code/ci/v2.1.0/tree/scripts/copr.b?format=raw" \
+    && chmod +x /home/build/bin/copr
+
+ENV HOME /home/build
+ENV PATH /home/build/bin:$PATH

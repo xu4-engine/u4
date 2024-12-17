@@ -1,8 +1,19 @@
 # Image for building OpenGL & Faun programs for Linux.
 
-FROM xu4/fedora33:base
+FROM fedora:33
 
-USER root
-RUN dnf -y install gcc-c++ zlib-devel libglvnd-devel libXcursor-devel libpng-devel libogg-devel libvorbis-devel pulseaudio-libs-devel
+RUN dnf -y install bzip2 diffutils git make tree gcc-c++ zlib-devel libglvnd-devel libXcursor-devel libpng-devel libogg-devel libvorbis-devel pulseaudio-libs-devel
+RUN useradd build
+
+ADD http://urlan.sourceforge.net/boron/static/boron-2.1.0-Linux.x86_64 /usr/bin/boron
+RUN chmod +x /usr/bin/boron
 
 USER build
+WORKDIR /home/build
+
+RUN mkdir /home/build/bin /home/build/.cache \
+    && curl -sL -o /home/build/bin/copr "https://sourceforge.net/p/urlan/boron/code/ci/v2.1.0/tree/scripts/copr.b?format=raw" \
+    && chmod +x /home/build/bin/copr
+
+ENV HOME /home/build
+ENV PATH /home/build/bin:$PATH
