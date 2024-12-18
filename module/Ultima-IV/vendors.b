@@ -1009,13 +1009,13 @@ healer: context [
             input-choice [
                 'y' [
                     damage-pc 1 100
-                    karma sacrifice 5
+                    karma 'sacrifice 5
                     >> "^/Thou art a great help. We are in dire need!^/"
                     game-wait 1000
                     adieu
                 ]
                 'n' [
-                    karma sacrifice -5
+                    karma 'sacrifice -5
                     adieu
                 ]
                 end
