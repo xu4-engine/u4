@@ -182,10 +182,6 @@ static void screenInit_data(Screen* scr, Settings& settings) {
     scr->blockingUpdate = NULL;
 #endif
 
-    // Create a special purpose image that represents the whole screen.
-    xu4.screenImage = Image::create(320, 200);
-    xu4.screenImage->fill(Image::black);
-
     xu4.imageMgr = new ImageMgr;
 
     scr->charsetInfo = xu4.imageMgr->get(BKGD_CHARSET);
@@ -244,8 +240,6 @@ static void screenDelete_data(Screen* scr) {
     delete xu4.imageMgr;
     xu4.imageMgr = NULL;
 
-    delete xu4.screenImage;
-    xu4.screenImage = NULL;
 }
 
 
@@ -260,6 +254,11 @@ enum ScreenSystemStage {
 void screenInit(int layerCount) {
     Screen* screen = new Screen(layerCount);
     xu4.screen = screen;
+
+    // Create a special purpose image that represents the whole screen.
+    xu4.screenImage = Image::create(320, 200);
+    xu4.screenImage->fill(Image::black);
+
     screenInit_sys(xu4.settings, &screen->state, SYS_CLEAN);
     screenInit_data(screen, *xu4.settings);
 }
@@ -268,6 +267,10 @@ void screenDelete() {
     if (xu4.screen) {
         screenDelete_data(XU4_SCREEN);
         screenDelete_sys();
+
+        delete xu4.screenImage;
+        xu4.screenImage = NULL;
+
         delete XU4_SCREEN;
         xu4.screen = NULL;
     }
@@ -279,14 +282,22 @@ void screenDelete() {
 void screenReInit() {
     Screen* screen = XU4_SCREEN;
 
-    gs_emitMessage(SENDER_DISPLAY, NULL);
+    //gs_emitMessage(SENDER_DISPLAY, NULL);
 
     screenDelete_data(XU4_SCREEN);
     screenInit_sys(xu4.settings, &screen->state, SYS_RESET);
-    gpu_clear(xu4.gpu, colorBlack);
     screenInit_data(screen, *xu4.settings); // Load new backgrounds, etc.
 
-    gs_emitMessage(SENDER_DISPLAY, &screen->state);
+    // Garbage is sometimes seen in the fullscreen border on Windows 11 & Wayland
+    // if we don't clear three times.
+    int count = xu4.settings->fullscreen ? 3 : 1;
+    for (int i = 0; i < count; ++i) {
+        gpu_clear(xu4.gpu, colorBlack);
+        screen->uploadScreen = 1;
+        screenSwapBuffers();
+    }
+
+    //gs_emitMessage(SENDER_DISPLAY, &screen->state);
 }
 
 void screenSetLayer(int layer, void (*renderFunc)(ScreenState*, void*),

@@ -12,7 +12,7 @@ enum NotifySender {
     SENDER_AURA,        // Aura*
     SENDER_MENU,        // MenuEvent*
     SENDER_SETTINGS,    // Settings*
-    SENDER_DISPLAY      // NULL or ScreenState*
+  //SENDER_DISPLAY      // NULL or ScreenState*
 };
 
 enum DrawLayer {
