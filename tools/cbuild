@@ -39,7 +39,7 @@ windows)
   mv glfw-3.4.bin.WIN64 usr
   mv usr/lib-mingw-w64 usr/lib
   unzip /tmp/boron-x86_64-w64-mingw32-static-2.0.8.zip
-  unzip /tmp/faun-x86_64-w64-mingw32-static-0.1.5.zip -d usr
+  unzip /tmp/faun-x86_64-w64-mingw32-static-0.2.0.zip -d usr
   mkdir u4
   cd u4
   tar xf /tmp/project.tar.gz
@@ -49,7 +49,7 @@ windows)
 	podman run -d -it --name=$ID xu4/f41-mingw /bin/bash || exit
 	podman cp ${SDK_DIR}/glfw-3.4.bin.WIN64.zip $ID:$CDIR
 	podman cp ${SDK_DIR}/boron-x86_64-w64-mingw32-static-2.0.8.zip $ID:$CDIR
-	podman cp ${SDK_DIR}/faun-x86_64-w64-mingw32-static-0.1.5.zip $ID:$CDIR
+	podman cp ${SDK_DIR}/faun-x86_64-w64-mingw32-static-0.2.0.zip $ID:$CDIR
 	podman cp project.tar.gz $ID:$CDIR
 	podman cp $HDIR/${SCRIPT} $ID:$CDIR/${SCRIPT}
 	podman exec -it -u build $ID /bin/bash $CDIR/${SCRIPT}
@@ -58,9 +58,15 @@ windows)
 	# Build zip archive.
 	if [ "$2" != "-b" ]; then
 		clean_dir ${ARC_DIR}
-		FN=`readlink -f ${SDK_DIR}/allegro-faun-dll.tar.bz2`
-		tar xf $FN -C ${ARC_DIR}
-		rm ${ARC_DIR}/allegro-5.2.dll
+
+		FAUN_BIN=/home/build/usr
+		for LIB in libogg-0.dll libvorbis-0.dll libvorbisfile-3.dll
+		do podman cp $ID:${FAUN_BIN}/${LIB} ${ARC_DIR}; done
+
+		MINGW_BIN=/usr/x86_64-w64-mingw32/sys-root/mingw/bin
+		for LIB in libgcc_s_seh-1.dll libpng16-16.dll libssp-0.dll libwinpthread-1.dll zlib1.dll
+		do podman cp $ID:${MINGW_BIN}/${LIB} ${ARC_DIR}; done
+
 		cp /tmp/xu4.exe-$TIME ${ARC_DIR}/xu4.exe
 		cp render.pak Ultima-IV.mod U4-Upgrade.mod ${ARC_DIR}
 		cp COPYING ${ARC_DIR}/COPYING.txt
@@ -72,7 +78,7 @@ windows)
 linux)
 	echo $'
   tar xjf /tmp/boron-x86_64-static-2.0.8.tar.bz2
-  tar xjf /tmp/faun-x86_64-static-0.1.5.tar.bz2 -C boron --strip-components=1
+  tar xjf /tmp/faun-x86_64-static-0.2.0.tar.bz2 -C boron --strip-components=1
   mkdir u4
   cd u4
   tar xf /tmp/project.tar.gz
@@ -81,7 +87,7 @@ linux)
 
 	podman run -d -it --name=$ID xu4/f33-gcc /bin/bash || exit
 	podman cp ${SDK_DIR}/boron-x86_64-static-2.0.8.tar.bz2 $ID:$CDIR
-	podman cp ${SDK_DIR}/faun-x86_64-static-0.1.5.tar.bz2 $ID:$CDIR
+	podman cp ${SDK_DIR}/faun-x86_64-static-0.2.0.tar.bz2 $ID:$CDIR
 	podman cp project.tar.gz $ID:$CDIR
 	podman cp $HDIR/${SCRIPT} $ID:$CDIR/${SCRIPT}
 	podman exec -it $ID /bin/bash $CDIR/${SCRIPT}
