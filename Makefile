@@ -49,7 +49,7 @@ install: src/xu4 $(MODULES) u4upgrad.zip
 	mkdir -p $(DESTDIR)/bin $(DESTDIR)/share/xu4
 	install -m 755 -s src/xu4 $(DESTDIR)/bin/xu4
 	install -m 644 -t $(DESTDIR)/share/xu4 $(MODULES) u4upgrad.zip
-	install -D -m 644 icons/xu4.png $(DESTDIR)/share/icons/hicolor/48x48/apps/xu4.png
+	install -D -m 644 icons/shield.png $(DESTDIR)/share/icons/hicolor/48x48/apps/xu4.png
 	install -D -m 644 dist/xu4.desktop $(DESTDIR)/share/applications/xu4.desktop
 
 snapshot: $(MODULES)

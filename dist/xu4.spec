@@ -39,7 +39,7 @@ boron/boron -s tools/pack-xu4.b module/U4-Upgrade
 %install
 %__mkdir_p %{buildroot}%{_bindir} %{buildroot}%{_datadir}/xu4
 install -s -m 755 src/xu4 %{buildroot}%{_bindir}
-install -D -m 644 icons/xu4.png %{buildroot}%{_datadir}/icons/hicolor/48x48/apps/xu4.png
+install -D -m 644 icons/shield.png %{buildroot}%{_datadir}/icons/hicolor/48x48/apps/xu4.png
 install -D -m 644 dist/xu4.desktop %{buildroot}%{_datadir}/applications/xu4.desktop
 install -m 644 Ultima-IV.mod U4-Upgrade.mod render.pak %{buildroot}%{_datadir}/xu4
 install -m 644 %{SOURCE2} %{buildroot}%{_datadir}/xu4
