@@ -5,6 +5,7 @@ v1.4.1 - 2024-12-18
   - Added GLFW 3 backend which is now used on Windows.
   - Show title bar icon on Windows.
   - Karma adjustments from buying reagents match DOS version.
+  - Allow periods in module filenames.
   - A few minor code fixes.
 
 v1.4 - 2023-10-27

@@ -1200,6 +1200,7 @@ char* Config::gameTitle(char* buf) const {
     const char* in;
     const char* inEnd;
     char* out = buf;
+    int findExt = 1;
     int len, ch, layer;
 
     // Find extension (or base) layer.
@@ -1214,20 +1215,21 @@ char* Config::gameTitle(char* buf) const {
     in = sst_stringL(&mod.modulePaths, layer, &len);
     inEnd = in + len;
 
-    // Find start of filename (exclude directories).
+    // Find start of filename (exclude directories) and drop file extension.
     for (const char* cp = inEnd; cp != in; ) {
         ch = *--cp;
         if (ch == '/' || ch == '\\') {
             in = cp + 1;
             break;
+        } else if (ch == '.' && findExt) {
+            findExt = 0;
+            inEnd = cp;
         }
     }
 
-    // Convert dash & underbar to spaces, drop ".mod" extension.
+    // Convert dash & underbar to spaces.
     while (in != inEnd) {
         ch = *in++;
-        if (ch == '.')
-            break;
         *out++ = (ch == '-' || ch == '_') ? ' ' : ch;
     }
 none:

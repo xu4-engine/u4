@@ -29,8 +29,8 @@ restrictions:
 
 * It is limited to 39 characters (including the `.mod` suffix).
 * It must start with a letter and contains no spaces. The valid characters are
-  ASCII letters and numbers, plus, minus, underbar, question mark, and
-  exclamation point (0-9 A-Z a-z + - _ ? !).
+  ASCII letters and numbers, plus, minus, period, underbar, question mark, and
+  exclamation point (0-9 A-Z a-z + - . _ ? !).
 * For display purposes minus and underbar characters may be replaced with
   spaces.
 
