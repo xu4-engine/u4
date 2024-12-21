@@ -263,14 +263,12 @@ void servicesInit(XU4GameServices* gs, Options* opt) {
 
     gs->config = configInit(opt->module ? opt->module : gs->settings->game,
                             gs->settings->soundtrack);
-    screenInit(LAYER_COUNT);
-    Tile::initSymbols(gs->config);
-
     if (! (opt->flags & OPT_NO_AUDIO))
         soundInit();
-
     gs->eventHandler = new EventHandler(1000/gs->settings->gameCyclesPerSecond,
                             1000/gs->settings->screenAnimationFramesPerSecond);
+    screenInit(LAYER_COUNT);
+    Tile::initSymbols(gs->config);
 
     {
     uint32_t seed;

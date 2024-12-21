@@ -68,7 +68,7 @@ static void _copyCursor(Image32* img, const char* const xpm[], int destY)
     //sscanf(xpm[4+XPMSIZE], "%d,%d", &hot_x, &hot_y);
 }
 
-static void _loadCursors(GLView* view)
+static int _loadCursors(GLView* view)
 {
     static const int cursorCount = 4;
     static const short areas[6*cursorCount] = {
@@ -78,6 +78,7 @@ static void _loadCursors(GLView* view)
         0,40, 20,20, 18, 6,
         0,60, 20,20,  6,18
     };
+    int ok;
     Image32 img;
     image32_allocPixels(&img, CURSORSIZE, CURSORSIZE*cursorCount);
 
@@ -87,9 +88,10 @@ static void _loadCursors(GLView* view)
     _copyCursor(&img, e_xpm, 40);
     _copyCursor(&img, s_xpm, 60);
 
-    glv_loadCursors(view, areas, cursorCount,
-                    (const uint8_t*) img.pixels, img.w, 0);
+    ok = glv_loadCursors(view, areas, cursorCount,
+                         (const uint8_t*) img.pixels, img.w, 0);
     image32_freePixels(&img);
+    return ok;
 }
 #endif
 
@@ -278,6 +280,8 @@ void screenInit_sys(const Settings* settings, ScreenState* state, int reset) {
         xu4.gpu = &sa->gpu;
 
         memset(sa, 0, sizeof(ScreenGLView));
+        sa->currentCursor = MC_DEFAULT;
+        sa->cursorShown = true;
 
         sa->view = glv_create(attrib, glVersion);
         if (! sa->view)
@@ -290,7 +294,8 @@ void screenInit_sys(const Settings* settings, ScreenState* state, int reset) {
         _setX11Icon(sa->view, "/usr/share/icons/hicolor/48x48/apps/xu4.png");
 #endif
 #ifndef ANDROID
-        _loadCursors(sa->view);
+        if (! _loadCursors(sa->view))
+            errorWarning("Unable to load window cursors");
 #endif
     }
 
@@ -335,6 +340,14 @@ void screenInit_sys(const Settings* settings, ScreenState* state, int reset) {
 
     /* enable or disable the mouse cursor */
     screenShowMouseCursor(settings->mouseOptions.enabled);
+
+    glv_makeCurrent(sa->view);
+#ifdef _WIN32
+    if (! reset) {
+        if (! gladLoadGL())
+            errorFatal("Unable to get OpenGL function addresses");
+    }
+#endif
 
     gpuError = gpu_init(&sa->gpu, dw, dh, scale, settings->filter);
     if (gpuError)
@@ -398,31 +411,20 @@ void screenWait(int numberOfAnimationFrames) {
 void screenSetMouseCursor(MouseCursor cursor) {
 #ifndef ANDROID
     ScreenGLView* sa = SA;
-
     if (cursor != sa->currentCursor) {
-        if (sa->cursorShown) {
-            if (cursor == MC_DEFAULT)
-                glv_showCursor(sa->view, 1);
-            else
-                glv_setCursor(sa->view, cursor - 1);
-        }
         sa->currentCursor = cursor;
+        glv_setCursor(sa->view, (cursor == MC_DEFAULT) ? GLV_CURSOR_ARROW
+                                                       : cursor - 1);
     }
 #endif
 }
 
 void screenShowMouseCursor(bool visible) {
     ScreenGLView* sa = SA;
-
-    if (visible) {
-        if (sa->currentCursor == MC_DEFAULT)
-            glv_showCursor(sa->view, 1);
-        else
-            glv_setCursor(sa->view, sa->currentCursor - 1);
-    } else {
-        glv_showCursor(sa->view, 0);
+    if (visible != sa->cursorShown) {
+        sa->cursorShown = visible;
+        glv_showCursor(sa->view, (int) visible);
     }
-    sa->cursorShown = visible;
 }
 
 /*

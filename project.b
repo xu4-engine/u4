@@ -65,12 +65,16 @@ exe %xu4 [
 			]
 		]
 		glv [
+			win32 [
+				include_from %src/glv/win32
+				libs [%faun %vorbisfile %ole32]
+				sources/flags [%src/glv/win32/glv.c] "-DUSE_CURSORS"
+			]
 			unix [
 				include_from %src/glv/x11
-				libs [%Xcursor %X11]
+				libs [%faun %Xcursor %X11]
 				sources/flags [%src/glv/x11/glv.c] "-DUSE_CURSORS"
 			]
-			libs [%faun]
 			sources_from %src [
 				%screen_glv.cpp
 				%sound_faun.cpp
