@@ -79,6 +79,7 @@ struct Screen {
     TxfHeader* txf[3];
     short needPrompt;
     short colorFG;
+    uint16_t clearCount;
     uint8_t uploadScreen;
     uint8_t layersAvail;
 #ifdef GPU_RENDER
@@ -243,6 +244,14 @@ static void screenDelete_data(Screen* scr) {
 }
 
 
+static void clearBorders(Screen* screen)
+{
+    // Garbage is sometimes seen in the fullscreen border on Windows 11 and
+    // Wayland if we don't clear three times.
+    screen->clearCount = xu4.settings->fullscreen ? 3 : 1;
+}
+
+
 enum ScreenSystemStage {
     SYS_CLEAN = 0,  // Initial screen setup.
     SYS_RESET = 1   // Reconfigure screen settings.
@@ -261,6 +270,7 @@ void screenInit(int layerCount) {
 
     screenInit_sys(xu4.settings, &screen->state, SYS_CLEAN);
     screenInit_data(screen, *xu4.settings);
+    clearBorders(screen);
 }
 
 void screenDelete() {
@@ -287,15 +297,7 @@ void screenReInit() {
     screenDelete_data(XU4_SCREEN);
     screenInit_sys(xu4.settings, &screen->state, SYS_RESET);
     screenInit_data(screen, *xu4.settings); // Load new backgrounds, etc.
-
-    // Garbage is sometimes seen in the fullscreen border on Windows 11 & Wayland
-    // if we don't clear three times.
-    int count = xu4.settings->fullscreen ? 3 : 1;
-    for (int i = 0; i < count; ++i) {
-        gpu_clear(xu4.gpu, colorBlack);
-        screen->uploadScreen = 1;
-        screenSwapBuffers();
-    }
+    clearBorders(screen);
 
     //gs_emitMessage(SENDER_DISPLAY, &screen->state);
 }
@@ -832,7 +834,12 @@ void screenRender() {
 
     if (ss->vertOffset) {
         offsetY -= ss->vertOffset;
-        gpu_clear(gpu, colorBlack);     // Clear the top rows of pixels.
+        if (! sp->clearCount)
+            sp->clearCount = 1;     // Clear the top rows of pixels.
+    }
+    if (sp->clearCount) {
+        sp->clearCount -= 1;
+        gpu_clear(gpu, colorBlack);
     }
     gpu_viewport(ss->aspectX, offsetY, ss->aspectW, ss->aspectH);
     gpu_drawTextureScaled(gpu, gpu_screenTexture(gpu));
