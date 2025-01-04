@@ -3,4 +3,4 @@
 	url = https://git.code.sf.net/p/outguard/glv
 [submodule "src/faun"]
 	path = src/faun
-	url = https://github.com/WickedSmoke/faun.git
+	url = https://codeberg.org/wickedsmoke/faun.git

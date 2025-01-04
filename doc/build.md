@@ -26,7 +26,7 @@ Developer Builds
 The following libraries are required for all targets:
 
  - Boron 2.0.8
- - Faun 0.1.5 or 0.2.0
+ - Faun 0.1.5 or 0.2
     - Vorbis
  - PNG
 
