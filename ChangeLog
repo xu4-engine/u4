@@ -1,5 +1,9 @@
 		XU4 Change Log
 
+v1.4.2 - 2025-01-04
+  - Fix flashing garbage in fullscreen borders.
+  - Update Faun to try fixing choppy audio on Windows.
+
 v1.4.1 - 2024-12-18
   - Update license to GPL-3.0-or-later.
   - Added GLFW 3 backend which is now used on Windows.
