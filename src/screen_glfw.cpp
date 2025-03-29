@@ -202,7 +202,10 @@ static void keyHandler(GLFWwindow* win, int token, int scancode, int action, int
             // glfwSetCharCallback() is provided for text input.
             if (token >= GLFW_KEY_A && token <= GLFW_KEY_Z) {
                 key = token;
-                if (! (mods & GLFW_MOD_SHIFT))
+                if (mods & GLFW_MOD_CONTROL) {
+                    // Map to ASCII Control Code.
+                    key -= GLFW_KEY_A - 1;
+                } else if (! (mods & GLFW_MOD_SHIFT))
                     key += 'a' - 'A';
             }
             else if (token >= GLFW_KEY_0 && token <= GLFW_KEY_9) {
