@@ -40,6 +40,14 @@ class Coords;
 #define PRINTF_LIKE(x,y)
 #endif
 
+enum ScreenFilter {
+    FILTER_POINT,
+    FILTER_HQX,
+    FILTER_XBR_LV2,
+    FILTER_XBRZ,
+    FILTER_POINT_43
+};
+
 enum LayoutType {
     LAYOUT_STANDARD,
     LAYOUT_GEM,

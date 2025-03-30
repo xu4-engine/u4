@@ -297,6 +297,8 @@ static void scrollHandler(GLFWwindow* win, double x, double y)
     dispatchEvent(&ie);
 }
 
+extern int screenInitState(ScreenState*, const Settings*, int dw, int dh);
+
 void screenInit_sys(const Settings* settings, ScreenState* state, int reset)
 {
     ScreenGLView* ss;
@@ -305,7 +307,7 @@ void screenInit_sys(const Settings* settings, ScreenState* state, int reset)
     const char* gpuError;
     int scale = settings->scale;
     int dw = U4_SCREEN_W * scale;
-    int dh = U4_SCREEN_H * scale;
+    int dh = ((settings->filter == FILTER_POINT_43) ? 240 : U4_SCREEN_H) * scale;
     char title[MOD_NAME_LIMIT];
 
     xu4.config->gameTitle(title);
@@ -407,28 +409,8 @@ void screenInit_sys(const Settings* settings, ScreenState* state, int reset)
     glfwGetWindowSize(ss->view, &state->displayW, &state->displayH);
     printf("KR dim %d,%d (%d,%d) %d\n",
             dw, dh, state->displayW, state->displayH, glfwGetError(NULL));
-#else
-    state->displayW = dw;
-    state->displayH = dh;
 #endif
-
-    // Scale automatically in fullscreen mode.
-    if (settings->fullscreen) {
-        // HQX filter is limited to 4x.
-        scale = (settings->filter == 1) ? 4 : 6;
-
-        for ( ; scale > 1; --scale) {
-            dw = U4_SCREEN_W * scale;
-            dh = U4_SCREEN_H * scale;
-            if (dw <= state->displayW && dh <= state->displayH)
-                break;
-        }
-    }
-
-    state->aspectW = dw;
-    state->aspectH = dh;
-    state->aspectX = (state->displayW - dw) / 2;
-    state->aspectY = (state->displayH - dh) / 2;
+    scale = screenInitState(state, settings, dw, dh);
 
     /* enable or disable the mouse cursor */
     screenShowMouseCursor(settings->mouseOptions.enabled);
@@ -442,7 +424,8 @@ void screenInit_sys(const Settings* settings, ScreenState* state, int reset)
 #endif
 
     xu4.gpu = &ss->gpu;
-    gpuError = gpu_init(&ss->gpu, dw, dh, scale, settings->filter);
+    gpuError = gpu_init(&ss->gpu, state->aspectW, state->aspectH, scale,
+                        settings->filter);
     if (gpuError)
         errorFatal("Unable to obtain OpenGL resource (%s)", gpuError);
 }

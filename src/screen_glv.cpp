@@ -253,13 +253,12 @@ mouse_pos:
     }
 }
 
+extern int screenInitState(ScreenState*, const Settings*, int dw, int dh);
 
 void screenInit_sys(const Settings* settings, ScreenState* state, int reset) {
     ScreenGLView* sa;
     const char* gpuError;
     int scale = settings->scale;
-    int dw = U4_SCREEN_W * scale;
-    int dh = U4_SCREEN_H * scale;
 #ifdef ANDROID
     const int glVersion = 0x301;
     const int attrib = GLV_ATTRIB_DOUBLEBUFFER;
@@ -308,35 +307,13 @@ void screenInit_sys(const Settings* settings, ScreenState* state, int reset) {
     GLViewMode mode;
     mode.id = settings->fullscreen ? GLV_MODEID_FULL_WINDOW
                                    : GLV_MODEID_FIXED_WINDOW;
-    mode.width  = dw;
-    mode.height = dh;
+    mode.width  = U4_SCREEN_W * scale;
+    mode.height = ((settings->filter == FILTER_POINT_43) ? 240 : U4_SCREEN_H) * scale;
 
     glv_changeMode(sa->view, &mode);
     }
 
-    state->displayW = sa->view->width;
-    state->displayH = sa->view->height;
-
-    // Scale automatically in fullscreen mode.
-#ifndef ANDROID
-    if (settings->fullscreen)
-#endif
-    {
-        // HQX filter is limited to 4x.
-        scale = (settings->filter == 1) ? 4 : 6;
-
-        for ( ; scale > 1; --scale) {
-            dw = U4_SCREEN_W * scale;
-            dh = U4_SCREEN_H * scale;
-            if (dw <= state->displayW && dh <= state->displayH)
-                break;
-        }
-    }
-
-    state->aspectW = dw;
-    state->aspectH = dh;
-    state->aspectX = (state->displayW - dw) / 2;
-    state->aspectY = (state->displayH - dh) / 2;
+    scale = screenInitState(state, settings, sa->view->width, sa->view->height);
 
     /* enable or disable the mouse cursor */
     screenShowMouseCursor(settings->mouseOptions.enabled);
@@ -349,7 +326,8 @@ void screenInit_sys(const Settings* settings, ScreenState* state, int reset) {
     }
 #endif
 
-    gpuError = gpu_init(&sa->gpu, dw, dh, scale, settings->filter);
+    gpuError = gpu_init(&sa->gpu, state->aspectW, state->aspectH, scale,
+                        settings->filter);
     if (gpuError)
         errorFatal("Unable to obtain OpenGL resource (%s)", gpuError);
 

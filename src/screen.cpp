@@ -302,6 +302,40 @@ void screenReInit() {
     //gs_emitMessage(SENDER_DISPLAY, &screen->state);
 }
 
+// Private to screenInit_sys().
+int screenInitState(ScreenState* state, const Settings* settings, int dw, int dh)
+{
+    int scale = settings->scale;
+
+    state->displayW = dw;
+    state->displayH = dh;
+
+    // Scale automatically in fullscreen mode.
+#ifndef ANDROID
+    if (settings->fullscreen)
+#endif
+    {
+        int baseH = (settings->filter == FILTER_POINT_43) ? 240 : U4_SCREEN_H;
+
+        // HQX filter is limited to 4x.
+        scale = (settings->filter == FILTER_HQX) ? 4 : 6;
+
+        for ( ; scale > 1; --scale) {
+            dw = U4_SCREEN_W * scale;
+            dh = baseH * scale;
+            if (dw <= state->displayW && dh <= state->displayH)
+                break;
+        }
+    }
+
+    state->aspectW = dw;
+    state->aspectH = dh;
+    state->aspectX = (state->displayW - dw) / 2;
+    state->aspectY = (state->displayH - dh) / 2;
+
+    return scale;
+}
+
 void screenSetLayer(int layer, void (*renderFunc)(ScreenState*, void*),
                     void* data) {
     Screen* screen = XU4_SCREEN;
@@ -519,7 +553,7 @@ const vector<string>& screenGetGemLayoutNames() {
 
 const char** screenGetFilterNames() {
     static const char* filterNames[] = {
-        "point", "HQX", "xBR-lv2", "xBRZ", NULL
+        "point", "HQX", "xBR-lv2", "xBRZ", "point-43", NULL
     };
     return filterNames;
 }

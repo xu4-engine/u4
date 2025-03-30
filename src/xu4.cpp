@@ -140,7 +140,7 @@ int parseOptions(Options* opt, int argc, char** argv) {
             printf(
             "Options:\n"
             "      --filter <string>   Specify display filtering mode.\n"
-            "                          (point, HQX, xBR-lv2, xBRZ)\n"
+            "                          (point, HQX, xBR-lv2, xBRZ, point-43)\n"
             "  -f, --fullscreen        Run in fullscreen mode.\n"
             "  -h, --help              Print this message and quit.\n"
             "  -i, --skip-intro        Skip the intro. and load the last saved game.\n"
