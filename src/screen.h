@@ -45,7 +45,8 @@ enum ScreenFilter {
     FILTER_HQX,
     FILTER_XBR_LV2,
     FILTER_XBRZ,
-    FILTER_POINT_43
+    FILTER_POINT_43,
+    FILTER_XBRZ_43
 };
 
 enum LayoutType {

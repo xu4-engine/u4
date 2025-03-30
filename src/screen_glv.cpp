@@ -308,7 +308,7 @@ void screenInit_sys(const Settings* settings, ScreenState* state, int reset) {
     mode.id = settings->fullscreen ? GLV_MODEID_FULL_WINDOW
                                    : GLV_MODEID_FIXED_WINDOW;
     mode.width  = U4_SCREEN_W * scale;
-    mode.height = ((settings->filter == FILTER_POINT_43) ? 240 : U4_SCREEN_H) * scale;
+    mode.height = ((settings->filter >= FILTER_POINT_43) ? 240 : U4_SCREEN_H) * scale;
 
     glv_changeMode(sa->view, &mode);
     }

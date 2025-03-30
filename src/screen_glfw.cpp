@@ -307,7 +307,7 @@ void screenInit_sys(const Settings* settings, ScreenState* state, int reset)
     const char* gpuError;
     int scale = settings->scale;
     int dw = U4_SCREEN_W * scale;
-    int dh = ((settings->filter == FILTER_POINT_43) ? 240 : U4_SCREEN_H) * scale;
+    int dh = ((settings->filter >= FILTER_POINT_43) ? 240 : U4_SCREEN_H) * scale;
     char title[MOD_NAME_LIMIT];
 
     xu4.config->gameTitle(title);

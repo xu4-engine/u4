@@ -315,7 +315,7 @@ int screenInitState(ScreenState* state, const Settings* settings, int dw, int dh
     if (settings->fullscreen)
 #endif
     {
-        int baseH = (settings->filter == FILTER_POINT_43) ? 240 : U4_SCREEN_H;
+        int baseH = (settings->filter >= FILTER_POINT_43) ? 240 : U4_SCREEN_H;
 
         // HQX filter is limited to 4x.
         scale = (settings->filter == FILTER_HQX) ? 4 : 6;
@@ -553,7 +553,7 @@ const vector<string>& screenGetGemLayoutNames() {
 
 const char** screenGetFilterNames() {
     static const char* filterNames[] = {
-        "point", "HQX", "xBR-lv2", "xBRZ", "point-43", NULL
+        "point", "HQX", "xBR-lv2", "xBRZ", "point-43", "xBRZ-43", NULL
     };
     return filterNames;
 }

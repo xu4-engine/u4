@@ -15,11 +15,13 @@ View::View(int x, int y, int width, int height) :
  * Hook for reinitializing when graphics reloaded.
  */
 void View::reinit() {
+#ifdef GPU_RENDER
     int scale = screenState()->aspectH / U4_SCREEN_H;
     screenRect[0] = x * scale;
     screenRect[1] = (xu4.screenImage->height() - (y + height)) * scale;
     screenRect[2] = width  * scale;
     screenRect[3] = height * scale;
+#endif
 }
 
 /**

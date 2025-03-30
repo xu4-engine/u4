@@ -614,7 +614,7 @@ const char* gpu_init(void* res, int w, int h, int scale, int filter)
 
     // Create scaler shader.
     if (scale > 1) {
-    if (filter == 1) {
+    if (filter == FILTER_HQX) {
         if (scale > 4)
             scale = 4;
 
@@ -637,7 +637,7 @@ const char* gpu_init(void* res, int w, int h, int scale, int filter)
         glUniform1i(cmap, GTU_CMAP);
         glUniform1i(mmap, GTU_SCALER_LUT);
     }
-    else if (filter == 2) {
+    else if (filter == FILTER_XBR_LV2) {
         gr->scaler = sh = glCreateProgram();
         if (compileSLFile(sh, "xbr-lv2.glsl", scale))
             return "xbr-lv2.glsl";
@@ -649,7 +649,7 @@ const char* gpu_init(void* res, int w, int h, int scale, int filter)
         glUniform2f(gr->slocScDim, (float) (w / scale), (float) (h / scale));
         glUniform1i(cmap, GTU_CMAP);
     }
-    else if (filter == 3) {
+    else if (filter == FILTER_XBRZ || filter == FILTER_XBRZ_43) {
         gr->scaler = sh = glCreateProgram();
         if (compileSLFile(sh, "xbrz-freescale.glsl", scale))
             return "xbr-freescale.glsl";
@@ -660,7 +660,7 @@ const char* gpu_init(void* res, int w, int h, int scale, int filter)
 
         glUseProgram(sh);
         glUniform2f(mmap, (float) w, (float) h);
-        glUniform2f(gr->slocScDim, (float) (w / scale), (float) (h / scale));
+        glUniform2f(gr->slocScDim, 320.0f, 200.0f);
         glUniform1i(cmap, GTU_CMAP);
     }
     }
