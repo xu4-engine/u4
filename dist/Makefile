@@ -17,9 +17,10 @@ BORON_SDK_MINGW=boron-x86_64-w64-mingw32-static-2.0.8.zip
 GLFW_DL=https://github.com/glfw/glfw/releases/download/3.4
 GLFW_SDK_MINGW=glfw-3.4.bin.WIN64.zip
 
-FAUN_DL=https://codeberg.org/WickedSmoke/faun/releases/download/v0.2.2
-FAUN_SDK_LINUX=faun-x86_64-static-0.2.2.tar.bz2
-FAUN_SDK_MINGW=faun-x86_64-w64-mingw32-static-0.2.2.zip
+FAUN_VER=0.2.3
+FAUN_DL=https://codeberg.org/WickedSmoke/faun/releases/download/v${FAUN_VER}
+FAUN_SDK_LINUX=faun-x86_64-static-${FAUN_VER}.tar.bz2
+FAUN_SDK_MINGW=faun-x86_64-w64-mingw32-static-${FAUN_VER}.zip
 
 sdk:
 	mkdir sdk

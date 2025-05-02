@@ -21,6 +21,7 @@ HDIR=/tmp
 CDIR=/tmp
 ARC_DIR=/tmp/xu4-${VERSION}
 SDK_DIR=dist/sdk
+FAUN_VER=0.2.3
 
 if [ ! -d ${SDK_DIR} ]; then
 	echo "Library archive ${SDK_DIR} not found!"
@@ -34,22 +35,22 @@ clean_dir () {
 
 case $1 in
 windows)
-	echo '
+	cat >$HDIR/${SCRIPT} <<EOF
   unzip /tmp/glfw-3.4.bin.WIN64.zip
   mv glfw-3.4.bin.WIN64 usr
   mv usr/lib-mingw-w64 usr/lib
   unzip /tmp/boron-x86_64-w64-mingw32-static-2.0.8.zip
-  unzip /tmp/faun-x86_64-w64-mingw32-static-0.2.2.zip -d usr
+  unzip /tmp/faun-x86_64-w64-mingw32-static-${FAUN_VER}.zip -d usr
   mkdir u4
   cd u4
   tar xf /tmp/project.tar.gz
   copr -t mingw make_util:false
-' >$HDIR/${SCRIPT}
+EOF
 
 	podman run -d -it --name=$ID xu4/f41-mingw /bin/bash || exit
 	podman cp ${SDK_DIR}/glfw-3.4.bin.WIN64.zip $ID:$CDIR
 	podman cp ${SDK_DIR}/boron-x86_64-w64-mingw32-static-2.0.8.zip $ID:$CDIR
-	podman cp ${SDK_DIR}/faun-x86_64-w64-mingw32-static-0.2.2.zip $ID:$CDIR
+	podman cp ${SDK_DIR}/faun-x86_64-w64-mingw32-static-${FAUN_VER}.zip $ID:$CDIR
 	podman cp project.tar.gz $ID:$CDIR
 	podman cp $HDIR/${SCRIPT} $ID:$CDIR/${SCRIPT}
 	podman exec -it -u build $ID /bin/bash $CDIR/${SCRIPT}
@@ -76,18 +77,18 @@ windows)
 	;;
 
 linux)
-	echo $'
+	cat >$HDIR/${SCRIPT} <<EOF
   tar xjf /tmp/boron-x86_64-static-2.0.8.tar.bz2
-  tar xjf /tmp/faun-x86_64-static-0.2.2.tar.bz2 -C boron --strip-components=1
+  tar xjf /tmp/faun-x86_64-static-${FAUN_VER}.tar.bz2 -C boron --strip-components=1
   mkdir u4
   cd u4
   tar xf /tmp/project.tar.gz
-  copr "os_api:\'glv" make_util:false sdk_dir:%../boron
-' >$HDIR/${SCRIPT}
+  copr "os_api:'glv" make_util:false sdk_dir:%../boron
+EOF
 
 	podman run -d -it --name=$ID xu4/f33-gcc /bin/bash || exit
 	podman cp ${SDK_DIR}/boron-x86_64-static-2.0.8.tar.bz2 $ID:$CDIR
-	podman cp ${SDK_DIR}/faun-x86_64-static-0.2.2.tar.bz2 $ID:$CDIR
+	podman cp ${SDK_DIR}/faun-x86_64-static-${FAUN_VER}.tar.bz2 $ID:$CDIR
 	podman cp project.tar.gz $ID:$CDIR
 	podman cp $HDIR/${SCRIPT} $ID:$CDIR/${SCRIPT}
 	podman exec -it $ID /bin/bash $CDIR/${SCRIPT}
