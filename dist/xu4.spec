@@ -1,5 +1,5 @@
 Name:      xu4
-Version:   1.4.1
+Version:   1.4.3
 Release:   %autorelease
 Summary:   Ultima IV Recreated
 License:   GPL-3.0-or-later

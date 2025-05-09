@@ -1,5 +1,12 @@
 		XU4 Change Log
 
+v1.4.3 - 2025-05-16
+  - Support 4:3 display aspect with point-43 and xBRZ-43 scaling filters.
+  - Fix control key sequences on Windows.
+  - Fix crash with GLFW backend when cursor key is held when exiting combat.
+  - Fix sound intialization on Windows Vista.
+  - Another attempt to fix choppy audio on Windows.
+
 v1.4.2 - 2025-01-04
   - Fix flashing garbage in fullscreen borders.
   - Update Faun to try fixing choppy audio on Windows.
