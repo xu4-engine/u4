@@ -235,7 +235,10 @@ static void keyHandler(GLFWwindow* win, int token, int scancode, int action, int
         printf("key event: token %d, mod 0x%x; translated %d\n", token, mods, key);
 
     /* handle the keypress */
-    if (SGL->waitCon->notifyKeyPressed(key)) {
+    Controller* controller = SGL->waitCon;
+    if (! controller)
+        controller = xu4.eventHandler->getController();
+    if (controller->notifyKeyPressed(key)) {
         updateScreenCallback updateScreen = SGL->update;
         if (updateScreen)
             (*updateScreen)();
@@ -244,7 +247,10 @@ static void keyHandler(GLFWwindow* win, int token, int scancode, int action, int
 
 static inline void dispatchEvent(InputEvent* ie)
 {
-    SGL->waitCon->inputEvent(ie);
+    Controller* controller = SGL->waitCon;
+    if (! controller)
+        controller = xu4.eventHandler->getController();
+    controller->inputEvent(ie);
 }
 
 static void mouseMotionHandler(GLFWwindow* win, double x, double y)
@@ -582,7 +588,7 @@ void EventHandler::handleInputEvents(Controller* waitCon,
     Controller* prevCon = ss->waitCon;
     updateScreenCallback prevUpdate = ss->update;
 
-    ss->waitCon = waitCon ? waitCon : getController();
+    ss->waitCon = waitCon;
     ss->update  = update;
 
 #if 0
