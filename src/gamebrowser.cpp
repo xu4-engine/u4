@@ -424,7 +424,7 @@ void GameBrowser::layout()
 {
     static uint8_t browserGui[] = {
         LAYOUT_V, BG_COLOR_CI, COL_BLACK + 128,
-        MARGIN_V_PER, 10, MARGIN_H_PER, 16, SPACING_PER, 6,
+        MARGIN_V_PER, 10, MARGIN_H_PER, 13, SPACING_PER, 6,
         BG_COLOR_CI, COL_BROWN,
         ARRAY_DT_AREA, WI_LIST,
         MARGIN_V_PER, 6,
