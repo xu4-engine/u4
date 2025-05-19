@@ -203,5 +203,5 @@ interested in helping.
 
 [Allegro]: https://liballeg.org/
 [GLFW]: https://www.glfw.org
-[www.gog.com]: https://www.gog.com/game/ultima_4
+[www.gog.com]: https://www.gog.com/en/game/ultima_iv_quest_of_the_avatar
 [XU4 Download]: https://xu4.sourceforge.net/download.php#release
